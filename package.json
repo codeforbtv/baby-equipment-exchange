@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "next dev",
         "test": "node ./node_modules/jest/bin/jest.js -- --config=./jest.config.js ./",
-        "test:emulator": "node "
+        "test:emulator": "node ", 
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
