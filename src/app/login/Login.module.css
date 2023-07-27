@@ -1,0 +1,11 @@
+.login__container {
+    font-family: var(--primary-font);
+}
+
+.form__container {
+    box-sizing: border-box;
+    width: 100%;
+    background-color: var(--bg-grey);
+    margin: 0px auto;
+    padding: 0 1rem 2rem 1rem;
+}

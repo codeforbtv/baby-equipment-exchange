@@ -41,3 +41,6 @@ firestore-data
 firebase-config.js
 firebase.json
 storage.rules
+
+#VSCODE Preferences
+.vscode
