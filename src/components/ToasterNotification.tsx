@@ -2,12 +2,11 @@
 import styles from './ToasterNotification.module.css'
 
 type NotificaitonProps = {
-    status: string | null
+    status: string;
 }
 
-type StatusLookup = {
-    invalid_login: string,
-    signed_out: string
+interface StatusLookup {
+    [key: string]: string
 }
 
 const statusLookup: StatusLookup = {
@@ -17,9 +16,9 @@ const statusLookup: StatusLookup = {
 
 
 export default function ToasterNotification(props: NotificaitonProps) {
-return (
-    <div className={styles["toaster"]}>
-        {statusLookup[props.status]}
-    </div>
-)
+    return (
+        <div className={styles["toaster"]}>
+            {statusLookup[props.status]}
+        </div>
+    )
 }

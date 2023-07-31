@@ -30,7 +30,6 @@ export default function Login() {
             router.push('/login?status=invalid_login')
             setEmail('')
             setPassword('')
-            console.error(`error : ${error}`)
         }
     }
 

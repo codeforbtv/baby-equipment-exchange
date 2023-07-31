@@ -83,7 +83,7 @@ export default function Header() {
                 </Link>
             </header>
             <div className={styles["header__spacer"]}></div>
-            <Menu isOpen={isOpen} onOpen={handleIsOpen} onClose={handleIsOpen} styles={burgerMenuStyles}>
+            <Menu right isOpen={isOpen} onOpen={handleIsOpen} onClose={handleIsOpen} styles={burgerMenuStyles}>
                 <Link className={styles["menu__link"]} id="home" href='/' onClick={closeMenu}>Home</Link>
                 <Link className={styles["menu__link"]} id="signout" href={auth.currentUser ? "/login?status=signed_out" : "/login"} onClick={() => {
                     closeMenu()
