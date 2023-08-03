@@ -1,0 +1,19 @@
+.toaster{
+    width: 80%;
+    position: absolute;
+    left: 10%;
+    bottom: -20%;
+    background-color: black;
+    color: white;
+    font-family: var(--primary-font);
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    padding: .5rem;
+    animation: slideUp .5s ease .5s forwards;
+}
+
+@keyframes slideUp {
+    from{bottom: -20%}
+    to{bottom: 15%}
+}

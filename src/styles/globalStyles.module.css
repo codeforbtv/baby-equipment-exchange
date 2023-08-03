@@ -1,0 +1,37 @@
+/* Variables and global styling */
+.body--wrapper {
+    --primary-font: Garamond, serif;
+    --bg-grey: lightgrey;
+    --button-dark: black;
+    --button-light: white;
+    display: grid;
+    grid-template: max-content 1fr max-content / 1fr;
+    min-height: 100vh;
+    margin: 0px;
+}
+
+.body--wrapper * {
+    box-sizing: border-box;
+}
+
+.page--wrapper {
+    padding: 2px 10px;
+}
+
+/* Tablets */
+@media screen and (min-width: 480px) {
+    
+    .page--wrapper {
+        padding: 8px 5%;
+    }
+    
+}
+
+/* Laptops and above */
+@media screen and (min-width: 800px) {
+    
+    .page--wrapper {
+        padding: 10px 5%;
+    }
+    
+}
