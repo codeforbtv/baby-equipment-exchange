@@ -2,6 +2,7 @@ import { FirebaseApp, initializeApp } from 'firebase/app'
 import { connectFirestoreEmulator, Firestore, getFirestore } from 'firebase/firestore'
 import { FirebaseStorage, getStorage } from 'firebase/storage'
 import { firebaseConfig } from '../../firebase-config'
+import { Auth, UserCredential, getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 
 let app: FirebaseApp
 let db: Firestore
@@ -33,4 +34,15 @@ export function getFirebaseStorage(): FirebaseStorage {
         storage = getStorage(getApp())
     }
     return storage
+}
+
+export const auth: Auth = getAuth(getApp())
+
+export function signInAuthUserWithEmailAndPassword(email: string, password: string): void | Promise<UserCredential> {
+    if (!email || !password) return
+    return signInWithEmailAndPassword(auth, email, password)
+}
+
+export function signOutUser(): void {
+    signOut(auth)
 }
