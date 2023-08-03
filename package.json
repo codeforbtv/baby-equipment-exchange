@@ -4,8 +4,8 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
-        "test": "node ./node_modules/jest/bin/jest.js -- --config=./jest.config.js ./",
-        "test:emulator": "node ", 
+        "test": "npx ./node_modules/jest -- --config=./jest.config.js ./",
+        "test:emulator": "npx ./node_modules/firebase-tools emulators:exec \"npm run test\"",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
