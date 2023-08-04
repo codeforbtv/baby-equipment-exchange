@@ -2,7 +2,7 @@ import { FirebaseApp, initializeApp } from 'firebase/app'
 import { connectFirestoreEmulator, Firestore, getFirestore } from 'firebase/firestore'
 import { FirebaseStorage, getStorage } from 'firebase/storage'
 import { firebaseConfig } from '../../firebase-config'
-import { Auth, UserCredential, getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { Auth, UserCredential, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, NextOrObserver, User } from 'firebase/auth'
 
 let app: FirebaseApp
 let db: Firestore
@@ -45,4 +45,8 @@ export function signInAuthUserWithEmailAndPassword(email: string, password: stri
 
 export function signOutUser(): void {
     signOut(auth)
+}
+
+export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
+    onAuthStateChanged(auth, callback)
 }
