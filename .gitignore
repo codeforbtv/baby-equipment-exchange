@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+.cache
 package-lock.json
 
 # testing
@@ -42,3 +43,6 @@ firestore-data
 firebase-config.js
 firebase.json
 storage.rules
+
+#VSCODE Preferences
+.vscode
