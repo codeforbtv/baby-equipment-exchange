@@ -5,7 +5,7 @@
     justify-content: center;
 }
 
-.button__login {
+.button {
     background-color: var(--button-dark);
     box-shadow: none;
     height: 2rem;

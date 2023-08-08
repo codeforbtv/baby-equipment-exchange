@@ -8,7 +8,7 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faImage } from "@fortawesome/free-regular-svg-icons";
 //Libs
-import { auth } from "../../firebase-config"
+import { auth } from "../api/firebase"
 //Styles
 import styles from './Header.module.css'
 
@@ -85,6 +85,9 @@ export default function Header() {
             <div className={styles["header__spacer"]}></div>
             <Menu right isOpen={isOpen} onOpen={handleIsOpen} onClose={handleIsOpen} styles={burgerMenuStyles}>
                 <Link className={styles["menu__link"]} id="home" href='/' onClick={closeMenu}>Home</Link>
+                {!auth.currentUser &&
+                <Link className={styles["menu__link"]} id="donate" href='/donate' onClick={closeMenu}>Donate</Link>
+                }
                 <Link className={styles["menu__link"]} id="signout" href={auth.currentUser ? "/login?status=signed_out" : "/login"} onClick={() => {
                     closeMenu()
                     if (auth.currentUser) auth.signOut()

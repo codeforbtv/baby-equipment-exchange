@@ -11,6 +11,7 @@ import { Theme } from "@/components/ButtonContainer";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../../../firebase-config"
 //Styling
+import globalStyles from "@/styles/globalStyles.module.css"
 import styles from "./Login.module.css";
 
 
@@ -39,7 +40,7 @@ export default function Login() {
             <div className={styles["login__container"]}>
                 <h1>Login</h1>
                 <h4>Page Summary</h4>
-                <div className={styles["form__container"]}>
+                <div className={globalStyles["form__container"]}>
                     <form onSubmit={handleLogin}>
                         <InputContainer for="email" label="Email" footnote="Footnote">
                             <input type="text" name="email" id="email" placeholder=" Input email" value={email} required onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
