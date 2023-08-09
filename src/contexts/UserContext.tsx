@@ -4,7 +4,7 @@ import { createContext, useState, useEffect, ReactNode, Dispatch, SetStateAction
 
 type UserContextType = {
     currentUser: User | null
-    setCurrentUser: Dispatch<SetStateAction<null>>
+    setCurrentUser: Dispatch<SetStateAction<User>> | Dispatch<SetStateAction<null>>
 }
 
 type Props = {
@@ -12,8 +12,8 @@ type Props = {
 }
 
 export const UserContext = createContext<UserContextType>({
-    currentUser: null,
-    setCurrentUser: () => null
+    setCurrentUser: () => null,
+    currentUser: null
 })
 
 export const UserProvider = ({ children }: Props) => {
@@ -25,9 +25,7 @@ export const UserProvider = ({ children }: Props) => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChangedListener((user) => {
-            if (!user) {
-                setCurrentUser(user)
-            }
+            if (!user) setCurrentUser(user)
         })
         return unsubscribe
     }, [])
