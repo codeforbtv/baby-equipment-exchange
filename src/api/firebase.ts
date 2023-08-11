@@ -38,9 +38,10 @@ export function getFirebaseStorage(): FirebaseStorage {
 
 export const auth: Auth = getAuth(getApp())
 
-export function signInAuthUserWithEmailAndPassword(email: string, password: string): void | Promise<UserCredential> {
-    if (!email || !password) return
-    return signInWithEmailAndPassword(auth, email, password)
+export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
+    if (!email || !password) return null
+    const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password)
+    return userCredential.user
 }
 
 export function signOutUser(): void {
