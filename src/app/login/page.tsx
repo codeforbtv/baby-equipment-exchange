@@ -4,9 +4,8 @@ import InputContainer from '@/components/InputContainer'
 import ButtonContainer from '@/components/ButtonContainer'
 import ToasterNotification from '@/components/ToasterNotification'
 //Hooks
-import { useState, useContext } from 'react'
+import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { UserContext } from '@/contexts/UserContext'
 
 //Libs
 import { Theme } from '@/components/ButtonContainer'
@@ -18,7 +17,6 @@ import styles from './Login.module.css'
 export default function Login() {
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
-    const { currentUser } = useContext(UserContext)
 
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -41,6 +39,7 @@ export default function Login() {
             <div className={styles['login__container']}>
                 <h1>Login</h1>
                 <h4>Page Summary</h4>
+
                 <div className={styles['form__container']}>
                     <form onSubmit={handleLogin}>
                         <InputContainer for="email" label="Email" footnote="Footnote">
