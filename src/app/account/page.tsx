@@ -65,7 +65,7 @@ export default function Account() {
             <div className={styles["account__container"]}>
                 <h1>Account</h1>
                 <h4>Page Summary</h4>
-                <div className={globalStyles["form__container"]}>
+                <div className={globalStyles["content__container"]}>
                     <div className={styles["account__header"]}>
                         <h2>Account Details</h2>
                         <ButtonContainer text="Edit Account" link="/account/edit" />

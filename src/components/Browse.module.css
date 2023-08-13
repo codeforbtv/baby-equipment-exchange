@@ -1,0 +1,14 @@
+.browse__header {
+display: flex;
+justify-content: space-between;
+padding: 1rem .25rem;
+}
+
+.browse__grid{ 
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}

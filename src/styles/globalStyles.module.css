@@ -19,7 +19,7 @@
     font-family: var(--primary-font);
 }
 
-.form__container {
+.content__container {
     box-sizing: border-box;
     width: 100%;
     background-color: var(--bg-grey);

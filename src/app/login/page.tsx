@@ -40,7 +40,7 @@ export default function Login() {
             <div className={styles["login__container"]}>
                 <h1>Login</h1>
                 <h4>Page Summary</h4>
-                <div className={globalStyles["form__container"]}>
+                <div className={globalStyles["content__container"]}>
                     <form onSubmit={handleLogin}>
                         <InputContainer for="email" label="Email" footnote="Footnote">
                             <input type="text" name="email" id="email" placeholder=" Input email" value={email} required onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {

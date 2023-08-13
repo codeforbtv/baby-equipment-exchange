@@ -88,7 +88,7 @@ export default function Donate() {
             <div className={styles["donate__container"]}>
                 <h1>Donate</h1>
                 <h4>Page Summary</h4>
-                <div className={globalStyles["form__container"]}>
+                <div className={globalStyles["content__container"]}>
                     <form onSubmit={handleFormSubmit} method="POST">
                         <InputContainer for="category" label="Category" footnote="Footnote">
                             <select style={{padding: ".25rem .5rem"}} name="category" id="email" placeholder=" Category" required >

@@ -38,7 +38,7 @@ export default function EditAccount() {
             <div className={styles["account__container"]}>
                 <h1>Edit Account</h1>
                 <h4>Page Summary</h4>
-                <div className={globalStyles["form__container"]}>
+                <div className={globalStyles["content__container"]}>
                     <form id="editAccount">
 
                         <div className={styles["account__header"]}>
