@@ -3,16 +3,11 @@
 import InputContainer from "@/components/InputContainer";
 import ImageThumbnail from "@/components/ImageThumbnail";
 import ButtonContainer from "@/components/ButtonContainer";
-import ToasterNotification from "@/components/ToasterNotification";
 //Hooks
 import { useState, useEffect, ReactElement } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-//Libs
-import { Theme } from "@/components/ButtonContainer";
 //Styling
 import globalStyles from "@/styles/globalStyles.module.css";
 import styles from "./Donate.module.css";
-import { EventType } from "@testing-library/react";
 
 type DonationFormData = {
     category:  FormDataEntryValue| null,
@@ -86,7 +81,6 @@ export default function Donate() {
 
         })
     }
-    console.log(formData)
 
 
     return (
@@ -95,7 +89,7 @@ export default function Donate() {
                 <h1>Donate</h1>
                 <h4>Page Summary</h4>
                 <div className={globalStyles["form__container"]}>
-                    <form onSubmit={handleFormSubmit}>
+                    <form onSubmit={handleFormSubmit} method="POST">
                         <InputContainer for="category" label="Category" footnote="Footnote">
                             <select style={{padding: ".25rem .5rem"}} name="category" id="email" placeholder=" Category" required >
                                 <option value="">Select</option>

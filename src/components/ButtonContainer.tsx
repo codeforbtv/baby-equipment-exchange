@@ -18,19 +18,30 @@ type ButtonProps = {
     theme?: Theme,
     hasIcon?: boolean,
     onClick?: OnClick,
-    link?: "string"
+    link?: string
 }
 
 
 export default function ButtonContainer(props: ButtonProps) {
     return (
         <div className={styles["button__container"]}>
-            <button className={` ${styles["button"]} ${props.theme ? styles[props.theme] : ""}`} type={props.type}>
+            {props.link &&
+            <a href={props.link}>
+            <button className={` ${styles["button"]} ${props.theme ? styles[props.theme] : ""}`} type={props.type} >
                 <span className={styles["button__text"]}>{props.text}</span>
                 {props.hasIcon &&
                     <FontAwesomeIcon className={styles["button__icon"]} icon={faCircleRight} style={{ color: `${props.theme === Theme.dark? "#ffffff": "#00000"}` }} />
                 }
             </button>
+            </a>}
+            {!props.link &&
+            <button className={` ${styles["button"]} ${props.theme ? styles[props.theme] : ""}`} type={props.type} >
+                <span className={styles["button__text"]}>{props.text}</span>
+                {props.hasIcon &&
+                    <FontAwesomeIcon className={styles["button__icon"]} icon={faCircleRight} style={{ color: `${props.theme === Theme.dark? "#ffffff": "#00000"}` }} />
+                }
+            </button>
+            }
         </div>
     )
 }

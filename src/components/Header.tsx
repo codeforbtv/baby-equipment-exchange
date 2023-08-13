@@ -88,6 +88,9 @@ export default function Header() {
                 {!auth.currentUser &&
                 <Link className={styles["menu__link"]} id="donate" href='/donate' onClick={closeMenu}>Donate</Link>
                 }
+                {!auth.currentUser &&
+                <Link className={styles["menu__link"]} id="account" href='/account' onClick={closeMenu}>Account</Link>
+                }
                 <Link className={styles["menu__link"]} id="signout" href={auth.currentUser ? "/login?status=signed_out" : "/login"} onClick={() => {
                     closeMenu()
                     if (auth.currentUser) auth.signOut()
