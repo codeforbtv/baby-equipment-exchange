@@ -48,6 +48,7 @@ export default function Login() {
                                 name="email"
                                 id="email"
                                 placeholder=" Input email"
+                                autoComplete="email"
                                 value={email}
                                 required
                                 onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -61,6 +62,7 @@ export default function Login() {
                                 name="password"
                                 id="password"
                                 placeholder=" Input password"
+                                autoComplete="password"
                                 value={password}
                                 required
                                 onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
