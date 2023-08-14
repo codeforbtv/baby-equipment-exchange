@@ -4,6 +4,7 @@ import { Donation } from '../models/donation'
 //Components
 import DonationCard from './DonationCard'
 import SearchBar from './SearchBar'
+import Filter from './Filter'
 //Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
@@ -64,6 +65,9 @@ const Browse: React.FC = () => {
             </div>
             {isSearchVisible &&
                 <SearchBar />
+            }
+            {isFilterVisible &&
+                <Filter />
             }
             <div className={styles['browse__grid']}>
                 {donations.map((donation) => {
