@@ -1,7 +1,7 @@
 'use client'
 
 import { onAuthStateChangedListener } from '@/api/firebase'
-import { User, UserCredential } from 'firebase/auth'
+import { Unsubscribe, User, UserCredential } from 'firebase/auth'
 import { createContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react'
 
 type UserContextType = {
@@ -25,14 +25,10 @@ export const UserProvider = ({ children }: Props) => {
         setCurrentUser
     }
 
+    console.log(currentUser)
+
     useEffect(() => {
-        const unsubscribe = onAuthStateChangedListener((user) => {
-            if (user) {
-                setCurrentUser(user)
-            } else {
-                setCurrentUser(null)
-            }
-        })
+        const unsubscribe = onAuthStateChangedListener((user) => setCurrentUser(user))
         return unsubscribe
     }, [])
 
