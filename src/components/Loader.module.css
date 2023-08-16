@@ -1,0 +1,28 @@
+.loader__container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 5px;
+}
+.loader__container h3 {
+    margin: 0 auto;
+    text-align: center;
+}
+.loader-wheel{
+    margin: 1rem auto;
+    width: 4rem;
+    height: 4rem;
+    border-top: .5rem solid black;
+    border-right: .5rem solid white;
+    border-bottom: .5rem solid black;
+    border-left: .5rem solid white;
+    border-radius: 100%;
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    from{transform: rotateZ(0deg)}
+    to{transform: rotateZ(360deg)}
+    
+}

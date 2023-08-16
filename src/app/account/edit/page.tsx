@@ -55,7 +55,6 @@ export default function EditAccount() {
         locationZip: dummyUser.location.zip,
         type: dummyUser.type
     });
-    console.log(formData)
 
     function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
         setFormData(prev => {

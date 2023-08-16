@@ -1,7 +1,7 @@
 .browse__header {
 display: flex;
 justify-content: space-between;
-padding: 1rem .25rem;
+padding: .25rem;
 }
 
 .header__icons {

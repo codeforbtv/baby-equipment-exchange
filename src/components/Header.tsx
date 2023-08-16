@@ -68,9 +68,7 @@ const burgerMenuStyles = {
 }
 
 
-export default function Header() {
-    console.log(auth.currentUser)
-    
+export default function Header() {    
     const [isOpen, setIsOpen] = useState(false);
 
     function handleIsOpen() { setIsOpen(!isOpen) }
