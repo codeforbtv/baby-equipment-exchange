@@ -24,3 +24,23 @@
     height: auto;
     margin: 0 auto;
 }
+
+/* Tablets */
+@media screen and (min-width: 480px) {
+    
+    .grid__item {
+        width: 22%;
+        margin: 1.5%;
+    }
+    
+}
+
+/* Laptops and above */
+@media screen and (min-width: 800px) {
+    
+    .grid__item {
+        width: 22%;
+        margin: 1.5%;
+    }
+    
+}

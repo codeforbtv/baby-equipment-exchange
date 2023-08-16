@@ -15,6 +15,7 @@ import { getActiveDonations } from '../api/firebase-donations'
 //Styles
 import styles from './Browse.module.css'
 
+//Temporary holder for dummy data - to be updated with database link
 const dummyDonations: Donation[] = [
     new Donation('category', 'brand', 'model', 'description', true, ['img1'], new Date(), new Date()),
     new Donation('category', 'brand', 'model', 'description', true, ['img2'], new Date(), new Date()),

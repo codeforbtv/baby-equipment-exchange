@@ -11,6 +11,7 @@ padding: 1rem .25rem;
 .header__icons > div {
     margin: 0 5px;
     display: inline-block;
+    cursor: pointer;
 }
 
 .browse__grid{ 

@@ -1,4 +1,4 @@
-.photo-uploader__container {
+.image-uploader__container {
     width: 100%;
     border: 1px dashed black;
     min-height: 25vh;
@@ -10,22 +10,22 @@
     padding: .75rem .5rem 1rem .5rem;
 }
 
-.photo-uploader__display{
+.image-uploader__display{
     display: flex;
     justify-content: flex-start;
     align-items: center;
     flex-wrap: wrap;
 }
 
-.photo-uploader__input{
+.image-uploader__input{
     margin-top: 1rem;
 }
 
-.photo-uploader__input input {
+.image-uploader__input input {
     display: none;
 }
 
-.photo-uploader__input label {
+.image-uploader__input label {
     border-radius: 2px;
     border: 1px solid black;
     color: var(--button-dark);
@@ -33,11 +33,42 @@
     padding: 5px;
 }
 
-.photo-uploader__thumbnail {
+.image-uploader__thumbnail {
     width: 23%;
     height: auto;
     margin: 1%;
     aspect-ratio: 1;
     object-fit: cover;
     border: 1px solid black;
+}
+
+/* Tablets */
+@media screen and (min-width: 480px) {
+
+    .form {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-areas: 
+        "left left right right"
+        "left left right right"
+        "left left right right"
+        "left left right right"
+        "bottom bottom bottom bottom";
+    }
+
+    .form__section--left {
+        grid-area: left;
+    }
+    .form__section--right {
+        grid-area: right;
+    }
+    .form__section--bottom{
+        grid-area: bottom;
+    }
+}
+
+/* Laptops and above */
+@media screen and (min-width: 800px) {
+    
+    
 }

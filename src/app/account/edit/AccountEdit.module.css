@@ -2,3 +2,35 @@
     display: flex;
     justify-content: space-between;
 }
+
+
+/* Tablets */
+@media screen and (min-width: 480px) {
+
+    .form {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-areas: 
+        "left left right right"
+        "left left right right"
+        "left left right right"
+        "left left right right"
+        "bottom bottom bottom bottom";
+    }
+
+    .form__section--left {
+        grid-area: left;
+    }
+    .form__section--right {
+        grid-area: right;
+    }
+    .form__section--bottom{
+        grid-area: bottom;
+    }
+}
+
+/* Laptops and above */
+@media screen and (min-width: 800px) {
+    
+    
+}
