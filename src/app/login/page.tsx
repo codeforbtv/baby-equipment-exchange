@@ -8,8 +8,7 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 //Libs
 import { Theme } from "@/components/ButtonContainer";
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { auth } from "../../../firebase-config"
+import {signInAuthUserWithEmailAndPassword } from '../../api/firebase'
 //Styling
 import globalStyles from "@/styles/globalStyles.module.css"
 import styles from "./Login.module.css";
@@ -25,7 +24,7 @@ export default function Login() {
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            await signInAuthUserWithEmailAndPassword(email, password);
             router.push('/')
         } catch (error) {
             router.push('/login?status=invalid_login')
