@@ -1,5 +1,8 @@
+//Components
 import Browse from '@/components/Browse'
-import React from 'react'
+//Contexts
+import { UserContext } from '@/contexts/UserContext'
+import { useContext } from 'react'
 
 export default function Home() {
     return (

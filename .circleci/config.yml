@@ -1,0 +1,60 @@
+version: '2.1'
+orbs:
+    browser-tools: circleci/browser-tools@1.4.1
+jobs:
+    build:
+        docker:
+            - image: cimg/openjdk:20.0.1-browsers
+        steps:
+            - checkout
+            - restore_cache:
+                  keys:
+                      - project-deps-{{ checksum "package-lock.json" }}
+                      - project-deps
+            - browser-tools/install-chrome
+            - browser-tools/install-chromedriver
+            - run: echo ${CREDENTIALS} | base64 --decode > credentials.json
+            - run: npm install
+            - run: |
+                  echo '{
+                      "projects": {
+                          "default": "demo-baby-equipment-exchange"
+                      }
+                  }
+                  ' > .firebaserc
+            - run: |
+                  echo "{
+                      \"emulators\": {
+                          \"auth\": {
+                              \"port\": ${FIREBASE_EMULATOR_AUTH_PORT}
+                          },
+                          \"firestore\": {
+                              \"port\": ${FIREBASE_EMULATOR_FIRESTORE_PORT}
+                          },
+                          \"ui\": {
+                              \"enabled\": true
+                          },
+                          \"singleProjectMode\": true,
+                          \"storage\": {
+                              \"port\": ${FIREBASE_EMULATOR_STORAGE_PORT}
+                          }
+                      },
+                      \"storage\": {
+                          \"rules\": \"storage.rules\"
+                      }
+                  }" > firebase.json
+            - run: |
+                  echo 'rules_version = "2";
+                  service firebase.storage {
+                      match /b/{bucket}/o {
+                          match /{allPaths=**} {
+                          allow read, write: if request.auth != null;
+                          }
+                      }
+                  }' > storage.rules
+            - run: npm run test:emulator
+            - save_cache:
+                  key: project-deps-{{ checksum "package-lock.json" }}
+                  paths:
+                      - .cache
+                      - node_modules

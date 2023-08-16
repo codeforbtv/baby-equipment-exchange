@@ -1,36 +1,59 @@
-interface IName {
-    first: string | null | undefined
-    last: string | null | undefined
-    honorific: string | null | undefined
-    suffix: string | null | undefined
+import { Name } from './name';
+
+interface IUser {
+    name: Name;
+    gender: string;
+    dob: Date;
+    pendingDonations: Array<string>;
+    photo: string;
+    createdAt: Date;
+    modifiedAt: Date;
 }
 
-export class Name implements IName {
-    first: string | null | undefined
-    last: string | null | undefined
-    honorific: string | null | undefined
-    suffix: string | null | undefined
+export class User implements IUser {
+    name: Name;
+    gender: string;
+    dob: Date;
+    pendingDonations: Array<string>;
+    photo: string;
+    createdAt: Date;
+    modifiedAt: Date;
 
-    constructor(first: string | null | undefined, last: string | null | undefined, honorific: string | null | undefined, suffix: string | null | undefined) {
-        this.first = first
-        this.last = last
-        this.honorific = honorific
-        this.suffix = suffix
+    constructor(name: Name, gender: string, dob: Date, pendingDonations: Array<string>, photo: string, createdAt: Date, modifiedAt: Date) {
+        this.name = name;
+        this.gender = gender;
+        this.dob = dob;
+        this.pendingDonations = pendingDonations;
+        this.photo = photo;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
     }
 
-    getFirst(): string | null | undefined {
-        return this.first
+    getName(): Name {
+        return this.name;
     }
 
-    getLast(): string | null | undefined {
-        return this.last
+    getGender(): string {
+        return this.gender;
     }
 
-    getHonorific(): string | null | undefined {
-        return this.honorific
+    getDob(): Date {
+        return this.dob;
     }
 
-    getSuffix(): string | null | undefined {
-        return this.suffix
+    getPendingDonations(): Array<string> {
+        return this.pendingDonations;
+    }
+
+    getPhoto(): string {
+        return this.photo;
+    }
+
+    getCreatedAt(): Date {
+        return this.createdAt;
+    }
+
+    getModifiedAt(): Date {
+        return this.modifiedAt;
     }
 }

@@ -2,10 +2,10 @@
  * @jest-environment jsdom
  */
 
-import { act, render, screen } from '@testing-library/react'
-import { getActiveDonations } from '../api/firebase-donations'
-import React, { Suspense } from 'react'
-import Home from './page'
+import { act, render, screen } from '@testing-library/react';
+import { getActiveDonations } from '../api/firebase-donations';
+import { Suspense } from 'react';
+import Home from './page';
 
 jest.mock('../api/firebase-donations', () => {
     return {
@@ -22,10 +22,10 @@ jest.mock('../api/firebase-donations', () => {
                     createdAt: new Date(Date.now()),
                     modifiedAt: new Date(Date.now())
                 }
-            ]
+            ];
         }
-    }
-})
+    };
+});
 
 test('The category, brand, and model of a single active donation displays on the home page.', async () => {
     await act(async () => {
@@ -33,13 +33,13 @@ test('The category, brand, and model of a single active donation displays on the
             <Suspense>
                 <Home />
             </Suspense>
-        )
-    })
-    const category = screen.getByText(/category/i)
-    const brand = screen.getByText(/brand/i)
-    const model = screen.getByText(/model/i)
+        );
+    });
+    const category = screen.getByText(/category/i);
+    const brand = screen.getByText(/brand/i);
+    const model = screen.getByText(/model/i);
 
-    expect(category).toBeInTheDocument()
-    expect(brand).toBeInTheDocument()
-    expect(model).toBeInTheDocument()
-})
+    expect(category).toBeInTheDocument();
+    expect(brand).toBeInTheDocument();
+    expect(model).toBeInTheDocument();
+});

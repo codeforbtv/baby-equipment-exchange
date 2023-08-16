@@ -1,5 +1,4 @@
-import React from 'react'
-import Link from 'next/link'
+import Link from 'next/link';
 
 export default function NotFound() {
     return (
@@ -7,5 +6,5 @@ export default function NotFound() {
             <h1 style={{ fontSize: '4em' }}>404.</h1>
             <Link href="/">Home.</Link>
         </div>
-    )
+    );
 }
