@@ -1,10 +1,3 @@
-const config = {
-    verbose: true,
-    preset: 'jest-puppeteer',
-    globalSetup: './node_modules/jest-environment-puppeteer/setup',
-    globalTeardown: './node_modules/jest-environment-puppeteer/teardown'
-};
-
 const nextJest = require('next/jest');
 
 const createJestConfig = nextJest({
@@ -13,7 +6,7 @@ const createJestConfig = nextJest({
 
 /** @type {import('jest').Config} */
 const customJestConfig = {
-    setupFiles: ['<rootDir>/dotenv-config.js'],
+    setupFiles: ['<rootDir>/dotenv-config.js', '<rootDir>/src/utils/setup-next-jest.js'],
     setupFilesAfterEnv: ['<rootDir>/setup-tests.ts'],
     verbose: true,
     preset: 'jest-puppeteer',

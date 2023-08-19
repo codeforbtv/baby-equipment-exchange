@@ -4,5 +4,13 @@
     "singleQuote": true,
     "semi": true,
     "trailingComma": "none",
-    "bracketSpacing": true
+    "bracketSpacing": true,
+    "overrides": [
+        {
+            "files": ["*.jsx"],
+            "options": {
+                "semi": true
+            }
+        }
+    ]
 }

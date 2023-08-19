@@ -1,36 +1,36 @@
-'use client'
+'use client';
 //Components
-import InputContainer from '@/components/InputContainer'
-import ButtonContainer from '@/components/ButtonContainer'
-import ToasterNotification from '@/components/ToasterNotification'
+import InputContainer from '@/components/InputContainer';
+import ButtonContainer from '@/components/ButtonContainer';
+import ToasterNotification from '@/components/ToasterNotification';
 //Hooks
-import { useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 //Libs
-import { Theme } from '@/components/ButtonContainer'
-import { signInAuthUserWithEmailAndPassword } from '@/api/firebase'
+import { Theme } from '@/components/ButtonContainer';
+import { signInAuthUserWithEmailAndPassword } from '@/api/firebase';
 //Styling
-import styles from './Login.module.css'
+import styles from './Login.module.css';
 
 export default function Login() {
-    const [email, setEmail] = useState<string>('')
-    const [password, setPassword] = useState<string>('')
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
 
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const status = searchParams.get('status')
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const status = searchParams.get('status');
 
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
-        event.preventDefault()
+        event.preventDefault();
         try {
-            await signInAuthUserWithEmailAndPassword(email, password)
-            setEmail('')
-            setPassword('')
-            router.push('/')
+            await signInAuthUserWithEmailAndPassword(email, password);
+            setEmail('');
+            setPassword('');
+            router.push('/');
         } catch (error) {
-            router.push('/login?status=invalid_login')
+            router.push('/login?status=invalid_login');
         }
-    }
+    };
 
     return (
         <>
@@ -50,7 +50,7 @@ export default function Login() {
                                 value={email}
                                 required
                                 onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                    setEmail(event.target.value)
+                                    setEmail(event.target.value);
                                 }}
                             />
                         </InputContainer>
@@ -64,7 +64,7 @@ export default function Login() {
                                 value={password}
                                 required
                                 onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                    setPassword(event.target.value)
+                                    setPassword(event.target.value);
                                 }}
                             />
                         </InputContainer>
@@ -76,5 +76,5 @@ export default function Login() {
             </div>
             {status && <ToasterNotification status={status} />}
         </>
-    )
+    );
 }

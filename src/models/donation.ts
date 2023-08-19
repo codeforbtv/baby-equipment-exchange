@@ -1,4 +1,5 @@
-import { Image } from './image';
+//Firebase types
+import { Timestamp } from 'firebase/firestore';
 
 interface IDonation {
     category: string | null | undefined;
@@ -7,8 +8,8 @@ interface IDonation {
     description: string | null | undefined;
     active: boolean | null | undefined;
     images: Array<string>;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class Donation implements IDonation {
@@ -18,8 +19,8 @@ export class Donation implements IDonation {
     description: string | null | undefined;
     active: boolean | null | undefined;
     images: Array<string>;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
     constructor(
         category: string | null | undefined,
@@ -28,8 +29,8 @@ export class Donation implements IDonation {
         description: string | null | undefined,
         active: boolean | null | undefined,
         images: Array<string>,
-        createdAt: Date,
-        modifiedAt: Date
+        createdAt: Timestamp,
+        modifiedAt: Timestamp
     ) {
         this.category = category;
         this.brand = brand;
@@ -65,11 +66,11 @@ export class Donation implements IDonation {
         return this.images;
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt;
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt;
     }
 }

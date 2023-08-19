@@ -1,10 +1,13 @@
+//Firebase types
+import { Timestamp } from 'firebase/firestore';
+
 interface IImageDetail {
     image: string;
     uploadedBy: string;
     uri: string;
     filename: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class ImageDetail implements IImageDetail {
@@ -12,10 +15,10 @@ export class ImageDetail implements IImageDetail {
     uploadedBy: string;
     uri: string;
     filename: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
-    constructor(image: string, uploadedBy: string, uri: string, filename: string, createdAt: Date, modifiedAt: Date) {
+    constructor(image: string, uploadedBy: string, uri: string, filename: string, createdAt: Timestamp, modifiedAt: Timestamp) {
         this.image = image;
         this.uploadedBy = uploadedBy;
         this.uri = uri;
@@ -40,11 +43,11 @@ export class ImageDetail implements IImageDetail {
         return this.filename;
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt;
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt;
     }
 }

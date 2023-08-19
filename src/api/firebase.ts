@@ -22,11 +22,13 @@ const auth: Auth = initFirebaseAuth();
 
 function initDb(): Firestore {
     const _db: Firestore = getFirestore(getApp());
-    if (process !== undefined &&
+    if (
+        process !== undefined &&
         process.env !== undefined &&
         (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') &&
-        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined) {
-            const FIREBASE_EMULATORS_FIRESTORE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FIRESTORE_PORT || '8080');
+        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
+    ) {
+        const FIREBASE_EMULATORS_FIRESTORE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FIRESTORE_PORT || '8080');
         connectFirestoreEmulator(_db, '127.0.0.1', FIREBASE_EMULATORS_FIRESTORE_PORT);
     }
     return _db;
@@ -34,10 +36,12 @@ function initDb(): Firestore {
 
 function initFirebaseAuth() {
     const _auth: Auth = getAuth(getApp());
-    if (process !== undefined &&
+    if (
+        process !== undefined &&
         process.env !== undefined &&
         (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') &&
-        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined) {
+        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
+    ) {
         const FIREBASE_EMULATORS_AUTH_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_AUTH_PORT || '8099');
         connectAuthEmulator(_auth, `http://127.0.0.1:${FIREBASE_EMULATORS_AUTH_PORT}`);
     }
@@ -46,12 +50,14 @@ function initFirebaseAuth() {
 
 function initFirebaseStorage() {
     const _storage: FirebaseStorage = getStorage(getApp());
-    if (process !== undefined &&
+    if (
+        process !== undefined &&
         process.env !== undefined &&
         (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') &&
-        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined) {
+        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
+    ) {
         const FIREBASE_EMULATORS_STORAGE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_STORAGE_PORT || '8199');
-        connectStorageEmulator(_storage, '127.0.0.1',FIREBASE_EMULATORS_STORAGE_PORT);
+        connectStorageEmulator(_storage, '127.0.0.1', FIREBASE_EMULATORS_STORAGE_PORT);
     }
     return _storage;
 }

@@ -1,15 +1,18 @@
+//Firebase types
+import { Timestamp } from 'firebase/firestore';
+
 interface IImage {
     downloadURL: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class Image implements IImage {
     downloadURL: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
-    constructor(downloadURL: string, createdAt: Date, modifiedAt: Date) {
+    constructor(downloadURL: string, createdAt: Timestamp, modifiedAt: Timestamp) {
         this.downloadURL = downloadURL;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
@@ -19,11 +22,11 @@ export class Image implements IImage {
         return this.downloadURL;
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt;
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt;
     }
 }

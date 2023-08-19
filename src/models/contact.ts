@@ -1,3 +1,4 @@
+//Plain JavaScript objects
 import { Name } from './name';
 import { Phone } from './phone';
 

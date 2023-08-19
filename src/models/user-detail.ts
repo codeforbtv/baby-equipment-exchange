@@ -1,5 +1,7 @@
+//Firebase types
+import { Timestamp } from 'firebase/firestore';
+//Plain JavaScript objects
 import { Address } from './address';
-import { Name } from './name';
 import { Phone } from './phone';
 
 interface IUserDetail {
@@ -9,8 +11,8 @@ interface IUserDetail {
     addresses: Array<Address>;
     websites: Array<string>;
     notes: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class UserDetail implements IUserDetail {
@@ -20,10 +22,19 @@ export class UserDetail implements IUserDetail {
     addresses: Address[];
     websites: string[];
     notes: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
-    constructor(user: string, emails: string[], phones: Phone[], addresses: Address[], websites: string[], notes: string, createdAt: Date, modifiedAt: Date) {
+    constructor(
+        user: string,
+        emails: string[],
+        phones: Phone[],
+        addresses: Address[],
+        websites: string[],
+        notes: string,
+        createdAt: Timestamp,
+        modifiedAt: Timestamp
+    ) {
         this.user = user;
         this.emails = emails;
         this.phones = phones;
@@ -58,11 +69,11 @@ export class UserDetail implements IUserDetail {
         return this.notes;
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt;
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt;
     }
 }

@@ -1,30 +1,29 @@
-import { Contact } from './contact';
+//Firebase types
+import { Timestamp } from 'firebase/firestore';
+//Plain JavaScript objects
 import { Donation } from './donation';
 import { Name } from './name';
 
 interface IUser {
-    type: string;
     name: Name;
     gender: string;
     dob: Date;
     pendingDonations: Array<Donation>;
     photo: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class User implements IUser {
-    type: string;
     name: Name;
     gender: string;
     dob: Date;
     pendingDonations: Donation[];
     photo: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
-    constructor(type: string, name: Name, gender: string, dob: Date, pendingDonations: Donation[], photo: string, createdAt: Date, modifiedAt: Date) {
-        this.type = type;
+    constructor(name: Name, gender: string, dob: Date, pendingDonations: Donation[], photo: string, createdAt: Timestamp, modifiedAt: Timestamp) {
         this.name = name;
         this.gender = gender;
         this.dob = dob;
@@ -32,10 +31,6 @@ export class User implements IUser {
         this.photo = photo;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
-    }
-
-    getType(): string {
-        return this.type;
     }
 
     getName(): Name {
@@ -58,11 +53,11 @@ export class User implements IUser {
         return this.photo;
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt;
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt;
     }
 }

@@ -1,3 +1,6 @@
+//Firebase types
+import { Timestamp } from 'firebase/firestore';
+//Plain JavaScript objects
 import { Address } from './address';
 import { Contact } from './contact';
 
@@ -12,8 +15,8 @@ interface IOrganization {
     address: Address;
     pointOfContact: Contact;
     notes: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class Organization implements IOrganization {
@@ -27,8 +30,8 @@ export class Organization implements IOrganization {
     address: Address;
     pointOfContact: Contact;
     notes: string;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
     constructor(
         diaperBank: boolean,
@@ -41,8 +44,8 @@ export class Organization implements IOrganization {
         address: Address,
         pointOfContact: Contact,
         notes: string,
-        createdAt: Date,
-        modifiedAt: Date
+        createdAt: Timestamp,
+        modifiedAt: Timestamp
     ) {
         this.diaperBank = diaperBank;
         this.babyProductExchange = babyProductExchange;

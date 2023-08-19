@@ -1,17 +1,17 @@
-'use client'
+'use client';
 //Components
-import Link from 'next/link'
-import { slide as Menu } from 'react-burger-menu'
+import Link from 'next/link';
+import { slide as Menu } from 'react-burger-menu';
 //Hooks
-import { useState, useContext } from 'react'
-import { UserContext } from '@/contexts/UserContext'
+import { useState, useContext } from 'react';
+import { UserContext } from '@/contexts/UserContext';
 //Icons
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faImage } from '@fortawesome/free-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faImage } from '@fortawesome/free-regular-svg-icons';
 //Libs
-import { signOutUser } from '@/api/firebase'
+import { signOutUser } from '@/api/firebase';
 //Styles
-import styles from './Header.module.css'
+import styles from './Header.module.css';
 
 const burgerMenuStyles = {
     bmBurgerButton: {
@@ -65,17 +65,17 @@ const burgerMenuStyles = {
         background: 'rgba(200, 200, 200, 0.7)',
         height: 'calc(100% + 2.5rem)'
     }
-}
+};
 
 export default function Header() {
-    const [isOpen, setIsOpen] = useState(false)
-    const { currentUser } = useContext(UserContext)
+    const [isOpen, setIsOpen] = useState(false);
+    const { currentUser } = useContext(UserContext);
 
     function handleIsOpen() {
-        setIsOpen(!isOpen)
+        setIsOpen(!isOpen);
     }
     function closeMenu() {
-        setIsOpen(false)
+        setIsOpen(false);
     }
 
     return (
@@ -96,13 +96,13 @@ export default function Header() {
                     id="signout"
                     href={currentUser ? '/login?status=signed_out' : '/login'}
                     onClick={() => {
-                        closeMenu()
-                        if (currentUser) signOutUser()
+                        closeMenu();
+                        if (currentUser) signOutUser();
                     }}
                 >
                     {currentUser ? 'Sign Out' : 'Login'}
                 </Link>
             </Menu>
         </div>
-    )
+    );
 }

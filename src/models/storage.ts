@@ -1,25 +1,28 @@
+//Firebase types
+import { Timestamp } from 'firebase/firestore';
+//Plain JavaScript objects
 import { Address } from './address';
 import { Contact } from './contact';
 import { Name } from './name';
 
 interface IStorage {
     active: boolean;
-    name: Name;
+    name: string;
     address: Address;
     pointOfContact: Contact;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class Storage implements IStorage {
     active: boolean;
-    name: Name;
+    name: string;
     address: Address;
     pointOfContact: Contact;
-    createdAt: Date;
-    modifiedAt: Date;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
-    constructor(active: boolean, name: Name, address: Address, pointOfContact: Contact, createdAt: Date, modifiedAt: Date) {
+    constructor(active: boolean, name: string, address: Address, pointOfContact: Contact, createdAt: Timestamp, modifiedAt: Timestamp) {
         this.active = active;
         this.name = name;
         this.address = address;
@@ -32,7 +35,7 @@ export class Storage implements IStorage {
         return this.active;
     }
 
-    getName(): Name {
+    getName(): string {
         return this.name;
     }
 
@@ -44,11 +47,11 @@ export class Storage implements IStorage {
         return this.pointOfContact;
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt;
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt;
     }
 }
