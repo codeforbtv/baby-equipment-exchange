@@ -21,18 +21,13 @@
 /* Tablets */
 @media screen and (min-width: 480px) {
     
-    .input__container {
-        max-width: 50%;
-    }
+    
     
 }
 
 /* Laptops and above */
 @media screen and (min-width: 800px) {
     
-    .input__container {
-        max-width: 350px;
-    }
     
 }
 

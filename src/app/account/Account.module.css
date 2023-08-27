@@ -1,0 +1,33 @@
+.account__header{
+    display: flex;
+    justify-content: space-between;
+}
+.donations__list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    border: 1px solid black;
+    padding: 5px;
+}
+
+.donations__list__item {
+    padding: 3px;
+    border: 1px solid black;
+    background-color: white;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+
+.donations__list__item p{
+    display: block;
+    padding: 5px;
+    width: 25%;
+}
+
+.active {
+    color: green;
+    font-weight: 600;
+}
