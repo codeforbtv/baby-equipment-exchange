@@ -1,11 +1,15 @@
 //Modules
-import { DocumentData, QueryDocumentSnapshot, collection, doc, getDoc, SnapshotOptions, Timestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, DocumentData,  getDoc, getFirestore, QueryDocumentSnapshot, SnapshotOptions, Timestamp } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 //Models
-import { Image } from '../models/image';
+import { IImage, Image, imageFactory } from '../models/image';
 //Libs
-import { getDb, getFirebaseStorage } from './firebase';
+import { getDb, getFirebaseStorage, getUserId } from './firebase';
 import { ref, uploadBytes } from 'firebase/storage';
+import { IImageDetail, ImageDetail } from '@/models/image-detail';
+
+const IMAGES_COLLECTION = 'Images';
+const IMAGE_DETAILS_COLLECTION = 'ImageDetails';
 
 const imageConverter = {
     toFirestore(image: Image): DocumentData {
@@ -17,20 +21,35 @@ const imageConverter = {
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Image {
         const data = snapshot.data(options)!;
-        return new Image(data.downloadURL, data.createdAt, data.modifiedAt);
+        const imageData: IImage = {
+            downloadURL: data.downloadURL,
+            createdAt: data.createdAt,
+            modifiedAt: data.modifiedAt
+        };
+        return new Image(imageData);
     }
 };
 
-export async function uploadImages(files: FileList): Promise<Array<string> | undefined> {
-    let storedFilenames = new Array<string>();
+export async function uploadImages(files: FileList): Promise<string[] | undefined> {
+    const db = getFirestore();
+    const documentIds = [];
     const storage = getFirebaseStorage();
+    const uid = getUserId();
+
+    if (uid === undefined) {
+        return undefined;
+    }
+
     for (const file of files) {
         const currentTime = Date.now();
-        const extension = '.' + /[^\.]*$/.exec(file.name)![0];
+        // eslint-disable-next-line no-useless-escape
+        const extension = '.' + /[^\.]*$/.exec(file.name)![0]; // Suppress the no-useless-escape rule from being called on a regular expression.
         const fileSize = file.size;
         const fileType = file.type;
         const timestamp = Timestamp.fromMillis(currentTime);
         const storageFilename = `${uuidv4()}-${currentTime}${extension}`;
+
+        // Upload image(s) to Cloud Storage
 
         // todo: Validate file size
         // todo: Validate type
@@ -38,13 +57,34 @@ export async function uploadImages(files: FileList): Promise<Array<string> | und
         const storageRef = ref(storage, storageFilename);
 
         await uploadBytes(storageRef, fileData);
-        storedFilenames.push(storageFilename);
+
+        // Create new Image document
+        const imageCollection = collection(db, IMAGES_COLLECTION);
+        const {...imageData} = imageFactory(storageFilename);
+        const imageRef = await addDoc(imageCollection, imageData);
+
+        // Create new Image Details document
+        const imageDetailsCollection = collection(db, IMAGE_DETAILS_COLLECTION);
+        const imageDetailsData: IImageDetail = {
+            image: imageRef.id,
+            uploadedBy: uid,
+            uri: storageFilename,
+            filename: storageFilename,
+            createdAt: timestamp,
+            modifiedAt: timestamp
+        };
+        const {...imageDetail} = new ImageDetail(imageDetailsData);
+        await addDoc(imageDetailsCollection, imageDetail);
+
+        // Return the newly created id values of Images collection documents.
+        documentIds.push(imageRef.id);
     }
-    return storedFilenames;
+
+    return documentIds;
 }
 
 export async function getImage(id: string): Promise<Image | undefined> {
-    const imagesRef = collection(getDb(), 'images');
+    const imagesRef = collection(getDb(), IMAGES_COLLECTION);
     const documentRef = doc(imagesRef, id).withConverter(imageConverter);
     const snapshot = await getDoc(documentRef);
     return snapshot.data() as Image;

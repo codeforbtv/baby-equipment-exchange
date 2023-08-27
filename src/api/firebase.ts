@@ -2,7 +2,6 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, Firestore, getFirestore } from 'firebase/firestore';
 import { FirebaseStorage, connectStorageEmulator, getStorage } from 'firebase/storage';
-import { firebaseConfig } from '../../firebase-config';
 import {
     Auth,
     UserCredential,
@@ -14,6 +13,8 @@ import {
     User,
     connectAuthEmulator
 } from 'firebase/auth';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const firebaseConfig = require('../../firebase-config'); // Suppress the @typescript-eslint/no-var-requires rule.
 
 let app: FirebaseApp;
 const db: Firestore = initDb();
@@ -79,6 +80,10 @@ export function getFirebaseAuth() {
 
 export function getFirebaseStorage(): FirebaseStorage {
     return storage;
+}
+
+export function getUserId(): string | undefined {
+    return getFirebaseAuth().currentUser?.uid;
 }
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {

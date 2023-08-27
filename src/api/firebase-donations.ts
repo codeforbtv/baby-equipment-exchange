@@ -1,10 +1,13 @@
 //Modules
-import { DocumentData, collection, getDocs, query, where, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
+import { DocumentData, collection, getDocs, query, where, QueryDocumentSnapshot, SnapshotOptions, getFirestore, doc } from 'firebase/firestore';
 //Models
-import { Donation } from '../models/donation';
+import { Donation, IDonation } from '../models/donation';
 //Libs
 import { getDb } from './firebase';
-import { DonationDetail } from '@/models/donation-detail';
+import { DonationDetail, IDonationDetail } from '@/models/donation-detail';
+
+const DONATIONS_COLLECTION = 'Donations';
+const DONATION_DETAILS_COLLECTION = 'DonationDetails';
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -21,7 +24,17 @@ const donationConverter = {
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Donation {
         const data = snapshot.data(options);
-        return new Donation(data.category, data.brand, data.model, data.description, data.active, data.images, data.createdAt, data.modifiedAt);
+        const donationData: IDonation = {
+            category: data.category,
+            brand: data.brand,
+            model: data.model,
+            description: data.description,
+            active: data.active,
+            images: data.images,
+            createdAt: data.createdAt,
+            modifiedAt: data.modifiedAt
+        };
+        return new Donation(donationData);
     }
 };
 
@@ -41,7 +54,7 @@ const donationDetailsConverter = {
             recipientAddress: donationDetail.getRecipientAddress(),
             requestor: donationDetail.getRequestor(),
             storage: donationDetail.getStorage(),
-            dateRecieved: donationDetail.getDateRecieved(),
+            dateReceived: donationDetail.getDateReceived(),
             dateDistributed: donationDetail.getDateDistributed(),
             scheduledPickupDate: donationDetail.getScheduledPickupDate(),
             dateOrderFulfilled: donationDetail.getDateOrderFulfilled(),
@@ -51,9 +64,29 @@ const donationDetailsConverter = {
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): DonationDetail {
         const data = snapshot.data(options);
-        return new DonationDetail(data.donation, data.availability, data.donor, data.tagNumber, data.tagNumberForItemDelivered, data.sku, data.recipientOrganization, data.images, data.daysInStorage, data.recipientContact, data.recipientAddress, data.requestor, data.storage, data.dateRecieved, data.dateDistributed, data.scheduledPickupDate, data.dateOrderFulfilled, data.createdAt, data.modifiedAt);
+        const donationDetailData: IDonationDetail = {
+            donation: data.donation,
+            availability: data.availability,
+            donor: data.donor,
+            tagNumber: data.tagNumber,
+            tagNumberForItemDelivered: data.tagNumberForItemDelivered,
+            sku: data.sku,
+            recipientOrganization: data.recipientOrganization,
+            images: data.images,
+            recipientContact: data.recipientContact,
+            recipientAddress: data.recipientAddress,
+            requestor: data.requestor,
+            storage: data.storage,
+            dateReceived: data.dateReceived,
+            dateDistributed: data.dateDistributed,
+            scheduledPickupDate: data.scheduledPickupDate,
+            dateOrderFulfilled: data.dateOrderFulfilled,
+            createdAt: data.createdAt,
+            modifiedAt: data.modifiedAt
+        };
+        return new DonationDetail(donationDetailData);
     }
-}
+};
 
 export async function getActiveDonations(): Promise<Donation[]> {
     const q = query(collection(getDb(), 'donations'), where('active', '==', true)).withConverter(donationConverter);
