@@ -1,4 +1,4 @@
-.footer-wrapper{
+.footer-wrapper {
     font-family: var(--primary-font);
     background-color: var(--bg-grey);
     width: 100%;
@@ -6,5 +6,4 @@
     display: flex;
     align-items: center;
     justify-content: space-evenly;
-    }
-    
+}

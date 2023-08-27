@@ -1,25 +1,25 @@
-import { Image } from './image'
+import { Image } from './image';
 
 interface IDonation {
-    category: string | null | undefined
-    brand: string | null | undefined
-    model: string | null | undefined
-    description: string | null | undefined
-    active: boolean | null | undefined
-    images: Array<string>
-    createdAt: Date
-    modifiedAt: Date
+    category: string | null | undefined;
+    brand: string | null | undefined;
+    model: string | null | undefined;
+    description: string | null | undefined;
+    active: boolean | null | undefined;
+    images: Array<string>;
+    createdAt: Date;
+    modifiedAt: Date;
 }
 
 export class Donation implements IDonation {
-    category: string | null | undefined
-    brand: string | null | undefined
-    model: string | null | undefined
-    description: string | null | undefined
-    active: boolean | null | undefined
-    images: Array<string>
-    createdAt: Date
-    modifiedAt: Date
+    category: string | null | undefined;
+    brand: string | null | undefined;
+    model: string | null | undefined;
+    description: string | null | undefined;
+    active: boolean | null | undefined;
+    images: Array<string>;
+    createdAt: Date;
+    modifiedAt: Date;
 
     constructor(
         category: string | null | undefined,
@@ -31,45 +31,45 @@ export class Donation implements IDonation {
         createdAt: Date,
         modifiedAt: Date
     ) {
-        this.category = category
-        this.brand = brand
-        this.model = model
-        this.description = description
-        this.active = active
-        this.images = images
-        this.createdAt = createdAt
-        this.modifiedAt = modifiedAt
+        this.category = category;
+        this.brand = brand;
+        this.model = model;
+        this.description = description;
+        this.active = active;
+        this.images = images;
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
     }
 
     getCategory(): string | null | undefined {
-        return this.category
+        return this.category;
     }
 
     getBrand(): string | null | undefined {
-        return this.brand
+        return this.brand;
     }
 
     getModel(): string | null | undefined {
-        return this.model
+        return this.model;
     }
 
     getDescription(): string | null | undefined {
-        return this.description
+        return this.description;
     }
 
     getActive(): boolean | null | undefined {
-        return this.active
+        return this.active;
     }
 
     getImages(): string[] {
-        return this.images
+        return this.images;
     }
 
     getCreatedAt(): Date {
-        return this.createdAt
+        return this.createdAt;
     }
 
     getModifiedAt(): Date {
-        return this.modifiedAt
+        return this.modifiedAt;
     }
 }

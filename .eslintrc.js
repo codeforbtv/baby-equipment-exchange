@@ -3,7 +3,7 @@ module.exports = {
     extends: ['eslint:recommended', 'plugin:react/recommended', 'plugin:@typescript-eslint/recommended'],
     plugins: ['@typescript-eslint', 'react-hooks', 'prettier'],
     parserOptions: {
-        ecmaVersion: 2018,
+        ecmaVersion: 2022,
         sourceType: 'module',
         ecmaFeatures: {
             jsx: true
@@ -20,6 +20,7 @@ module.exports = {
         'no-undef': 0,
         'no-unused-vars': 'off',
         'react/prop-types': 0,
+        'react/react-in-jsx-scope': 'off',
         '@typescript-eslint/camelcase': 0,
         '@typescript-eslint/no-unused-vars': 1,
         '@typescript-eslint/no-use-before-define': 0,
@@ -38,4 +39,4 @@ module.exports = {
             version: 'detect'
         }
     }
-}
+};

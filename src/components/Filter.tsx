@@ -1,7 +1,7 @@
 //Hooks
 //Styles
-import ButtonContainer from './ButtonContainer'
-import styles from './Filter.module.css'
+import ButtonContainer from './ButtonContainer';
+import styles from './Filter.module.css';
 
 export default function Filter() {
     return (
@@ -26,9 +26,9 @@ export default function Filter() {
                         <input type="checkbox" name="active" id="active" />
                     </div>
                 </div>
-                <ButtonContainer text="Apply" type='button' hasIcon/>
+                <ButtonContainer text="Apply" type="button" hasIcon />
             </div>
             <hr />
         </>
-    )
+    );
 }

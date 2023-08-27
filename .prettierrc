@@ -2,7 +2,15 @@
     "printWidth": 160,
     "tabWidth": 4,
     "singleQuote": true,
-    "semi": false,
+    "semi": true,
     "trailingComma": "none",
-    "bracketSpacing": true
+    "bracketSpacing": true,
+    "overrides": [
+        {
+            "files": ["*.jsx"],
+            "options": {
+                "semi": true
+            }
+        }
+    ]
 }

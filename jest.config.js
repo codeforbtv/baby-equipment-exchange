@@ -3,13 +3,13 @@ const config = {
     preset: 'jest-puppeteer',
     globalSetup: './node_modules/jest-environment-puppeteer/setup',
     globalTeardown: './node_modules/jest-environment-puppeteer/teardown'
-}
+};
 
-const nextJest = require('next/jest')
+const nextJest = require('next/jest');
 
 const createJestConfig = nextJest({
     dir: './'
-})
+});
 
 /** @type {import('jest').Config} */
 const customJestConfig = {
@@ -20,6 +20,6 @@ const customJestConfig = {
     globalSetup: './node_modules/jest-environment-puppeteer/setup.js',
     globalTeardown: './node_modules/jest-environment-puppeteer/teardown.js',
     testEnvironment: 'jest-environment-puppeteer'
-}
+};
 
-module.exports = createJestConfig(customJestConfig)
+module.exports = createJestConfig(customJestConfig);
