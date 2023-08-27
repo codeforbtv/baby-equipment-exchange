@@ -20,7 +20,7 @@ Integration tests and end-to-end tests make use of the Firebase Local Emulator S
 The emulator suite requires Java JDK version 11 or higher and the [Firebase CLI](https://github.com/firebase/firebase-tools) must be installed. The Firebase CLI, firebase-tools, is included as a development dependency.
 
 Set environment variables. Add a file `.env.local` to the project root. Ensure the `FIREBASE_EMULATORS_IMPORT_DIRECTORY` matches an emulators data directory.
-Data to import into the emulator is available [here](https://drive.google.com/file/d/1TuBIQXPpqc1Ugmqr2SEcRY1vvqqzw1Qe/view?usp=drive_link).
+Data to import into the emulator is available [here](https://drive.google.com/drive/folders/15zfP0tFsy6E7jSW2IYYhjv1o5McM4oq6?usp=drive_link).
 
 ```
 NODE_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY=firebase-data
@@ -31,7 +31,7 @@ Add a `.firebaserc` file to the root directory with the following contents:
 ```
 {
   "projects": {
-    "default": "demo-baby-equipment-exchange"
+    "default": "baby-equipment-exchange"
   }
 }
 ```
