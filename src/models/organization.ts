@@ -4,7 +4,7 @@ import { Timestamp } from 'firebase/firestore';
 import { Address } from './address';
 import { Contact } from './contact';
 
-interface IOrganization {
+export interface IOrganization {
     diaperBank: boolean;
     babyProductExchange: boolean;
     lowIncome: boolean;
@@ -33,32 +33,19 @@ export class Organization implements IOrganization {
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 
-    constructor(
-        diaperBank: boolean,
-        babyProductExchange: boolean,
-        lowIncome: boolean,
-        criminalJusticeInvolde: boolean,
-        adoptionAndFosterFamilies: boolean,
-        refugeeAndImmigration: boolean,
-        substanceAbuseDisorders: boolean,
-        address: Address,
-        pointOfContact: Contact,
-        notes: string,
-        createdAt: Timestamp,
-        modifiedAt: Timestamp
-    ) {
-        this.diaperBank = diaperBank;
-        this.babyProductExchange = babyProductExchange;
-        this.lowIncome = lowIncome;
-        this.criminalJusticeInvolde = criminalJusticeInvolde;
-        this.adoptionAndFosterFamilies = adoptionAndFosterFamilies;
-        this.refugeeAndImmigration = refugeeAndImmigration;
-        this.substanceAbuseDisorders = substanceAbuseDisorders;
-        this.address = address;
-        this.pointOfContact = pointOfContact;
-        this.notes = notes;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
+    constructor(args: IOrganization) {
+        this.diaperBank = args.diaperBank;
+        this.babyProductExchange = args.babyProductExchange;
+        this.lowIncome = args.lowIncome;
+        this.criminalJusticeInvolde = args.criminalJusticeInvolde;
+        this.adoptionAndFosterFamilies = args.adoptionAndFosterFamilies;
+        this.refugeeAndImmigration = args.refugeeAndImmigration;
+        this.substanceAbuseDisorders = args.substanceAbuseDisorders;
+        this.address = args.address;
+        this.pointOfContact = args.pointOfContact;
+        this.notes = args.notes;
+        this.createdAt = args.createdAt;
+        this.modifiedAt = args.modifiedAt;
     }
 
     getDiaperBank() {

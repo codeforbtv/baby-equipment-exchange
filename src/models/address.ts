@@ -1,4 +1,4 @@
-interface IAddress {
+export interface IAddress {
     line_1: string | null | undefined;
     line_2: string | null | undefined;
     city: string | null | undefined;
@@ -17,22 +17,14 @@ export class Address implements IAddress {
     latitude: number | null | undefined;
     longitude: number | null | undefined;
 
-    constructor(
-        line_1: string | null | undefined,
-        line_2: string | null | undefined,
-        city: string | null | undefined,
-        state: string | null | undefined,
-        zipcode: string | null | undefined,
-        latitude: number | null | undefined,
-        longitude: number | null | undefined
-    ) {
-        this.line_1 = line_1;
-        this.line_2 = line_2;
-        this.city = city;
-        this.state = state;
-        this.zipcode = zipcode;
-        this.latitude = latitude;
-        this.longitude = longitude;
+    constructor(args: IAddress) {
+        this.line_1 = args.line_1;
+        this.line_2 = args.line_2;
+        this.city = args.city;
+        this.state = args.state;
+        this.zipcode = args.zipcode;
+        this.latitude = args.latitude;
+        this.longitude = args.longitude;
     }
 
     getLine_1(): string | null | undefined {

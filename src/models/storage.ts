@@ -3,9 +3,8 @@ import { Timestamp } from 'firebase/firestore';
 //Plain JavaScript objects
 import { Address } from './address';
 import { Contact } from './contact';
-import { Name } from './name';
 
-interface IStorage {
+export interface IStorage {
     active: boolean;
     name: string;
     address: Address;
@@ -22,13 +21,13 @@ export class Storage implements IStorage {
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 
-    constructor(active: boolean, name: string, address: Address, pointOfContact: Contact, createdAt: Timestamp, modifiedAt: Timestamp) {
-        this.active = active;
-        this.name = name;
-        this.address = address;
-        this.pointOfContact = pointOfContact;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
+    constructor(args: IStorage) {
+        this.active = args.active;
+        this.name = args.name;
+        this.address = args.address;
+        this.pointOfContact = args.pointOfContact;
+        this.createdAt = args.createdAt;
+        this.modifiedAt = args.modifiedAt;
     }
 
     getActive(): boolean {

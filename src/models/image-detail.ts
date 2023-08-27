@@ -1,7 +1,7 @@
 //Firebase types
 import { Timestamp } from 'firebase/firestore';
 
-interface IImageDetail {
+export interface IImageDetail {
     image: string;
     uploadedBy: string;
     uri: string;
@@ -18,13 +18,13 @@ export class ImageDetail implements IImageDetail {
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 
-    constructor(image: string, uploadedBy: string, uri: string, filename: string, createdAt: Timestamp, modifiedAt: Timestamp) {
-        this.image = image;
-        this.uploadedBy = uploadedBy;
-        this.uri = uri;
-        this.filename = filename;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
+    constructor(args: IImageDetail) {
+        this.image = args.image;
+        this.uploadedBy = args.uploadedBy;
+        this.uri = args.uri;
+        this.filename = args.filename;
+        this.createdAt = args.createdAt;
+        this.modifiedAt = args.modifiedAt;
     }
 
     getImage(): string {

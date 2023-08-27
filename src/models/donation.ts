@@ -1,13 +1,13 @@
 //Firebase types
 import { Timestamp } from 'firebase/firestore';
 
-interface IDonation {
+export interface IDonation {
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
     description: string | null | undefined;
     active: boolean | null | undefined;
-    images: Array<string>;
+    images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 }
@@ -18,28 +18,19 @@ export class Donation implements IDonation {
     model: string | null | undefined;
     description: string | null | undefined;
     active: boolean | null | undefined;
-    images: Array<string>;
+    images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 
-    constructor(
-        category: string | null | undefined,
-        brand: string | null | undefined,
-        model: string | null | undefined,
-        description: string | null | undefined,
-        active: boolean | null | undefined,
-        images: Array<string>,
-        createdAt: Timestamp,
-        modifiedAt: Timestamp
-    ) {
-        this.category = category;
-        this.brand = brand;
-        this.model = model;
-        this.description = description;
-        this.active = active;
-        this.images = images;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
+    constructor(args: IDonation) {
+        this.category = args.category;
+        this.brand = args.brand;
+        this.model = args.model;
+        this.description = args.description;
+        this.active = args.active;
+        this.images = args.images;
+        this.createdAt = args.createdAt;
+        this.modifiedAt = args.modifiedAt;
     }
 
     getCategory(): string | null | undefined {

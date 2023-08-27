@@ -2,20 +2,19 @@
 import { Timestamp } from 'firebase/firestore';
 //Plain JavaScript objects
 import { Donation } from './donation';
-import { Name } from './name';
 
-interface IUser {
-    name: Name;
+export interface IUser {
+    name: string;
     gender: string;
     dob: Date;
-    pendingDonations: Array<Donation>;
+    pendingDonations: Donation[];
     photo: string;
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 }
 
 export class User implements IUser {
-    name: Name;
+    name: string;
     gender: string;
     dob: Date;
     pendingDonations: Donation[];
@@ -23,17 +22,17 @@ export class User implements IUser {
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 
-    constructor(name: Name, gender: string, dob: Date, pendingDonations: Donation[], photo: string, createdAt: Timestamp, modifiedAt: Timestamp) {
-        this.name = name;
-        this.gender = gender;
-        this.dob = dob;
-        this.pendingDonations = pendingDonations;
-        this.photo = photo;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
+    constructor(args: IUser) {
+        this.name = args.name;
+        this.gender = args.gender;
+        this.dob = args.dob;
+        this.pendingDonations = args.pendingDonations;
+        this.photo = args.photo;
+        this.createdAt = args.createdAt;
+        this.modifiedAt = args.modifiedAt;
     }
 
-    getName(): Name {
+    getName(): string {
         return this.name;
     }
 
@@ -45,7 +44,7 @@ export class User implements IUser {
         return this.dob;
     }
 
-    getPendingDonations(): Array<Donation> {
+    getPendingDonations(): Donation[] {
         return this.pendingDonations;
     }
 
