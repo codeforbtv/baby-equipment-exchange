@@ -1,14 +1,15 @@
 'use client'
 //Components
-import Link from "next/link";
-import { slide as Menu } from "react-burger-menu"
+import Link from 'next/link'
+import { slide as Menu } from 'react-burger-menu'
 //Hooks
-import { useState } from "react";
+import { useState, useContext } from 'react'
+import { UserContext } from '@/contexts/UserContext'
 //Icons
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faImage } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faImage } from '@fortawesome/free-regular-svg-icons'
 //Libs
-import {auth, signOutUser } from '../api/firebase'
+import { signOutUser } from '../api/firebase'
 
 //Styles
 import styles from './Header.module.css'
@@ -67,39 +68,52 @@ const burgerMenuStyles = {
     }
 }
 
+export default function Header() {
+    const [isOpen, setIsOpen] = useState(false)
+    const { currentUser } = useContext(UserContext)
 
-export default function Header() {    
-    const [isOpen, setIsOpen] = useState(false);
-
-    function handleIsOpen() { setIsOpen(!isOpen) }
-    function closeMenu() { setIsOpen(false) }
+    function handleIsOpen() {
+        setIsOpen(!isOpen)
+    }
+    function closeMenu() {
+        setIsOpen(false)
+    }
 
     return (
-        <div className={styles["header__wrapper"]}>
-            <header className={styles["header--primary"]}>
-                <Link className={styles["header__logo"]} href="/">
-                    <FontAwesomeIcon className={styles["header__logo"]} icon={faImage} />
+        <div className={styles['header__wrapper']}>
+            <header className={styles['header--primary']}>
+                <Link className={styles['header__logo']} href="/">
+                    <FontAwesomeIcon className={styles['header__logo']} icon={faImage} />
                     <h5>Baby Equipment Exchange</h5>
                 </Link>
             </header>
-            <div className={styles["header__spacer"]}></div>
+            <div className={styles['header__spacer']}></div>
             <Menu right isOpen={isOpen} onOpen={handleIsOpen} onClose={handleIsOpen} styles={burgerMenuStyles}>
-                <Link className={styles["menu__link"]} id="home" href='/' onClick={closeMenu}>Home</Link>
-                {auth.currentUser &&
-                <Link className={styles["menu__link"]} id="donate" href='/donate' onClick={closeMenu}>Donate</Link>
-                }
-                {auth.currentUser &&
-                <Link className={styles["menu__link"]} id="account" href='/account' onClick={closeMenu}>Account</Link>
-                }
-                <Link className={styles["menu__link"]} id="signout" href={auth.currentUser ? "/login?status=signed_out" : "/login"} onClick={() => {
-                    closeMenu()
-                    if (auth.currentUser) signOutUser()
-                }}>
-                    {auth.currentUser ? "Sign Out" : "Login"}
+                <Link className={styles['menu__link']} id="home" href="/" onClick={closeMenu}>
+                    Home
+                </Link>
+                {currentUser && (
+                    <Link className={styles['menu__link']} id="donate" href="/donate" onClick={closeMenu}>
+                        Donate
+                    </Link>
+                )}
+                {currentUser && (
+                    <Link className={styles['menu__link']} id="account" href="/account" onClick={closeMenu}>
+                        Account
+                    </Link>
+                )}
+                <Link
+                    className={styles['menu__link']}
+                    id="signout"
+                    href={currentUser ? '/login?status=signed_out' : '/login'}
+                    onClick={() => {
+                        closeMenu()
+                        if (currentUser) signOutUser()
+                    }}
+                >
+                    {currentUser ? 'Sign Out' : 'Login'}
                 </Link>
             </Menu>
         </div>
     )
-
-
 }

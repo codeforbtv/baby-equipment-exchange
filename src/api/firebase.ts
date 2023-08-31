@@ -2,7 +2,7 @@ import { FirebaseApp, initializeApp } from 'firebase/app'
 import { connectFirestoreEmulator, Firestore, getFirestore } from 'firebase/firestore'
 import { FirebaseStorage, getStorage } from 'firebase/storage'
 import { firebaseConfig } from '../../firebase-config'
-import { Auth, UserCredential, getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth'
+import { Auth, UserCredential, getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, NextOrObserver, User, Unsubscribe } from 'firebase/auth'
 
 let app: FirebaseApp
 let db: Firestore
@@ -38,11 +38,16 @@ export function getFirebaseStorage(): FirebaseStorage {
 
 export const auth: Auth = getAuth(getApp())
 
-export function signInAuthUserWithEmailAndPassword(email: string, password: string): void | Promise<UserCredential> {
-    if (!email || !password) return
-    return signInWithEmailAndPassword(auth, email, password)
+export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
+    if (!email || !password) return null
+    const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password)
+    return userCredential.user
 }
 
 export function signOutUser(): void {
     signOut(auth)
+}
+
+export function onAuthStateChangedListener(callback: NextOrObserver<User>): Unsubscribe {
+    return onAuthStateChanged(auth, callback)
 }

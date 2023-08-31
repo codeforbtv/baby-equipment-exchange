@@ -10,6 +10,9 @@ import styles from './HomeStyles.module.css'
 import globalStyles from '../styles/globalStyles.module.css'
 import ButtonContainer from '@/components/ButtonContainer'
 
+import { UserContext } from '@/contexts/UserContext'
+import { useContext } from 'react'
+
 export default function Home() {
     let loginElement = (
         <div className={styles['login__heading-prompt']}>
