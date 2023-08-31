@@ -1,18 +1,20 @@
 'use client'
 //Components
-import ButtonContainer from "@/components/ButtonContainer";
+import ButtonContainer from '@/components/ButtonContainer'
 //Hooks
-import { useState} from "react";
+import { useState, useContext } from 'react'
+import { UserContext } from '@/contexts/UserContext'
+import { useRouter } from 'next/navigation'
 //Styling
-import globalStyles from "@/styles/globalStyles.module.css";
-import styles from "./Account.module.css";
+import globalStyles from '@/styles/globalStyles.module.css'
+import styles from './Account.module.css'
 
 type AccountInformation = {
-    name: string,
-    username: string,
-    dob: Date,
-    contact: { phone: string, email: string },
-    location: { streetAddress: string, city: string, state: string, zip: string },
+    name: string
+    username: string
+    dob: Date
+    contact: { phone: string; email: string }
+    location: { streetAddress: string; city: string; state: string; zip: string }
     type: string
 }
 
@@ -27,9 +29,9 @@ const dummyUser: AccountInformation = {
 }
 
 type UserDonations = {
-    category: string,
-    brand: string,
-    model: string,
+    category: string
+    brand: string
+    model: string
     active: boolean
 }[]
 
@@ -39,52 +41,65 @@ const dummyDonations: UserDonations = [
     { category: 'Cribs', brand: 'Babys-r-us', model: 'Rocker 1000', active: true },
     { category: 'Strollers', brand: 'Acme', model: 'Mustang', active: false },
     { category: 'Cribs', brand: 'Fischer Price', model: 'Econoline', active: false },
-    { category: 'High Chairs', brand: 'Skymall', model: 'Deluxe', active: true },
+    { category: 'High Chairs', brand: 'Skymall', model: 'Deluxe', active: true }
 ]
 
-
 export default function Account() {
-    const dateString = `${dummyUser.dob.getMonth() + 1}/${dummyUser.dob.getDate()}/${dummyUser.dob.getFullYear()}`;
-    const [userDonations, setUserDonations] = useState<UserDonations>(dummyDonations);
+    const { currentUser } = useContext(UserContext)
+    const dateString = `${dummyUser.dob.getMonth() + 1}/${dummyUser.dob.getDate()}/${dummyUser.dob.getFullYear()}`
+    const [userDonations, setUserDonations] = useState<UserDonations>(dummyDonations)
+    const router = useRouter()
 
     const userDonationList = userDonations.map((donation, index) => {
-        return (<div key={index} className={styles['donations__list__item']}>
-            <p>{donation.category}</p>
-            <p>{donation.brand}</p>
-            <p>{donation.model}</p>
-            <p className={`${donation.active ? styles.active : ''}`}>{`${donation.active ? 'Active' : 'Pending'}`}</p>
-        </div>)
+        return (
+            <div key={index} className={styles['donations__list__item']}>
+                <p>{donation.category}</p>
+                <p>{donation.brand}</p>
+                <p>{donation.model}</p>
+                <p className={`${donation.active ? styles.active : ''}`}>{`${donation.active ? 'Active' : 'Pending'}`}</p>
+            </div>
+        )
     })
 
     return (
         <>
-            <div className={styles["account__container"]}>
-                <h1>Account</h1>
-                <h4>Page Summary</h4>
-                <div className={globalStyles["content__container"]}>
-                    <div className={styles["account__header"]}>
-                        <h2>Account Details</h2>
-                        <ButtonContainer text="Edit Account" link="/account/edit" />
+            {!currentUser ? (
+                <div className={styles['login__heading-prompt']}>
+                    <h2>You must be logged in to view your account</h2>
+                    <ButtonContainer text="Login" link="/login" hasIcon />
+                </div>
+            ) : (
+                <div className={styles['account__container']}>
+                    <h1>Account</h1>
+                    <h4>Page Summary</h4>
+                    <div className={globalStyles['content__container']}>
+                        <div className={styles['account__header']}>
+                            <h2>Account Details</h2>
+                            <ButtonContainer text="Edit Account" link="/account/edit" />
+                        </div>
+                        <h4>Username: {dummyUser.username}</h4>
+                        <h4>DOB: {dateString}</h4>
+                        <h4>
+                            Contact: <br />
+                            Phone: {dummyUser.contact.phone}
+                            <br />
+                            Email: {dummyUser.contact.email}
+                        </h4>
+                        <h4>
+                            Location: <br />
+                            {dummyUser.location.streetAddress}
+                            <br />
+                            {dummyUser.location.city} {dummyUser.location.state}
+                            <br />
+                            {dummyUser.location.zip}
+                            <br />
+                        </h4>
+                        <h4>Usertype: {dummyUser.type}</h4>
+                        <h2>Donations:</h2>
+                        <div className={styles['donations__list']}>{userDonationList}</div>
                     </div>
-                    <h4>Username: {dummyUser.username}</h4>
-                    <h4>DOB: {dateString}</h4>
-                    <h4>Contact: <br />
-                        Phone: {dummyUser.contact.phone}<br />
-                        Email: {dummyUser.contact.email}
-                    </h4>
-                    <h4>Location: <br />
-                        {dummyUser.location.streetAddress}<br />
-                        {dummyUser.location.city} {dummyUser.location.state}<br />
-                        {dummyUser.location.zip}<br />
-                    </h4>
-                    <h4>Usertype: {dummyUser.type}</h4>
-                    <h2>Donations:</h2>
-                    <div className={styles['donations__list']}>
-                        {userDonationList}
-                    </div>
-
-                </div >
-            </div >
+                </div>
+            )}
         </>
     )
 }

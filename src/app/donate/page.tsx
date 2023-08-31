@@ -1,14 +1,14 @@
 'use client'
 //Components
-import InputContainer from "@/components/InputContainer";
-import ImageThumbnail from "@/components/ImageThumbnail";
-import ButtonContainer from "@/components/ButtonContainer";
+import InputContainer from '@/components/InputContainer'
+import ImageThumbnail from '@/components/ImageThumbnail'
+import ButtonContainer from '@/components/ButtonContainer'
 //Hooks
-import { useState, useEffect, ReactElement } from "react";
+import { useState, useEffect, useContext, ReactElement } from 'react'
+import { UserContext } from '@/contexts/UserContext'
 //Styling
-import globalStyles from "@/styles/globalStyles.module.css";
-import styles from "./Donate.module.css";
-
+import globalStyles from '@/styles/globalStyles.module.css'
+import styles from './Donate.module.css'
 
 // type DonationFormData = {
 //     category:  FormDataEntryValue| null,
@@ -19,10 +19,10 @@ import styles from "./Donate.module.css";
 // }
 
 type DonationFormData = {
-    category: string | null,
-    brand: string | null,
-    model: string | null,
-    description: string | null,
+    category: string | null
+    brand: string | null
+    model: string | null
+    description: string | null
     images: FileList | null | undefined
 }
 
@@ -35,14 +35,14 @@ const dummyDonationData: DonationFormData = {
     images: null
 }
 
-
 export default function Donate() {
     const [formData, setFormData] = useState<DonationFormData>(dummyDonationData)
-    const [images, setImages] = useState<FileList | null>();
+    const [images, setImages] = useState<FileList | null>()
     const [imageElements, setImageElements] = useState<ReactElement[]>([])
+    const { currentUser } = useContext(UserContext)
 
     function previewPhotos(e: React.ChangeEvent<HTMLInputElement>) {
-        let imageList = new DataTransfer();
+        let imageList = new DataTransfer()
         //include existing images in the imageList files
         if (images) {
             for (let i = 0; i < images.length; i++) {
@@ -64,7 +64,7 @@ export default function Donate() {
         if (images) {
             let imageList = new DataTransfer()
             let imagesArray = Array.from(images)
-            imagesArray.forEach(image => {
+            imagesArray.forEach((image) => {
                 if (image.name !== fileToRemove.name) {
                     let file = new File([image], image.name)
                     imageList.items.add(file)
@@ -75,86 +75,115 @@ export default function Donate() {
     }
 
     useEffect(() => {
-        let tempImages = [];
+        let tempImages = []
         if (images) {
             for (let i = 0; i < images.length; i++) {
-                let imagePreview = <ImageThumbnail removeFunction={removeImage} file={images[i]} width={"32%"} margin={".66%"} />
+                let imagePreview = <ImageThumbnail removeFunction={removeImage} file={images[i]} width={'32%'} margin={'.66%'} />
                 tempImages.push(imagePreview)
             }
             setImageElements(tempImages)
         }
     }, [images])
 
-    function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLTextAreaElement>){
-        setFormData( prev =>{
-            return {...prev, [e.target.name]: e.target.value}
+    function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLTextAreaElement>) {
+        setFormData((prev) => {
+            return { ...prev, [e.target.name]: e.target.value }
         })
     }
-  
+
     //Use this to handle passing form data to the database on submission
-    function handleFormSubmit (e: React.FormEvent<HTMLFormElement>){
-        e.preventDefault();
+    function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
         let submittedData = new FormData(e.currentTarget)
     }
 
-
     return (
         <>
-            <div className={styles["donate__container"]}>
-                <h1>Donate</h1>
-                <h4>Page Summary</h4>
-                <div className={globalStyles["content__container"]}>
-                    <form onSubmit={handleFormSubmit} method="POST" className={styles["form"]}>
-                        <div className={styles['form__section--left']}>
-                        <InputContainer for="category" label="Category" footnote="Footnote">
-                            <select style={{padding: ".25rem .5rem"}} name="category" id="email" placeholder=" Category"  onChange={(e) => handleInputChange(e)} value={formData.category? formData.category: ''} required >
-                                <option value="">Select</option>
-                                <option value="optionA">Option A</option>
-                                <option value="optionB">Option B</option>
-                                <option value="optionC">Option C</option>
-                                <option value="optionD">Option D</option>
-                            </select>
-                        </InputContainer>
-                        <InputContainer for="brand" label="Brand" footnote="Footnote">
-                            <input type="text" name="brand" id="brand" placeholder=" Brand" onChange={(e) => handleInputChange(e)} value={formData.brand? formData.brand: ''}></input>
-                        </InputContainer>
-                        <InputContainer for="model" label="Model" footnote="Footnote">
-                            <input type="text" name="model" id="model" onChange={(e) => handleInputChange(e)} value={formData.model? formData.model: ''}></input>
-                        </InputContainer>
-                        <InputContainer for="description" label="Description" footnote="Footnote">
-                            <textarea rows={10} cols={40} name="description" id="description"onChange={(e) => handleInputChange(e) } value={formData.description? formData.description: ''}></textarea>
-                        </InputContainer>
-                        </div>
-                        <div className={styles['form__section--right']}>
-                        <InputContainer for="images" label="Upload images" footnote="Footnote">
-                            <div className={styles["image-uploader__container"]}>
-                                <div className={styles["image-uploader__display"]}>
-                                    {imageElements &&
-                                        imageElements
-                                    }
-                                </div>
-                                <div className={styles["image-uploader__input"]}>
-                                    <label htmlFor="images">
-                                        Add Files
-                                    </label>
-                                    <input
-                                        type="file"
-                                        id="images"
-                                        name="images"
-                                        accept="image/png, image/jpeg"
-                                        capture="environment"
-                                        onChange={previewPhotos}
-                                        multiple />
-                                </div>
-                            </div>
-                        </InputContainer>
-                        </div>
-                        <div className={styles['form__section--bottom']}>
-                        <ButtonContainer type={"submit"} text={"Submit"} hasIcon width={'25%'}/>
-                        </div>
-                    </form>
+            {!currentUser ? (
+                <div className={styles['login__heading-prompt']}>
+                    <h2>You must be logged in to donate</h2>
+                    <ButtonContainer text="Login" link="/login" hasIcon />
                 </div>
-            </div >
+            ) : (
+                <div className={styles['donate__container']}>
+                    <h1>Donate</h1>
+                    <h4>Page Summary</h4>
+                    <div className={globalStyles['content__container']}>
+                        <form onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
+                            <div className={styles['form__section--left']}>
+                                <InputContainer for="category" label="Category" footnote="Footnote">
+                                    <select
+                                        style={{ padding: '.25rem .5rem' }}
+                                        name="category"
+                                        id="email"
+                                        placeholder=" Category"
+                                        onChange={(e) => handleInputChange(e)}
+                                        value={formData.category ? formData.category : ''}
+                                        required
+                                    >
+                                        <option value="">Select</option>
+                                        <option value="optionA">Option A</option>
+                                        <option value="optionB">Option B</option>
+                                        <option value="optionC">Option C</option>
+                                        <option value="optionD">Option D</option>
+                                    </select>
+                                </InputContainer>
+                                <InputContainer for="brand" label="Brand" footnote="Footnote">
+                                    <input
+                                        type="text"
+                                        name="brand"
+                                        id="brand"
+                                        placeholder=" Brand"
+                                        onChange={(e) => handleInputChange(e)}
+                                        value={formData.brand ? formData.brand : ''}
+                                    ></input>
+                                </InputContainer>
+                                <InputContainer for="model" label="Model" footnote="Footnote">
+                                    <input
+                                        type="text"
+                                        name="model"
+                                        id="model"
+                                        onChange={(e) => handleInputChange(e)}
+                                        value={formData.model ? formData.model : ''}
+                                    ></input>
+                                </InputContainer>
+                                <InputContainer for="description" label="Description" footnote="Footnote">
+                                    <textarea
+                                        rows={10}
+                                        cols={40}
+                                        name="description"
+                                        id="description"
+                                        onChange={(e) => handleInputChange(e)}
+                                        value={formData.description ? formData.description : ''}
+                                    ></textarea>
+                                </InputContainer>
+                            </div>
+                            <div className={styles['form__section--right']}>
+                                <InputContainer for="images" label="Upload images" footnote="Footnote">
+                                    <div className={styles['image-uploader__container']}>
+                                        <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
+                                        <div className={styles['image-uploader__input']}>
+                                            <label htmlFor="images">Add Files</label>
+                                            <input
+                                                type="file"
+                                                id="images"
+                                                name="images"
+                                                accept="image/png, image/jpeg"
+                                                capture="environment"
+                                                onChange={previewPhotos}
+                                                multiple
+                                            />
+                                        </div>
+                                    </div>
+                                </InputContainer>
+                            </div>
+                            <div className={styles['form__section--bottom']}>
+                                <ButtonContainer type={'submit'} text={'Submit'} hasIcon width={'25%'} />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     )
 }
