@@ -1,7 +1,7 @@
 'use client'
 
 import { onAuthStateChangedListener } from '@/api/firebase'
-import { Unsubscribe, User, UserCredential } from 'firebase/auth'
+import { User } from 'firebase/auth'
 import { createContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from 'react'
 
 type UserContextType = {

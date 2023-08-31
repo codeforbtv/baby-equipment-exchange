@@ -9,7 +9,7 @@ import { UserContext } from '@/contexts/UserContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage } from '@fortawesome/free-regular-svg-icons'
 //Libs
-import { auth, signOutUser } from '../api/firebase'
+import { signOutUser } from '../api/firebase'
 
 //Styles
 import styles from './Header.module.css'
@@ -71,6 +71,7 @@ const burgerMenuStyles = {
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false)
     const { currentUser } = useContext(UserContext)
+
     function handleIsOpen() {
         setIsOpen(!isOpen)
     }
