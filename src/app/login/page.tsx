@@ -5,7 +5,7 @@ import ButtonContainer from '@/components/ButtonContainer'
 import ToasterNotification from '@/components/ToasterNotification'
 import Loader from '@/components/Loader'
 //Hooks
-import { useEffect, useState, useContext } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 //Libs
