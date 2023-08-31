@@ -9,7 +9,8 @@ import { UserContext } from '@/contexts/UserContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage } from '@fortawesome/free-regular-svg-icons'
 //Libs
-import { signOutUser } from '@/api/firebase'
+import { auth, signOutUser } from '../api/firebase'
+
 //Styles
 import styles from './Header.module.css'
 
@@ -70,7 +71,6 @@ const burgerMenuStyles = {
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false)
     const { currentUser } = useContext(UserContext)
-
     function handleIsOpen() {
         setIsOpen(!isOpen)
     }
@@ -91,6 +91,16 @@ export default function Header() {
                 <Link className={styles['menu__link']} id="home" href="/" onClick={closeMenu}>
                     Home
                 </Link>
+                {currentUser && (
+                    <Link className={styles['menu__link']} id="donate" href="/donate" onClick={closeMenu}>
+                        Donate
+                    </Link>
+                )}
+                {currentUser && (
+                    <Link className={styles['menu__link']} id="account" href="/account" onClick={closeMenu}>
+                        Account
+                    </Link>
+                )}
                 <Link
                     className={styles['menu__link']}
                     id="signout"
