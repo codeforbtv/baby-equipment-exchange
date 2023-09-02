@@ -1,4 +1,4 @@
-import React, { useState } from 'React'
+import React, { useState } from 'react'
 import { addDoc, collection } from 'firebase/firestore'
 import { db } from '../api/init-firebase'
 
@@ -25,7 +25,7 @@ export default function AddUser() {
         <input 
           type="text"
           value={name}
-          onChange={ e => setName(e.target.value)}>
+          onChange={ e => setName(e.target.value)} />
         <button type="submit">Add User</button>
       </form>
     </div>

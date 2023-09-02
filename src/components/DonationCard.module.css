@@ -9,16 +9,15 @@
     align-items: flex-start;
 }
 
-.grid__item__title{
+.grid__item__title {
     margin: 5px;
     width: max-content;
     background-color: #666;
     color: white;
     padding: 3px 6px;
-
 }
 
-.thumbnail__image{
+.thumbnail__image {
     align-self: center;
     width: 85%;
     height: auto;
@@ -27,20 +26,16 @@
 
 /* Tablets */
 @media screen and (min-width: 480px) {
-    
     .grid__item {
         width: 22%;
         margin: 1.5%;
     }
-    
 }
 
 /* Laptops and above */
 @media screen and (min-width: 800px) {
-    
     .grid__item {
         width: 22%;
         margin: 1.5%;
     }
-    
 }

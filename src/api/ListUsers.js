@@ -11,7 +11,7 @@ export default function ListUsers() {
 
   useEffect(() => {
     console.log(Users)
-  }, [Users];
+  }, [Users]);
 
   function getUsers() {
     const UsersCollectionRef = collection(db, 'Users');
@@ -23,13 +23,12 @@ export default function ListUsers() {
         }))
         setUsers(Users);
       });
-      .catch(error => console.log(error.message));
   }
 
   return (
     <div>
       <h4>ListUsers</h4>
-      <button onclick={() => getUsers()}>Refresh Users</button>
+      <button onClick={() => getUsers()}>Refresh Users</button>
       <ul>
         {Users.map(User => (
           <li key={User.id}>{Users.data.name}</li>

@@ -14,16 +14,16 @@ import React, { useEffect, useState } from 'react'
 import { getActiveDonations } from '../api/firebase-donations'
 //Styles
 import styles from './Browse.module.css'
+import { Timestamp } from 'firebase/firestore'
 
 //Temporary holder for dummy data - to be updated with database link
 const dummyDonations: Donation[] = [
-    new Donation('category', 'brand', 'model', 'description', true, ['img1'], new Date(), new Date()),
-    new Donation('category', 'brand', 'model', 'description', true, ['img2'], new Date(), new Date()),
-    new Donation('category', 'brand', 'model', 'description', true, ['img3'], new Date(), new Date()),
-    new Donation('category', 'brand', 'model', 'description', true, ['img4'], new Date(), new Date()),
-    new Donation('category', 'brand', 'model', 'description', true, ['img5'], new Date(), new Date())
+    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img1'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())}),
+    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img2'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())}),
+    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img3'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())}),
+    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img4'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())}),
+    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img5'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())})
 ]
-
 
 const Browse: React.FC = () => {
     const [donations, setDonations] = useState([] as Donation[])
@@ -31,10 +31,10 @@ const Browse: React.FC = () => {
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false)
 
     function toggleSearchBar() {
-        setIsSearchVisible(prev => !prev)
+        setIsSearchVisible((prev: any) => !prev)
     }
     function toggleFilters() {
-        setIsFilterVisible(prev => !prev)
+        setIsFilterVisible((prev: any) => !prev)
     }
 
     /**
@@ -64,25 +64,24 @@ const Browse: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {isSearchVisible &&
-                <SearchBar />
-            }
-            {isFilterVisible &&
-                <Filter />
-            }
+            {isSearchVisible && <SearchBar />}
+            {isFilterVisible && <Filter />}
             <div className={styles['browse__grid']}>
                 {donations.map((donation) => {
                     // An active donation must have at least one photo for display.
-                    return <DonationCard
-                        key={donation.images[0]}
-                        category={donation.category}
-                        brand={donation.brand}
-                        model={donation.model}
-                        description={donation.description}
-                        active={donation.active}
-                        images={donation.images}
-                        createdAt={donation.createdAt}
-                        modifiedAt={donation.modifiedAt} />
+                    return (
+                        <DonationCard
+                            key={donation.images[0]}
+                            category={donation.category}
+                            brand={donation.brand}
+                            model={donation.model}
+                            description={donation.description}
+                            active={donation.active}
+                            images={donation.images}
+                            createdAt={donation.createdAt.toDate()}
+                            modifiedAt={donation.modifiedAt.toDate()}
+                        />
+                    )
                 })}
             </div>
         </>

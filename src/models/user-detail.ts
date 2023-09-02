@@ -1,16 +1,18 @@
+//Firebase types
+import { Timestamp } from 'firebase/firestore'
+//Plain JavaScript objects
 import { Address } from './address'
-import { Name } from './name'
 import { Phone } from './phone'
 
-interface IUserDetail {
+export interface IUserDetail {
     user: string
-    emails: Array<string>
-    phones: Array<Phone>
-    addresses: Array<Address>
-    websites: Array<string>
+    emails: string[]
+    phones: Phone[]
+    addresses: Address[]
+    websites: string[]
     notes: string
-    createdAt: Date
-    modifiedAt: Date
+    createdAt: Timestamp
+    modifiedAt: Timestamp
 }
 
 export class UserDetail implements IUserDetail {
@@ -20,18 +22,18 @@ export class UserDetail implements IUserDetail {
     addresses: Address[]
     websites: string[]
     notes: string
-    createdAt: Date
-    modifiedAt: Date
+    createdAt: Timestamp
+    modifiedAt: Timestamp
 
-    constructor(user: string, emails: string[], phones: Phone[], addresses: Address[], websites: string[], notes: string, createdAt: Date, modifiedAt: Date) {
-        this.user = user
-        this.emails = emails
-        this.phones = phones
-        this.addresses = addresses
-        this.websites = websites
-        this.notes = notes
-        this.createdAt = createdAt
-        this.modifiedAt = modifiedAt
+    constructor(args: IUserDetail) {
+        this.user = args.user
+        this.emails = args.emails
+        this.phones = args.phones
+        this.addresses = args.addresses
+        this.websites = args.websites
+        this.notes = args.notes
+        this.createdAt = args.createdAt
+        this.modifiedAt = args.modifiedAt
     }
 
     getUser(): string {
@@ -58,11 +60,11 @@ export class UserDetail implements IUserDetail {
         return this.notes
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt
     }
 }

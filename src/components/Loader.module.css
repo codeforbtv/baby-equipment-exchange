@@ -9,20 +9,23 @@
     margin: 0 auto;
     text-align: center;
 }
-.loader-wheel{
+.loader-wheel {
     margin: 1rem auto;
     width: 4rem;
     height: 4rem;
-    border-top: .5rem solid black;
-    border-right: .5rem solid white;
-    border-bottom: .5rem solid black;
-    border-left: .5rem solid white;
+    border-top: 0.5rem solid black;
+    border-right: 0.5rem solid white;
+    border-bottom: 0.5rem solid black;
+    border-left: 0.5rem solid white;
     border-radius: 100%;
     animation: spin 3s linear infinite;
 }
 
 @keyframes spin {
-    from{transform: rotateZ(0deg)}
-    to{transform: rotateZ(360deg)}
-    
+    from {
+        transform: rotateZ(0deg);
+    }
+    to {
+        transform: rotateZ(360deg);
+    }
 }

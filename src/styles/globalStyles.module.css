@@ -27,21 +27,16 @@
     padding: 1rem;
 }
 
-
 /* Tablets */
 @media screen and (min-width: 480px) {
-    
     .page--wrapper {
         padding: 8px 5%;
     }
-    
 }
 
 /* Laptops and above */
 @media screen and (min-width: 800px) {
-    
     .page--wrapper {
         padding: 10px 5%;
     }
-    
 }
