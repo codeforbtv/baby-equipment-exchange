@@ -18,11 +18,56 @@ import { Timestamp } from 'firebase/firestore'
 
 //Temporary holder for dummy data - to be updated with database link
 const dummyDonations: Donation[] = [
-    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img1'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())}),
-    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img2'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())}),
-    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img3'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())}),
-    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img4'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())}),
-    new Donation({category: 'category', brand: 'brand', model: 'model', description: 'description', active: true, images: ['img5'], createdAt: Timestamp.fromDate(new Date()), modifiedAt: Timestamp.fromDate( new Date())})
+    new Donation({
+        category: 'category',
+        brand: 'brand',
+        model: 'model',
+        description: 'description',
+        active: true,
+        images: ['img1'],
+        createdAt: Timestamp.fromDate(new Date()),
+        modifiedAt: Timestamp.fromDate(new Date())
+    }),
+    new Donation({
+        category: 'category',
+        brand: 'brand',
+        model: 'model',
+        description: 'description',
+        active: true,
+        images: ['img2'],
+        createdAt: Timestamp.fromDate(new Date()),
+        modifiedAt: Timestamp.fromDate(new Date())
+    }),
+    new Donation({
+        category: 'category',
+        brand: 'brand',
+        model: 'model',
+        description: 'description',
+        active: true,
+        images: ['img3'],
+        createdAt: Timestamp.fromDate(new Date()),
+        modifiedAt: Timestamp.fromDate(new Date())
+    }),
+    new Donation({
+        category: 'category',
+        brand: 'brand',
+        model: 'model',
+        description: 'description',
+        active: true,
+        images: ['img4'],
+        createdAt: Timestamp.fromDate(new Date()),
+        modifiedAt: Timestamp.fromDate(new Date())
+    }),
+    new Donation({
+        category: 'category',
+        brand: 'brand',
+        model: 'model',
+        description: 'description',
+        active: true,
+        images: ['img5'],
+        createdAt: Timestamp.fromDate(new Date()),
+        modifiedAt: Timestamp.fromDate(new Date())
+    })
 ]
 
 const Browse: React.FC = () => {

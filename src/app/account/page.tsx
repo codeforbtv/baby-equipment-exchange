@@ -2,15 +2,15 @@
 //Components
 import ButtonContainer from '@/components/ButtonContainer'
 //Hooks
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
 import styles from './Account.module.css'
+import { getAccountType } from '@/api/firebase'
 
 type AccountInformation = {
     name: string
     username: string
-    dob: Date
     contact: { phone: string; email: string }
     location: { streetAddress: string; city: string; state: string; zip: string }
     type: string
@@ -20,7 +20,6 @@ type AccountInformation = {
 const dummyUser: AccountInformation = {
     name: 'John Doe',
     username: 'johndoe@email.com',
-    dob: new Date(),
     contact: { phone: '555-555-1234', email: 'johndoe@email.com' },
     location: { streetAddress: '1234 Main Street', city: 'Burlington', state: 'VT', zip: '05401' },
     type: 'admin'
@@ -43,8 +42,14 @@ const dummyDonations: UserDonations = [
 ]
 
 export default function Account() {
-    const dateString = `${dummyUser.dob.getMonth() + 1}/${dummyUser.dob.getDate()}/${dummyUser.dob.getFullYear()}`
+    const [accountType, setAccountType] = useState<string>('')
     const [userDonations, setUserDonations] = useState<UserDonations>(dummyDonations)
+
+    useEffect(() => {
+        getAccountType().then((acctType) => {
+            setAccountType(acctType!)
+        })
+    }, [])
 
     const userDonationList = userDonations.map((donation, index) => {
         return (
@@ -68,7 +73,6 @@ export default function Account() {
                         <ButtonContainer text="Edit Account" link="/account/edit" />
                     </div>
                     <h4>Username: {dummyUser.username}</h4>
-                    <h4>DOB: {dateString}</h4>
                     <h4>
                         Contact: <br />
                         Phone: {dummyUser.contact.phone}
@@ -84,7 +88,7 @@ export default function Account() {
                         {dummyUser.location.zip}
                         <br />
                     </h4>
-                    <h4>Usertype: {dummyUser.type}</h4>
+                    <h4>Usertype: {accountType}</h4>
                     <h2>Donations:</h2>
                     <div className={styles['donations__list']}>{userDonationList}</div>
                 </div>

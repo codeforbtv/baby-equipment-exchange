@@ -14,8 +14,6 @@ import { UserContext } from '@/contexts/UserContext'
 import { useContext } from 'react'
 import { getAuth } from '@firebase/auth'
 
-
-
 export default function Home() {
     const loginElement = (
         <div className={styles['login__heading-prompt']}>

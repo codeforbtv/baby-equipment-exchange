@@ -2,6 +2,7 @@
 import { Timestamp } from 'firebase/firestore'
 
 export interface IImageDetail {
+    [key: string]: string | Timestamp | (() => string) | (() => Timestamp)
     image: string
     uploadedBy: string
     uri: string
@@ -11,6 +12,7 @@ export interface IImageDetail {
 }
 
 export class ImageDetail implements IImageDetail {
+    [key: string]: string | Timestamp | (() => string) | (() => Timestamp)
     image: string
     uploadedBy: string
     uri: string

@@ -13,11 +13,19 @@ const IMAGE_DETAILS_COLLECTION = 'ImageDetails'
 
 const imageConverter = {
     toFirestore(image: Image): DocumentData {
-        return {
+        const imageData: IImage = {
             downloadURL: image.getDownloadURL(),
             createdAt: image.getCreatedAt(),
             modifiedAt: image.getModifiedAt()
         }
+
+        for (const key in imageData) {
+            if (imageData[key] === undefined || imageData[key] === null) {
+                delete imageData[key]
+            }
+        }
+
+        return imageData
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Image {
         const data = snapshot.data(options)!

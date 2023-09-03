@@ -5,6 +5,7 @@ import { Address } from './address'
 import { Contact } from './contact'
 
 export interface IStorage {
+    [key: string]: boolean | string | Address | Contact | Timestamp | (() => boolean) | (() => Address) | (() => Contact) | (() => string) | (() => Timestamp)
     active: boolean
     name: string
     address: Address
@@ -14,6 +15,7 @@ export interface IStorage {
 }
 
 export class Storage implements IStorage {
+    [key: string]: boolean | string | Address | Contact | Timestamp | (() => boolean) | (() => Address) | (() => Contact) | (() => string) | (() => Timestamp)
     active: boolean
     name: string
     address: Address

@@ -20,6 +20,7 @@ type ButtonProps = {
     onClick?: OnClick
     link?: string
     width?: string
+    disabled?: boolean
 }
 
 export default function ButtonContainer(props: ButtonProps) {
@@ -31,6 +32,7 @@ export default function ButtonContainer(props: ButtonProps) {
                         style={{ width: props.width ? `${props.width}` : '' }}
                         className={` ${styles['button']} ${props.theme ? styles[props.theme] : ''}`}
                         type={props.type}
+                        disabled={props.disabled || false}
                     >
                         <span className={styles['button__text']}>{props.text}</span>
                         {props.hasIcon && (
@@ -48,6 +50,7 @@ export default function ButtonContainer(props: ButtonProps) {
                     style={{ width: props.width ? `${props.width}` : '' }}
                     className={` ${styles['button']} ${props.theme ? styles[props.theme] : ''}`}
                     type={props.type}
+                    disabled={props.disabled || false}
                 >
                     <span className={styles['button__text']}>{props.text}</span>
                     {props.hasIcon && (

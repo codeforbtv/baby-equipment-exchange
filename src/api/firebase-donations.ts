@@ -11,7 +11,7 @@ const DONATION_DETAILS_COLLECTION = 'DonationDetails'
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
-        return {
+        const donationData: IDonation = {
             category: donation.getCategory(),
             brand: donation.getBrand(),
             model: donation.getModel(),
@@ -21,6 +21,14 @@ const donationConverter = {
             createdAt: donation.getCreatedAt(),
             modifiedAt: donation.getModifiedAt()
         }
+
+        for (const key in donationData) {
+            if (donationData[key] === undefined || donationData[key] === null) {
+                delete donationData[key]
+            }
+        }
+
+        return donationData
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Donation {
         const data = snapshot.data(options)
@@ -40,7 +48,7 @@ const donationConverter = {
 
 const donationDetailsConverter = {
     toFirestore(donationDetail: DonationDetail): DocumentData {
-        return {
+        const donationDetailData: IDonationDetail = {
             donation: donationDetail.getDonation(),
             availability: donationDetail.getAvailability(),
             donor: donationDetail.getDonor(),
@@ -61,6 +69,14 @@ const donationDetailsConverter = {
             createdAt: donationDetail.getCreatedAt(),
             modifiedAt: donationDetail.getModifiedAt()
         }
+
+        for (const key in donationDetailData) {
+            if (donationDetailData[key] === undefined || donationDetailData[key] === null) {
+                delete donationDetailData[key]
+            }
+        }
+
+        return donationDetailData
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): DonationDetail {
         const data = snapshot.data(options)

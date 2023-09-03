@@ -1,11 +1,10 @@
 //Libs
-import { getDb, getFirebaseStorage, getUserId } from './firebase'
-import { ref, uploadBytes } from 'firebase/storage'
+import { getDb } from './firebase'
 //Models
 import { IUser, User } from '@/models/user'
 import { IUserDetail, UserDetail } from '@/models/user-detail'
 //Modules
-import { addDoc, collection, doc, DocumentData, getDoc, getFirestore, QueryDocumentSnapshot, setDoc, SnapshotOptions, Timestamp } from 'firebase/firestore'
+import { doc, DocumentData, QueryDocumentSnapshot, setDoc, SnapshotOptions, Timestamp } from 'firebase/firestore'
 //Types
 import { NewUser } from '@/types/post-data'
 
@@ -14,22 +13,26 @@ const USER_DETAILS_COLLECTION = 'UserDetails'
 
 const userConverter = {
     toFirestore(user: User): DocumentData {
-        return {
+        const userData: IUser = {
             name: user.getName(),
-            gender: user.getGender(),
-            dob: user.getDob(),
             pendingDonations: user.getPendingDonations(),
             photo: user.getPhoto(),
             createdAt: user.getCreatedAt(),
             modifiedAt: user.getModifiedAt()
         }
+
+        for (const key in userData) {
+            if (userData[key] === undefined || userData[key] === null) {
+                delete userData[key]
+            }
+        }
+
+        return userData
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {
         const data = snapshot.data(options)!
         const userData: IUser = {
             name: data.name,
-            gender: data.gender,
-            dob: data.dob,
             pendingDonations: data.pendingDonations,
             photo: data.photo,
             createdAt: data.createdAt,
@@ -41,7 +44,7 @@ const userConverter = {
 
 const userDetailConverter = {
     toFirestore(userDetail: UserDetail): DocumentData {
-        return {
+        const userDetailData: IUserDetail = {
             user: userDetail.getUser(),
             emails: userDetail.getEmails(),
             phones: userDetail.getPhones(),
@@ -51,6 +54,14 @@ const userDetailConverter = {
             createdAt: userDetail.getCreatedAt(),
             modifiedAt: userDetail.getModifiedAt()
         }
+
+        for (const key in userDetailData) {
+            if (userDetailData[key] === undefined || userDetailData[key] === null) {
+                delete userDetailData[key]
+            }
+        }
+
+        return userDetailData
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): UserDetail {
         const data = snapshot.data(options)!
@@ -68,23 +79,22 @@ const userDetailConverter = {
     }
 }
 
-export async function newUser(newUser: NewUser) {
+export async function addUser(newUser: NewUser) {
     const currentTime = Date.now()
     const timestamp = Timestamp.fromMillis(currentTime)
-
-    const userData: IUser = {
-        name: newUser.name,
-        gender: newUser.gender,
-        dob: newUser.dob,
+    const userParams: IUser = {
+        name: newUser.name!,
         pendingDonations: [],
-        photo: newUser.photo,
+        photo: newUser.photo!,
         createdAt: timestamp,
         modifiedAt: timestamp
     }
 
-    const userDetailData: IUserDetail = {
-        user: newUser.user,
-        emails: [newUser.email],
+    const user = new User(userParams)
+
+    const userDetailParams: IUserDetail = {
+        user: newUser.user!,
+        emails: [newUser.email!],
         phones: [],
         addresses: [],
         websites: [],
@@ -93,7 +103,12 @@ export async function newUser(newUser: NewUser) {
         modifiedAt: timestamp
     }
 
-    const userRef = await setDoc(doc(getDb(), USERS_COLLECTION, newUser.user), userData)
+    const userDetail = new UserDetail(userDetailParams)
 
-    const userDetailRef = await setDoc(doc(getDb(), USER_DETAILS_COLLECTION, newUser.user), userDetailData)
+    try {
+        const userRef = await setDoc(doc(getDb(), USERS_COLLECTION, newUser.user!), userConverter.toFirestore(user))
+        const userDetailRef = await setDoc(doc(getDb(), USER_DETAILS_COLLECTION, newUser.user!), userDetailConverter.toFirestore(userDetail))
+    } catch (error) {
+        // eslint-disable-line no-empty
+    }
 }

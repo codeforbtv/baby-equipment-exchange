@@ -1,9 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config({
     path: '.env.local' // Suppress the @typescript-eslint/no-var-requires rule.
-});
-
-(() => {
+})
+;(() => {
     let cmd = process.argv.splice(2).join(' ').slice(6)
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const execSync = require('child_process').execSync // Suppress the @typescript-eslint/no-var-requires rule.

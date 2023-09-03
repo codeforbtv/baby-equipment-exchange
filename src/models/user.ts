@@ -4,28 +4,43 @@ import { Timestamp } from 'firebase/firestore'
 import { Donation } from './donation'
 
 export interface IUser {
+    [key: string]:
+        | string
+        | Donation[]
+        | Timestamp
+        | null
+        | undefined
+        | (() => string)
+        | (() => Donation[])
+        | (() => string | null | undefined)
+        | (() => Timestamp)
+
     name: string
-    gender: string
-    dob: number
     pendingDonations: Donation[]
-    photo: string
+    photo: string | null | undefined
     createdAt: Timestamp
     modifiedAt: Timestamp
 }
 
 export class User implements IUser {
+    [key: string]:
+        | string
+        | Donation[]
+        | Timestamp
+        | null
+        | undefined
+        | (() => string)
+        | (() => Donation[])
+        | (() => string | null | undefined)
+        | (() => Timestamp)
     name: string
-    gender: string
-    dob: number
     pendingDonations: Donation[]
-    photo: string
+    photo: string | null | undefined
     createdAt: Timestamp
     modifiedAt: Timestamp
 
     constructor(args: IUser) {
         this.name = args.name
-        this.gender = args.gender
-        this.dob = args.dob
         this.pendingDonations = args.pendingDonations
         this.photo = args.photo
         this.createdAt = args.createdAt
@@ -36,19 +51,11 @@ export class User implements IUser {
         return this.name
     }
 
-    getGender(): string {
-        return this.gender
-    }
-
-    getDob(): number {
-        return this.dob
-    }
-
     getPendingDonations(): Donation[] {
         return this.pendingDonations
     }
 
-    getPhoto(): string {
+    getPhoto(): string | null | undefined {
         return this.photo
     }
 

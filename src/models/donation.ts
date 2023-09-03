@@ -2,6 +2,18 @@
 import { Timestamp } from 'firebase/firestore'
 
 export interface IDonation {
+    [key: string]:
+        | string
+        | boolean
+        | string[]
+        | Timestamp
+        | null
+        | undefined
+        | (() => string)
+        | (() => string[])
+        | (() => boolean | null | undefined)
+        | (() => string | null | undefined)
+        | (() => Timestamp)
     category: string | null | undefined
     brand: string | null | undefined
     model: string | null | undefined
@@ -13,6 +25,18 @@ export interface IDonation {
 }
 
 export class Donation implements IDonation {
+    [key: string]:
+        | string
+        | boolean
+        | string[]
+        | Timestamp
+        | null
+        | undefined
+        | (() => string)
+        | (() => string[])
+        | (() => boolean | null | undefined)
+        | (() => string | null | undefined)
+        | (() => Timestamp)
     category: string | null | undefined
     brand: string | null | undefined
     model: string | null | undefined

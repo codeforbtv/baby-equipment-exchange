@@ -36,12 +36,14 @@ export function imageFactory(...downloadURLs: [string]): Image[] | Image | null 
 }
 
 export interface IImage {
+    [key: string]: string | Timestamp | (() => string) | (() => Timestamp)
     downloadURL: string
     createdAt: Timestamp
     modifiedAt: Timestamp
 }
 
 export class Image implements IImage {
+    [key: string]: string | Timestamp | (() => string) | (() => Timestamp)
     downloadURL: string
     createdAt: Timestamp
     modifiedAt: Timestamp

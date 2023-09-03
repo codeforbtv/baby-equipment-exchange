@@ -11,8 +11,12 @@ import {
     onAuthStateChanged,
     NextOrObserver,
     User,
-    connectAuthEmulator
+    connectAuthEmulator,
+    createUserWithEmailAndPassword
 } from 'firebase/auth'
+import { NewUser } from '@/types/post-data'
+import { setClaimForNewUser } from './firebase-admin'
+import { addUser } from './firebase-users'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const firebaseConfig = require('../../firebase-config') // Suppress the @typescript-eslint/no-var-requires rule.
 
@@ -82,8 +86,47 @@ export function getFirebaseStorage(): FirebaseStorage {
     return storage
 }
 
+export async function getAccountType(): Promise<string | undefined> {
+    const _isUnverified = await isUnverified()
+    const _isDonor = await isDonor()
+    let accountType: string = ''
+
+    if (_isUnverified && _isDonor) {
+        accountType += 'unverified donor'
+    } else if (_isDonor) {
+        accountType = 'donor'
+    } else if (_isUnverified) {
+        accountType = 'unverified'
+    } else {
+        accountType = '(none)'
+    }
+
+    return accountType
+}
+
+export async function isDonor(): Promise<boolean | undefined> {
+    return (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims.donor !== undefined ? true : false
+}
+
+export async function isUnverified(): Promise<boolean | undefined> {
+    return (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims.unverified !== undefined ? true : false
+}
+
 export function getUserId(): string | undefined {
     return getFirebaseAuth().currentUser?.uid
+}
+
+export async function createNewUser(newUser: NewUser, password: string) {
+    const userCredential = await createUserWithEmailAndPassword(getFirebaseAuth(), newUser.email!, password)
+    newUser.user = userCredential.user.uid
+
+    await addUser(newUser)
+
+    // Process on the server
+    await setClaimForNewUser(newUser.user)
+
+    // Force the client Firebase App instance to regenerate a new token
+    const token = await userCredential.user.getIdTokenResult(true)
 }
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {

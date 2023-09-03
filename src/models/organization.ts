@@ -5,6 +5,7 @@ import { Address } from './address'
 import { Contact } from './contact'
 
 export interface IOrganization {
+    [key: string]: boolean | string | Address | Contact | Timestamp | (() => boolean) | (() => Address) | (() => Contact) | (() => string) | (() => Timestamp)
     diaperBank: boolean
     babyProductExchange: boolean
     lowIncome: boolean
@@ -20,6 +21,7 @@ export interface IOrganization {
 }
 
 export class Organization implements IOrganization {
+    [key: string]: boolean | string | Address | Contact | Timestamp | (() => boolean) | (() => Address) | (() => Contact) | (() => string) | (() => Timestamp)
     diaperBank: boolean
     babyProductExchange: boolean
     lowIncome: boolean

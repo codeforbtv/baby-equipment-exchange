@@ -5,6 +5,7 @@ import { Address } from './address'
 import { Contact } from './contact'
 
 export interface IDonationDetail {
+    [key: string]: any
     donation: string
     availability: string
     donor: string
@@ -26,6 +27,7 @@ export interface IDonationDetail {
 }
 
 export class DonationDetail implements IDonationDetail {
+    [key: string]: any
     donation: string
     availability: string
     donor: string

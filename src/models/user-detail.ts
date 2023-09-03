@@ -5,6 +5,20 @@ import { Address } from './address'
 import { Phone } from './phone'
 
 export interface IUserDetail {
+    [key: string]:
+        | string
+        | Timestamp
+        | Address[]
+        | Phone[]
+        | string[]
+        | null
+        | undefined
+        | (() => string)
+        | (() => Address[])
+        | (() => Phone[])
+        | (() => string[])
+        | (() => Timestamp)
+        | (() => string | null | undefined)
     user: string
     emails: string[]
     phones: Phone[]
@@ -16,6 +30,20 @@ export interface IUserDetail {
 }
 
 export class UserDetail implements IUserDetail {
+    [key: string]:
+        | string
+        | Timestamp
+        | Address[]
+        | Phone[]
+        | string[]
+        | null
+        | undefined
+        | (() => string)
+        | (() => Address[])
+        | (() => Phone[])
+        | (() => string[])
+        | (() => Timestamp)
+        | (() => string | null | undefined)
     user: string
     emails: string[]
     phones: Phone[]

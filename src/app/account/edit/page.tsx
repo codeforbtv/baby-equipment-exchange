@@ -3,15 +3,15 @@
 import InputContainer from '@/components/InputContainer'
 import ButtonContainer from '@/components/ButtonContainer'
 //Hooks
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
 import styles from './AccountEdit.module.css'
+import { getAccountType } from '@/api/firebase'
 
 type AccountInformation = {
     name: string
     username: string
-    dob: Date
     contact: { phone: string; email: string }
     location: { streetAddress: string; city: string; state: string; zip: string }
     type: string
@@ -21,7 +21,6 @@ type AccountInformation = {
 const dummyUser: AccountInformation = {
     name: 'John Doe',
     username: 'johndoe@email.com',
-    dob: new Date(),
     contact: { phone: '555-555-1234', email: 'johndoe@email.com' },
     location: { streetAddress: '1234 Main Street', city: 'Burlington', state: 'VT', zip: '05401' },
     type: 'admin'
@@ -30,7 +29,6 @@ const dummyUser: AccountInformation = {
 type AccountFormData = {
     name: string | null
     username: string | null
-    dob: string | null
     contactEmail: string | null
     contactPhone: string | null
     locationStreet: string | null
@@ -41,14 +39,17 @@ type AccountFormData = {
 }
 
 export default function EditAccount() {
-    const formattedUserDob = `${dummyUser.dob.getFullYear()}-${(dummyUser.dob.getMonth() + 1).toString().padStart(2, '0')}-${dummyUser.dob
-        .getDate()
-        .toString()
-        .padStart(2, '0')}`
+    const [accountType, setAccountType] = useState<string>('')
+
+    useEffect(() => {
+        getAccountType().then((acctType) => {
+            setAccountType(acctType!)
+        })
+    }, [])
+
     const [formData, setFormData] = useState<AccountFormData>({
         name: dummyUser.name,
         username: dummyUser.username,
-        dob: formattedUserDob,
         contactEmail: dummyUser.contact.email,
         contactPhone: dummyUser.contact.phone,
         locationStreet: dummyUser.location.streetAddress,
@@ -80,7 +81,7 @@ export default function EditAccount() {
                         <h2>Account Details</h2>
                     </div>
                     <h4>Username: {dummyUser.username}</h4>
-                    <h4>Usertype: {dummyUser.type}</h4>
+                    <h4>Usertype: {accountType}</h4>
                     <form className={styles['form']} id="editAccount" onSubmit={handleFormSubmit}>
                         <div className={styles['form__section--right']}>
                             <h4>Contact:</h4>
@@ -100,15 +101,6 @@ export default function EditAccount() {
                                     id="contactPhone"
                                     onChange={(event) => handleInputChange(event)}
                                     value={formData.contactPhone ? formData.contactPhone : ''}
-                                />
-                            </InputContainer>
-                            <InputContainer for="dob" label="Birthdate" footnote="Footnote">
-                                <input
-                                    type="date"
-                                    name="dob"
-                                    id="dob"
-                                    onChange={(event) => handleInputChange(event)}
-                                    value={formData.dob ? formData.dob : ''}
                                 />
                             </InputContainer>
                         </div>
