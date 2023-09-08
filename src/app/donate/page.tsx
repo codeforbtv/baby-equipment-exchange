@@ -3,9 +3,9 @@
 import InputContainer from '@/components/InputContainer'
 import ImageThumbnail from '@/components/ImageThumbnail'
 import ButtonContainer from '@/components/ButtonContainer'
+import ProtectedRoute from '@/components/ProtectedRoute'
 //Hooks
-import { useState, useEffect, useContext, ReactElement } from 'react'
-import { UserContext } from '@/contexts/UserContext'
+import { useState, useEffect, ReactElement } from 'react'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
 import styles from './Donate.module.css'
@@ -39,7 +39,6 @@ export default function Donate() {
     const [formData, setFormData] = useState<DonationFormData>(dummyDonationData)
     const [images, setImages] = useState<FileList | null>()
     const [imageElements, setImageElements] = useState<ReactElement[]>([])
-    const { currentUser } = useContext(UserContext)
 
     function previewPhotos(e: React.ChangeEvent<HTMLInputElement>) {
         let imageList = new DataTransfer()
@@ -98,92 +97,85 @@ export default function Donate() {
     }
 
     return (
-        <>
-            {!currentUser ? (
-                <div className={styles['login__heading-prompt']}>
-                    <h2>You must be logged in to donate</h2>
-                    <ButtonContainer text="Login" link="/login" hasIcon />
-                </div>
-            ) : (
-                <div className={styles['donate__container']}>
-                    <h1>Donate</h1>
-                    <h4>Page Summary</h4>
-                    <div className={globalStyles['content__container']}>
-                        <form onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
-                            <div className={styles['form__section--left']}>
-                                <InputContainer for="category" label="Category" footnote="Footnote">
-                                    <select
-                                        style={{ padding: '.25rem .5rem' }}
-                                        name="category"
-                                        id="email"
-                                        placeholder=" Category"
-                                        onChange={(e) => handleInputChange(e)}
-                                        value={formData.category ? formData.category : ''}
-                                        required
-                                    >
-                                        <option value="">Select</option>
-                                        <option value="optionA">Option A</option>
-                                        <option value="optionB">Option B</option>
-                                        <option value="optionC">Option C</option>
-                                        <option value="optionD">Option D</option>
-                                    </select>
-                                </InputContainer>
-                                <InputContainer for="brand" label="Brand" footnote="Footnote">
-                                    <input
-                                        type="text"
-                                        name="brand"
-                                        id="brand"
-                                        placeholder=" Brand"
-                                        onChange={(e) => handleInputChange(e)}
-                                        value={formData.brand ? formData.brand : ''}
-                                    ></input>
-                                </InputContainer>
-                                <InputContainer for="model" label="Model" footnote="Footnote">
-                                    <input
-                                        type="text"
-                                        name="model"
-                                        id="model"
-                                        onChange={(e) => handleInputChange(e)}
-                                        value={formData.model ? formData.model : ''}
-                                    ></input>
-                                </InputContainer>
-                                <InputContainer for="description" label="Description" footnote="Footnote">
-                                    <textarea
-                                        rows={10}
-                                        cols={40}
-                                        name="description"
-                                        id="description"
-                                        onChange={(e) => handleInputChange(e)}
-                                        value={formData.description ? formData.description : ''}
-                                    ></textarea>
-                                </InputContainer>
-                            </div>
-                            <div className={styles['form__section--right']}>
-                                <InputContainer for="images" label="Upload images" footnote="Footnote">
-                                    <div className={styles['image-uploader__container']}>
-                                        <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
-                                        <div className={styles['image-uploader__input']}>
-                                            <label htmlFor="images">Add Files</label>
-                                            <input
-                                                type="file"
-                                                id="images"
-                                                name="images"
-                                                accept="image/png, image/jpeg"
-                                                capture="environment"
-                                                onChange={previewPhotos}
-                                                multiple
-                                            />
-                                        </div>
+        <ProtectedRoute>
+            <div className={styles['donate__container']}>
+                <h1>Donate</h1>
+                <h4>Page Summary</h4>
+                <div className={globalStyles['content__container']}>
+                    <form onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
+                        <div className={styles['form__section--left']}>
+                            <InputContainer for="category" label="Category" footnote="Footnote">
+                                <select
+                                    style={{ padding: '.25rem .5rem' }}
+                                    name="category"
+                                    id="email"
+                                    placeholder=" Category"
+                                    onChange={(e) => handleInputChange(e)}
+                                    value={formData.category ? formData.category : ''}
+                                    required
+                                >
+                                    <option value="">Select</option>
+                                    <option value="optionA">Option A</option>
+                                    <option value="optionB">Option B</option>
+                                    <option value="optionC">Option C</option>
+                                    <option value="optionD">Option D</option>
+                                </select>
+                            </InputContainer>
+                            <InputContainer for="brand" label="Brand" footnote="Footnote">
+                                <input
+                                    type="text"
+                                    name="brand"
+                                    id="brand"
+                                    placeholder=" Brand"
+                                    onChange={(e) => handleInputChange(e)}
+                                    value={formData.brand ? formData.brand : ''}
+                                ></input>
+                            </InputContainer>
+                            <InputContainer for="model" label="Model" footnote="Footnote">
+                                <input
+                                    type="text"
+                                    name="model"
+                                    id="model"
+                                    onChange={(e) => handleInputChange(e)}
+                                    value={formData.model ? formData.model : ''}
+                                ></input>
+                            </InputContainer>
+                            <InputContainer for="description" label="Description" footnote="Footnote">
+                                <textarea
+                                    rows={10}
+                                    cols={40}
+                                    name="description"
+                                    id="description"
+                                    onChange={(e) => handleInputChange(e)}
+                                    value={formData.description ? formData.description : ''}
+                                ></textarea>
+                            </InputContainer>
+                        </div>
+                        <div className={styles['form__section--right']}>
+                            <InputContainer for="images" label="Upload images" footnote="Footnote">
+                                <div className={styles['image-uploader__container']}>
+                                    <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
+                                    <div className={styles['image-uploader__input']}>
+                                        <label htmlFor="images">Add Files</label>
+                                        <input
+                                            type="file"
+                                            id="images"
+                                            name="images"
+                                            accept="image/png, image/jpeg"
+                                            capture="environment"
+                                            onChange={previewPhotos}
+                                            multiple
+                                        />
                                     </div>
-                                </InputContainer>
-                            </div>
-                            <div className={styles['form__section--bottom']}>
-                                <ButtonContainer type={'submit'} text={'Submit'} hasIcon width={'25%'} />
-                            </div>
-                        </form>
-                    </div>
+                                </div>
+                            </InputContainer>
+                        </div>
+                        <div className={styles['form__section--bottom']}>
+                            <ButtonContainer type={'submit'} text={'Submit'} hasIcon width={'25%'} />
+                        </div>
+                    </form>
                 </div>
-            )}
-        </>
+            </div>
+        </ProtectedRoute>
     )
 }

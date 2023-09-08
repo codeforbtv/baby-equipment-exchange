@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { slide as Menu } from 'react-burger-menu'
 //Hooks
-import { useState, useContext } from 'react'
-import { UserContext } from '@/contexts/UserContext'
+import { useState } from 'react'
+import { useUserContext } from '@/contexts/UserContext'
 //Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage } from '@fortawesome/free-regular-svg-icons'
@@ -70,7 +70,7 @@ const burgerMenuStyles = {
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false)
-    const { currentUser } = useContext(UserContext)
+    const { currentUser } = useUserContext()
 
     function handleIsOpen() {
         setIsOpen(!isOpen)

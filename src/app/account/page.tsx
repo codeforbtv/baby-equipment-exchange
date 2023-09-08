@@ -1,10 +1,9 @@
 'use client'
 //Components
 import ButtonContainer from '@/components/ButtonContainer'
+import ProtectedRoute from '@/components/ProtectedRoute'
 //Hooks
-import { useState, useContext } from 'react'
-import { UserContext } from '@/contexts/UserContext'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
 import styles from './Account.module.css'
@@ -45,10 +44,8 @@ const dummyDonations: UserDonations = [
 ]
 
 export default function Account() {
-    const { currentUser } = useContext(UserContext)
     const dateString = `${dummyUser.dob.getMonth() + 1}/${dummyUser.dob.getDate()}/${dummyUser.dob.getFullYear()}`
     const [userDonations, setUserDonations] = useState<UserDonations>(dummyDonations)
-    const router = useRouter()
 
     const userDonationList = userDonations.map((donation, index) => {
         return (
@@ -62,44 +59,37 @@ export default function Account() {
     })
 
     return (
-        <>
-            {!currentUser ? (
-                <div className={styles['login__heading-prompt']}>
-                    <h2>You must be logged in to view your account</h2>
-                    <ButtonContainer text="Login" link="/login" hasIcon />
-                </div>
-            ) : (
-                <div className={styles['account__container']}>
-                    <h1>Account</h1>
-                    <h4>Page Summary</h4>
-                    <div className={globalStyles['content__container']}>
-                        <div className={styles['account__header']}>
-                            <h2>Account Details</h2>
-                            <ButtonContainer text="Edit Account" link="/account/edit" />
-                        </div>
-                        <h4>Username: {dummyUser.username}</h4>
-                        <h4>DOB: {dateString}</h4>
-                        <h4>
-                            Contact: <br />
-                            Phone: {dummyUser.contact.phone}
-                            <br />
-                            Email: {dummyUser.contact.email}
-                        </h4>
-                        <h4>
-                            Location: <br />
-                            {dummyUser.location.streetAddress}
-                            <br />
-                            {dummyUser.location.city} {dummyUser.location.state}
-                            <br />
-                            {dummyUser.location.zip}
-                            <br />
-                        </h4>
-                        <h4>Usertype: {dummyUser.type}</h4>
-                        <h2>Donations:</h2>
-                        <div className={styles['donations__list']}>{userDonationList}</div>
+        <ProtectedRoute>
+            <div className={styles['account__container']}>
+                <h1>Account</h1>
+                <h4>Page Summary</h4>
+                <div className={globalStyles['content__container']}>
+                    <div className={styles['account__header']}>
+                        <h2>Account Details</h2>
+                        <ButtonContainer text="Edit Account" link="/account/edit" />
                     </div>
+                    <h4>Username: {dummyUser.username}</h4>
+                    <h4>DOB: {dateString}</h4>
+                    <h4>
+                        Contact: <br />
+                        Phone: {dummyUser.contact.phone}
+                        <br />
+                        Email: {dummyUser.contact.email}
+                    </h4>
+                    <h4>
+                        Location: <br />
+                        {dummyUser.location.streetAddress}
+                        <br />
+                        {dummyUser.location.city} {dummyUser.location.state}
+                        <br />
+                        {dummyUser.location.zip}
+                        <br />
+                    </h4>
+                    <h4>Usertype: {dummyUser.type}</h4>
+                    <h2>Donations:</h2>
+                    <div className={styles['donations__list']}>{userDonationList}</div>
                 </div>
-            )}
-        </>
+            </div>
+        </ProtectedRoute>
     )
 }
