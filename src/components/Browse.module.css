@@ -1,7 +1,7 @@
 .browse__header {
-display: flex;
-justify-content: space-between;
-padding: .25rem;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem;
 }
 
 .header__icons {
@@ -14,7 +14,7 @@ padding: .25rem;
     cursor: pointer;
 }
 
-.browse__grid{ 
+.browse__grid {
     position: relative;
     width: 100%;
     display: flex;

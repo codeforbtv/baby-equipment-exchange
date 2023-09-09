@@ -20,6 +20,7 @@ module.exports = {
         'no-undef': 0,
         'no-unused-vars': 'off',
         'react/prop-types': 0,
+        'react/react-in-jsx-scope': 'off',
         '@typescript-eslint/camelcase': 0,
         '@typescript-eslint/no-unused-vars': 1,
         '@typescript-eslint/no-use-before-define': 0,

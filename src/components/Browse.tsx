@@ -24,17 +24,16 @@ const dummyDonations: Donation[] = [
     new Donation('category', 'brand', 'model', 'description', true, ['img5'], new Date(), new Date())
 ]
 
-
 const Browse: React.FC = () => {
     const [donations, setDonations] = useState([] as Donation[])
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false)
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false)
 
     function toggleSearchBar() {
-        setIsSearchVisible(prev => !prev)
+        setIsSearchVisible((prev) => !prev)
     }
     function toggleFilters() {
-        setIsFilterVisible(prev => !prev)
+        setIsFilterVisible((prev) => !prev)
     }
 
     /**
@@ -64,25 +63,24 @@ const Browse: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {isSearchVisible &&
-                <SearchBar />
-            }
-            {isFilterVisible &&
-                <Filter />
-            }
+            {isSearchVisible && <SearchBar />}
+            {isFilterVisible && <Filter />}
             <div className={styles['browse__grid']}>
                 {donations.map((donation) => {
                     // An active donation must have at least one photo for display.
-                    return <DonationCard
-                        key={donation.images[0]}
-                        category={donation.category}
-                        brand={donation.brand}
-                        model={donation.model}
-                        description={donation.description}
-                        active={donation.active}
-                        images={donation.images}
-                        createdAt={donation.createdAt}
-                        modifiedAt={donation.modifiedAt} />
+                    return (
+                        <DonationCard
+                            key={donation.images[0]}
+                            category={donation.category}
+                            brand={donation.brand}
+                            model={donation.model}
+                            description={donation.description}
+                            active={donation.active}
+                            images={donation.images}
+                            createdAt={donation.createdAt}
+                            modifiedAt={donation.modifiedAt}
+                        />
+                    )
                 })}
             </div>
         </>

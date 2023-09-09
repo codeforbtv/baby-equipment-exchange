@@ -6,7 +6,7 @@
 }
 
 .button__container a {
-    text-decoration:  none;
+    text-decoration: none;
 }
 
 .button {
@@ -25,10 +25,11 @@
     width: max-content;
 }
 
-.button__icon{
+.button__icon {
     height: 100%;
 }
-.button__icon, .button__text{
+.button__icon,
+.button__text {
     margin: 0 3px;
 }
 
