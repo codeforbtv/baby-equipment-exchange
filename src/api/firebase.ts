@@ -112,7 +112,11 @@ export async function isUnverified(): Promise<boolean | undefined> {
     return (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims.unverified !== undefined ? true : false
 }
 
-export function getUserId(): string | undefined {
+export function getUserEmail(): string | null | undefined {
+    return getFirebaseAuth().currentUser?.email
+}
+
+export function getUserId(): string | null | undefined {
     return getFirebaseAuth().currentUser?.uid
 }
 

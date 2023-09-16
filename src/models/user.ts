@@ -1,5 +1,5 @@
 //Firebase types
-import { Timestamp } from 'firebase/firestore'
+import { FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore'
 //Plain JavaScript objects
 import { Donation } from './donation'
 
@@ -7,13 +7,14 @@ export interface IUser {
     [key: string]:
         | string
         | Donation[]
+        | FieldValue
         | Timestamp
         | null
         | undefined
         | (() => string)
         | (() => Donation[])
         | (() => string | null | undefined)
-        | (() => Timestamp)
+        | (() => FieldValue)
 
     name: string
     pendingDonations: Donation[]

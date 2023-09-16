@@ -1,4 +1,6 @@
 'use client'
+//Components
+import Link from 'next/link'
 //Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleRight } from '@fortawesome/free-regular-svg-icons'
@@ -27,7 +29,7 @@ export default function ButtonContainer(props: ButtonProps) {
     return (
         <div className={styles['button__container']}>
             {props.link && (
-                <a href={props.link}>
+                <Link href={props.link}>
                     <button
                         style={{ width: props.width ? `${props.width}` : '' }}
                         className={` ${styles['button']} ${props.theme ? styles[props.theme] : ''}`}
@@ -43,7 +45,7 @@ export default function ButtonContainer(props: ButtonProps) {
                             />
                         )}
                     </button>
-                </a>
+                </Link>
             )}
             {!props.link && (
                 <button

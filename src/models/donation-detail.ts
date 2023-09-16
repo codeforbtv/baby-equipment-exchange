@@ -7,7 +7,7 @@ import { Contact } from './contact'
 export interface IDonationDetail {
     [key: string]: any
     donation: string
-    availability: string
+    availability: string | null | undefined
     donor: string
     tagNumber: string | null | undefined
     tagNumberForItemDelivered: string | null | undefined
@@ -29,7 +29,7 @@ export interface IDonationDetail {
 export class DonationDetail implements IDonationDetail {
     [key: string]: any
     donation: string
-    availability: string
+    availability: string | null | undefined
     donor: string
     tagNumber: string | null | undefined
     tagNumberForItemDelivered: string | null | undefined
@@ -72,7 +72,7 @@ export class DonationDetail implements IDonationDetail {
         return this.donation
     }
 
-    getAvailability(): string {
+    getAvailability(): string | null | undefined {
         return this.availability
     }
 
@@ -148,5 +148,9 @@ export class DonationDetail implements IDonationDetail {
 
     getModifiedAt(): Timestamp {
         return this.modifiedAt
+    }
+
+    setDonation(donation: string) {
+        this.donation = donation
     }
 }

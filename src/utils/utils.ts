@@ -4,3 +4,25 @@ export function base64ToBlob(base64: string, contentType: string): Blob {
 
     return blob
 }
+
+export function contains(object: object, objects: object[]) {
+    const objectString: string = JSON.stringify(object)
+    for (let index = 0; index < objects.length; index++) {
+        if (JSON.stringify(objects[index]) === objectString) {
+            return index
+        }
+    }
+    return -1
+}
+
+export function stripNullUndefined(object: any) {
+    for (const key in object) {
+        if (object[key] instanceof Object) {
+            stripNullUndefined(object[key])
+        }
+        if (object[key] === undefined || object[key] === null) {
+            delete object[key]
+        }
+    }
+    return object
+}

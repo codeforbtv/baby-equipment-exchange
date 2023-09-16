@@ -1,5 +1,5 @@
 //Firebase types
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp, serverTimestamp } from 'firebase/firestore'
 
 export function imageFactory(...downloadURLs: [string]): Image[] | Image | null {
     const images: Image[] = []
@@ -10,11 +10,10 @@ export function imageFactory(...downloadURLs: [string]): Image[] | Image | null 
 
     if (downloadURLs.length === (1 as number)) {
         const date: number = Date.now()
-        const timestamp: Timestamp = Timestamp.fromMillis(date)
         const imageData: IImage = {
             downloadURL: downloadURLs[0],
-            createdAt: timestamp,
-            modifiedAt: timestamp
+            createdAt: serverTimestamp() as Timestamp,
+            modifiedAt: serverTimestamp() as Timestamp
         }
         const image = new Image(imageData)
         return image
@@ -22,11 +21,10 @@ export function imageFactory(...downloadURLs: [string]): Image[] | Image | null 
 
     for (const downloadURL of downloadURLs) {
         const date: number = Date.now()
-        const timestamp: Timestamp = Timestamp.fromMillis(date)
         const imageData: IImage = {
             downloadURL: downloadURL,
-            createdAt: timestamp,
-            modifiedAt: timestamp
+            createdAt: serverTimestamp() as Timestamp,
+            modifiedAt: serverTimestamp() as Timestamp
         }
         const image = new Image(imageData)
         images.push(image)

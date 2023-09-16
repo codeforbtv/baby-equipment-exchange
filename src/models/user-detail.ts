@@ -1,28 +1,33 @@
 //Firebase types
 import { Timestamp } from 'firebase/firestore'
 //Plain JavaScript objects
-import { Address } from './address'
-import { Phone } from './phone'
+import { IAddress } from './address'
 
 export interface IUserDetail {
     [key: string]:
         | string
+        | number
         | Timestamp
-        | Address[]
-        | Phone[]
+        | IAddress
+        | IAddress[]
         | string[]
         | null
         | undefined
         | (() => string)
-        | (() => Address[])
-        | (() => Phone[])
+        | (() => IAddress[])
         | (() => string[])
         | (() => Timestamp)
+        | (() => IAddress | null | undefined)
+        | (() => number | null | undefined)
         | (() => string | null | undefined)
     user: string
+    email: string | null | undefined
+    address: IAddress | null | undefined
+    phone: string | null | undefined
+    website: string | null | undefined
     emails: string[]
-    phones: Phone[]
-    addresses: Address[]
+    phones: string[]
+    addresses: IAddress[]
     websites: string[]
     notes: string
     createdAt: Timestamp
@@ -32,23 +37,29 @@ export interface IUserDetail {
 export class UserDetail implements IUserDetail {
     [key: string]:
         | string
+        | number
         | Timestamp
-        | Address[]
-        | Phone[]
+        | IAddress
+        | IAddress[]
         | string[]
         | null
         | undefined
         | (() => string)
-        | (() => Address[])
-        | (() => Phone[])
+        | (() => IAddress[])
         | (() => string[])
         | (() => Timestamp)
+        | (() => IAddress | null | undefined)
+        | (() => number | null | undefined)
         | (() => string | null | undefined)
     user: string
     emails: string[]
-    phones: Phone[]
-    addresses: Address[]
+    phones: string[]
+    addresses: IAddress[]
     websites: string[]
+    address: IAddress | null | undefined
+    email: string | null | undefined
+    phone: string | null | undefined
+    website: string | null | undefined
     notes: string
     createdAt: Timestamp
     modifiedAt: Timestamp
@@ -62,6 +73,10 @@ export class UserDetail implements IUserDetail {
         this.notes = args.notes
         this.createdAt = args.createdAt
         this.modifiedAt = args.modifiedAt
+        this.address = args.address
+        this.email = args.email
+        this.phone = args.phone
+        this.website = args.website
     }
 
     getUser(): string {
@@ -72,11 +87,27 @@ export class UserDetail implements IUserDetail {
         return this.emails
     }
 
-    getPhones(): Phone[] {
+    getPhones(): string[] {
         return this.phones
     }
 
-    getAddresses(): Address[] {
+    getPrimaryAddress(): IAddress | null | undefined {
+        return this.address
+    }
+
+    getPrimaryEmail(): string | null | undefined {
+        return this.email
+    }
+
+    getPrimaryPhone(): string | null | undefined {
+        return this.phone
+    }
+
+    getPrimaryWebsite(): string | null | undefined {
+        return this.website
+    }
+
+    getAddresses(): IAddress[] {
         return this.addresses
     }
 

@@ -5,7 +5,7 @@ import { ref, uploadBytes } from 'firebase/storage'
 import { IImage, Image, imageFactory } from '../models/image'
 import { IImageDetail, ImageDetail } from '@/models/image-detail'
 //Modules
-import { addDoc, collection, doc, DocumentData, getDoc, QueryDocumentSnapshot, SnapshotOptions, Timestamp } from 'firebase/firestore'
+import { addDoc, collection, doc, DocumentData, getDoc, QueryDocumentSnapshot, serverTimestamp, SnapshotOptions, Timestamp } from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
 
 const IMAGES_COLLECTION = 'Images'
@@ -53,7 +53,6 @@ export async function uploadImages(files: FileList): Promise<string[] | undefine
         const extension = '.' + /[^\.]*$/.exec(file.name)![0] // Suppress the no-useless-escape rule from being called on a regular expression.
         const fileSize = file.size
         const fileType = file.type
-        const timestamp = Timestamp.fromMillis(currentTime)
         const storageFilename = `${uuidv4()}-${currentTime}${extension}`
 
         // Upload image(s) to Cloud Storage
@@ -74,11 +73,11 @@ export async function uploadImages(files: FileList): Promise<string[] | undefine
         const imageDetailsCollection = collection(getDb(), IMAGE_DETAILS_COLLECTION)
         const imageDetailsData: IImageDetail = {
             image: imageRef.id,
-            uploadedBy: uid,
+            uploadedBy: getUserId()!,
             uri: storageFilename,
             filename: storageFilename,
-            createdAt: timestamp,
-            modifiedAt: timestamp
+            createdAt: serverTimestamp() as Timestamp,
+            modifiedAt: serverTimestamp() as Timestamp
         }
         const { ...imageDetail } = new ImageDetail(imageDetailsData)
         await addDoc(imageDetailsCollection, imageDetail)

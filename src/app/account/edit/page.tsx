@@ -4,27 +4,13 @@ import InputContainer from '@/components/InputContainer'
 import ButtonContainer from '@/components/ButtonContainer'
 //Hooks
 import { useEffect, useState } from 'react'
+//Models
+import { AccountInformation as AccountInfo } from '@/types/post-data'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
 import styles from './AccountEdit.module.css'
 import { getAccountType } from '@/api/firebase'
-
-type AccountInformation = {
-    name: string
-    username: string
-    contact: { phone: string; email: string }
-    location: { streetAddress: string; city: string; state: string; zip: string }
-    type: string
-}
-
-//This will initially be fetched from the DB
-const dummyUser: AccountInformation = {
-    name: 'John Doe',
-    username: 'johndoe@email.com',
-    contact: { phone: '555-555-1234', email: 'johndoe@email.com' },
-    location: { streetAddress: '1234 Main Street', city: 'Burlington', state: 'VT', zip: '05401' },
-    type: 'admin'
-}
+import { getUserAccount, setUserAccount } from '@/api/firebase-users'
 
 type AccountFormData = {
     name: string | null
@@ -47,17 +33,59 @@ export default function EditAccount() {
         })
     }, [])
 
-    const [formData, setFormData] = useState<AccountFormData>({
-        name: dummyUser.name,
-        username: dummyUser.username,
-        contactEmail: dummyUser.contact.email,
-        contactPhone: dummyUser.contact.phone,
-        locationStreet: dummyUser.location.streetAddress,
-        locationCity: dummyUser.location.city,
-        locationState: dummyUser.location.state,
-        locationZip: dummyUser.location.zip,
-        type: dummyUser.type
+    const [accountInfo, setAccountInfo] = useState<AccountInfo>({
+        name: '',
+        contact: {
+            user: undefined,
+            name: undefined,
+            email: undefined,
+            phone: undefined,
+            website: undefined,
+            notes: undefined
+        },
+        location: {
+            line_1: undefined,
+            line_2: undefined,
+            city: undefined,
+            state: undefined,
+            zipcode: undefined,
+            latitude: undefined,
+            longitude: undefined
+        },
+        photo: undefined
     })
+
+    const [formData, setFormData] = useState<AccountFormData>({
+        name: accountInfo.name,
+        username: accountInfo.contact?.email || '',
+        contactEmail: accountInfo.contact?.email || '',
+        contactPhone: accountInfo.contact?.phone || '',
+        locationStreet: accountInfo.location?.line_1 || '',
+        locationCity: accountInfo.location?.city || '',
+        locationState: accountInfo.location?.state || '',
+        locationZip: accountInfo.location?.zipcode || '',
+        type: accountType
+    })
+
+    useEffect(() => {
+        ;(async () => {
+            const accountInfo = await getUserAccount()
+
+            setAccountInfo(accountInfo)
+
+            setFormData({
+                name: accountInfo.name,
+                username: accountInfo.contact?.email || '',
+                contactEmail: accountInfo.contact?.email || '',
+                contactPhone: accountInfo.contact?.phone || '',
+                locationStreet: accountInfo.location?.line_1 || '',
+                locationCity: accountInfo.location?.city || '',
+                locationState: accountInfo.location?.state || '',
+                locationZip: accountInfo.location?.zipcode || '',
+                type: accountType
+            })
+        })()
+    }, [])
 
     function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
         setFormData((prev) => {
@@ -68,7 +96,27 @@ export default function EditAccount() {
     //Use this to handle passing form data to the database on submission
     function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
-        const submittedData = new FormData(e.currentTarget)
+        //const submittedData = new FormData(e.currentTarget)
+        setUserAccount({
+            ...accountInfo,
+            contact: {
+                name: formData.name,
+                user: accountInfo.contact?.user,
+                email: formData.contactEmail,
+                notes: accountInfo.contact?.notes,
+                phone: formData.contactPhone,
+                website: accountInfo.contact?.website
+            },
+            location: {
+                line_1: formData.locationStreet,
+                line_2: accountInfo.location?.line_2,
+                city: formData.locationCity,
+                state: formData.locationState,
+                zipcode: formData.locationZip,
+                latitude: accountInfo.location?.latitude,
+                longitude: accountInfo.location?.longitude
+            }
+        })
     }
 
     return (
@@ -80,7 +128,7 @@ export default function EditAccount() {
                     <div className={styles['account__header']}>
                         <h2>Account Details</h2>
                     </div>
-                    <h4>Username: {dummyUser.username}</h4>
+                    <h4>Username: {accountInfo.contact?.email}</h4>
                     <h4>Usertype: {accountType}</h4>
                     <form className={styles['form']} id="editAccount" onSubmit={handleFormSubmit}>
                         <div className={styles['form__section--right']}>

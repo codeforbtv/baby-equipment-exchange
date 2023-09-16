@@ -3,27 +3,13 @@
 import ButtonContainer from '@/components/ButtonContainer'
 //Hooks
 import { useEffect, useState } from 'react'
+//Models
+import { AccountInformation as AccountInfo } from '@/types/post-data'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
 import styles from './Account.module.css'
 import { getAccountType } from '@/api/firebase'
-
-type AccountInformation = {
-    name: string
-    username: string
-    contact: { phone: string; email: string }
-    location: { streetAddress: string; city: string; state: string; zip: string }
-    type: string
-}
-
-//This will initially be fetched from the DB
-const dummyUser: AccountInformation = {
-    name: 'John Doe',
-    username: 'johndoe@email.com',
-    contact: { phone: '555-555-1234', email: 'johndoe@email.com' },
-    location: { streetAddress: '1234 Main Street', city: 'Burlington', state: 'VT', zip: '05401' },
-    type: 'admin'
-}
+import { getUserAccount } from '@/api/firebase-users'
 
 type UserDonations = {
     category: string
@@ -44,6 +30,36 @@ const dummyDonations: UserDonations = [
 export default function Account() {
     const [accountType, setAccountType] = useState<string>('')
     const [userDonations, setUserDonations] = useState<UserDonations>(dummyDonations)
+
+    const [accountInfo, setAccountInfo] = useState<AccountInfo>({
+        name: '',
+        contact: {
+            user: undefined,
+            name: undefined,
+            email: undefined,
+            phone: undefined,
+            website: undefined,
+            notes: undefined
+        },
+        location: {
+            line_1: undefined,
+            line_2: undefined,
+            city: undefined,
+            state: undefined,
+            zipcode: undefined,
+            latitude: undefined,
+            longitude: undefined
+        },
+        photo: undefined
+    })
+
+    useEffect(() => {
+        ;(async () => {
+            const accountInfo = await getUserAccount()
+
+            setAccountInfo(accountInfo)
+        })()
+    }, [])
 
     useEffect(() => {
         getAccountType().then((acctType) => {
@@ -72,20 +88,20 @@ export default function Account() {
                         <h2>Account Details</h2>
                         <ButtonContainer text="Edit Account" link="/account/edit" />
                     </div>
-                    <h4>Username: {dummyUser.username}</h4>
+                    <h4>Username: {accountInfo.contact?.email}</h4>
                     <h4>
                         Contact: <br />
-                        Phone: {dummyUser.contact.phone}
+                        Phone: {accountInfo.contact?.phone}
                         <br />
-                        Email: {dummyUser.contact.email}
+                        Email: {accountInfo.contact?.email}
                     </h4>
                     <h4>
                         Location: <br />
-                        {dummyUser.location.streetAddress}
+                        {accountInfo.location?.line_1}
                         <br />
-                        {dummyUser.location.city} {dummyUser.location.state}
+                        {accountInfo.location?.city} {accountInfo.location?.state}
                         <br />
-                        {dummyUser.location.zip}
+                        {accountInfo.location?.zipcode}
                         <br />
                     </h4>
                     <h4>Usertype: {accountType}</h4>

@@ -47,6 +47,11 @@ export async function isEmailInUse(email: string): Promise<boolean> {
 export async function setClaimForNewUser(userId: string) {
     await getAuth(app).setCustomUserClaims(userId, {
         donor: true,
-        unverified: true
+        unverified: true,
+        misc: {
+            val1: {
+                val2: true
+            }
+        }
     })
 }

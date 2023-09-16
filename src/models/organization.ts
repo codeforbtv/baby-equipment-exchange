@@ -9,7 +9,7 @@ export interface IOrganization {
     diaperBank: boolean
     babyProductExchange: boolean
     lowIncome: boolean
-    criminalJusticeInvolde: boolean
+    criminalJusticeInvolved: boolean
     adoptionAndFosterFamilies: boolean
     refugeeAndImmigration: boolean
     substanceAbuseDisorders: boolean
@@ -25,7 +25,7 @@ export class Organization implements IOrganization {
     diaperBank: boolean
     babyProductExchange: boolean
     lowIncome: boolean
-    criminalJusticeInvolde: boolean
+    criminalJusticeInvolved: boolean
     adoptionAndFosterFamilies: boolean
     refugeeAndImmigration: boolean
     substanceAbuseDisorders: boolean
@@ -39,7 +39,7 @@ export class Organization implements IOrganization {
         this.diaperBank = args.diaperBank
         this.babyProductExchange = args.babyProductExchange
         this.lowIncome = args.lowIncome
-        this.criminalJusticeInvolde = args.criminalJusticeInvolde
+        this.criminalJusticeInvolved = args.criminalJusticeInvolved
         this.adoptionAndFosterFamilies = args.adoptionAndFosterFamilies
         this.refugeeAndImmigration = args.refugeeAndImmigration
         this.substanceAbuseDisorders = args.substanceAbuseDisorders
@@ -50,31 +50,31 @@ export class Organization implements IOrganization {
         this.modifiedAt = args.modifiedAt
     }
 
-    getDiaperBank() {
+    isDiaperBank() {
         return this.diaperBank
     }
 
-    getBabyProductExchange() {
+    isBabyProductExchange() {
         return this.babyProductExchange
     }
 
-    getLowIncome() {
+    isLowIncome() {
         return this.lowIncome
     }
 
-    getCriminalJusticeInvolde() {
-        return this.criminalJusticeInvolde
+    isCriminalJusticeInvolved() {
+        return this.criminalJusticeInvolved
     }
 
-    getAdoptionAndFosterFamilies() {
+    isAdoptionAndFosterFamilies() {
         return this.adoptionAndFosterFamilies
     }
 
-    getRefugeeAndImmigration() {
+    isRefugeeAndImmigration() {
         return this.refugeeAndImmigration
     }
 
-    getsubstanceAbuseDisorders() {
+    isSubstanceAbuseDisorders() {
         return this.substanceAbuseDisorders
     }
 

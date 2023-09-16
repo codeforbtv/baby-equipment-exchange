@@ -3,10 +3,10 @@ import { Timestamp } from 'firebase/firestore'
 
 export interface IDonation {
     [key: string]:
-        | string
         | boolean
         | string[]
         | Timestamp
+        | string
         | null
         | undefined
         | (() => string)
@@ -53,8 +53,8 @@ export class Donation implements IDonation {
         this.description = args.description
         this.active = args.active
         this.images = args.images
-        this.createdAt = args.createdAt
-        this.modifiedAt = args.modifiedAt
+        this.createdAt = args.createdAt as Timestamp
+        this.modifiedAt = args.modifiedAt as Timestamp
     }
 
     getCategory(): string | null | undefined {

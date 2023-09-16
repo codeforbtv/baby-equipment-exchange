@@ -1,11 +1,8 @@
-//Plain JavaScript objects
-import { Phone } from './phone'
-
 export interface IContact {
     user: string | null | undefined
     name: string | null | undefined
     email: string | null | undefined
-    phone: Phone | null | undefined
+    phone: string | null | undefined
     website: string | null | undefined
     notes: string | null | undefined
 }
@@ -14,7 +11,7 @@ export class Contact implements IContact {
     user: string | null | undefined
     name: string | null | undefined
     email: string | null | undefined
-    phone: Phone | null | undefined
+    phone: string | null | undefined
     website: string | null | undefined
     notes: string | null | undefined
 
@@ -39,7 +36,7 @@ export class Contact implements IContact {
         return this.email
     }
 
-    getPhone(): Phone | null | undefined {
+    getPhone(): string | null | undefined {
         return this.phone
     }
 
