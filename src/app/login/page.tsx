@@ -7,9 +7,9 @@ import Loader from '@/components/Loader'
 //Hooks
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-
 //Libs
 import { Theme } from '@/components/ButtonContainer'
+import Link from 'next/link'
 import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '../../api/firebase'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
@@ -81,7 +81,9 @@ export default function Login() {
                                 <ButtonContainer type="submit" text="Login" theme={Theme.dark} hasIcon />
                             </form>
                             <hr />
-                            <p>Instructions for forgotten password, account setup.</p>
+                            <p>
+                                Instructions for forgotten password. <Link href="/join">Create an account.</Link>
+                            </p>
                         </>
                     )}
                 </div>

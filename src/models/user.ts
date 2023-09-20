@@ -1,68 +1,70 @@
-import { Contact } from './contact'
+//Firebase types
+import { FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore'
+//Plain JavaScript objects
 import { Donation } from './donation'
-import { Name } from './name'
 
-interface IUser {
-    type: string
-    name: Name
-    gender: string
-    dob: Date
-    pendingDonations: Array<Donation>
-    photo: string
-    createdAt: Date
-    modifiedAt: Date
+export interface IUser {
+    [key: string]:
+        | string
+        | Donation[]
+        | FieldValue
+        | Timestamp
+        | null
+        | undefined
+        | (() => string)
+        | (() => Donation[])
+        | (() => string | null | undefined)
+        | (() => FieldValue)
+
+    name: string
+    pendingDonations: Donation[]
+    photo: string | null | undefined
+    createdAt: Timestamp
+    modifiedAt: Timestamp
 }
 
 export class User implements IUser {
-    type: string
-    name: Name
-    gender: string
-    dob: Date
+    [key: string]:
+        | string
+        | Donation[]
+        | Timestamp
+        | null
+        | undefined
+        | (() => string)
+        | (() => Donation[])
+        | (() => string | null | undefined)
+        | (() => Timestamp)
+    name: string
     pendingDonations: Donation[]
-    photo: string
-    createdAt: Date
-    modifiedAt: Date
+    photo: string | null | undefined
+    createdAt: Timestamp
+    modifiedAt: Timestamp
 
-    constructor(type: string, name: Name, gender: string, dob: Date, pendingDonations: Donation[], photo: string, createdAt: Date, modifiedAt: Date) {
-        this.type = type
-        this.name = name
-        this.gender = gender
-        this.dob = dob
-        this.pendingDonations = pendingDonations
-        this.photo = photo
-        this.createdAt = createdAt
-        this.modifiedAt = modifiedAt
+    constructor(args: IUser) {
+        this.name = args.name
+        this.pendingDonations = args.pendingDonations
+        this.photo = args.photo
+        this.createdAt = args.createdAt
+        this.modifiedAt = args.modifiedAt
     }
 
-    getType(): string {
-        return this.type
-    }
-
-    getName(): Name {
+    getName(): string {
         return this.name
     }
 
-    getGender(): string {
-        return this.gender
-    }
-
-    getDob(): Date {
-        return this.dob
-    }
-
-    getPendingDonations(): Array<Donation> {
+    getPendingDonations(): Donation[] {
         return this.pendingDonations
     }
 
-    getPhoto(): string {
+    getPhoto(): string | null | undefined {
         return this.photo
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt
     }
 }

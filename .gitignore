@@ -43,6 +43,8 @@ firestore-data
 firebase-config.js
 firebase.json
 storage.rules
+*adminsdk*
+*serviceAccount*
 
 #VSCODE Preferences
 .vscode

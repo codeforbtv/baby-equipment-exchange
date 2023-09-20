@@ -41,18 +41,18 @@ export default function Donate() {
     const [imageElements, setImageElements] = useState<ReactElement[]>([])
 
     function previewPhotos(e: React.ChangeEvent<HTMLInputElement>) {
-        let imageList = new DataTransfer()
+        const imageList = new DataTransfer()
         //include existing images in the imageList files
         if (images) {
             for (let i = 0; i < images.length; i++) {
-                let file = new File([images[i]], images[i].name)
+                const file = new File([images[i]], images[i].name)
                 imageList.items.add(file)
             }
         }
         //add any newly uploaded images to the imageList files
         if (e.target.files) {
             for (let i = 0; i < e.target.files.length; i++) {
-                let file = new File([e.target.files[i]], e.target.files[i].name)
+                const file = new File([e.target.files[i]], e.target.files[i].name)
                 imageList.items.add(file)
             }
         }
@@ -61,11 +61,11 @@ export default function Donate() {
 
     function removeImage(fileToRemove: File) {
         if (images) {
-            let imageList = new DataTransfer()
-            let imagesArray = Array.from(images)
+            const imageList = new DataTransfer()
+            const imagesArray = Array.from(images)
             imagesArray.forEach((image) => {
                 if (image.name !== fileToRemove.name) {
-                    let file = new File([image], image.name)
+                    const file = new File([image], image.name)
                     imageList.items.add(file)
                 }
             })
@@ -74,10 +74,10 @@ export default function Donate() {
     }
 
     useEffect(() => {
-        let tempImages = []
+        const tempImages = []
         if (images) {
             for (let i = 0; i < images.length; i++) {
-                let imagePreview = <ImageThumbnail removeFunction={removeImage} file={images[i]} width={'32%'} margin={'.66%'} />
+                const imagePreview = <ImageThumbnail removeFunction={removeImage} file={images[i]} width={'32%'} margin={'.66%'} />
                 tempImages.push(imagePreview)
             }
             setImageElements(tempImages)
@@ -93,7 +93,7 @@ export default function Donate() {
     //Use this to handle passing form data to the database on submission
     function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
-        let submittedData = new FormData(e.currentTarget)
+        const submittedData = new FormData(e.currentTarget)
     }
 
     return (

@@ -26,7 +26,7 @@ export default function Filter() {
                         <input type="checkbox" name="active" id="active" />
                     </div>
                 </div>
-                <ButtonContainer text="Apply" type='button' hasIcon/>
+                <ButtonContainer text="Apply" type="button" hasIcon />
             </div>
             <hr />
         </>

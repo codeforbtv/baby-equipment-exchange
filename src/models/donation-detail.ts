@@ -1,97 +1,78 @@
+//Firebase types
+import { Timestamp } from 'firebase/firestore'
+//Plain Javascript objects
 import { Address } from './address'
 import { Contact } from './contact'
-import { Image } from './image'
 
-interface IDonationDetail {
+export interface IDonationDetail {
+    [key: string]: any
     donation: string
-    availability: string
+    availability: string | null | undefined
     donor: string
     tagNumber: string | null | undefined
     tagNumberForItemDelivered: string | null | undefined
     sku: string | null | undefined
     recipientOrganization: string | null | undefined
-    images: Array<Image>
-    daysInStorage: number
-    recipientContact: Contact | null | undefined
-    recipientAddress: Address | null | undefined
-    requestor: Contact | null | undefined
-    storage: Array<string> | null | undefined
-    dateRecieved: Date | null | undefined
-    dateDistributed: Date | null | undefined
-    scheduledPickupDate: Date | null | undefined
-    dateOrderFulfilled: Date | null | undefined
-    createdAt: Date
-    modifiedAt: Date
-}
-
-export class DonationDetail implements IDonationDetail {
-    donation: string
-    availability: string
-    donor: string
-    tagNumber: string | null | undefined
-    tagNumberForItemDelivered: string | null | undefined
-    sku: string | null | undefined
-    recipientOrganization: string | null | undefined
-    images: Image[]
-    daysInStorage: number
+    images: string[]
     recipientContact: Contact | null | undefined
     recipientAddress: Address | null | undefined
     requestor: Contact | null | undefined
     storage: string[] | null | undefined
-    dateRecieved: Date | null | undefined
-    dateDistributed: Date | null | undefined
-    scheduledPickupDate: Date | null | undefined
-    dateOrderFulfilled: Date | null | undefined
-    createdAt: Date
-    modifiedAt: Date
+    dateReceived: number | null | undefined
+    dateDistributed: number | null | undefined
+    scheduledPickupDate: number | null | undefined
+    dateOrderFulfilled: number | null | undefined
+    createdAt: Timestamp
+    modifiedAt: Timestamp
+}
 
-    constructor(
-        donation: string,
-        availability: string,
-        donor: string,
-        tagNumber: string | null | undefined,
-        tagNumberForItemDelivered: string | null | undefined,
-        sku: string | null | undefined,
-        recipientOrganization: string | null | undefined,
-        images: Image[],
-        daysInStorage: number,
-        recipientContact: Contact | null | undefined,
-        recipientAddress: Address | null | undefined,
-        requestor: Contact | null | undefined,
-        storage: string[] | null | undefined,
-        dateRecieved: Date | null | undefined,
-        dateDistributed: Date | null | undefined,
-        scheduledPickupDate: Date | null | undefined,
-        dateOrderFulfilled: Date | null | undefined,
-        createdAt: Date,
-        modifiedAt: Date
-    ) {
-        this.donation = donation
-        this.availability = availability
-        this.donor = donor
-        this.tagNumber = tagNumber
-        this.tagNumberForItemDelivered = tagNumberForItemDelivered
-        this.sku = sku
-        this.recipientOrganization = recipientOrganization
-        this.images = images
-        this.daysInStorage = daysInStorage
-        this.recipientContact = recipientContact
-        this.recipientAddress = recipientAddress
-        this.requestor = requestor
-        this.storage = storage
-        this.dateRecieved = dateRecieved
-        this.dateDistributed = dateDistributed
-        this.scheduledPickupDate = scheduledPickupDate
-        this.dateOrderFulfilled = dateOrderFulfilled
-        this.createdAt = createdAt
-        this.modifiedAt = modifiedAt
+export class DonationDetail implements IDonationDetail {
+    [key: string]: any
+    donation: string
+    availability: string | null | undefined
+    donor: string
+    tagNumber: string | null | undefined
+    tagNumberForItemDelivered: string | null | undefined
+    sku: string | null | undefined
+    recipientOrganization: string | null | undefined
+    images: string[]
+    recipientContact: Contact | null | undefined
+    recipientAddress: Address | null | undefined
+    requestor: Contact | null | undefined
+    storage: string[] | null | undefined
+    dateReceived: number | null | undefined
+    dateDistributed: number | null | undefined
+    scheduledPickupDate: number | null | undefined
+    dateOrderFulfilled: number | null | undefined
+    createdAt: Timestamp
+    modifiedAt: Timestamp
+
+    constructor(args: IDonationDetail) {
+        this.donation = args.donation
+        this.availability = args.availability
+        this.donor = args.donor
+        this.tagNumber = args.tagNumber
+        this.tagNumberForItemDelivered = args.tagNumberForItemDelivered
+        this.sku = args.sku
+        this.recipientOrganization = args.recipientOrganization
+        this.images = args.images
+        this.recipientContact = args.recipientContact
+        this.recipientAddress = args.recipientAddress
+        this.requestor = args.requestor
+        this.storage = args.storage
+        this.dateReceived = args.dateReceived
+        this.dateDistributed = args.dateDistributed
+        this.scheduledPickupDate = args.scheduledPickupDate
+        this.dateOrderFulfilled = args.dateOrderFulfilled
+        this.createdAt = args.createdAt
+        this.modifiedAt = args.modifiedAt
     }
 
     getDonation(): string {
         return this.donation
     }
 
-    getAvailability(): string {
+    getAvailability(): string | null | undefined {
         return this.availability
     }
 
@@ -115,12 +96,18 @@ export class DonationDetail implements IDonationDetail {
         return this.recipientOrganization
     }
 
-    getImages(): Array<Image> {
+    getImages(): string[] {
         return this.images
     }
 
-    getDaysInStorage(): number {
-        return this.daysInStorage
+    getDaysInStorage(): number | undefined {
+        if (this.dateReceived === undefined) {
+            return undefined
+        }
+        const dateReceived = this.dateReceived!
+        const currentTime = Date.now()
+        const daysInStorage = Math.floor((currentTime - dateReceived) / 86400000)
+        return daysInStorage
     }
 
     getRecipientContact(): Contact | null | undefined {
@@ -135,31 +122,35 @@ export class DonationDetail implements IDonationDetail {
         return this.requestor
     }
 
-    getStorage(): Array<string> | null | undefined {
+    getStorage(): string[] | null | undefined {
         return this.storage
     }
 
-    getDateRecieved(): Date | null | undefined {
-        return this.dateRecieved
+    getDateReceived(): number | null | undefined {
+        return this.dateReceived
     }
 
-    getDateDistributed(): Date | null | undefined {
+    getDateDistributed(): number | null | undefined {
         return this.dateDistributed
     }
 
-    getScheduledPickupDate(): Date | null | undefined {
+    getScheduledPickupDate(): number | null | undefined {
         return this.scheduledPickupDate
     }
 
-    getDateOrderFulfilled(): Date | null | undefined {
+    getDateOrderFulfilled(): number | null | undefined {
         return this.dateOrderFulfilled
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt
+    }
+
+    setDonation(donation: string) {
+        this.donation = donation
     }
 }
