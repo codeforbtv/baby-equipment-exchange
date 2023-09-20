@@ -28,6 +28,7 @@ type AccountFormData = {
 export default function EditAccount() {
     const [accountType, setAccountType] = useState<string>('')
 
+
     useEffect(() => {
         getAccountType().then((acctType) => {
             setAccountType(acctType!)
