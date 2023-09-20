@@ -14,11 +14,10 @@ import {
     connectAuthEmulator,
     createUserWithEmailAndPassword
 } from 'firebase/auth'
+import { firebaseConfig } from '../../firebase-config'
 import { NewUser } from '@/types/post-data'
 import { setClaimForNewUser } from './firebase-admin'
 import { addUser } from './firebase-users'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const firebaseConfig = require('../../firebase-config') // Suppress the @typescript-eslint/no-var-requires rule.
 
 let app: FirebaseApp
 const db: Firestore = initDb()

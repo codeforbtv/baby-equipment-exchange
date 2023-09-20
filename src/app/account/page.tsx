@@ -1,6 +1,7 @@
 'use client'
 //Components
 import ButtonContainer from '@/components/ButtonContainer'
+import ProtectedRoute from '@/components/ProtectedRoute'
 //Hooks
 import { useEffect, useState } from 'react'
 //Models
@@ -79,7 +80,7 @@ export default function Account() {
     })
 
     return (
-        <>
+        <ProtectedRoute>
             <div className={styles['account__container']}>
                 <h1>Account</h1>
                 <h4>Page Summary</h4>
@@ -109,6 +110,6 @@ export default function Account() {
                     <div className={styles['donations__list']}>{userDonationList}</div>
                 </div>
             </div>
-        </>
+        </ProtectedRoute>
     )
 }

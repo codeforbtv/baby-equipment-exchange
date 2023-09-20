@@ -2,6 +2,7 @@
 //Components
 import InputContainer from '@/components/InputContainer'
 import ButtonContainer from '@/components/ButtonContainer'
+import ProtectedRoute from '@/components/ProtectedRoute'
 //Hooks
 import { useEffect, useState } from 'react'
 //Models
@@ -57,31 +58,31 @@ export default function EditAccount() {
 
     const [formData, setFormData] = useState<AccountFormData>({
         name: accountInfo.name,
-        username: accountInfo.contact?.email || '',
-        contactEmail: accountInfo.contact?.email || '',
-        contactPhone: accountInfo.contact?.phone || '',
-        locationStreet: accountInfo.location?.line_1 || '',
-        locationCity: accountInfo.location?.city || '',
-        locationState: accountInfo.location?.state || '',
-        locationZip: accountInfo.location?.zipcode || '',
+        username: accountInfo.contact?.email ?? '',
+        contactEmail: accountInfo.contact?.email ?? '',
+        contactPhone: accountInfo.contact?.phone ?? '',
+        locationStreet: accountInfo.location?.line_1 ?? '',
+        locationCity: accountInfo.location?.city ?? '',
+        locationState: accountInfo.location?.state ?? '',
+        locationZip: accountInfo.location?.zipcode ?? '',
         type: accountType
     })
 
     useEffect(() => {
-        ;(async () => {
+        (async () => {
             const accountInfo = await getUserAccount()
 
             setAccountInfo(accountInfo)
 
             setFormData({
                 name: accountInfo.name,
-                username: accountInfo.contact?.email || '',
-                contactEmail: accountInfo.contact?.email || '',
-                contactPhone: accountInfo.contact?.phone || '',
-                locationStreet: accountInfo.location?.line_1 || '',
-                locationCity: accountInfo.location?.city || '',
-                locationState: accountInfo.location?.state || '',
-                locationZip: accountInfo.location?.zipcode || '',
+                username: accountInfo.contact?.email ?? '',
+                contactEmail: accountInfo.contact?.email ?? '',
+                contactPhone: accountInfo.contact?.phone ?? '',
+                locationStreet: accountInfo.location?.line_1 ?? '',
+                locationCity: accountInfo.location?.city ?? '',
+                locationState: accountInfo.location?.state ?? '',
+                locationZip: accountInfo.location?.zipcode ?? '',
                 type: accountType
             })
         })()
@@ -120,7 +121,7 @@ export default function EditAccount() {
     }
 
     return (
-        <>
+        <ProtectedRoute>
             <div className={styles['account__container']}>
                 <h1>Edit Account</h1>
                 <h4>Page Summary</h4>
@@ -197,6 +198,6 @@ export default function EditAccount() {
                     </form>
                 </div>
             </div>
-        </>
+        </ProtectedRoute>
     )
 }

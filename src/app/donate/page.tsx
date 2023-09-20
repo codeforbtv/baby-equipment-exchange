@@ -3,6 +3,7 @@
 import InputContainer from '@/components/InputContainer'
 import ImageThumbnail from '@/components/ImageThumbnail'
 import ButtonContainer from '@/components/ButtonContainer'
+import ProtectedRoute from '@/components/ProtectedRoute'
 //Hooks
 import { useState, useEffect, ReactElement } from 'react'
 //Styling
@@ -96,7 +97,7 @@ export default function Donate() {
     }
 
     return (
-        <>
+        <ProtectedRoute>
             <div className={styles['donate__container']}>
                 <h1>Donate</h1>
                 <h4>Page Summary</h4>
@@ -175,6 +176,6 @@ export default function Donate() {
                     </form>
                 </div>
             </div>
-        </>
+        </ProtectedRoute>
     )
 }
