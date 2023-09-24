@@ -1,4 +1,6 @@
 'use client'
+//Fonts
+import {montserrat, garamond} from '../styles/fonts'
 //Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleRight } from "@fortawesome/free-regular-svg-icons";
@@ -25,7 +27,7 @@ type ButtonProps = {
 
 export default function ButtonContainer(props: ButtonProps) {
     return (
-        <div className={styles["button__container"]}>
+        <div className={`${styles["button__container"]} ${montserrat.variable} ${garamond.variable}`}>
             {props.link &&
             <a href={props.link}>
             <button style={{width: props.width? `${props.width}`: ''}} className={` ${styles["button"]} ${props.theme ? styles[props.theme] : ""}`} type={props.type} >

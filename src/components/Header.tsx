@@ -84,7 +84,7 @@ export default function Header() {
             <header className={styles['header--primary']}>
                 <Link className={styles['header__logo']} href="/">
                     <FontAwesomeIcon className={styles['header__logo']} icon={faImage} />
-                    <h5>Baby Equipment Exchange</h5>
+                    <h4>Baby Equipment Exchange</h4>
                 </Link>
             </header>
             <div className={styles['header__spacer']}></div>

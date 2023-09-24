@@ -1,7 +1,8 @@
 //Components
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-
+//Fonts
+import {montserrat, garamond} from '../styles/fonts'
 //Providers
 import { UserProvider } from '@/contexts/UserContext'
 //Styles
@@ -9,7 +10,7 @@ import globalStyles from '@/styles/globalStyles.module.css'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en">
+        <html lang="en" className={`${montserrat.variable} ${garamond.variable}`}>
             <body className={globalStyles['body--wrapper']}>
                 <UserProvider>
                     <Header />
