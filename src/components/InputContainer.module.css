@@ -6,29 +6,22 @@
 }
 
 .input__container input {
-    padding: .25rem .5rem;
-} 
+    padding: 0.25rem 0.5rem;
+}
 
 .input__container label {
-    padding: .25rem 0;
+    padding: 0.25rem 0;
 }
 
 .footnote {
     margin: 0;
-    font-size: .8rem;
+    font-size: 0.8rem;
 }
 
 /* Tablets */
 @media screen and (min-width: 480px) {
-    
-    
-    
 }
 
 /* Laptops and above */
 @media screen and (min-width: 800px) {
-    
-    
 }
-
-

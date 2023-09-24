@@ -1,4 +1,4 @@
-.toaster{
+.toaster {
     width: 80%;
     position: absolute;
     left: 10%;
@@ -9,11 +9,15 @@
     font-weight: 700;
     text-transform: uppercase;
     text-align: center;
-    padding: .5rem;
-    animation: slideUp .5s ease .5s forwards;
+    padding: 0.5rem;
+    animation: slideUp 0.5s ease 0.5s forwards;
 }
 
 @keyframes slideUp {
-    from{bottom: -20%}
-    to{bottom: 15%}
+    from {
+        bottom: -20%;
+    }
+    to {
+        bottom: 15%;
+    }
 }

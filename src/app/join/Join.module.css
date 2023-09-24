@@ -1,8 +1,3 @@
-.account__header {
-    display: flex;
-    justify-content: space-between;
-}
-
 /* Tablets */
 @media screen and (min-width: 480px) {
     .form {

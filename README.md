@@ -11,7 +11,6 @@ npm run build
 
 Integration tests and end-to-end tests make use of the Firebase Local Emulator Suite.
 
-
 The emulator suite requires Java JDK version 11 or higher and the [Firebase CLI](https://github.com/firebase/firebase-tools) must be installed. The Firebase CLI, firebase-tools, is included as a development dependency.
 
 Set environment variables. Add a file `.env.local` to the project root. Ensure the `FIREBASE_EMULATOR_FIRESTORE_PORT` matches its port assignment in `firebase.json`. Add the following line to `.env.local`:
@@ -21,6 +20,7 @@ FIREBASE_EMULATOR_FIRESTORE_PORT=8080
 ```
 
 Add a `.firebaserc` file to the root directory with the following contents:
+
 ```
 {
   "projects": {
@@ -55,6 +55,7 @@ A `firebase.json` configuration must be present in the project's root directory.
 ```
 
 Ensure `storage.rules` is present in the root directory. The following configuration can be used when using the Firebase Emulator Suite:
+
 ```
 rules_version = "2";
 service firebase.storage {

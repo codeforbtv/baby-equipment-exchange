@@ -1,37 +1,82 @@
-import { Address } from './address'
-import { Name } from './name'
-import { Phone } from './phone'
+//Firebase types
+import { Timestamp } from 'firebase/firestore'
+//Plain JavaScript objects
+import { IAddress } from './address'
 
-interface IUserDetail {
+export interface IUserDetail {
+    [key: string]:
+        | string
+        | number
+        | Timestamp
+        | IAddress
+        | IAddress[]
+        | string[]
+        | null
+        | undefined
+        | (() => string)
+        | (() => IAddress[])
+        | (() => string[])
+        | (() => Timestamp)
+        | (() => IAddress | null | undefined)
+        | (() => number | null | undefined)
+        | (() => string | null | undefined)
     user: string
-    emails: Array<string>
-    phones: Array<Phone>
-    addresses: Array<Address>
-    websites: Array<string>
+    email: string | null | undefined
+    address: IAddress | null | undefined
+    phone: string | null | undefined
+    website: string | null | undefined
+    emails: string[]
+    phones: string[]
+    addresses: IAddress[]
+    websites: string[]
     notes: string
-    createdAt: Date
-    modifiedAt: Date
+    createdAt: Timestamp
+    modifiedAt: Timestamp
 }
 
 export class UserDetail implements IUserDetail {
+    [key: string]:
+        | string
+        | number
+        | Timestamp
+        | IAddress
+        | IAddress[]
+        | string[]
+        | null
+        | undefined
+        | (() => string)
+        | (() => IAddress[])
+        | (() => string[])
+        | (() => Timestamp)
+        | (() => IAddress | null | undefined)
+        | (() => number | null | undefined)
+        | (() => string | null | undefined)
     user: string
     emails: string[]
-    phones: Phone[]
-    addresses: Address[]
+    phones: string[]
+    addresses: IAddress[]
     websites: string[]
+    address: IAddress | null | undefined
+    email: string | null | undefined
+    phone: string | null | undefined
+    website: string | null | undefined
     notes: string
-    createdAt: Date
-    modifiedAt: Date
+    createdAt: Timestamp
+    modifiedAt: Timestamp
 
-    constructor(user: string, emails: string[], phones: Phone[], addresses: Address[], websites: string[], notes: string, createdAt: Date, modifiedAt: Date) {
-        this.user = user
-        this.emails = emails
-        this.phones = phones
-        this.addresses = addresses
-        this.websites = websites
-        this.notes = notes
-        this.createdAt = createdAt
-        this.modifiedAt = modifiedAt
+    constructor(args: IUserDetail) {
+        this.user = args.user
+        this.emails = args.emails
+        this.phones = args.phones
+        this.addresses = args.addresses
+        this.websites = args.websites
+        this.notes = args.notes
+        this.createdAt = args.createdAt
+        this.modifiedAt = args.modifiedAt
+        this.address = args.address
+        this.email = args.email
+        this.phone = args.phone
+        this.website = args.website
     }
 
     getUser(): string {
@@ -42,11 +87,27 @@ export class UserDetail implements IUserDetail {
         return this.emails
     }
 
-    getPhones(): Phone[] {
+    getPhones(): string[] {
         return this.phones
     }
 
-    getAddresses(): Address[] {
+    getPrimaryAddress(): IAddress | null | undefined {
+        return this.address
+    }
+
+    getPrimaryEmail(): string | null | undefined {
+        return this.email
+    }
+
+    getPrimaryPhone(): string | null | undefined {
+        return this.phone
+    }
+
+    getPrimaryWebsite(): string | null | undefined {
+        return this.website
+    }
+
+    getAddresses(): IAddress[] {
         return this.addresses
     }
 
@@ -58,11 +119,11 @@ export class UserDetail implements IUserDetail {
         return this.notes
     }
 
-    getCreatedAt(): Date {
+    getCreatedAt(): Timestamp {
         return this.createdAt
     }
 
-    getModifiedAt(): Date {
+    getModifiedAt(): Timestamp {
         return this.modifiedAt
     }
 }

@@ -1,4 +1,4 @@
-.account__header{
+.account__header {
     display: flex;
     justify-content: space-between;
 }
@@ -21,7 +21,7 @@
     width: 100%;
 }
 
-.donations__list__item p{
+.donations__list__item p {
     display: block;
     padding: 5px;
     width: 25%;

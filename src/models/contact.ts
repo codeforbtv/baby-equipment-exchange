@@ -1,37 +1,34 @@
-import { Name } from './name'
-import { Phone } from './phone'
-
-interface IContact {
+export interface IContact {
     user: string | null | undefined
-    name: Name | null | undefined
+    name: string | null | undefined
     email: string | null | undefined
-    phone: Phone | null | undefined
+    phone: string | null | undefined
     website: string | null | undefined
     notes: string | null | undefined
 }
 
 export class Contact implements IContact {
     user: string | null | undefined
-    name: Name | null | undefined
+    name: string | null | undefined
     email: string | null | undefined
-    phone: Phone | null | undefined
+    phone: string | null | undefined
     website: string | null | undefined
     notes: string | null | undefined
 
-    constructor(user: string, name: Name | null | undefined, email: string, phone: Phone | null | undefined, website: string, notes: string) {
-        this.user = user
-        this.name = name
-        this.email = email
-        this.phone = phone
-        this.website = website
-        this.notes = notes
+    constructor(args: IContact) {
+        this.user = args.user
+        this.name = args.name
+        this.email = args.email
+        this.phone = args.phone
+        this.website = args.website
+        this.notes = args.notes
     }
 
     getUser(): string | null | undefined {
         return this.user
     }
 
-    getName(): Name | null | undefined {
+    getName(): string | null | undefined {
         return this.name
     }
 
@@ -39,7 +36,7 @@ export class Contact implements IContact {
         return this.email
     }
 
-    getPhone(): Phone | null | undefined {
+    getPhone(): string | null | undefined {
         return this.phone
     }
 

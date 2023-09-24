@@ -12,15 +12,17 @@ type DonationCardProps = {
     active: boolean | null | undefined
     images: Array<string>
     createdAt: Date
-    modifiedAt: Date    
+    modifiedAt: Date
 }
 
-export default function DonationCard({category, brand, model, description, active, images, createdAt, modifiedAt}: DonationCardProps) {
+export default function DonationCard({ category, brand, model, description, active, images, createdAt, modifiedAt }: DonationCardProps) {
     const image = "'url(" + images[0] + "')"
-                return (
-                    <div className={styles['grid__item']} key={image}>
-                        <h3 className={styles['grid__item__title']}>{brand} {model}</h3>
-                        <FontAwesomeIcon icon={faImage} className={styles['thumbnail__image']}/>
-                    </div>
-                )
+    return (
+        <div className={styles['grid__item']} key={image}>
+            <h3 className={styles['grid__item__title']}>
+                {brand} {model}
+            </h3>
+            <FontAwesomeIcon icon={faImage} className={styles['thumbnail__image']} />
+        </div>
+    )
 }
