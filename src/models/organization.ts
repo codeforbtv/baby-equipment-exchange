@@ -1,11 +1,22 @@
 //Firebase types
 import { Timestamp } from 'firebase/firestore'
 //Plain JavaScript objects
-import { Address } from './address'
-import { Contact } from './contact'
+import { IAddress } from '@/models/address'
+import { IContact } from '@/models/contact'
 
 export interface IOrganization {
-    [key: string]: boolean | string | Address | Contact | Timestamp | (() => boolean) | (() => Address) | (() => Contact) | (() => string) | (() => Timestamp)
+    [key: string]:
+        | boolean
+        | string
+        | IAddress
+        | IContact
+        | Timestamp
+        | (() => boolean)
+        | (() => IAddress)
+        | (() => IContact)
+        | (() => string)
+        | (() => Timestamp)
+    name: string,
     diaperBank: boolean
     babyProductExchange: boolean
     lowIncome: boolean
@@ -13,15 +24,16 @@ export interface IOrganization {
     adoptionAndFosterFamilies: boolean
     refugeeAndImmigration: boolean
     substanceAbuseDisorders: boolean
-    address: Address
-    pointOfContact: Contact
+    address: IAddress
+    pointOfContact: IContact
     notes: string
     createdAt: Timestamp
     modifiedAt: Timestamp
 }
 
 export class Organization implements IOrganization {
-    [key: string]: boolean | string | Address | Contact | Timestamp | (() => boolean) | (() => Address) | (() => Contact) | (() => string) | (() => Timestamp)
+    [key: string]: boolean | string | IAddress | IContact | Timestamp | (() => boolean) | (() => IAddress) | (() => IContact) | (() => string) | (() => Timestamp)
+    name: string
     diaperBank: boolean
     babyProductExchange: boolean
     lowIncome: boolean
@@ -29,13 +41,14 @@ export class Organization implements IOrganization {
     adoptionAndFosterFamilies: boolean
     refugeeAndImmigration: boolean
     substanceAbuseDisorders: boolean
-    address: Address
-    pointOfContact: Contact
+    address: IAddress
+    pointOfContact: IContact
     notes: string
     createdAt: Timestamp
     modifiedAt: Timestamp
 
     constructor(args: IOrganization) {
+        this.name = args.name
         this.diaperBank = args.diaperBank
         this.babyProductExchange = args.babyProductExchange
         this.lowIncome = args.lowIncome
@@ -46,8 +59,8 @@ export class Organization implements IOrganization {
         this.address = args.address
         this.pointOfContact = args.pointOfContact
         this.notes = args.notes
-        this.createdAt = args.createdAt
-        this.modifiedAt = args.modifiedAt
+        this.createdAt = args.createdAt as Timestamp
+        this.modifiedAt = args.modifiedAt as Timestamp
     }
 
     isDiaperBank() {
@@ -76,6 +89,10 @@ export class Organization implements IOrganization {
 
     isSubstanceAbuseDisorders() {
         return this.substanceAbuseDisorders
+    }
+
+    getName() {
+        return this.name
     }
 
     getAddress() {

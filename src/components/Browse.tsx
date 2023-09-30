@@ -1,6 +1,6 @@
 'use client'
 //Classes
-import { Donation } from '../models/donation'
+import { Donation } from '@/models/donation'
 //Components
 import DonationCard from './DonationCard'
 import SearchBar from './SearchBar'
@@ -11,7 +11,7 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 //Hooks
 import React, { useEffect, useState } from 'react'
 //Libs
-import { getActiveDonations } from '../api/firebase-donations'
+import { getActiveDonations } from '@/api/firebase-donations'
 //Styles
 import styles from './Browse.module.css'
 import { Timestamp } from 'firebase/firestore'

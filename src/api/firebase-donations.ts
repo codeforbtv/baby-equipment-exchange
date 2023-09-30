@@ -7,18 +7,18 @@ import {
     where,
     QueryDocumentSnapshot,
     SnapshotOptions,
-    getFirestore,
     doc,
+    runTransaction,
     serverTimestamp,
     Timestamp
 } from 'firebase/firestore'
 //Models
-import { Donation, IDonation } from '../models/donation'
-//Libs
-import { getDb, getUserId } from './firebase'
-import { runTransaction } from 'firebase/firestore'
+import { Donation, IDonation } from '@/models/donation'
 import { DonationDetail, IDonationDetail } from '@/models/donation-detail'
 import { DonationForm } from '@/types/post-data'
+//Libs
+import { getDb, getUserId } from './firebase'
+import { addEvent } from './firebase-admin'
 
 const DONATIONS_COLLECTION = 'Donations'
 const DONATION_DETAILS_COLLECTION = 'DonationDetails'
@@ -35,13 +35,11 @@ const donationConverter = {
             createdAt: donation.getCreatedAt(),
             modifiedAt: donation.getModifiedAt()
         }
-
         for (const key in donationData) {
             if (donationData[key] === undefined || donationData[key] === null) {
                 delete donationData[key]
             }
         }
-
         return donationData
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Donation {
@@ -118,8 +116,14 @@ const donationDetailsConverter = {
     }
 }
 
+export async function getDonations(): Promise<Donation[]> {
+    const q = query(collection(getDb(), DONATIONS_COLLECTION)).withConverter(donationConverter)
+    const snapshot = await getDocs(q)
+    return snapshot.docs.map((doc) => doc.data())
+}
+
 export async function getActiveDonations(): Promise<Donation[]> {
-    const q = query(collection(getDb(), 'donations'), where('active', '==', true)).withConverter(donationConverter)
+    const q = query(collection(getDb(), DONATIONS_COLLECTION), where('active', '==', true)).withConverter(donationConverter)
     const snapshot = await getDocs(q)
     return snapshot.docs.map((doc) => doc.data())
 }
@@ -127,7 +131,9 @@ export async function getActiveDonations(): Promise<Donation[]> {
 export async function addDonation(newDonation: DonationForm) {
     const userId: string | null | undefined = await getUserId()
 
-    if ((!userId as any) instanceof String) {
+    if (!((userId as any) instanceof String)) {
+        // TODO
+        addEvent(newDonation)
         return
     }
 

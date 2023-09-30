@@ -2,7 +2,7 @@
 import { getDb, getFirebaseStorage, getUserId } from './firebase'
 import { ref, uploadBytes } from 'firebase/storage'
 //Models
-import { IImage, Image, imageFactory } from '../models/image'
+import { IImage, Image, imageFactory } from '@/models/image'
 import { IImageDetail, ImageDetail } from '@/models/image-detail'
 //Modules
 import { addDoc, collection, doc, DocumentData, getDoc, QueryDocumentSnapshot, serverTimestamp, SnapshotOptions, Timestamp } from 'firebase/firestore'
@@ -41,7 +41,7 @@ const imageConverter = {
 export async function uploadImages(files: FileList): Promise<string[] | undefined> {
     const documentIds = []
     const storage = getFirebaseStorage()
-    const uid = getUserId()
+    const uid = await getUserId()
 
     if (uid === undefined) {
         return undefined
@@ -73,7 +73,7 @@ export async function uploadImages(files: FileList): Promise<string[] | undefine
         const imageDetailsCollection = collection(getDb(), IMAGE_DETAILS_COLLECTION)
         const imageDetailsData: IImageDetail = {
             image: imageRef.id,
-            uploadedBy: getUserId()!,
+            uploadedBy: (await getUserId())!,
             uri: storageFilename,
             filename: storageFilename,
             createdAt: serverTimestamp() as Timestamp,

@@ -1,30 +1,36 @@
 //Libs
 import { getDb, getUserId } from './firebase'
-import { runTransaction } from 'firebase/firestore'
+import { 
+    arrayUnion,
+    collection,
+    doc,
+    DocumentData,
+    DocumentSnapshot,
+    getDoc,
+    getDocs,
+    query,
+    QueryDocumentSnapshot,
+    runTransaction,
+    serverTimestamp,
+    SnapshotOptions,
+    Timestamp,
+    updateDoc
+    } from 'firebase/firestore'
 //Models
 import { IUser, User } from '@/models/user'
 import { IUserDetail, UserDetail } from '@/models/user-detail'
 //Modules
 import {
-    arrayUnion,
-    doc,
-    DocumentData,
-    DocumentSnapshot,
-    getDoc,
-    QueryDocumentSnapshot,
-    serverTimestamp,
-    SnapshotOptions,
-    Timestamp,
-    updateDoc
+
 } from 'firebase/firestore'
 //Types
-import { AccountInformation, NewUser } from '@/types/post-data'
-import { IAddress } from '@/models/address'
-import { Contact, IContact } from '@/models/contact'
-import { contains, stripNullUndefined } from '@/utils/utils'
+import { AccountInformation, NewUser, Note } from '@/types/post-data'
+import { stripNullUndefined } from '@/utils/utils'
+import { Event, IEvent } from '@/models/event'
+import { addEvent } from './firebase-admin'
 
-const USERS_COLLECTION = 'Users'
-const USER_DETAILS_COLLECTION = 'UserDetails'
+export const USERS_COLLECTION = 'Users'
+export const USER_DETAILS_COLLECTION = 'UserDetails'
 
 const userConverter = {
     toFirestore(user: User): DocumentData {
@@ -147,12 +153,27 @@ export async function addUser(newUser: NewUser) {
 
 export async function getUserAccount(): Promise<AccountInformation> {
     const userId: string | null | undefined = await getUserId()
+    return _getUserAccount(userId!)
+}
+
+
+export async function getAllUserAccounts() {
+
+    const q = query(collection(getDb(), USERS_COLLECTION))
+    const snapshot = await getDocs(q)
+    const userIds: string[] = snapshot.docs.map((doc) => doc.id)
+    const userAccounts: AccountInformation[] = []
+    for (const id of userIds) {
+        userAccounts.push(await _getUserAccount(id))
+    }
+    return userAccounts
+}
+
+async function _getUserAccount(userId: string): Promise<AccountInformation> {
     const userRef = doc(getDb(), USERS_COLLECTION, userId!).withConverter(userConverter)
     const userDocument: DocumentSnapshot<User> = await getDoc(userRef)
-
     const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, userId!).withConverter(userDetailConverter)
     const userDetailDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef)
-
     let accountInformation: AccountInformation = {
         name: '',
         contact: {
@@ -192,6 +213,7 @@ export async function getUserAccount(): Promise<AccountInformation> {
             photo: user.getPhoto()
         }
     }
+
     return accountInformation
 }
 
@@ -204,8 +226,6 @@ export async function setUserAccount(accountInformation: AccountInformation) {
     if (userDocument.exists() && userDetailDocument.exists()) {
         const userChanges: any = {}
         const userDetailChanges: any = {}
-        const user: User = userDocument.data()
-        const userDetail: UserDetail = userDetailDocument.data()
         const name: any = accountInformation.name
         const photo: any = accountInformation.photo
         const primaryContact: any = stripNullUndefined(accountInformation.contact)
@@ -264,5 +284,35 @@ export async function setUserAccount(accountInformation: AccountInformation) {
             stripNullUndefined(userDetailChanges)
             await updateDoc(userDetailsRef, userDetailChanges)
         }
+    }
+}
+
+export async function addNote(note: Note) {
+    
+    const userId: string | null | undefined = await getUserId()
+
+    if (!((userId as any) instanceof String)) {
+        // TODO
+        addEvent(note)
+        return
+    }
+
+    const eventParams: IEvent = {
+        type: '',
+        note: note.text,
+        createdBy: userId!,
+        createdAt: serverTimestamp() as  Timestamp,
+        modifiedAt: serverTimestamp() as Timestamp
+    }
+    const event = new Event(eventParams)
+
+    if (note.destinationCollection === USERS_COLLECTION) {
+        const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, note.destinationId).withConverter(userDetailConverter)
+        await updateDoc(
+            userDetailsRef,
+            {
+                notes: arrayUnion(event)
+            }
+        )
     }
 }

@@ -1,16 +1,15 @@
 'use client'
 //Components
 import InputContainer from '@/components/InputContainer'
-import ButtonContainer from '@/components/ButtonContainer'
+import ButtonContainer, { Theme } from '@/components/ButtonContainer'
 import ToasterNotification from '@/components/ToasterNotification'
 import Loader from '@/components/Loader'
 //Hooks
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 //Libs
-import { Theme } from '@/components/ButtonContainer'
 import Link from 'next/link'
-import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '../../api/firebase'
+import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '@/api/firebase'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
 import styles from './Login.module.css'
