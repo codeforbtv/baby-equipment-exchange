@@ -1,11 +1,8 @@
 'use client'
-<<<<<<< HEAD
 //Fonts
 import {montserrat, garamond} from '../styles/fonts'
-=======
 //Components
 import Link from 'next/link'
->>>>>>> main
 //Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleRight } from '@fortawesome/free-regular-svg-icons'
