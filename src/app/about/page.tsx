@@ -15,7 +15,7 @@ export default function About() {
 
     return (
         <>
-            <div className={styles["account__container"]}>
+            <div className={styles["about_container"]}>
                 <h1>About</h1>
                 <h4>Page Summary</h4>
                 <div className={globalStyles["content__container"]}>

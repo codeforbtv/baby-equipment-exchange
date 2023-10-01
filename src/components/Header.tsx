@@ -102,6 +102,12 @@ export default function Header() {
                         Account
                     </Link>
                 )}
+                <Link className={styles['menu__link']} id="about" href="/about" onClick={closeMenu}>
+                    About
+                </Link>
+                <Link className={styles['menu__link']} id="contact" href="/contact" onClick={closeMenu}>
+                    Contact
+                </Link>
                 <Link
                     className={styles['menu__link']}
                     id="signout"
