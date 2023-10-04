@@ -51,7 +51,8 @@ export async function isEmailInUse(email: string): Promise<boolean> {
 
 export async function setClaimForNewUser(userId: string) {
     await getAuth(app).setCustomUserClaims(userId, {
-        donor: true
+        donor: true,
+        verified: true
     })
 }
 
@@ -65,11 +66,20 @@ export async function setClaimForAdmin(userId: string, isAdmin: boolean) {
     })
 }
 
+export async function setClaimForVerified(userId: string, isVerified: boolean) {
+    const adminAuth = getAuth(app)
+    const customClaims = (await adminAuth.getUser(userId)).customClaims
+    await adminAuth.setCustomUserClaims(userId, {
+        verified: isVerified,
+        ...customClaims
+    })
+}
+
 export async function addEvent(object: any) {
 
     const createdBy: string = 'server'
 
-    let eventParams: IEvent = {
+    const eventParams: IEvent = {
         type: '',
         note: JSON.stringify(object),
         createdBy: createdBy,

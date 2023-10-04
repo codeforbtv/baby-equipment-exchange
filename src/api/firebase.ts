@@ -81,13 +81,17 @@ export function getFirebaseStorage(): FirebaseStorage {
 
 export async function getAccountType(): Promise<string | undefined> {
     const _isAdmin = await isAdmin()
-    const _isDonor = await isDonor()
+    const _isVerified = await isVerified()
     let accountType: string = ''
 
     if (_isAdmin) {
         accountType = 'Administrator'
     } else {
         accountType = 'Donor'
+    }
+
+    if (!_isVerified) {
+        accountType += ' (unverified)'
     }
 
     return accountType
@@ -103,6 +107,12 @@ export async function isDonor(): Promise<boolean | undefined> {
     await getFirebaseAuth().authStateReady()
     const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
     return (claims?.donor !== undefined && claims?.donor === true) ? true : false
+}
+
+export async function isVerified(): Promise<boolean | undefined> {
+    await getFirebaseAuth().authStateReady()
+    const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
+    return (claims?.verified !== undefined && claims?.verified === true) ? true : false
 }
 
 export function getUserEmail(): string | null | undefined {
