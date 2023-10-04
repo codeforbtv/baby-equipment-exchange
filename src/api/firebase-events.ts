@@ -1,15 +1,8 @@
 //Modules
 import {
-    collection,
     DocumentData,
-    doc,
-    getDocs,
-    query,
     QueryDocumentSnapshot,
-    serverTimestamp,
-    setDoc,
     SnapshotOptions,
-    Timestamp
 } from 'firebase/firestore'
 //Models
 import { IEvent, Event } from '@/models/event'

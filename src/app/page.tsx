@@ -14,13 +14,13 @@ import { UserContext } from '@/contexts/UserContext'
 export default function Home() {
     const { currentUser } = useContext(UserContext)
 
-    let loginElement = (
+    const loginElement = (
         <div className={styles['login__heading-prompt']}>
             <h2>You must be logged in to view donations</h2>
             <ButtonContainer text="Login" link="/login" hasIcon />
         </div>
     )
-    let content = currentUser ? <Browse /> : loginElement
+    const content = currentUser ? <Browse /> : loginElement
     return (
         <div className={styles['home__container']}>
             <h1>Browse</h1>
