@@ -4,6 +4,7 @@ import ButtonContainer from '@/components/ButtonContainer'
 import ProtectedRoute from '@/components/ProtectedRoute'
 //Hooks
 import { useEffect, useState } from 'react'
+import { useUserContext } from '@/contexts/UserContext'
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data'
 //Styling
@@ -31,7 +32,7 @@ const dummyDonations: UserDonations = [
 export default function Account() {
     const [accountType, setAccountType] = useState<string>('')
     const [userDonations, setUserDonations] = useState<UserDonations>(dummyDonations)
-
+    const { currentUser } = useUserContext()
     const [accountInfo, setAccountInfo] = useState<AccountInfo>({
         name: '',
         contact: {
@@ -56,9 +57,11 @@ export default function Account() {
 
     useEffect(() => {
         ;(async () => {
-            const accountInfo = await getUserAccount()
+            if (currentUser) {
+                const accountInfo = await getUserAccount()
 
-            setAccountInfo(accountInfo)
+                setAccountInfo(accountInfo)
+            }
         })()
     }, [])
 
