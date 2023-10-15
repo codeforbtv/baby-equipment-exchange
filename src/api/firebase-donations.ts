@@ -129,63 +129,60 @@ export async function getActiveDonations(): Promise<Donation[]> {
 }
 
 export async function addDonation(newDonation: DonationForm) {
-    const userId: string | null | undefined = await getUserId()
-
-    if (!((userId as any) instanceof String)) {
-        // TODO
-        addEvent(newDonation)
-        return
-    }
-
-    const donationParams: IDonation = {
-        category: newDonation.category,
-        brand: newDonation.brand,
-        model: newDonation.model,
-        description: newDonation.description,
-        active: false,
-        images: [], // Only approved images display here.
-        createdAt: serverTimestamp() as Timestamp,
-        modifiedAt: serverTimestamp() as Timestamp
-    }
-
-    const donationDetailParams: IDonationDetail = {
-        donation: userId!,
-        availability: undefined,
-        donor: userId!,
-        tagNumber: undefined,
-        tagNumberForItemDelivered: undefined,
-        sku: undefined,
-        recipientOrganization: undefined,
-        images: newDonation.images,
-        recipientContact: undefined,
-        recipientAddress: undefined,
-        requestor: undefined,
-        storage: undefined,
-        dateReceived: undefined,
-        dateDistributed: undefined,
-        scheduledPickupDate: undefined,
-        dateOrderFulfilled: undefined,
-        createdAt: serverTimestamp() as Timestamp,
-        modifiedAt: serverTimestamp() as Timestamp
-    }
-
-    const donation = new Donation(donationParams)
-    const donationDetail = new DonationDetail(donationDetailParams)
-
     try {
-        await runTransaction(getDb(), async (transaction) => {
-            // Generate document references.
-            const donationRef = doc(getDb(), DONATIONS_COLLECTION)
-            const donationDetailRef = doc(getDb(), DONATION_DETAILS_COLLECTION)
+        const userId: string = await getUserId()
+        const donationParams: IDonation = {
+            category: newDonation.category,
+            brand: newDonation.brand,
+            model: newDonation.model,
+            description: newDonation.description,
+            active: false,
+            images: [], // Only approved images display here.
+            createdAt: serverTimestamp() as Timestamp,
+            modifiedAt: serverTimestamp() as Timestamp
+        }
 
-            // Assign donation reference to donation detail
-            donationDetail.setDonation(donationRef.id)
+        const donationDetailParams: IDonationDetail = {
+            donation: userId,
+            availability: undefined,
+            donor: userId,
+            tagNumber: undefined,
+            tagNumberForItemDelivered: undefined,
+            sku: undefined,
+            recipientOrganization: undefined,
+            images: newDonation.images,
+            recipientContact: undefined,
+            recipientAddress: undefined,
+            requestor: undefined,
+            storage: undefined,
+            dateReceived: undefined,
+            dateDistributed: undefined,
+            scheduledPickupDate: undefined,
+            dateOrderFulfilled: undefined,
+            createdAt: serverTimestamp() as Timestamp,
+            modifiedAt: serverTimestamp() as Timestamp
+        }
 
-            transaction.set(donationRef, donationConverter.toFirestore(donation))
+        const donation = new Donation(donationParams)
+        const donationDetail = new DonationDetail(donationDetailParams)
 
-            transaction.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail))
-        })
-    } catch (e) {
-        // eslint-disable-line no-empty
+        try {
+            await runTransaction(getDb(), async (transaction) => {
+                // Generate document references.
+                const donationRef = doc(getDb(), DONATIONS_COLLECTION)
+                const donationDetailRef = doc(getDb(), DONATION_DETAILS_COLLECTION)
+
+                // Assign donation reference to donation detail
+                donationDetail.setDonation(donationRef.id)
+
+                transaction.set(donationRef, donationConverter.toFirestore(donation))
+
+                transaction.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail))
+            })
+        } catch (error) {
+            // eslint-disable-line no-empty
+        }
+    } catch (error) {
+        addEvent(newDonation)
     }
 }

@@ -79,39 +79,45 @@ export function getFirebaseStorage(): FirebaseStorage {
     return storage
 }
 
-export async function getAccountType(): Promise<string | undefined> {
-    const _isAdmin = await isAdmin()
-    const _isVerified = await isVerified()
+export async function getAccountType(): Promise<string> {
     let accountType: string = ''
-
-    if (_isAdmin) {
+    const hasAdmin = await isAdmin()
+    const hasVerified = await isVerified()
+    if (hasAdmin) {
         accountType = 'Administrator'
     } else {
         accountType = 'Donor'
     }
-
-    if (!_isVerified) {
+    if (hasVerified) {
         accountType += ' (unverified)'
     }
-
     return accountType
 }
 
-export async function isAdmin(): Promise<boolean | undefined> {
+export async function isAdmin(): Promise<boolean> {
     await getFirebaseAuth().authStateReady()
     const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
+    if (claims === undefined || claims === null) {
+        return Promise.reject()
+    }
     return (claims?.admin !== undefined && claims?.admin === true) ? true : false
 }
 
-export async function isDonor(): Promise<boolean | undefined> {
+export async function isDonor(): Promise<boolean> {
     await getFirebaseAuth().authStateReady()
     const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
+    if (claims === undefined || claims === null) {
+        return Promise.reject()
+    }
     return (claims?.donor !== undefined && claims?.donor === true) ? true : false
 }
 
-export async function isVerified(): Promise<boolean | undefined> {
+export async function isVerified(): Promise<boolean> {
     await getFirebaseAuth().authStateReady()
     const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
+    if (claims === undefined || claims === null) {
+        return Promise.reject()
+    }
     return (claims?.verified !== undefined && claims?.verified === true) ? true : false
 }
 
@@ -119,9 +125,10 @@ export function getUserEmail(): string | null | undefined {
     return getFirebaseAuth().currentUser?.email
 }
 
-export async function getUserId(): Promise<string | null | undefined> {
+export async function getUserId(): Promise<string> {
     await getFirebaseAuth().authStateReady()
-    return getFirebaseAuth().currentUser?.uid
+    const currentUser = getFirebaseAuth().currentUser?.uid
+    return currentUser ?? Promise.reject()
 }
 
 export async function createNewUser(newUser: NewUser, password: string) {
