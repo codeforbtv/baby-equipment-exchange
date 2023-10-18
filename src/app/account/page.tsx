@@ -58,17 +58,24 @@ export default function Account() {
     useEffect(() => {
         ;(async () => {
             if (currentUser) {
-                const accountInfo = await getUserAccount()
-
-                setAccountInfo(accountInfo)
+                try {
+                    const accountInfo = await getUserAccount()
+                    setAccountInfo(accountInfo)
+                } catch (error) {
+                    // eslint-disable-line no-empty
+                }
             }
         })()
     }, [])
 
     useEffect(() => {
-        getAccountType().then((acctType) => {
-            setAccountType(acctType!)
-        })
+        getAccountType()
+            .then((acctType) => {
+                setAccountType(acctType!)
+            })
+            .catch((_reason: any) => {
+                setAccountType('(unavailable)')
+            })
     }, [])
 
     const userDonationList = userDonations.map((donation, index) => {
