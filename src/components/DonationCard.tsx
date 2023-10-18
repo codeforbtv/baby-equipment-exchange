@@ -2,7 +2,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage } from '@fortawesome/free-solid-svg-icons'
 //Styles
-import styles from './Card.module.css'
+import styles from './DonationCard.module.css'
 
 type DonationCardProps = {
     category: string | null | undefined

@@ -14,41 +14,6 @@
     box-sizing: border-box;
 }
 
-.body--wrapper h1, .body--wrapper h2, .body--wrapper h3, .body--wrapper h4, .body--wrapper h5, .body--wrapper h6 {
-    font-family: var(--font-montserrat);
-}
-.body--wrapper h1 {
-    font-weight: 700;
-    font-size: 68px;
-}
-.body--wrapper h2 {
-    font-weight: 600;
-    font-size: 30px;
-}
-.body--wrapper h3 {
-    font-weight: 600;
-    font-size: 20px;
-}
-.body--wrapper h4 {
-    font-weight: 600;
-    font-size: 16px;
-    color: #272727;
-}
-.body--wrapper h5 {
-    font-weight: 600;
-    font-size: 15px;
-    color: #bdbdbd;
-}
-.body--wrapper h6 {
-    font-weight: 400;
-    font-size: 12px;
-}
-.body--wrapper p, .body--wrapper footer {
-    font-family: var(--font-garamond);
-    font-weight: 900;
-}
-
-
 .page--wrapper {
     padding: 2px 10px;
     font-family: var(--primary-font);

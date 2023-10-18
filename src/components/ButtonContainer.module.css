@@ -10,9 +10,6 @@
 }
 
 .button {
-    font-family: var(--font-montserrat);
-    font-size: 14px;
-    font-weight: 300;
     background-color: var(--button-dark);
     box-shadow: none;
     height: 2rem;

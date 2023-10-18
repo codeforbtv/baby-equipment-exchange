@@ -3,7 +3,7 @@
  */
 
 import { act, render, screen } from '@testing-library/react'
-import { getActiveDonations } from '@/api/firebase-donations'
+import { getActiveDonations } from '../api/firebase-donations'
 import React, { Suspense } from 'react'
 import Home from './page'
 

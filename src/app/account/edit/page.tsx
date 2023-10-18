@@ -5,6 +5,7 @@ import ButtonContainer from '@/components/ButtonContainer'
 import ProtectedRoute from '@/components/ProtectedRoute'
 //Hooks
 import { useEffect, useState } from 'react'
+import { useUserContext } from '@/contexts/UserContext'
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data'
 //Styling
@@ -27,15 +28,16 @@ type AccountFormData = {
 
 export default function EditAccount() {
     const [accountType, setAccountType] = useState<string>('')
-
+    const { currentUser } = useUserContext()
 
     useEffect(() => {
-        getAccountType().then((acctType) => {
-            setAccountType(acctType)
-        }).catch(
-            (_reason:any) => {
-            setAccountType('(unavailable)')
-        })
+        getAccountType()
+            .then((acctType) => {
+                setAccountType(acctType)
+            })
+            .catch((_reason: any) => {
+                setAccountType('(unavailable)')
+            })
     }, [])
 
     const [accountInfo, setAccountInfo] = useState<AccountInfo>({
@@ -73,23 +75,25 @@ export default function EditAccount() {
     })
 
     useEffect(() => {
-        (async () => {
-            try {
-                const accountInfo = await getUserAccount()
-                setAccountInfo(accountInfo)
-                setFormData({
-                    name: accountInfo.name,
-                    username: accountInfo.contact?.email ?? '',
-                    contactEmail: accountInfo.contact?.email ?? '',
-                    contactPhone: accountInfo.contact?.phone ?? '',
-                    locationStreet: accountInfo.location?.line_1 ?? '',
-                    locationCity: accountInfo.location?.city ?? '',
-                    locationState: accountInfo.location?.state ?? '',
-                    locationZip: accountInfo.location?.zipcode ?? '',
-                    type: accountType
-                })
-            } catch (error) {
-                // eslint-disable-line no-empty
+        ;(async () => {
+            if (currentUser) {
+                try {
+                    const accountInfo = await getUserAccount()
+                    setAccountInfo(accountInfo)
+                    setFormData({
+                        name: accountInfo.name,
+                        username: accountInfo.contact?.email ?? '',
+                        contactEmail: accountInfo.contact?.email ?? '',
+                        contactPhone: accountInfo.contact?.phone ?? '',
+                        locationStreet: accountInfo.location?.line_1 ?? '',
+                        locationCity: accountInfo.location?.city ?? '',
+                        locationState: accountInfo.location?.state ?? '',
+                        locationZip: accountInfo.location?.zipcode ?? '',
+                        type: accountType
+                    })
+                } catch (error) {
+                    // eslint-disable-line no-empty
+                }
             }
         })()
     }, [])

@@ -1,12 +1,13 @@
 'use client'
 //Components
 import InputContainer from '@/components/InputContainer'
-import ButtonContainer, { Theme } from '@/components/ButtonContainer'
+import ButtonContainer from '@/components/ButtonContainer'
 //Hooks
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 //Libs
-import { onAuthStateChangedListener, createNewUser } from '@/api/firebase'
+import { Theme } from '@/components/ButtonContainer'
+import { onAuthStateChangedListener, createNewUser } from '../../api/firebase'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.css'
 import { NewUser } from '@/types/post-data'

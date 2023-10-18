@@ -1,32 +1,30 @@
 //Libs
 import { getDb, getUserId } from './firebase'
-import { 
+import { runTransaction } from 'firebase/firestore'
+//Models
+import { IUser, User } from '@/models/user'
+import { IUserDetail, UserDetail } from '@/models/user-detail'
+//Modules
+import {
     arrayUnion,
-    collection,
     doc,
     DocumentData,
     DocumentSnapshot,
     getDoc,
-    getDocs,
-    query,
     QueryDocumentSnapshot,
-    runTransaction,
     serverTimestamp,
     SnapshotOptions,
     Timestamp,
     updateDoc
-    } from 'firebase/firestore'
-//Models
-import { IUser, User } from '@/models/user'
-import { IUserDetail, UserDetail } from '@/models/user-detail'
+} from 'firebase/firestore'
 //Types
-import { AccountInformation, NewUser, Note } from '@/types/post-data'
-import { stripNullUndefined } from '@/utils/utils'
-import { Event, IEvent } from '@/models/event'
-import { addEvent } from './firebase-admin'
+import { AccountInformation, NewUser } from '@/types/post-data'
+import { IAddress } from '@/models/address'
+import { Contact, IContact } from '@/models/contact'
+import { contains, stripNullUndefined } from '@/utils/utils'
 
-export const USERS_COLLECTION = 'Users'
-export const USER_DETAILS_COLLECTION = 'UserDetails'
+const USERS_COLLECTION = 'Users'
+const USER_DETAILS_COLLECTION = 'UserDetails'
 
 const userConverter = {
     toFirestore(user: User): DocumentData {
@@ -148,37 +146,13 @@ export async function addUser(newUser: NewUser) {
 }
 
 export async function getUserAccount(): Promise<AccountInformation> {
-    try {
-        const userId: string = await getUserId()
-        return _getUserAccount(userId)
-    } catch (error) {
-        // eslint-disable-line no-empty
-    }
-    return Promise.reject()
-}
-
-
-export async function getAllUserAccounts() {
-
-    const q = query(collection(getDb(), USERS_COLLECTION))
-    const snapshot = await getDocs(q)
-    const userIds: string[] = snapshot.docs.map((doc) => doc.id)
-    const userAccounts: AccountInformation[] = []
-    for (const id of userIds) {
-        try {
-            userAccounts.push(await _getUserAccount(id))
-        } catch (error) {
-            // eslint-disable-line no-empty
-        }
-    }
-    return userAccounts
-}
-
-async function _getUserAccount(userId: string): Promise<AccountInformation> {
-    const userRef = doc(getDb(), USERS_COLLECTION, userId).withConverter(userConverter)
+    const userId: string | null | undefined = await getUserId()
+    const userRef = doc(getDb(), USERS_COLLECTION, userId!).withConverter(userConverter)
     const userDocument: DocumentSnapshot<User> = await getDoc(userRef)
-    const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, userId).withConverter(userDetailConverter)
+
+    const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, userId!).withConverter(userDetailConverter)
     const userDetailDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef)
+
     let accountInformation: AccountInformation = {
         name: '',
         contact: {
@@ -217,109 +191,78 @@ async function _getUserAccount(userId: string): Promise<AccountInformation> {
             location: userDetail.getPrimaryAddress(),
             photo: user.getPhoto()
         }
-    } else {
-        return Promise.reject()
     }
-
     return accountInformation
 }
 
 export async function setUserAccount(accountInformation: AccountInformation) {
-    try {
-        const userId: string = await getUserId()
-        const userRef = doc(getDb(), USERS_COLLECTION, userId).withConverter(userConverter)
-        const userDocument: DocumentSnapshot<User> = await getDoc(userRef)
-        const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, userId).withConverter(userDetailConverter)
-        const userDetailDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef)
-        if (userDocument.exists() && userDetailDocument.exists()) {
-            const userChanges: any = {}
-            const userDetailChanges: any = {}
-            const name: any = accountInformation.name
-            const photo: any = accountInformation.photo
-            const primaryContact: any = stripNullUndefined(accountInformation.contact)
-            const primaryLocation: any = stripNullUndefined(accountInformation.location)
+    const userId: string | null | undefined = await getUserId()
+    const userRef = doc(getDb(), USERS_COLLECTION, userId!).withConverter(userConverter)
+    const userDocument: DocumentSnapshot<User> = await getDoc(userRef)
+    const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, userId!).withConverter(userDetailConverter)
+    const userDetailDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef)
+    if (userDocument.exists() && userDetailDocument.exists()) {
+        const userChanges: any = {}
+        const userDetailChanges: any = {}
+        const user: User = userDocument.data()
+        const userDetail: UserDetail = userDetailDocument.data()
+        const name: any = accountInformation.name
+        const photo: any = accountInformation.photo
+        const primaryContact: any = stripNullUndefined(accountInformation.contact)
+        const primaryLocation: any = stripNullUndefined(accountInformation.location)
 
-            if (name !== null && name !== undefined) {
-                userChanges['name'] = name
-            }
+        if (name !== null && name !== undefined) {
+            userChanges['name'] = name
+        }
 
-            if (photo !== null && photo !== undefined) {
-                userChanges['photo'] = photo
-            }
+        if (photo !== null && photo !== undefined) {
+            userChanges['photo'] = photo
+        }
 
-            if (primaryContact !== null && primaryContact !== undefined) {
-                for (const key in primaryContact) {
-                    if (primaryContact[key] !== null && primaryContact[key] !== undefined) {
-                        userDetailChanges[key] = primaryContact[key]
-                    }
-                }
-
-                if (userDetailChanges.email !== null && userDetailChanges.email !== undefined) {
-                    userDetailChanges.emails = arrayUnion(userDetailChanges.email)
-                }
-
-                if (userDetailChanges.phone !== null && userDetailChanges.phone !== undefined) {
-                    userDetailChanges.phones = arrayUnion(userDetailChanges.phone)
-                }
-
-                if (userDetailChanges.website !== null && userDetailChanges.website !== undefined) {
-                    userDetailChanges.websites = arrayUnion(userDetailChanges.website)
+        if (primaryContact !== null && primaryContact !== undefined) {
+            for (const key in primaryContact) {
+                if (primaryContact[key] !== null && primaryContact[key] !== undefined) {
+                    userDetailChanges[key] = primaryContact[key]
                 }
             }
 
-            if (primaryLocation !== null && primaryLocation !== undefined) {
-                if (userDetailChanges.address === null || userDetailChanges.address === undefined) {
-                    userDetailChanges.address = {}
-                }
-
-                for (const key in primaryLocation) {
-                    if (primaryLocation[key] !== null && primaryLocation[key] !== undefined) {
-                        userDetailChanges['address'][key] = primaryLocation[key]
-                    }
-                }
-
-                userDetailChanges.addresses = arrayUnion(userDetailChanges.address)
+            if (userDetailChanges.email !== null && userDetailChanges.email !== undefined) {
+                userDetailChanges.emails = arrayUnion(userDetailChanges.email)
             }
 
-            if (Object.keys(userChanges).length > 0) {
-                userChanges['modifiedAt'] = serverTimestamp()
-                stripNullUndefined(userChanges)
-                await updateDoc(userRef, userChanges)
+            if (userDetailChanges.phone !== null && userDetailChanges.phone !== undefined) {
+                userDetailChanges.phones = arrayUnion(userDetailChanges.phone)
             }
 
-            if (Object.keys(userDetailChanges).length > 0) {
-                userDetailChanges['modifiedAt'] = serverTimestamp()
-                stripNullUndefined(userDetailChanges)
-                await updateDoc(userDetailsRef, userDetailChanges)
+            if (userDetailChanges.website !== null && userDetailChanges.website !== undefined) {
+                userDetailChanges.websites = arrayUnion(userDetailChanges.website)
             }
         }
-    } catch (error) {
-        // eslint-disable-line no-empty
-    }
-}
 
-export async function addNote(note: Note) {
-    try {
-        const userId: string = await getUserId()
-        const eventParams: IEvent = {
-            type: '',
-            note: note.text,
-            createdBy: userId,
-            createdAt: serverTimestamp() as  Timestamp,
-            modifiedAt: serverTimestamp() as Timestamp
-        }
-        const event = new Event(eventParams)
+        if (primaryLocation !== null && primaryLocation !== undefined) {
+            if (userDetailChanges.address === null || userDetailChanges.address === undefined) {
+                userDetailChanges.address = {}
+            }
 
-        if (note.destinationCollection === USERS_COLLECTION) {
-            const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, note.destinationId).withConverter(userDetailConverter)
-            await updateDoc(
-                userDetailsRef,
-                {
-                    notes: arrayUnion(event)
+            for (const key in primaryLocation) {
+                if (primaryLocation[key] !== null && primaryLocation[key] !== undefined) {
+                    userDetailChanges['address'][key] = primaryLocation[key]
                 }
-            )
+            }
+
+            userDetailChanges.addresses = arrayUnion(userDetailChanges.address)
         }
-    } catch (error) {
-        addEvent(note)
+
+        if (Object.keys(userChanges).length > 0) {
+            userChanges['modifiedAt'] = serverTimestamp()
+            stripNullUndefined(userChanges)
+            await updateDoc(userRef, userChanges)
+        }
+
+        if (Object.keys(userDetailChanges).length > 0) {
+            userDetailChanges['modifiedAt'] = serverTimestamp()
+            stripNullUndefined(userDetailChanges)
+            await updateDoc(userDetailsRef, userDetailChanges)
+        }
     }
 }

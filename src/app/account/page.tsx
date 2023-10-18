@@ -4,6 +4,7 @@ import ButtonContainer from '@/components/ButtonContainer'
 import ProtectedRoute from '@/components/ProtectedRoute'
 //Hooks
 import { useEffect, useState } from 'react'
+import { useUserContext } from '@/contexts/UserContext'
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data'
 //Styling
@@ -31,7 +32,7 @@ const dummyDonations: UserDonations = [
 export default function Account() {
     const [accountType, setAccountType] = useState<string>('')
     const [userDonations, setUserDonations] = useState<UserDonations>(dummyDonations)
-
+    const { currentUser } = useUserContext()
     const [accountInfo, setAccountInfo] = useState<AccountInfo>({
         name: '',
         contact: {
@@ -55,23 +56,26 @@ export default function Account() {
     })
 
     useEffect(() => {
-        (async () => {
-            try {
-            const accountInfo = await getUserAccount()
-            setAccountInfo(accountInfo)
-            } catch (error) {
-                // eslint-disable-line no-empty
+        ;(async () => {
+            if (currentUser) {
+                try {
+                    const accountInfo = await getUserAccount()
+                    setAccountInfo(accountInfo)
+                } catch (error) {
+                    // eslint-disable-line no-empty
+                }
             }
         })()
     }, [])
 
     useEffect(() => {
-        getAccountType().then((acctType) => {
-            setAccountType(acctType!)
-        }).catch(
-            (_reason:any) => {
-            setAccountType('(unavailable)')
-        })
+        getAccountType()
+            .then((acctType) => {
+                setAccountType(acctType!)
+            })
+            .catch((_reason: any) => {
+                setAccountType('(unavailable)')
+            })
     }, [])
 
     const userDonationList = userDonations.map((donation, index) => {

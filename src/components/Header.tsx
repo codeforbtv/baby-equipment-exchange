@@ -9,7 +9,7 @@ import { useUserContext } from '@/contexts/UserContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage } from '@fortawesome/free-regular-svg-icons'
 //Libs
-import { signOutUser } from '@/api/firebase'
+import { signOutUser } from '../api/firebase'
 
 //Styles
 import styles from './Header.module.css'
@@ -84,7 +84,7 @@ export default function Header() {
             <header className={styles['header--primary']}>
                 <Link className={styles['header__logo']} href="/">
                     <FontAwesomeIcon className={styles['header__logo']} icon={faImage} />
-                    <h4>Baby Equipment Exchange</h4>
+                    <h5>Baby Equipment Exchange</h5>
                 </Link>
             </header>
             <div className={styles['header__spacer']}></div>
@@ -102,12 +102,6 @@ export default function Header() {
                         Account
                     </Link>
                 )}
-                <Link className={styles['menu__link']} id="about" href="/about" onClick={closeMenu}>
-                    About
-                </Link>
-                <Link className={styles['menu__link']} id="contact" href="/contact" onClick={closeMenu}>
-                    Contact
-                </Link>
                 <Link
                     className={styles['menu__link']}
                     id="signout"
