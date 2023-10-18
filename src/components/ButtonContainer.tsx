@@ -1,4 +1,6 @@
 'use client'
+//Fonts
+import {montserrat, garamond} from '../styles/fonts'
 //Components
 import Link from 'next/link'
 //Icons
