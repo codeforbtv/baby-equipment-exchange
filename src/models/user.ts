@@ -1,23 +1,23 @@
 //Firebase types
-import { FieldValue, serverTimestamp, Timestamp } from 'firebase/firestore'
+import { FieldValue, Timestamp } from 'firebase/firestore'
 //Plain JavaScript objects
-import { Donation } from './donation'
+import { IDonation } from './donation'
 
 export interface IUser {
     [key: string]:
         | string
-        | Donation[]
+        | IDonation[]
         | FieldValue
         | Timestamp
         | null
         | undefined
         | (() => string)
-        | (() => Donation[])
+        | (() => IDonation[])
         | (() => string | null | undefined)
         | (() => FieldValue)
 
     name: string
-    pendingDonations: Donation[]
+    pendingDonations: IDonation[]
     photo: string | null | undefined
     createdAt: Timestamp
     modifiedAt: Timestamp
@@ -26,16 +26,16 @@ export interface IUser {
 export class User implements IUser {
     [key: string]:
         | string
-        | Donation[]
+        | IDonation[]
         | Timestamp
         | null
         | undefined
         | (() => string)
-        | (() => Donation[])
+        | (() => IDonation[])
         | (() => string | null | undefined)
         | (() => Timestamp)
     name: string
-    pendingDonations: Donation[]
+    pendingDonations: IDonation[]
     photo: string | null | undefined
     createdAt: Timestamp
     modifiedAt: Timestamp
@@ -52,7 +52,7 @@ export class User implements IUser {
         return this.name
     }
 
-    getPendingDonations(): Donation[] {
+    getPendingDonations(): IDonation[] {
         return this.pendingDonations
     }
 

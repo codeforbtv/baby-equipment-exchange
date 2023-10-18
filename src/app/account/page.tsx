@@ -55,16 +55,22 @@ export default function Account() {
     })
 
     useEffect(() => {
-        ;(async () => {
+        (async () => {
+            try {
             const accountInfo = await getUserAccount()
-
             setAccountInfo(accountInfo)
+            } catch (error) {
+                // eslint-disable-line no-empty
+            }
         })()
     }, [])
 
     useEffect(() => {
         getAccountType().then((acctType) => {
             setAccountType(acctType!)
+        }).catch(
+            (_reason:any) => {
+            setAccountType('(unavailable)')
         })
     }, [])
 

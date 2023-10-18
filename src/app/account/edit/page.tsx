@@ -31,7 +31,10 @@ export default function EditAccount() {
 
     useEffect(() => {
         getAccountType().then((acctType) => {
-            setAccountType(acctType!)
+            setAccountType(acctType)
+        }).catch(
+            (_reason:any) => {
+            setAccountType('(unavailable)')
         })
     }, [])
 
@@ -71,21 +74,23 @@ export default function EditAccount() {
 
     useEffect(() => {
         (async () => {
-            const accountInfo = await getUserAccount()
-
-            setAccountInfo(accountInfo)
-
-            setFormData({
-                name: accountInfo.name,
-                username: accountInfo.contact?.email ?? '',
-                contactEmail: accountInfo.contact?.email ?? '',
-                contactPhone: accountInfo.contact?.phone ?? '',
-                locationStreet: accountInfo.location?.line_1 ?? '',
-                locationCity: accountInfo.location?.city ?? '',
-                locationState: accountInfo.location?.state ?? '',
-                locationZip: accountInfo.location?.zipcode ?? '',
-                type: accountType
-            })
+            try {
+                const accountInfo = await getUserAccount()
+                setAccountInfo(accountInfo)
+                setFormData({
+                    name: accountInfo.name,
+                    username: accountInfo.contact?.email ?? '',
+                    contactEmail: accountInfo.contact?.email ?? '',
+                    contactPhone: accountInfo.contact?.phone ?? '',
+                    locationStreet: accountInfo.location?.line_1 ?? '',
+                    locationCity: accountInfo.location?.city ?? '',
+                    locationState: accountInfo.location?.state ?? '',
+                    locationZip: accountInfo.location?.zipcode ?? '',
+                    type: accountType
+                })
+            } catch (error) {
+                // eslint-disable-line no-empty
+            }
         })()
     }, [])
 

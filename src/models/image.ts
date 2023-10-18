@@ -9,7 +9,6 @@ export function imageFactory(...downloadURLs: [string]): Image[] | Image | null 
     }
 
     if (downloadURLs.length === (1 as number)) {
-        const date: number = Date.now()
         const imageData: IImage = {
             downloadURL: downloadURLs[0],
             createdAt: serverTimestamp() as Timestamp,
@@ -20,7 +19,6 @@ export function imageFactory(...downloadURLs: [string]): Image[] | Image | null 
     }
 
     for (const downloadURL of downloadURLs) {
-        const date: number = Date.now()
         const imageData: IImage = {
             downloadURL: downloadURL,
             createdAt: serverTimestamp() as Timestamp,
