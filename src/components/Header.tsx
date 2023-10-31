@@ -84,7 +84,7 @@ export default function Header() {
             <header className={styles['header--primary']}>
                 <Link className={styles['header__logo']} href="/">
                     <FontAwesomeIcon className={styles['header__logo']} icon={faImage} />
-                    <h5>Baby Equipment Exchange</h5>
+                    <h4>Baby Equipment Exchange</h4>
                 </Link>
             </header>
             <div className={styles['header__spacer']}></div>
@@ -102,6 +102,12 @@ export default function Header() {
                         Account
                     </Link>
                 )}
+                <Link className={styles['menu__link']} id="about" href="/about" onClick={closeMenu}>
+                    About
+                </Link>
+                <Link className={styles['menu__link']} id="contact" href="/contact" onClick={closeMenu}>
+                    Contact
+                </Link>
                 <Link
                     className={styles['menu__link']}
                     id="signout"
