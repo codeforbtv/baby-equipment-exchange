@@ -1,6 +1,7 @@
 'use client'
 //Components
 import InputContainer from "@/components/InputContainer";
+import ButtonContainer from "@/components/ButtonContainer";
 //Hooks
 import { useState } from "react";
 //Styling
@@ -8,14 +9,14 @@ import globalStyles from "@/styles/globalStyles.module.css"
 import styles from "./Contact.module.css"
 
 type ContactFormData = {
-    input1: string | null,
-    input2: string | null,
-    input3: string | null,
-    input4: string | null
+    contactName: string | null,
+    email: string | null,
+    subject: string | null,
+    message: string | null
 }
 
 export default function Contact() {
-    const [formData, setFormData] = useState<ContactFormData>({ input1: null, input2: null, input3: null, input4: null })
+    const [formData, setFormData] = useState<ContactFormData>({ contactName: null, email: null, subject: null, message: null })
 
 
     function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) {
@@ -29,51 +30,60 @@ export default function Contact() {
         <>
             <div className={styles["contact__container"]}>
                 <h1>Contact</h1>
-                <h4>Page Summary</h4>
+                <h4>Send a message to the exchange administrators</h4>
                 <div className={globalStyles["content__container"]}>
-                    <h4 className={styles["contact__heading"]}>Label:</h4><p className={styles["contact__paragraph"]}>Text</p><br />
-                    <h4 className={styles["contact__heading"]}>Label:</h4><p className={styles["contact__paragraph"]}>Text</p><br />
-                    <h4 className={styles["contact__heading"]}>Label:</h4><p className={styles["contact__paragraph"]}>Text</p><br />
-                    <InputContainer for="input1" label="Label" footnote="Footnote">
-                        <input
-                            type="text"
-                            name="input1"
-                            id="input1"
-                            placeholder="Short text"
-                            onChange={(e) => handleInputChange(e)}
-                            value={formData.input1 ? formData.input1 : ''}
-                        ></input>
-                    </InputContainer>
-                    <InputContainer for="input2" label="Label" footnote="Footnote">
-                        <input
-                            type="text"
-                            name="input2"
-                            id="input2"
-                            placeholder="Short text"
-                            onChange={(e) => handleInputChange(e)}
-                            value={formData.input2 ? formData.input2 : ''}
-                        ></input>
-                    </InputContainer>
-                    <InputContainer for="input3" label="Label" footnote="Footnote">
-                        <input
-                            type="text"
-                            name="input3"
-                            id="input3"
-                            placeholder="Short text"
-                            onChange={(e) => handleInputChange(e)}
-                            value={formData.input3 ? formData.input3 : ''}
-                        ></input>
-                    </InputContainer>
-                    <InputContainer for="input4" label="Label" footnote="Footnote">
-                        <textarea
-                            name="input4"
-                            id="input4"
-                            rows={12}
-                            placeholder="Long text"
-                            onChange={(e) => handleInputChange(e)}
-                            value={formData.input4 ? formData.input4 : ''}
-                        ></textarea>
-                    </InputContainer>
+                    <div className={styles["contact-details__container"]}>
+                        <h4 className={styles["contact__heading"]}>Address:</h4><p className={styles["contact__paragraph"]}>1205 North Ave<br />Burlington, VT 05408</p>
+                    </div>
+                    <div className={styles["contact-details__container"]}>
+                        <h4 className={styles["contact__heading"]}>Email:</h4><p className={`${styles["contact__paragraph"]} ${styles["contact__paragraph--email"]}`}>vermontconnector@gmail.com</p>
+                    </div>
+                    <div className={styles["contact-details__container"]}>
+                        <h4 className={styles["contact__heading"]}>Appointments:</h4><p className={styles["contact__paragraph"]}><a href="">Calendar</a></p>
+                    </div>
+                    <form>
+                        <InputContainer for="contactName" label="Name" footnote="Required">
+                            <input
+                                required
+                                type="text"
+                                name="contactName"
+                                id="contactName"
+                                onChange={(e) => handleInputChange(e)}
+                                value={formData.contactName ? formData.contactName : ''}
+                            ></input>
+                        </InputContainer>
+                        <InputContainer for="email" label="Email" footnote="Required">
+                            <input
+                                type="text"
+                                name="email"
+                                id="email"
+                                onChange={(e) => handleInputChange(e)}
+                                value={formData.email ? formData.email : ''}
+                            ></input>
+                        </InputContainer>
+                        <InputContainer for="subject" label="Subject" footnote="Required">
+                            <input
+                                type="text"
+                                name="subject"
+                                id="subject"
+                                onChange={(e) => handleInputChange(e)}
+                                value={formData.subject ? formData.subject : ''}
+                            ></input>
+                        </InputContainer>
+                        <InputContainer for="message" label="Message" footnote="Required">
+                            <textarea
+                                name="message"
+                                id="message"
+                                rows={12}
+                                placeholder="Type your message here"
+                                onChange={(e) => handleInputChange(e)}
+                                value={formData.message ? formData.message : ''}
+                            ></textarea>
+                        </InputContainer>
+                        <div className={styles['form__section--bottom']}>
+                            <ButtonContainer type={'submit'} text={'Submit'} hasIcon width={'45%'} />
+                        </div>
+                    </form>
                 </div>
             </div>
         </>
