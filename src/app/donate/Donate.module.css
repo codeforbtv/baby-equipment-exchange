@@ -1,0 +1,71 @@
+.image-uploader__container {
+    width: 100%;
+    border: 1px dashed black;
+    min-height: 25vh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: rgba(255, 255, 255, 0.75);
+    padding: 0.75rem 0.5rem 1rem 0.5rem;
+}
+
+.image-uploader__display {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.image-uploader__input {
+    margin-top: 1rem;
+}
+
+.image-uploader__input input {
+    display: none;
+}
+
+.image-uploader__input label {
+    border-radius: 2px;
+    border: 1px solid black;
+    color: var(--button-dark);
+    font-weight: 700;
+    padding: 5px;
+}
+
+.image-uploader__thumbnail {
+    width: 23%;
+    height: auto;
+    margin: 1%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border: 1px solid black;
+}
+
+/* Tablets */
+@media screen and (min-width: 480px) {
+    .form {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-areas:
+            'left left right right'
+            'left left right right'
+            'left left right right'
+            'left left right right'
+            'bottom bottom bottom bottom';
+    }
+
+    .form__section--left {
+        grid-area: left;
+    }
+    .form__section--right {
+        grid-area: right;
+    }
+    .form__section--bottom {
+        grid-area: bottom;
+    }
+}
+
+/* Laptops and above */
+@media screen and (min-width: 800px) {
+}

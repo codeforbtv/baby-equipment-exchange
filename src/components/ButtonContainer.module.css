@@ -1,0 +1,44 @@
+.button__container {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    justify-content: center;
+}
+
+.button__container a {
+    text-decoration: none;
+}
+
+.button {
+    background-color: var(--button-dark);
+    box-shadow: none;
+    height: 2rem;
+    cursor: pointer;
+    color: white;
+    border-radius: 2px;
+    outline: none;
+    padding: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    width: max-content;
+}
+
+.button__icon {
+    height: 100%;
+}
+.button__icon,
+.button__text {
+    margin: 0 3px;
+}
+
+.dark {
+    color: white;
+    background-color: var(--button-dark);
+}
+
+.light {
+    color: black;
+    background-color: var(--button-light);
+}
