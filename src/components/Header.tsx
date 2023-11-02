@@ -9,7 +9,7 @@ import { useUserContext } from '@/contexts/UserContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faImage } from '@fortawesome/free-regular-svg-icons'
 //Libs
-import { signOutUser } from '../api/firebase'
+import { signOutUser } from '@/api/firebase'
 
 //Styles
 import styles from './Header.module.css'

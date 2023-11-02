@@ -1,25 +1,26 @@
 //Firebase types
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp, serverTimestamp } from 'firebase/firestore'
 //Plain JavaScript objects
-import { Address } from './address'
-import { Contact } from './contact'
+import { IAddress } from './address'
+import { IContact } from './contact'
+import { StorageForm } from '@/types/post-data'
 
 export interface IStorage {
-    [key: string]: boolean | string | Address | Contact | Timestamp | (() => boolean) | (() => Address) | (() => Contact) | (() => string) | (() => Timestamp)
+    [key: string]: boolean | string | IAddress | IContact | Timestamp | (() => boolean) | (() => IAddress) | (() => IContact) | (() => string) | (() => Timestamp)
     active: boolean
     name: string
-    address: Address
-    pointOfContact: Contact
+    address: IAddress
+    pointOfContact: IContact
     createdAt: Timestamp
     modifiedAt: Timestamp
 }
 
 export class Storage implements IStorage {
-    [key: string]: boolean | string | Address | Contact | Timestamp | (() => boolean) | (() => Address) | (() => Contact) | (() => string) | (() => Timestamp)
+    [key: string]: boolean | string | IAddress | IContact | Timestamp | (() => boolean) | (() => IAddress) | (() => IContact) | (() => string) | (() => Timestamp)
     active: boolean
     name: string
-    address: Address
-    pointOfContact: Contact
+    address: IAddress
+    pointOfContact: IContact
     createdAt: Timestamp
     modifiedAt: Timestamp
 
@@ -40,11 +41,11 @@ export class Storage implements IStorage {
         return this.name
     }
 
-    getAddress(): Address {
+    getAddress(): IAddress {
         return this.address
     }
 
-    getPointOfContact(): Contact {
+    getPointOfContact(): IContact {
         return this.pointOfContact
     }
 

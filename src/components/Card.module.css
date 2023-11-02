@@ -1,0 +1,41 @@
+.grid__item {
+    padding: 5px;
+    width: 45%;
+    margin: 2.5%;
+    background-color: white;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.grid__item__title {
+    margin: 5px;
+    width: max-content;
+    background-color: #666;
+    color: white;
+    padding: 3px 6px;
+}
+
+.thumbnail__image {
+    align-self: center;
+    width: 85%;
+    height: auto;
+    margin: 0 auto;
+}
+
+/* Tablets */
+@media screen and (min-width: 480px) {
+    .grid__item {
+        width: 22%;
+        margin: 1.5%;
+    }
+}
+
+/* Laptops and above */
+@media screen and (min-width: 800px) {
+    .grid__item {
+        width: 22%;
+        margin: 1.5%;
+    }
+}

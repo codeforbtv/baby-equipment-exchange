@@ -27,12 +27,10 @@ const auth: Auth = initFirebaseAuth()
 function initDb(): Firestore {
     const _db: Firestore = getFirestore(getApp())
     if (
-        process !== undefined &&
-        process.env !== undefined &&
-        (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') &&
-        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
+        (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
+        process?.env?.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
     ) {
-        const FIREBASE_EMULATORS_FIRESTORE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FIRESTORE_PORT || '8080')
+        const FIREBASE_EMULATORS_FIRESTORE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FIRESTORE_PORT ?? '8080')
         connectFirestoreEmulator(_db, '127.0.0.1', FIREBASE_EMULATORS_FIRESTORE_PORT)
     }
     return _db
@@ -41,12 +39,10 @@ function initDb(): Firestore {
 function initFirebaseAuth() {
     const _auth: Auth = getAuth(getApp())
     if (
-        process !== undefined &&
-        process.env !== undefined &&
-        (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') &&
+        (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
         process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
     ) {
-        const FIREBASE_EMULATORS_AUTH_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_AUTH_PORT || '8099')
+        const FIREBASE_EMULATORS_AUTH_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_AUTH_PORT ?? '8099')
         connectAuthEmulator(_auth, `http://127.0.0.1:${FIREBASE_EMULATORS_AUTH_PORT}`)
     }
     return _auth
@@ -55,12 +51,10 @@ function initFirebaseAuth() {
 function initFirebaseStorage() {
     const _storage: FirebaseStorage = getStorage(getApp())
     if (
-        process !== undefined &&
-        process.env !== undefined &&
-        (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') &&
-        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
+        (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
+        process?.env?.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
     ) {
-        const FIREBASE_EMULATORS_STORAGE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_STORAGE_PORT || '8199')
+        const FIREBASE_EMULATORS_STORAGE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_STORAGE_PORT ?? '8199')
         connectStorageEmulator(_storage, '127.0.0.1', FIREBASE_EMULATORS_STORAGE_PORT)
     }
     return _storage
@@ -85,38 +79,56 @@ export function getFirebaseStorage(): FirebaseStorage {
     return storage
 }
 
-export async function getAccountType(): Promise<string | undefined> {
-    const _isUnverified = await isUnverified()
-    const _isDonor = await isDonor()
+export async function getAccountType(): Promise<string> {
     let accountType: string = ''
-
-    if (_isUnverified && _isDonor) {
-        accountType += 'unverified donor'
-    } else if (_isDonor) {
-        accountType = 'donor'
-    } else if (_isUnverified) {
-        accountType = 'unverified'
+    const hasAdmin = await isAdmin()
+    const hasVerified = await isVerified()
+    if (hasAdmin) {
+        accountType = 'Administrator'
     } else {
-        accountType = '(none)'
+        accountType = 'Donor'
     }
-
+    if (hasVerified) {
+        accountType += ' (unverified)'
+    }
     return accountType
 }
 
-export async function isDonor(): Promise<boolean | undefined> {
-    return (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims.donor !== undefined ? true : false
+export async function isAdmin(): Promise<boolean> {
+    await getFirebaseAuth().authStateReady()
+    const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
+    if (claims === undefined || claims === null) {
+        return Promise.reject()
+    }
+    return (claims?.admin !== undefined && claims?.admin === true) ? true : false
 }
 
-export async function isUnverified(): Promise<boolean | undefined> {
-    return (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims.unverified !== undefined ? true : false
+export async function isDonor(): Promise<boolean> {
+    await getFirebaseAuth().authStateReady()
+    const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
+    if (claims === undefined || claims === null) {
+        return Promise.reject()
+    }
+    return (claims?.donor !== undefined && claims?.donor === true) ? true : false
+}
+
+export async function isVerified(): Promise<boolean> {
+    await getFirebaseAuth().authStateReady()
+    const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
+    if (claims === undefined || claims === null) {
+        return Promise.reject()
+    }
+    return (claims?.verified !== undefined && claims?.verified === true) ? true : false
 }
 
 export function getUserEmail(): string | null | undefined {
     return getFirebaseAuth().currentUser?.email
 }
 
-export function getUserId(): string | null | undefined {
-    return getFirebaseAuth().currentUser?.uid
+export async function getUserId(): Promise<string> {
+    await getFirebaseAuth().authStateReady()
+    const currentUser = getFirebaseAuth().currentUser?.uid
+    return currentUser ?? Promise.reject()
 }
 
 export async function createNewUser(newUser: NewUser, password: string) {
@@ -129,7 +141,7 @@ export async function createNewUser(newUser: NewUser, password: string) {
     await setClaimForNewUser(newUser.user)
 
     // Force the client Firebase App instance to regenerate a new token
-    const token = await userCredential.user.getIdTokenResult(true)
+    await userCredential.user.getIdTokenResult(true)
 }
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {

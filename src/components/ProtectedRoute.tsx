@@ -1,3 +1,4 @@
+'use client'
 //Components
 import Loader from './Loader'
 //hooks
