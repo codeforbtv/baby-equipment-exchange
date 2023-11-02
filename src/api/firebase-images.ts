@@ -2,7 +2,7 @@
 import { getDb, getFirebaseStorage, getUserId } from './firebase'
 import { ref, uploadBytes } from 'firebase/storage'
 //Models
-import { IImage, Image, imageFactory } from '../models/image'
+import { IImage, Image, imageFactory } from '@/models/image'
 import { IImageDetail, ImageDetail } from '@/models/image-detail'
 //Modules
 import { addDoc, collection, doc, DocumentData, getDoc, QueryDocumentSnapshot, serverTimestamp, SnapshotOptions, Timestamp } from 'firebase/firestore'
@@ -38,58 +38,59 @@ const imageConverter = {
     }
 }
 
-export async function uploadImages(files: FileList): Promise<string[] | undefined> {
-    const documentIds = []
-    const storage = getFirebaseStorage()
-    const uid = getUserId()
+export async function uploadImages(files: FileList): Promise<string[]> {
+    try {
+        const documentIds = []
+        const storage = getFirebaseStorage()
+        const userId = await getUserId()
 
-    if (uid === undefined) {
-        return undefined
-    }
+        for (const file of files) {
+            const currentTime = Date.now()
+            // eslint-disable-next-line no-useless-escape
+            const extension = '.' + /[^\.]*$/.exec(file.name)![0] // Suppress the no-useless-escape rule from being called on a regular expression.
+            const fileSize = file.size
+            const fileType = file.type
+            const storageFilename = `${uuidv4()}-${currentTime}${extension}`
 
-    for (const file of files) {
-        const currentTime = Date.now()
-        // eslint-disable-next-line no-useless-escape
-        const extension = '.' + /[^\.]*$/.exec(file.name)![0] // Suppress the no-useless-escape rule from being called on a regular expression.
-        const fileSize = file.size
-        const fileType = file.type
-        const storageFilename = `${uuidv4()}-${currentTime}${extension}`
+            // Upload image(s) to Cloud Storage
 
-        // Upload image(s) to Cloud Storage
+            // todo: Validate file size
+            // todo: Validate type
+            const fileData: ArrayBuffer = await file.arrayBuffer()
+            const storageRef = ref(storage, storageFilename)
 
-        // todo: Validate file size
-        // todo: Validate type
-        const fileData: ArrayBuffer = await file.arrayBuffer()
-        const storageRef = ref(storage, storageFilename)
+            await uploadBytes(storageRef, fileData)
 
-        await uploadBytes(storageRef, fileData)
+            // Create new Image document
+            const imageCollection = collection(getDb(), IMAGES_COLLECTION)
+            const { ...imageData } = imageFactory(storageFilename)
+            const imageRef = await addDoc(imageCollection, imageData)
 
-        // Create new Image document
-        const imageCollection = collection(getDb(), IMAGES_COLLECTION)
-        const { ...imageData } = imageFactory(storageFilename)
-        const imageRef = await addDoc(imageCollection, imageData)
+            // Create new Image Details document
+            const imageDetailsCollection = collection(getDb(), IMAGE_DETAILS_COLLECTION)
+            const imageDetailsData: IImageDetail = {
+                image: imageRef.id,
+                uploadedBy: userId,
+                uri: storageFilename,
+                filename: storageFilename,
+                createdAt: serverTimestamp() as Timestamp,
+                modifiedAt: serverTimestamp() as Timestamp
+            }
+            const { ...imageDetail } = new ImageDetail(imageDetailsData)
+            await addDoc(imageDetailsCollection, imageDetail)
 
-        // Create new Image Details document
-        const imageDetailsCollection = collection(getDb(), IMAGE_DETAILS_COLLECTION)
-        const imageDetailsData: IImageDetail = {
-            image: imageRef.id,
-            uploadedBy: getUserId()!,
-            uri: storageFilename,
-            filename: storageFilename,
-            createdAt: serverTimestamp() as Timestamp,
-            modifiedAt: serverTimestamp() as Timestamp
+            // Return the newly created id values of Images collection documents.
+            documentIds.push(imageRef.id)
         }
-        const { ...imageDetail } = new ImageDetail(imageDetailsData)
-        await addDoc(imageDetailsCollection, imageDetail)
 
-        // Return the newly created id values of Images collection documents.
-        documentIds.push(imageRef.id)
+        return documentIds
+    } catch(error) {
+        // eslint-disable-line no-empty
     }
-
-    return documentIds
+    return Promise.reject()
 }
 
-export async function getImage(id: string): Promise<Image | undefined> {
+export async function getImage(id: string): Promise<Image> {
     const imagesRef = collection(getDb(), IMAGES_COLLECTION)
     const documentRef = doc(imagesRef, id).withConverter(imageConverter)
     const snapshot = await getDoc(documentRef)
