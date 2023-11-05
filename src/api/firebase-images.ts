@@ -52,26 +52,32 @@ export async function uploadImages(files: FileList): Promise<string[]> {
             const fileType = file.type
             const storageFilename = `${uuidv4()}-${currentTime}${extension}`
 
-            // Upload image(s) to Cloud Storage
-
             // todo: Validate file size
             // todo: Validate type
+
+            //ensure image has correct contentType
+            const metaData = {
+                contentType: fileType
+            }
+
             const fileData: ArrayBuffer = await file.arrayBuffer()
             const storageRef = ref(storage, storageFilename)
 
-            await uploadBytes(storageRef, fileData)
-
-            // Create new Image document
+            // Upload image(s) to Cloud Storage
+            await uploadBytes(storageRef, fileData, metaData)
+            const downloadURL = `gs://baby-equipment-exchange.appspot.com/${storageFilename}`
+            //Create new Image document
             const imageCollection = collection(getDb(), IMAGES_COLLECTION)
-            const { ...imageData } = imageFactory(storageFilename)
+            const { ...imageData } = imageFactory(downloadURL)
+
             const imageRef = await addDoc(imageCollection, imageData)
 
-            // Create new Image Details document
+            //Create new Image Details document
             const imageDetailsCollection = collection(getDb(), IMAGE_DETAILS_COLLECTION)
             const imageDetailsData: IImageDetail = {
                 image: imageRef.id,
                 uploadedBy: userId,
-                uri: storageFilename,
+                uri: downloadURL,
                 filename: storageFilename,
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp
@@ -82,9 +88,9 @@ export async function uploadImages(files: FileList): Promise<string[]> {
             // Return the newly created id values of Images collection documents.
             documentIds.push(imageRef.id)
         }
-
         return documentIds
-    } catch(error) {
+    } catch (error) {
+        console.log(error)
         // eslint-disable-line no-empty
     }
     return Promise.reject()

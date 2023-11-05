@@ -169,9 +169,8 @@ export async function addDonation(newDonation: DonationForm) {
         try {
             await runTransaction(getDb(), async (transaction) => {
                 // Generate document references.
-                const donationRef = doc(getDb(), DONATIONS_COLLECTION)
-                const donationDetailRef = doc(getDb(), DONATION_DETAILS_COLLECTION)
-
+                const donationRef = doc(getDb(), DONATIONS_COLLECTION, userId)
+                const donationDetailRef = doc(getDb(), DONATION_DETAILS_COLLECTION, userId)
                 // Assign donation reference to donation detail
                 donationDetail.setDonation(donationRef.id)
 
@@ -181,6 +180,7 @@ export async function addDonation(newDonation: DonationForm) {
             })
         } catch (error) {
             // eslint-disable-line no-empty
+            console.log(error)
         }
     } catch (error) {
         addEvent(newDonation)
