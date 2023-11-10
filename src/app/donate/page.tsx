@@ -90,7 +90,7 @@ export default function Donate() {
         const tempImages = []
         if (images) {
             for (let i = 0; i < images.length; i++) {
-                const imagePreview = <ImageThumbnail removeFunction={removeImage} file={images[i]} width={'32%'} margin={'.66%'} />
+                const imagePreview = <ImageThumbnail key={i} removeFunction={removeImage} file={images[i]} width={'32%'} margin={'.66%'} />
                 tempImages.push(imagePreview)
             }
             setImageElements(tempImages)
@@ -131,9 +131,6 @@ export default function Donate() {
                 description: submittedData.get('description')?.toString() || '',
                 images: imageIds
             }
-
-            newDonation.user = currentUser?.email || ''
-            newDonation.images = imageIds
 
             await addDonation(newDonation)
             setSubmitState('idle')
