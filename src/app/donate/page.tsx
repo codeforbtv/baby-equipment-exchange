@@ -109,7 +109,7 @@ export default function Donate() {
         try {
             setSubmitState('submitting')
             const submittedData = new FormData(e.currentTarget)
-            let imageIds = ['']
+            let imageIds: string[] = []
 
             //upload images if included
             if (images) {
@@ -123,7 +123,7 @@ export default function Donate() {
                 imageIds = await uploadImages(imageList.files)
             }
 
-            let newDonation = {
+            const newDonation = {
                 user: currentUser?.email || '',
                 brand: submittedData.get('brand')?.toString() || '',
                 category: submittedData.get('category')?.toString() || '',
