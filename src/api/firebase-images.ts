@@ -90,7 +90,6 @@ export async function uploadImages(files: FileList): Promise<string[]> {
         }
         return documentIds
     } catch (error) {
-        console.log(error)
         // eslint-disable-line no-empty
     }
     return Promise.reject()
