@@ -60,7 +60,7 @@ export default function Account() {
     })
 
     useEffect(() => {
-        ;(async () => {
+        (async () => {
             if (currentUser) {
                 try {
                     const accountInfo = await getUserAccount()

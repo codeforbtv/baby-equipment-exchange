@@ -77,7 +77,7 @@ export default function EditAccount() {
     })
 
     useEffect(() => {
-        ;(async () => {
+        (async () => {
             if (currentUser) {
                 try {
                     const accountInfo = await getUserAccount()

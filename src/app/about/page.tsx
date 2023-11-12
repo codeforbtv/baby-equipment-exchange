@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function About() {
 
-    let itemTypesAccepted: string[] = [
+    const itemTypesAccepted: string[] = [
         "Baby gates",
         "Baby slings and carriers",
         "Bassinets",
@@ -33,10 +33,10 @@ export default function About() {
         "Swings",
         "Tents/Shade covers"
     ];
-    let itemTypesAcceptedList = itemTypesAccepted.map((itemType: string, index: number) => {
+    const itemTypesAcceptedList = itemTypesAccepted.map((itemType: string, index: number) => {
         return <li key={index}>{itemType}</li>
     })
-    let itemTypesNotAccepted: string[] = [
+    const itemTypesNotAccepted: string[] = [
         "Car seats",
         "Breast pumps",
         "Nursing/feeding supplies",
@@ -52,11 +52,11 @@ export default function About() {
         "Books",
         "Clothes"
     ];
-    let itemTypesNotAcceptedList = itemTypesNotAccepted.map((itemType: string, index: number) => {
+    const itemTypesNotAcceptedList = itemTypesNotAccepted.map((itemType: string, index: number) => {
         return <li key={index}>{itemType}</li>
     })
 
-    let faqs: { question: string, answer: ReactNode }[] = [
+    const faqs: { question: string, answer: ReactNode }[] = [
         {
             question: "How do I request items for myself?",
             answer:
@@ -89,7 +89,7 @@ export default function About() {
                     </p>
                     <ul>
                         <li>Consumer Product Safety Commission <a href="https://cspc.gov">(cpsc.gov)</a> </li>
-                        <li>Reseller's Guide to Selling Safer Products <a></a></li>
+                        <li>Reseller&apos;s Guide to Selling Safer Products <a></a></li>
                         <li>SaferProducts.gov <a href="https://saferproducts.gov">(saferproducts.gov)</a></li>
                         <li>Recalls.gov <a href="https://recalls.gov">(recalls.gov)</a></li>
                         <li>Safercar.gov <a href="https://safercar.gov">(safercar.gov)</a></li>
@@ -97,7 +97,7 @@ export default function About() {
                 </div>
         }
     ]
-    let faqList = faqs.map((faqitems: { question: string, answer: ReactNode }, index: number) => {
+    const faqList = faqs.map((faqitems: { question: string, answer: ReactNode }, index: number) => {
         return <li key={index}>
             <a className={styles["about__question"]} id={'faq-item-question-' + index} onClick={(event: React.UIEvent<HTMLAnchorElement>) => { (event.currentTarget.nextElementSibling as HTMLElement).style.display === 'none' ? (event.currentTarget.nextElementSibling as HTMLElement).style.display = 'block' : (event.currentTarget.nextElementSibling as HTMLElement).style.display = 'none' }}>{faqitems.question}</a>
             <div className={styles["about__answer"]} style={{display:"none"}} id={'faq-item-answer-' + index}>
@@ -116,7 +116,7 @@ export default function About() {
                     <p>The exchange provides durable equipment to families in need through partner referrals and community donations.</p>
                     <h4 className={styles["about__heading"]}>Learn More:</h4>
                     <p className={styles["about__paragraph"]}>
-                        <a href="https://www.wendyriceconsulting.com/" target="_blank">Click here for Vermont Connector's project page</a>
+                        <a href="https://www.wendyriceconsulting.com/">Click here for Vermont Connector&apos;s project page</a>
                     </p>
                     <br />
                     <h2>Donations</h2>
