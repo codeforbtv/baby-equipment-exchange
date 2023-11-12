@@ -1,9 +1,14 @@
 'use client'
 //Components
-import InputContainer from '@/components/InputContainer'
-import ButtonContainer, { Theme } from '@/components/ButtonContainer'
 import ToasterNotification from '@/components/ToasterNotification'
 import Loader from '@/components/Loader'
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
+import {
+    Box,
+    TextField,
+    Button,
+} from '@mui/material'
+
 //Hooks
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -11,7 +16,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '@/api/firebase'
 //Styling
-import globalStyles from '@/styles/globalStyles.module.css'
+import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './Login.module.css'
 
 export default function Login() {
@@ -43,46 +48,44 @@ export default function Login() {
         <>
             <div className={styles['login__container']}>
                 <h1>Login</h1>
-                <h4>Page Summary</h4>
+                <h4>[Page Summary]</h4>
                 <div className={globalStyles['content__container']}>
                     {loginState === 'pending' && <Loader />}
                     {loginState === 'loggedOut' && (
                         <>
-                            <form onSubmit={handleLogin}>
-                                <InputContainer for="email" label="Email" footnote="Footnote">
-                                    <input
-                                        type="text"
-                                        name="email"
-                                        id="email"
-                                        placeholder=" Input email"
-                                        autoComplete="email"
-                                        value={email}
-                                        required
-                                        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                            setEmail(event.target.value)
-                                        }}
-                                    />
-                                </InputContainer>
-                                <InputContainer for="password" label="Password" footnote="Footnote">
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        id="password"
-                                        placeholder=" Input password"
-                                        autoComplete="current-password"
-                                        value={password}
-                                        required
-                                        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                            setPassword(event.target.value)
-                                        }}
-                                    />
-                                </InputContainer>
-                                <ButtonContainer type="submit" text="Login" theme={Theme.dark} hasIcon />
-                            </form>
+                            <Box component="form" gap={3} display={"flex"} flexDirection={"column"} onSubmit={handleLogin}>
+                                        <TextField
+                                            type="text"
+                                            name="email"
+                                            id="email"
+                                            label="Email"
+                                            placeholder="Input Email"
+                                            autoComplete="email"
+                                            value={email}
+                                            required
+                                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                                setEmail(event.target.value)
+                                            }}
+                                        />
+                                        <TextField
+                                            type="password"
+                                            name="password"
+                                            id="password"
+                                            label="Password"
+                                            placeholder="Input Password"
+                                            autoComplete="current-password"
+                                            value={password}
+                                            required
+                                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                                setPassword(event.target.value)
+                                            }}
+                                        />
+                                    <Button variant="contained" type="submit" endIcon={<VpnKeyOutlinedIcon/>}>Login</Button>
+                            </Box>
                             <hr />
-                            <p>
+                            <span>
                                 Instructions for forgotten password. <Link href="/join">Create an account.</Link>
-                            </p>
+                            </span>
                         </>
                     )}
                 </div>

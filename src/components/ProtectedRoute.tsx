@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useUserContext } from '@/contexts/UserContext'
 //Styling
-import globalStyles from '@/styles/globalStyles.module.css'
+import globalStyles from '@/styles/globalStyles.module.scss'
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { currentUser, isLoading } = useUserContext()

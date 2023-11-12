@@ -1,3 +1,7 @@
+.donate__container {
+    margin: 1rem auto;
+}
+
 .image-uploader__container {
     width: 100%;
     border: 1px dashed black;
@@ -8,6 +12,7 @@
     justify-content: space-between;
     background-color: rgba(255, 255, 255, 0.75);
     padding: 0.75rem 0.5rem 1rem 0.5rem;
+    font-weight: 500;
 }
 
 .image-uploader__display {
@@ -25,13 +30,13 @@
     display: none;
 }
 
-.image-uploader__input label {
+/* .image-uploader__input label {
     border-radius: 2px;
     border: 1px solid black;
     color: var(--button-dark);
     font-weight: 700;
     padding: 5px;
-}
+} */
 
 .image-uploader__thumbnail {
     width: 23%;
@@ -46,6 +51,7 @@
 @media screen and (min-width: 480px) {
     .form {
         display: grid;
+        gap: 1em;
         grid-template-columns: repeat(4, 1fr);
         grid-template-areas:
             'left left right right'
@@ -58,9 +64,11 @@
     .form__section--left {
         grid-area: left;
     }
+
     .form__section--right {
         grid-area: right;
     }
+
     .form__section--bottom {
         grid-area: bottom;
     }
@@ -68,4 +76,5 @@
 
 /* Laptops and above */
 @media screen and (min-width: 800px) {
+
 }

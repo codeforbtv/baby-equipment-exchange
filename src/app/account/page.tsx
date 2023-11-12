@@ -1,14 +1,18 @@
 'use client'
 //Components
+import Link from 'next/link'
 import ButtonContainer from '@/components/ButtonContainer'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import { Button } from '@mui/material'
+import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined'
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 //Hooks
 import { useEffect, useState } from 'react'
 import { useUserContext } from '@/contexts/UserContext'
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data'
 //Styling
-import globalStyles from '@/styles/globalStyles.module.css'
+import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './Account.module.css'
 import { getAccountType } from '@/api/firebase'
 import { getUserAccount } from '@/api/firebase-users'
@@ -93,13 +97,16 @@ export default function Account() {
         <ProtectedRoute>
             <div className={styles['account__container']}>
                 <h1>Account</h1>
-                <h4>Page Summary</h4>
+                <h4>[Page Summary]</h4>
                 <div className={globalStyles['content__container']}>
                     <div className={styles['account__header']}>
                         <h2>Account Details</h2>
-                        <ButtonContainer text="Edit Account" link="/account/edit" />
+                        <div>
+                            <Button component={Link} href="/account/edit" variant="contained" endIcon={<PermIdentityOutlinedIcon />}>Edit Profile</Button>
+                        </div>
                     </div>
-                    <h4>Username: {accountInfo.contact?.email}</h4>
+                    <h4>Usertype: {accountType}</h4>
+                    <h4>Display name {accountInfo.contact?.name}</h4>
                     <h4>
                         Contact: <br />
                         Phone: {accountInfo.contact?.phone}
@@ -115,7 +122,7 @@ export default function Account() {
                         {accountInfo.location?.zipcode}
                         <br />
                     </h4>
-                    <h4>Usertype: {accountType}</h4>
+                    
                     <h2>Donations:</h2>
                     <div className={styles['donations__list']}>{userDonationList}</div>
                 </div>

@@ -1,12 +1,16 @@
 'use client'
 //Components
 import Browse from '@/components/Browse'
+import { Paper } from '@mui/material'
 //Libs
+import Link from 'next/link'
 import React, { useContext } from 'react'
 
 //Styles
 import styles from './HomeStyles.module.css'
-import globalStyles from '@/styles/globalStyles.module.css'
+import globalStyles from '@/styles/globalStyles.module.scss'
+import { Button } from '@mui/material'
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ButtonContainer from '@/components/ButtonContainer'
 //Hooks
 import { UserContext } from '@/contexts/UserContext'
@@ -17,15 +21,15 @@ export default function Home() {
     const loginElement = (
         <div className={styles['login__heading-prompt']}>
             <h2>You must be logged in to view donations</h2>
-            <ButtonContainer text="Login" link="/login" hasIcon />
+            <Button href="/login" variant="contained" endIcon={<VpnKeyOutlinedIcon/>}>Log in</Button>
         </div>
     )
     const content = currentUser ? <Browse /> : loginElement
     return (
         <div className={styles['home__container']}>
             <h1>Browse</h1>
-            <h4>Page Summary</h4>
-            <div className={globalStyles['content__container']}>{content}</div>
+            <h4>[Page Summary]</h4>
+            <Paper className={globalStyles['content__container']} elevation={8} square={false}>{content}</Paper>
         </div>
     )
 }

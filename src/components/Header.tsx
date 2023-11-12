@@ -3,11 +3,10 @@
 import Link from 'next/link'
 import { slide as Menu } from 'react-burger-menu'
 //Hooks
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useUserContext } from '@/contexts/UserContext'
 //Icons
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faImage } from '@fortawesome/free-regular-svg-icons'
+import StrollerOutlinedIcon from '@mui/icons-material/StrollerOutlined';
 //Libs
 import { signOutUser } from '@/api/firebase'
 
@@ -79,12 +78,30 @@ export default function Header() {
         setIsOpen(false)
     }
 
+    useEffect(() => {
+        const headerTitle = document.getElementById("headerTitle")!;
+        if (window.scrollY > headerTitle.offsetHeight * 2) {
+            headerTitle.style.visibility = "hidden";
+        }
+        const handleTitle = () => {
+            if (window.scrollY > headerTitle.offsetHeight * 2) {
+                headerTitle.style.visibility = "hidden";
+            } else {
+                headerTitle.style.visibility = "visible";
+            }
+        }
+        window.addEventListener('scroll', handleTitle);
+        return () => {
+            window.removeEventListener('scroll', handleTitle);
+        };
+    }, []);
+
     return (
         <div className={styles['header__wrapper']}>
             <header className={styles['header--primary']}>
                 <Link className={styles['header__logo']} href="/">
-                    <FontAwesomeIcon className={styles['header__logo']} icon={faImage} />
-                    <h4>Baby Equipment Exchange</h4>
+                    <StrollerOutlinedIcon />
+                    <h4 id="headerTitle" className={styles['header__title']}>Baby Equipment Exchange</h4>
                 </Link>
             </header>
             <div className={styles['header__spacer']}></div>
