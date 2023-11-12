@@ -168,10 +168,9 @@ export async function addDonation(newDonation: DonationForm) {
 
         try {
             await runTransaction(getDb(), async (transaction) => {
-                // Generate document references.
-                const donationRef = doc(getDb(), DONATIONS_COLLECTION)
-                const donationDetailRef = doc(getDb(), DONATION_DETAILS_COLLECTION)
-
+                // Generate document references with firebase-generated IDs
+                const donationRef = doc(collection(getDb(), DONATIONS_COLLECTION))
+                const donationDetailRef = doc(collection(getDb(), DONATION_DETAILS_COLLECTION))
                 // Assign donation reference to donation detail
                 donationDetail.setDonation(donationRef.id)
 
