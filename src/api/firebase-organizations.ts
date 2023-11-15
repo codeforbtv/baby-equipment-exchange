@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore'
 //Models
 import { IOrganization, Organization } from '@/models/organization'
-import { OrganizationForm } from '@/types/post-data'
+import { OrganizationBody } from '@/types/post-data'
 //Libs
 import { getDb } from './firebase'
 
@@ -64,7 +64,7 @@ const organizationConverter = {
     }
 }
 
-export async function addOrganization(newOrganization: OrganizationForm) {
+export async function addOrganization(newOrganization: OrganizationBody) {
     const organizationParams: IOrganization = {
         name: newOrganization.name,
         diaperBank: newOrganization.diaperBank,

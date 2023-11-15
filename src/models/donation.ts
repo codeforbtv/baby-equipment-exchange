@@ -1,16 +1,16 @@
 //Firebase types
-import { Timestamp } from 'firebase/firestore'
+import { DocumentReference, Timestamp } from 'firebase/firestore'
 
 export interface IDonation {
     [key: string]:
         | boolean
-        | string[]
+        | DocumentReference[]
         | Timestamp
         | string
         | null
         | undefined
         | (() => string)
-        | (() => string[])
+        | (() => DocumentReference[])
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -19,7 +19,7 @@ export interface IDonation {
     model: string | null | undefined
     description: string | null | undefined
     active: boolean | null | undefined
-    images: string[]
+    images: DocumentReference[]
     createdAt: Timestamp
     modifiedAt: Timestamp
 }
@@ -28,12 +28,12 @@ export class Donation implements IDonation {
     [key: string]:
         | string
         | boolean
-        | string[]
+        | DocumentReference[]
         | Timestamp
         | null
         | undefined
         | (() => string)
-        | (() => string[])
+        | (() => DocumentReference[])
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -42,7 +42,7 @@ export class Donation implements IDonation {
     model: string | null | undefined
     description: string | null | undefined
     active: boolean | null | undefined
-    images: string[]
+    images: DocumentReference[]
     createdAt: Timestamp
     modifiedAt: Timestamp
 
@@ -77,7 +77,7 @@ export class Donation implements IDonation {
         return this.active
     }
 
-    getImages(): string[] {
+    getImages(): DocumentReference[] {
         return this.images
     }
 

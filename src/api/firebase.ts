@@ -12,10 +12,11 @@ import {
     NextOrObserver,
     User,
     connectAuthEmulator,
-    createUserWithEmailAndPassword
+    createUserWithEmailAndPassword,
+    ParsedToken
 } from 'firebase/auth'
 import { firebaseConfig } from '../../firebase-config'
-import { NewUser } from '@/types/post-data'
+import { UserBody } from '@/types/post-data'
 import { setClaimForNewUser } from './firebase-admin'
 import { addUser } from './firebase-users'
 
@@ -94,31 +95,38 @@ export async function getAccountType(): Promise<string> {
     return accountType
 }
 
+export async function canReadDonations(): Promise<boolean> {
+    return checkClaim('can-read-donations') 
+}
+
 export async function isAdmin(): Promise<boolean> {
-    await getFirebaseAuth().authStateReady()
-    const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
-    if (claims === undefined || claims === null) {
-        return Promise.reject()
-    }
-    return (claims?.admin !== undefined && claims?.admin === true) ? true : false
+    return checkClaim('admin')
+}
+
+export async function isAidWorker(): Promise<boolean> {
+    return checkClaim('aid-worker')
 }
 
 export async function isDonor(): Promise<boolean> {
-    await getFirebaseAuth().authStateReady()
-    const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
-    if (claims === undefined || claims === null) {
-        return Promise.reject()
-    }
-    return (claims?.donor !== undefined && claims?.donor === true) ? true : false
+    return checkClaim('donor')
 }
 
 export async function isVerified(): Promise<boolean> {
+    return checkClaim('verified')
+}
+
+export async function isVolunteer(): Promise<boolean> {
+    return checkClaim('volunteer')
+}
+
+async function checkClaim(claimName: string): Promise<boolean> {
     await getFirebaseAuth().authStateReady()
     const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
     if (claims === undefined || claims === null) {
         return Promise.reject()
     }
-    return (claims?.verified !== undefined && claims?.verified === true) ? true : false
+    let claimValue = claims[claimName];
+    return (claimValue !== undefined && claimValue === true) ? true : false
 }
 
 export function getUserEmail(): string | null | undefined {
@@ -131,7 +139,7 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject()
 }
 
-export async function createNewUser(newUser: NewUser, password: string) {
+export async function createNewUser(newUser: UserBody, password: string) {
     const userCredential = await createUserWithEmailAndPassword(getFirebaseAuth(), newUser.email!, password)
     newUser.user = userCredential.user.uid
 

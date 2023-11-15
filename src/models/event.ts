@@ -1,9 +1,9 @@
-import { Timestamp } from "firebase/firestore";
+import { DocumentReference, Timestamp } from "firebase/firestore";
 
 export interface IEvent {
     type: string
     note: string
-    createdBy: string
+    createdBy: DocumentReference
     createdAt: Timestamp
     modifiedAt: Timestamp
 }
@@ -11,7 +11,7 @@ export interface IEvent {
 export class Event implements IEvent {
     type: string
     note: string
-    createdBy: string
+    createdBy: DocumentReference
     createdAt: Timestamp
     modifiedAt: Timestamp
 
@@ -31,7 +31,7 @@ export class Event implements IEvent {
         return this.note
     }
 
-    getCreatedBy(): string {
+    getCreatedBy(): DocumentReference {
         return this.createdBy
     }
 

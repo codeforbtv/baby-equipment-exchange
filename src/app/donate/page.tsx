@@ -19,6 +19,7 @@ import { addDonation } from '@/api/firebase-donations'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './Donate.module.css'
+import { DocumentReference } from 'firebase/firestore'
 
 type DonationFormData = {
     category: string | null
@@ -101,7 +102,7 @@ export default function Donate() {
         try {
             setSubmitState('submitting')
             const submittedData = new FormData(e.currentTarget)
-            let imageIds: string[] = []
+            let imageRefs: DocumentReference[] = []
 
             //upload images if included
             if (images) {
@@ -112,16 +113,16 @@ export default function Donate() {
                         imageList.items.add(file)
                     }
                 })
-                imageIds = await uploadImages(imageList.files)
+                imageRefs = await uploadImages(imageList.files)
             }
 
             const newDonation = {
-                user: currentUser?.email || '',
-                brand: submittedData.get('brand')?.toString() || '',
-                category: submittedData.get('category')?.toString() || '',
-                model: submittedData.get('model')?.toString() || '',
-                description: submittedData.get('description')?.toString() || '',
-                images: imageIds
+                user: currentUser?.email ?? '',
+                brand: submittedData.get('brand')?.toString() ?? '',
+                category: submittedData.get('category')?.toString() ?? '',
+                model: submittedData.get('model')?.toString() ?? '',
+                description: submittedData.get('description')?.toString() ?? '',
+                images: imageRefs
             }
 
             await addDonation(newDonation)

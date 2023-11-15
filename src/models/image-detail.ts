@@ -1,10 +1,10 @@
 //Firebase types
-import { Timestamp } from 'firebase/firestore'
+import { DocumentReference, Timestamp } from 'firebase/firestore'
 
 export interface IImageDetail {
-    [key: string]: string | Timestamp | (() => string) | (() => Timestamp)
-    image: string
-    uploadedBy: string
+    [key: string]: string | DocumentReference | Timestamp | (() => string) | (() => DocumentReference) | (() => Timestamp)
+    image: DocumentReference
+    uploadedBy: DocumentReference
     uri: string
     filename: string
     createdAt: Timestamp
@@ -12,9 +12,9 @@ export interface IImageDetail {
 }
 
 export class ImageDetail implements IImageDetail {
-    [key: string]: string | Timestamp | (() => string) | (() => Timestamp)
-    image: string
-    uploadedBy: string
+    [key: string]: string | DocumentReference | Timestamp | (() => string) | (() => DocumentReference) | (() => Timestamp)
+    image: DocumentReference
+    uploadedBy: DocumentReference
     uri: string
     filename: string
     createdAt: Timestamp
@@ -29,11 +29,11 @@ export class ImageDetail implements IImageDetail {
         this.modifiedAt = args.modifiedAt
     }
 
-    getImage(): string {
+    getImage(): DocumentReference {
         return this.image
     }
 
-    getUploadedBy(): string {
+    getUploadedBy(): DocumentReference {
         return this.uploadedBy
     }
 

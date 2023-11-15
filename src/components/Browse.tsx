@@ -11,64 +11,10 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 //Hooks
 import React, { useEffect, useState } from 'react'
 //Libs
-import { getActiveDonations } from '@/api/firebase-donations'
+import { getAllDonations, getDonations } from '@/api/firebase-donations'
 //Styles
 import styles from './Browse.module.css'
-import { Timestamp } from 'firebase/firestore'
-
-//Temporary holder for dummy data - to be updated with database link
-const dummyDonations: Donation[] = [
-    new Donation({
-        category: 'category',
-        brand: 'brand',
-        model: 'model',
-        description: 'description',
-        active: true,
-        images: ['img1'],
-        createdAt: Timestamp.fromDate(new Date()),
-        modifiedAt: Timestamp.fromDate(new Date())
-    }),
-    new Donation({
-        category: 'category',
-        brand: 'brand',
-        model: 'model',
-        description: 'description',
-        active: true,
-        images: ['img2'],
-        createdAt: Timestamp.fromDate(new Date()),
-        modifiedAt: Timestamp.fromDate(new Date())
-    }),
-    new Donation({
-        category: 'category',
-        brand: 'brand',
-        model: 'model',
-        description: 'description',
-        active: true,
-        images: ['img3'],
-        createdAt: Timestamp.fromDate(new Date()),
-        modifiedAt: Timestamp.fromDate(new Date())
-    }),
-    new Donation({
-        category: 'category',
-        brand: 'brand',
-        model: 'model',
-        description: 'description',
-        active: true,
-        images: ['img4'],
-        createdAt: Timestamp.fromDate(new Date()),
-        modifiedAt: Timestamp.fromDate(new Date())
-    }),
-    new Donation({
-        category: 'category',
-        brand: 'brand',
-        model: 'model',
-        description: 'description',
-        active: true,
-        images: ['img5'],
-        createdAt: Timestamp.fromDate(new Date()),
-        modifiedAt: Timestamp.fromDate(new Date())
-    })
-]
+import { canReadDonations, getUserId } from '@/api/firebase'
 
 const Browse: React.FC = () => {
     const [donations, setDonations] = useState([] as Donation[])
@@ -86,14 +32,21 @@ const Browse: React.FC = () => {
      * On component render sets the donations state to the active donations retreived from Firebase.
      */
     useEffect(() => {
-        /*Using dummy data for UI testing*/
-        setDonations(dummyDonations)
-
-        /*
-       getActiveDonations().then((response) => {
-           setDonations(response)
-       })
-       */
+        canReadDonations()
+        .then(async (hasReadDonationsPermission) => {
+            const uid = await getUserId();
+            let donations = []
+            if (hasReadDonationsPermission === true) {
+                donations = await getAllDonations()
+            } else {
+                donations = await getDonations()
+            }
+            console.log(donations)
+            setDonations(donations)
+        }).catch((error) => {
+            console.log(error)
+            // eslint-disable-line no-empty
+        })
     }, [])
 
     return (
@@ -116,16 +69,16 @@ const Browse: React.FC = () => {
                     // An active donation must have at least one photo for display.
                     return (
                         <DonationCard
-                            key={donation.images[0]}
-                            category={donation.category}
-                            brand={donation.brand}
-                            model={donation.model}
-                            description={donation.description}
-                            active={donation.active}
-                            images={donation.images}
-                            createdAt={donation.createdAt.toDate()}
-                            modifiedAt={donation.modifiedAt.toDate()}
-                        />
+                                key={donation.images[0]}
+                                category={donation.category}
+                                brand={donation.brand}
+                                model={donation.model}
+                                description={donation.description}
+                                active={donation.active}
+                                images={donation.images}
+                                createdAt={donation.createdAt.toDate()}
+                                modifiedAt={donation.modifiedAt.toDate()}
+                            />
                     )
                 })}
             </div>

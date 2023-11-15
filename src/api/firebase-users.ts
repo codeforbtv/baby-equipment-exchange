@@ -20,7 +20,7 @@ import {
 import { IUser, User } from '@/models/user'
 import { IUserDetail, UserDetail } from '@/models/user-detail'
 //Types
-import { AccountInformation, NewUser, Note } from '@/types/post-data'
+import { AccountInformation, UserBody, NoteBody } from '@/types/post-data'
 import { stripNullUndefined } from '@/utils/utils'
 import { Event, IEvent } from '@/models/event'
 import { addEvent } from './firebase-admin'
@@ -104,7 +104,7 @@ const userDetailConverter = {
     }
 }
 
-export async function addUser(newUser: NewUser) {
+export async function addUser(newUser: UserBody) {
     if ((!newUser.user as any) instanceof String) {
         return
     }
@@ -298,7 +298,7 @@ export async function setUserAccount(accountInformation: AccountInformation) {
     }
 }
 
-export async function addNote(note: Note) {
+export async function addNote(note: NoteBody) {
     try {
         const userId: string = await getUserId()
         const eventParams: IEvent = {

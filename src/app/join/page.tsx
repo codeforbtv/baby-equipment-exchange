@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { onAuthStateChangedListener, createNewUser } from '@/api/firebase'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.scss'
-import { NewUser } from '@/types/post-data'
+import { UserBody } from '@/types/post-data'
 import { isEmailInUse } from '@/api/firebase-admin'
 import Loader from '@/components/Loader'
 
@@ -32,7 +32,7 @@ export default function NewAccount() {
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault()
         try {
-            const newUser: NewUser = {
+            const newUser: UserBody = {
                 user: undefined,
                 name: displayName,
                 email: email,
