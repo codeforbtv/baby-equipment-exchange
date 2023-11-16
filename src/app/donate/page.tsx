@@ -124,11 +124,11 @@ export default function Donate() {
             }
 
             const newDonation = {
-                user: currentUser?.email || '',
-                brand: submittedData.get('brand')?.toString() || '',
-                category: submittedData.get('category')?.toString() || '',
-                model: submittedData.get('model')?.toString() || '',
-                description: submittedData.get('description')?.toString() || '',
+                user: currentUser?.email ?? '',
+                brand: submittedData.get('brand')?.toString() ?? '',
+                category: submittedData.get('category')?.toString() ?? '',
+                model: submittedData.get('model')?.toString() ?? '',
+                description: submittedData.get('description')?.toString() ?? '',
                 images: imageIds
             }
 
