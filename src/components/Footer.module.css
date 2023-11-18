@@ -1,9 +1,18 @@
 .footer-wrapper {
-    font-family: var(--primary-font);
+    font-family: 'adobe-garamond-pro';
     background-color: var(--bg-grey);
     width: 100%;
     height: 2.5rem;
     display: flex;
     align-items: center;
     justify-content: space-evenly;
+}
+
+.menu__link {
+    font-family: var(--primary-font);
+    color: white;
+    padding: 0.5rem 0;
+    font-size: .9rem;
+    text-decoration: none;
+    text-transform: uppercase;
 }

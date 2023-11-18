@@ -1,6 +1,6 @@
 //Firebase modules
 import { FirebaseApp, initializeApp } from 'firebase/app'
-import { connectFirestoreEmulator, Firestore, getFirestore } from 'firebase/firestore'
+import { connectFirestoreEmulator, doc, Firestore, getFirestore } from 'firebase/firestore'
 import { FirebaseStorage, connectStorageEmulator, getStorage } from 'firebase/storage'
 import {
     Auth,
@@ -12,12 +12,13 @@ import {
     NextOrObserver,
     User,
     connectAuthEmulator,
-    createUserWithEmailAndPassword
+    createUserWithEmailAndPassword,
+    ParsedToken
 } from 'firebase/auth'
 import { firebaseConfig } from '../../firebase-config'
-import { NewUser } from '@/types/post-data'
+import { UserBody } from '@/types/post-data'
 import { setClaimForNewUser } from './firebase-admin'
-import { addUser } from './firebase-users'
+import { USERS_COLLECTION, addUser } from './firebase-users'
 
 let app: FirebaseApp
 const db: Firestore = initDb()
@@ -94,31 +95,38 @@ export async function getAccountType(): Promise<string> {
     return accountType
 }
 
+export async function canReadDonations(): Promise<boolean> {
+    return checkClaim('can-read-donations') 
+}
+
 export async function isAdmin(): Promise<boolean> {
-    await getFirebaseAuth().authStateReady()
-    const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
-    if (claims === undefined || claims === null) {
-        return Promise.reject()
-    }
-    return (claims?.admin !== undefined && claims?.admin === true) ? true : false
+    return checkClaim('admin')
+}
+
+export async function isAidWorker(): Promise<boolean> {
+    return checkClaim('aid-worker')
 }
 
 export async function isDonor(): Promise<boolean> {
-    await getFirebaseAuth().authStateReady()
-    const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
-    if (claims === undefined || claims === null) {
-        return Promise.reject()
-    }
-    return (claims?.donor !== undefined && claims?.donor === true) ? true : false
+    return checkClaim('donor')
 }
 
 export async function isVerified(): Promise<boolean> {
+    return checkClaim('verified')
+}
+
+export async function isVolunteer(): Promise<boolean> {
+    return checkClaim('volunteer')
+}
+
+async function checkClaim(claimName: string): Promise<boolean> {
     await getFirebaseAuth().authStateReady()
     const claims = (await getFirebaseAuth().currentUser?.getIdTokenResult(true))?.claims
     if (claims === undefined || claims === null) {
         return Promise.reject()
     }
-    return (claims?.verified !== undefined && claims?.verified === true) ? true : false
+    const claimValue = claims[claimName];
+    return (claimValue !== undefined && claimValue === true) ? true : false
 }
 
 export function getUserEmail(): string | null | undefined {
@@ -131,14 +139,15 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject()
 }
 
-export async function createNewUser(newUser: NewUser, password: string) {
+export async function createNewUser(newUser: UserBody, password: string) {
     const userCredential = await createUserWithEmailAndPassword(getFirebaseAuth(), newUser.email!, password)
-    newUser.user = userCredential.user.uid
+    const userId = userCredential.user.uid
+    newUser.user = doc(getDb(), `${USERS_COLLECTION}/${userId}`)
 
     await addUser(newUser)
 
     // Process on the server
-    await setClaimForNewUser(newUser.user)
+    await setClaimForNewUser(userId)
 
     // Force the client Firebase App instance to regenerate a new token
     await userCredential.user.getIdTokenResult(true)

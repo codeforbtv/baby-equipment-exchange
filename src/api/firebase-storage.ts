@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore'
 //Models
 import { IStorage, Storage } from '@/models/storage'
-import { StorageForm } from '@/types/post-data'
+import { StorageBody } from '@/types/post-data'
 //Libs
 import { getDb } from './firebase'
 
@@ -50,7 +50,7 @@ const storageConverter = {
     }
 }
 
-export async function addStorage(newStorage: StorageForm) {
+export async function addStorage(newStorage: StorageBody) {
     const storageParams: IStorage = {
         active: newStorage.active,
         name: newStorage.name,

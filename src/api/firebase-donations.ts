@@ -10,18 +10,23 @@ import {
     doc,
     runTransaction,
     serverTimestamp,
-    Timestamp
+    Timestamp,
+    getDoc,
+    DocumentReference
 } from 'firebase/firestore'
 //Models
 import { Donation, IDonation } from '@/models/donation'
 import { DonationDetail, IDonationDetail } from '@/models/donation-detail'
-import { DonationForm } from '@/types/post-data'
+import { DonationBody } from '@/types/post-data'
+import { Image } from '@/models/image'
 //Libs
 import { getDb, getUserId } from './firebase'
 import { addEvent } from './firebase-admin'
+import { USERS_COLLECTION } from './firebase-users'
+import { imageReferenceConverter } from './firebase-images'
 
-const DONATIONS_COLLECTION = 'Donations'
-const DONATION_DETAILS_COLLECTION = 'DonationDetails'
+export const DONATIONS_COLLECTION = 'Donations'
+export const DONATION_DETAILS_COLLECTION = 'DonationDetails'
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -116,19 +121,45 @@ const donationDetailsConverter = {
     }
 }
 
-export async function getDonations(): Promise<Donation[]> {
-    const q = query(collection(getDb(), DONATIONS_COLLECTION)).withConverter(donationConverter)
-    const snapshot = await getDocs(q)
-    return snapshot.docs.map((doc) => doc.data())
+export async function getAllDonations(): Promise<Donation[]> {
+    const donationDetailsRef = collection(getDb(), DONATION_DETAILS_COLLECTION).withConverter(donationDetailsConverter)
+    const donationDetailsSnapshot = (await getDocs(donationDetailsRef))
+    const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
+    return await _getDonations(...donationDetails)
 }
 
 export async function getActiveDonations(): Promise<Donation[]> {
-    const q = query(collection(getDb(), DONATIONS_COLLECTION), where('active', '==', true)).withConverter(donationConverter)
-    const snapshot = await getDocs(q)
-    return snapshot.docs.map((doc) => doc.data())
+    const activeDonationDetailsQuery = query(collection(getDb(), DONATION_DETAILS_COLLECTION), where('active', '==', true)).withConverter(donationDetailsConverter)
+    const donationDetailsSnapshot = await getDocs(activeDonationDetailsQuery)
+    const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
+    return await _getDonations(...donationDetails)
 }
 
-export async function addDonation(newDonation: DonationForm) {
+export async function getDonations(): Promise<Donation[]> {
+    const uid = await getUserId()
+    const donationDetailsQuery = query(collection(getDb(), DONATION_DETAILS_COLLECTION), where('donor', '==', uid)).withConverter(donationDetailsConverter)
+    const donationDetailsSnapshot = await getDocs(donationDetailsQuery)
+    const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
+    return await _getDonations(...donationDetails)
+}
+
+async function _getDonations(...donationDetails: DonationDetail[]): Promise<Donation[]> {
+    const donations: Donation[] = []
+    for (const donationDetail of donationDetails) {
+        const donationRef = donationDetail.getDonation().withConverter(donationConverter)
+        const donationSnapshot = await getDoc(donationRef)
+        if (donationSnapshot.exists()) {
+            const donation = donationSnapshot.data()
+            const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[]
+            imagesRef.push(...donationDetail.getImages() as DocumentReference<Image>[])
+            donation.images = await imageReferenceConverter(...imagesRef)
+            donations.push(donation)
+        }
+    }
+    return donations
+}
+
+export async function addDonation(newDonation: DonationBody) {
     try {
         const userId: string = await getUserId()
         const donationParams: IDonation = {
@@ -143,9 +174,9 @@ export async function addDonation(newDonation: DonationForm) {
         }
 
         const donationDetailParams: IDonationDetail = {
-            donation: userId,
+            donation: doc(getDb(), `${DONATIONS_COLLECTION}/${userId}`),
             availability: undefined,
-            donor: userId,
+            donor: doc(getDb(), `${USERS_COLLECTION}/${userId}`),
             tagNumber: undefined,
             tagNumberForItemDelivered: undefined,
             sku: undefined,
@@ -172,7 +203,7 @@ export async function addDonation(newDonation: DonationForm) {
                 const donationRef = doc(collection(getDb(), DONATIONS_COLLECTION))
                 const donationDetailRef = doc(collection(getDb(), DONATION_DETAILS_COLLECTION))
                 // Assign donation reference to donation detail
-                donationDetail.setDonation(donationRef.id)
+                donationDetail.setDonation(donationRef)
 
                 transaction.set(donationRef, donationConverter.toFirestore(donation))
 

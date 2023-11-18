@@ -7,7 +7,7 @@ import {montserrat, garamond} from '../styles/fonts'
 //Providers
 import { UserProvider } from '@/contexts/UserContext'
 //Styles
-import globalStyles from '@/styles/globalStyles.module.css'
+import globalStyles from '@/styles/globalStyles.module.scss'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (

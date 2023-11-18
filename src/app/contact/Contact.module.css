@@ -7,7 +7,6 @@
 }
 
 .contact-details__container .contact__heading{
-    width: 25%;
     margin-top: 0;
     font-size: .9rem;
 }
@@ -32,12 +31,10 @@
 
 /* Tablets */
 @media screen and (min-width: 480px) {
-
     .contact-details__container .contact__paragraph,
     .contact-details__container .contact__heading  {
         font-size: .95rem;
-    }
-    
+    } 
 }
 
 /* Laptops and above */

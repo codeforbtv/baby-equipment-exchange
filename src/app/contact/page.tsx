@@ -1,11 +1,11 @@
 'use client'
 //Components
-import InputContainer from "@/components/InputContainer";
-import ButtonContainer from "@/components/ButtonContainer";
+import { Box, Button, TextField } from '@mui/material'
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined'
 //Hooks
 import { useState } from "react";
 //Styling
-import globalStyles from "@/styles/globalStyles.module.css"
+import globalStyles from "@/styles/globalStyles.module.scss"
 import styles from "./Contact.module.css"
 
 type ContactFormData = {
@@ -32,6 +32,7 @@ export default function Contact() {
                 <h1>Contact</h1>
                 <h4>Send a message to the exchange administrators</h4>
                 <div className={globalStyles["content__container"]}>
+                    <Box>
                     <div className={styles["contact-details__container"]}>
                         <h4 className={styles["contact__heading"]}>Address:</h4><p className={styles["contact__paragraph"]}>1205 North Ave<br />Burlington, VT 05408</p>
                     </div>
@@ -41,49 +42,47 @@ export default function Contact() {
                     <div className={styles["contact-details__container"]}>
                         <h4 className={styles["contact__heading"]}>Appointments:</h4><p className={styles["contact__paragraph"]}><a href="">Calendar</a></p>
                     </div>
-                    <form>
-                        <InputContainer for="contactName" label="Name" footnote="Required">
-                            <input
-                                required
-                                type="text"
-                                name="contactName"
-                                id="contactName"
-                                onChange={(e) => handleInputChange(e)}
-                                value={formData.contactName ? formData.contactName : ''}
-                            ></input>
-                        </InputContainer>
-                        <InputContainer for="email" label="Email" footnote="Required">
-                            <input
-                                type="text"
-                                name="email"
-                                id="email"
-                                onChange={(e) => handleInputChange(e)}
-                                value={formData.email ? formData.email : ''}
-                            ></input>
-                        </InputContainer>
-                        <InputContainer for="subject" label="Subject" footnote="Required">
-                            <input
-                                type="text"
-                                name="subject"
-                                id="subject"
-                                onChange={(e) => handleInputChange(e)}
-                                value={formData.subject ? formData.subject : ''}
-                            ></input>
-                        </InputContainer>
-                        <InputContainer for="message" label="Message" footnote="Required">
-                            <textarea
-                                name="message"
-                                id="message"
-                                rows={12}
-                                placeholder="Type your message here"
-                                onChange={(e) => handleInputChange(e)}
-                                value={formData.message ? formData.message : ''}
-                            ></textarea>
-                        </InputContainer>
+                    </Box>
+                    <Box component="form" gap={3} display={"flex"} flexDirection={"column"} onSubmit={() => { }}>
+                        <TextField
+                            required
+                            type="text"
+                            label="Contact Name"
+                            name="contactName"
+                            id="contactName"
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                            value={formData.contactName ? formData.contactName : ''}
+                        ></TextField>
+                        <TextField
+                            type="text"
+                            label="Email"
+                            name="email"
+                            id="email"
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                            value={formData.email ? formData.email : ''}
+                        ></TextField>
+                        <TextField
+                            type="text"
+                            label="Subject"
+                            name="subject"
+                            id="subject"
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                            value={formData.subject ? formData.subject : ''}
+                        ></TextField>
+                        <TextField
+                            multiline={true}
+                            name="message"
+                            label="Message"
+                            id="message"
+                            minRows={12}
+                            placeholder="Type your message here"
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                            value={formData.message ? formData.message : ''}
+                        ></TextField>
                         <div className={styles['form__section--bottom']}>
-                            <ButtonContainer type={'submit'} text={'Submit'} hasIcon width={'45%'} />
+                            <Button variant="contained" type={'submit'} endIcon={<GroupsOutlinedIcon />} >Submit</Button>
                         </div>
-                    </form>
+                    </Box>
                 </div>
             </div>
         </>

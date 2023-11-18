@@ -1,18 +1,20 @@
 'use client'
 //Components
-import InputContainer from '@/components/InputContainer'
-import ButtonContainer from '@/components/ButtonContainer'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import { Box, Button, Divider, Paper, TextField } from '@mui/material'
+import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 //Hooks
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useUserContext } from '@/contexts/UserContext'
+//Lib
+import { getAccountType } from '@/api/firebase'
+import { getUserAccount, setUserAccount } from '@/api/firebase-users'
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data'
 //Styling
-import globalStyles from '@/styles/globalStyles.module.css'
+import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './AccountEdit.module.css'
-import { getAccountType } from '@/api/firebase'
-import { getUserAccount, setUserAccount } from '@/api/firebase-users'
 
 type AccountFormData = {
     name: string | null
@@ -29,6 +31,7 @@ type AccountFormData = {
 export default function EditAccount() {
     const [accountType, setAccountType] = useState<string>('')
     const { currentUser } = useUserContext()
+    const router = useRouter()
 
     useEffect(() => {
         getAccountType()
@@ -75,7 +78,7 @@ export default function EditAccount() {
     })
 
     useEffect(() => {
-        ;(async () => {
+        (async () => {
             if (currentUser) {
                 try {
                     const accountInfo = await getUserAccount()
@@ -127,87 +130,91 @@ export default function EditAccount() {
                 latitude: accountInfo.location?.latitude,
                 longitude: accountInfo.location?.longitude
             }
-        })
+        }).then(
+            () => router.push('/account')
+        )
     }
 
     return (
         <ProtectedRoute>
-            <div className={styles['account__container']}>
+            <Box className={styles['account__container']}>
                 <h1>Edit Account</h1>
-                <h4>Page Summary</h4>
-                <div className={globalStyles['content__container']}>
-                    <div className={styles['account__header']}>
-                        <h2>Account Details</h2>
-                    </div>
-                    <h4>Username: {accountInfo.contact?.email}</h4>
-                    <h4>Usertype: {accountType}</h4>
-                    <form className={styles['form']} id="editAccount" onSubmit={handleFormSubmit}>
-                        <div className={styles['form__section--right']}>
-                            <h4>Contact:</h4>
-                            <InputContainer for="contactEmail" label="Email" footnote="Footnote">
-                                <input
+                <Box display={"flex"} justifyContent="space-evenly" className={globalStyles['content__container']}>
+                    <Paper component={Box} flexDirection={"column"} className={styles['account__header']}>
+                        <h4>{formData.name} ({accountType})</h4>
+                    </Paper>
+                    <Box component="form" className={styles['form']} id="editAccount" onSubmit={handleFormSubmit}>
+                        <Box className={styles['form__section--right']} display={"flex"} flexDirection={"column"} gap={3}>
+                            <Divider textAlign="center">Contact</Divider>
+                                <TextField
                                     type="email"
+                                    label="Email"
+                                    placeholder="Input email"
                                     name="contactEmail"
                                     id="contactEmail"
-                                    onChange={(event) => handleInputChange(event)}
+                                    onChange={handleInputChange}
                                     value={formData.contactEmail ? formData.contactEmail : ''}
+                                    variant="standard"
                                 />
-                            </InputContainer>
-                            <InputContainer for="contactPhone" label="Phone Number" footnote="Footnote">
-                                <input
+                                <TextField
                                     type="tel"
+                                    label="Phone Number"
                                     name="contactPhone"
                                     id="contactPhone"
-                                    onChange={(event) => handleInputChange(event)}
+                                    onChange={handleInputChange}
                                     value={formData.contactPhone ? formData.contactPhone : ''}
+                                    variant="standard"
                                 />
-                            </InputContainer>
-                        </div>
-                        <div className={styles['form__section--left']}>
-                            <h4>Location: </h4>
-                            <InputContainer for="locationStreet" label="Street Address" footnote="Footnote">
-                                <input
+                        </Box>
+                        <Box className={styles['form__section--left']} display={"flex"} flexDirection={"column"} gap={1}>
+                            <Divider textAlign="center">Location</Divider>
+                                <TextField
                                     type="text"
+                                    placeholder="input address"
+                                    label="Street Address"
                                     name="locationStreet"
                                     id="locationStreet"
-                                    onChange={(event) => handleInputChange(event)}
+                                    onChange={handleInputChange}
                                     value={formData.locationStreet ? formData.locationStreet : ''}
+                                    variant="standard"
                                 />
-                            </InputContainer>
-                            <InputContainer for="locationCity" label="City" footnote="Footnote">
-                                <input
+                                <TextField
                                     type="text"
+                                    placeholder="input city"
+                                    label="City"
                                     name="locationCity"
                                     id="locationCity"
-                                    onChange={(event) => handleInputChange(event)}
+                                    onChange={handleInputChange}
                                     value={formData.locationCity ? formData.locationCity : ''}
+                                    variant="standard"
                                 />
-                            </InputContainer>
-                            <InputContainer for="locationState" label="State" footnote="Footnote">
-                                <input
+                                <TextField
+                                    label="State"
+                                    placeholder="input state"
                                     type="text"
                                     name="locationState"
                                     id="locationState"
-                                    onChange={(event) => handleInputChange(event)}
+                                    onChange={handleInputChange}
                                     value={formData.locationState ? formData.locationState : ''}
+                                    variant="standard"
                                 />
-                            </InputContainer>
-                            <InputContainer for="locationZip" label="Zip Code" footnote="Footnote">
-                                <input
+                                <TextField
+                                    label="Zip Code"
+                                    placeholder="input zip code"
                                     type="text"
                                     name="locationZip"
                                     id="locationZip"
-                                    onChange={(event) => handleInputChange(event)}
+                                    onChange={handleInputChange}
                                     value={formData.locationZip ? formData.locationZip : ''}
+                                    variant="standard"
                                 />
-                            </InputContainer>
+                        </Box>
+                        <div className={styles['form__section--button-bottom']}>
+                            <Button variant="contained" type={"submit"} endIcon={<PermIdentityOutlinedIcon />}>Save</Button>
                         </div>
-                        <div className={styles['form__section--bottom']}>
-                            <ButtonContainer text="Save" type="submit" hasIcon />
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    </Box>
+                </Box>
+            </Box>
         </ProtectedRoute>
     )
 }

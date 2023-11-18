@@ -2,11 +2,11 @@
 //Components
 import InputContainer from '@/components/InputContainer'
 import ImageThumbnail from '@/components/ImageThumbnail'
-import ButtonContainer from '@/components/ButtonContainer'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import { Box, Button, NativeSelect, TextField } from '@mui/material'
+import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import ToasterNotification from '@/components/ToasterNotification'
 import Loader from '@/components/Loader'
-
 //Hooks
 import { useState, useEffect, ReactElement } from 'react'
 import { useRouter } from 'next/navigation'
@@ -17,16 +17,11 @@ import { uploadImages } from '@/api/firebase-images'
 import { addDonation } from '@/api/firebase-donations'
 
 //Styling
-import globalStyles from '@/styles/globalStyles.module.css'
+import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './Donate.module.css'
-
-// type DonationFormData = {
-//     category:  FormDataEntryValue| null,
-//     brand?: FormDataEntryValue | null,
-//     model?: FormDataEntryValue | null,
-//     description: FormDataEntryValue | null,
-//     images: FileList | null
-// }
+import { DocumentReference, doc } from 'firebase/firestore'
+import { USERS_COLLECTION } from '@/api/firebase-users'
+import { getDb } from '@/api/firebase'
 
 type DonationFormData = {
     category: string | null
@@ -41,7 +36,7 @@ const dummyDonationData: DonationFormData = {
     category: 'Option A',
     brand: 'Brand Name',
     model: 'Model Name',
-    description: 'Description goes here',
+    description: '',
     images: null
 }
 
@@ -109,7 +104,14 @@ export default function Donate() {
         try {
             setSubmitState('submitting')
             const submittedData = new FormData(e.currentTarget)
-            let imageIds: string[] = []
+            let imageRefs: DocumentReference[] = []
+
+            if (currentUser == null) {
+                throw new Error("Unable to access the user account.")
+            }
+
+            const userId = currentUser.uid
+            const userRef = doc(getDb(), `${USERS_COLLECTION}/${userId}`)
 
             //upload images if included
             if (images) {
@@ -120,16 +122,16 @@ export default function Donate() {
                         imageList.items.add(file)
                     }
                 })
-                imageIds = await uploadImages(imageList.files)
+                imageRefs = await uploadImages(imageList.files)
             }
 
             const newDonation = {
-                user: currentUser?.email ?? '',
+                user: userRef,
                 brand: submittedData.get('brand')?.toString() ?? '',
                 category: submittedData.get('category')?.toString() ?? '',
                 model: submittedData.get('model')?.toString() ?? '',
                 description: submittedData.get('description')?.toString() ?? '',
-                images: imageIds
+                images: imageRefs
             }
 
             await addDonation(newDonation)
@@ -146,80 +148,81 @@ export default function Donate() {
             {(submitState === 'idle' || submitState === 'error') && (
                 <div className={styles['donate__container']}>
                     <h1>Donate</h1>
-                    <h4>Page Summary</h4>
+                    <h4>[Page Summary]</h4>
                     <div className={globalStyles['content__container']}>
-                        <form onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
-                            <div className={styles['form__section--left']}>
-                                <InputContainer for="category" label="Category" footnote="Footnote">
-                                    <select
+                        <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
+                            <Box className={styles['form__section--left']}>
+                                <Box display={"flex"} flexDirection={"column"} gap={1}>
+                                    <NativeSelect
+                                        variant="outlined"
                                         style={{ padding: '.25rem .5rem' }}
                                         name="category"
-                                        id="email"
-                                        placeholder=" Category"
-                                        onChange={(e) => handleInputChange(e)}
+                                        id="category"
+                                        placeholder="Category"
+                                        onChange={handleInputChange}
                                         value={formData.category ? formData.category : ''}
                                         required
                                     >
-                                        <option value="">Select</option>
+                                        <option value="">Select Category</option>
                                         <option value="optionA">Option A</option>
                                         <option value="optionB">Option B</option>
                                         <option value="optionC">Option C</option>
                                         <option value="optionD">Option D</option>
-                                    </select>
-                                </InputContainer>
-                                <InputContainer for="brand" label="Brand" footnote="Footnote">
-                                    <input
+                                    </NativeSelect>
+                                    <TextField
                                         type="text"
+                                        label="Brand"
                                         name="brand"
                                         id="brand"
                                         placeholder=" Brand"
-                                        onChange={(e) => handleInputChange(e)}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                         value={formData.brand ? formData.brand : ''}
-                                    ></input>
-                                </InputContainer>
-                                <InputContainer for="model" label="Model" footnote="Footnote">
-                                    <input
+                                    ></TextField>
+                                    <TextField
                                         type="text"
+                                        label="Model"
                                         name="model"
                                         id="model"
-                                        onChange={(e) => handleInputChange(e)}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                         value={formData.model ? formData.model : ''}
-                                    ></input>
-                                </InputContainer>
-                                <InputContainer for="description" label="Description" footnote="Footnote">
-                                    <textarea
-                                        rows={10}
-                                        cols={40}
+                                    ></TextField>
+                                    <TextField
+                                        multiline={true}
                                         name="description"
+                                        label="Description"
+                                        rows={12}
+                                        placeholder="Provide details about the item"
                                         id="description"
-                                        onChange={(e) => handleInputChange(e)}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                         value={formData.description ? formData.description : ''}
-                                    ></textarea>
-                                </InputContainer>
-                            </div>
-                            <div className={styles['form__section--right']}>
-                                <InputContainer for="images" label="Upload images" footnote="Footnote">
+                                    />
+                                </Box>
+                            </Box>
+                            <Box className={styles['form__section--right']}>
+                                <InputContainer for="images" label="Upload images" footnote="[Footnote]">
                                     <div className={styles['image-uploader__container']}>
                                         <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
                                         <div className={styles['image-uploader__input']}>
-                                            <label htmlFor="images">Add Files</label>
-                                            <input
-                                                type="file"
-                                                id="images"
-                                                name="images"
-                                                accept="image/png, image/jpeg"
-                                                capture="environment"
-                                                onChange={previewPhotos}
-                                                multiple
-                                            />
+                                            <label id="labelForImages" htmlFor="images">
+                                                <input
+                                                    type="file"
+                                                    id="images"
+                                                    name="images"
+                                                    accept="image/png, image/jpeg"
+                                                    capture="environment"
+                                                    onChange={previewPhotos}
+                                                />
+                                                <Button variant="contained" component="span">Add Files</Button>
+                                            </label>
+
                                         </div>
                                     </div>
                                 </InputContainer>
-                            </div>
-                            <div className={styles['form__section--bottom']}>
-                                <ButtonContainer type={'submit'} text={'Submit'} hasIcon width={'25%'} />
-                            </div>
-                        </form>
+                            </Box>
+                            <Box className={styles['form__section--bottom']}>
+                                <Button variant="contained" type={'submit'} endIcon={<UploadOutlinedIcon />} >Submit</Button>
+                            </Box>
+                        </Box>
                     </div>
                 </div>
             )}
