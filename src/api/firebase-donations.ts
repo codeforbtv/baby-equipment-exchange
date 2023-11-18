@@ -137,7 +137,8 @@ export async function getActiveDonations(): Promise<Donation[]> {
 
 export async function getDonations(): Promise<Donation[]> {
     const uid = await getUserId()
-    const donationDetailsQuery = query(collection(getDb(), DONATION_DETAILS_COLLECTION), where('donor', '==', uid)).withConverter(donationDetailsConverter)
+    const userRef = doc(getDb(), `${USERS_COLLECTION}/${uid}`)
+    const donationDetailsQuery = query(collection(getDb(), DONATION_DETAILS_COLLECTION), where('donor', '==', userRef)).withConverter(donationDetailsConverter)
     const donationDetailsSnapshot = await getDocs(donationDetailsQuery)
     const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
     return await _getDonations(...donationDetails)
