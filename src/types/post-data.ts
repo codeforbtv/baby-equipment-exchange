@@ -10,7 +10,7 @@ export type AccountInformation = {
 }
 
 export type DonationBody = {
-    user: string
+    user: DocumentReference
     category: string
     brand: string
     model: string
@@ -19,7 +19,7 @@ export type DonationBody = {
 }
 
 export type UserBody = {
-    user: string | undefined | null // The Firebase auth id of the new user.
+    user: DocumentReference | undefined | null // The Firebase auth id of the new user.
     name: string | undefined | null
     email: string | undefined | null
     photo: string | undefined | null // The Images document id of the user's profile photo.

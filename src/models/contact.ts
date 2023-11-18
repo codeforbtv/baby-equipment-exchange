@@ -1,5 +1,7 @@
+import { DocumentReference } from "firebase/firestore"
+
 export interface IContact {
-    user: string | null | undefined
+    user: DocumentReference | null | undefined
     name: string | null | undefined
     email: string | null | undefined
     phone: string | null | undefined
@@ -8,7 +10,7 @@ export interface IContact {
 }
 
 export class Contact implements IContact {
-    user: string | null | undefined
+    user: DocumentReference | null | undefined
     name: string | null | undefined
     email: string | null | undefined
     phone: string | null | undefined
@@ -24,7 +26,7 @@ export class Contact implements IContact {
         this.notes = args.notes
     }
 
-    getUser(): string | null | undefined {
+    getUser(): DocumentReference | null | undefined {
         return this.user
     }
 
