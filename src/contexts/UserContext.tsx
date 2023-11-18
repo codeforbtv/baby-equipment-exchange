@@ -2,7 +2,7 @@
 
 import { onAuthStateChangedListener } from '@/api/firebase'
 import { User } from 'firebase/auth'
-import { createContext, useState, useEffect, ReactNode, Dispatch, SetStateAction, useContext } from 'react'
+import { createContext, useState, useEffect, ReactNode, useContext } from 'react'
 
 type UserContextType = {
     currentUser: User | null

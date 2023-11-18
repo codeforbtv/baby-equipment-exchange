@@ -1,6 +1,6 @@
 //Firebase modules
 import { FirebaseApp, initializeApp } from 'firebase/app'
-import { connectFirestoreEmulator, Firestore, getFirestore } from 'firebase/firestore'
+import { connectFirestoreEmulator, doc, Firestore, getFirestore } from 'firebase/firestore'
 import { FirebaseStorage, connectStorageEmulator, getStorage } from 'firebase/storage'
 import {
     Auth,
@@ -18,7 +18,7 @@ import {
 import { firebaseConfig } from '../../firebase-config'
 import { UserBody } from '@/types/post-data'
 import { setClaimForNewUser } from './firebase-admin'
-import { addUser } from './firebase-users'
+import { USERS_COLLECTION, addUser } from './firebase-users'
 
 let app: FirebaseApp
 const db: Firestore = initDb()
@@ -125,7 +125,7 @@ async function checkClaim(claimName: string): Promise<boolean> {
     if (claims === undefined || claims === null) {
         return Promise.reject()
     }
-    let claimValue = claims[claimName];
+    const claimValue = claims[claimName];
     return (claimValue !== undefined && claimValue === true) ? true : false
 }
 
@@ -141,12 +141,13 @@ export async function getUserId(): Promise<string> {
 
 export async function createNewUser(newUser: UserBody, password: string) {
     const userCredential = await createUserWithEmailAndPassword(getFirebaseAuth(), newUser.email!, password)
-    newUser.user = userCredential.user.uid
+    const userId = userCredential.user.uid
+    newUser.user = doc(getDb(), `${USERS_COLLECTION}/${userId}`)
 
     await addUser(newUser)
 
     // Process on the server
-    await setClaimForNewUser(newUser.user)
+    await setClaimForNewUser(userId)
 
     // Force the client Firebase App instance to regenerate a new token
     await userCredential.user.getIdTokenResult(true)

@@ -12,7 +12,6 @@ import {
     serverTimestamp,
     Timestamp,
     getDoc,
-    DocumentSnapshot,
     DocumentReference
 } from 'firebase/firestore'
 //Models
@@ -23,12 +22,11 @@ import { Image } from '@/models/image'
 //Libs
 import { getDb, getUserId } from './firebase'
 import { addEvent } from './firebase-admin'
-import { getStorage } from 'firebase/storage'
-import { IMAGES_COLLECTION, imageConverter } from './firebase-images'
 import { USERS_COLLECTION } from './firebase-users'
+import { imageReferenceConverter } from './firebase-images'
 
-const DONATIONS_COLLECTION = 'Donations'
-const DONATION_DETAILS_COLLECTION = 'DonationDetails'
+export const DONATIONS_COLLECTION = 'Donations'
+export const DONATION_DETAILS_COLLECTION = 'DonationDetails'
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -124,51 +122,38 @@ const donationDetailsConverter = {
 }
 
 export async function getAllDonations(): Promise<Donation[]> {
-    let donations: Donation[] = []
     const donationDetailsRef = collection(getDb(), DONATION_DETAILS_COLLECTION).withConverter(donationDetailsConverter)
     const donationDetailsSnapshot = (await getDocs(donationDetailsRef))
-    let donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
-    for (const donationDetail of donationDetails) {
-        let donationRef = donationDetail.getDonation().withConverter(donationConverter)
-        const donationSnapshot = await getDoc(donationRef)
-        if (donationSnapshot.exists()) {
-            let donation = donationSnapshot.data()
-            let images: DocumentReference[] = donationDetail.getImages()
-            donation.images.push(...images)
-            donations.push(donation)
-        }
-    }
-    return donations
+    const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
+    return await _getDonations(...donationDetails)
 }
 
 export async function getActiveDonations(): Promise<Donation[]> {
-    let donations: Donation[] = []
     const activeDonationDetailsQuery = query(collection(getDb(), DONATION_DETAILS_COLLECTION), where('active', '==', true)).withConverter(donationDetailsConverter)
     const donationDetailsSnapshot = await getDocs(activeDonationDetailsQuery)
     const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
-    for (const donationDetail of donationDetails) {
-        const donationRef = donationDetail.getDonation().withConverter(donationConverter)
-        const donation = await getDoc(donationRef)
-        if (donation.exists()) {
-            donations.push(donation.data())
-        }
-    }
-    return donations
+    return await _getDonations(...donationDetails)
 }
 
 export async function getDonations(): Promise<Donation[]> {
-    let donations: Donation[] = []
     const uid = await getUserId()
-    console.log(uid)
     const donationDetailsQuery = query(collection(getDb(), DONATION_DETAILS_COLLECTION), where('donor', '==', uid)).withConverter(donationDetailsConverter)
     const donationDetailsSnapshot = await getDocs(donationDetailsQuery)
-    let donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
-    console.log(donationDetails)
+    const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data())
+    return await _getDonations(...donationDetails)
+}
+
+async function _getDonations(...donationDetails: DonationDetail[]): Promise<Donation[]> {
+    const donations: Donation[] = []
     for (const donationDetail of donationDetails) {
         const donationRef = donationDetail.getDonation().withConverter(donationConverter)
-        const donation = await getDoc(donationRef)
-        if (donation.exists()) {
-            donations.push(donation.data())
+        const donationSnapshot = await getDoc(donationRef)
+        if (donationSnapshot.exists()) {
+            const donation = donationSnapshot.data()
+            const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[]
+            imagesRef.push(...donationDetail.getImages() as DocumentReference<Image>[])
+            donation.images = await imageReferenceConverter(...imagesRef)
+            donations.push(donation)
         }
     }
     return donations

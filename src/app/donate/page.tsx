@@ -19,7 +19,9 @@ import { addDonation } from '@/api/firebase-donations'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './Donate.module.css'
-import { DocumentReference } from 'firebase/firestore'
+import { DocumentReference, doc } from 'firebase/firestore'
+import { USERS_COLLECTION } from '@/api/firebase-users'
+import { getDb } from '@/api/firebase'
 
 type DonationFormData = {
     category: string | null
@@ -104,6 +106,13 @@ export default function Donate() {
             const submittedData = new FormData(e.currentTarget)
             let imageRefs: DocumentReference[] = []
 
+            if (currentUser == null) {
+                throw new Error("Unable to access the user account.")
+            }
+
+            const userId = currentUser.uid
+            const userRef = doc(getDb(), `${USERS_COLLECTION}/${userId}`)
+
             //upload images if included
             if (images) {
                 const imageList = new DataTransfer()
@@ -117,7 +126,7 @@ export default function Donate() {
             }
 
             const newDonation = {
-                user: currentUser?.email ?? '',
+                user: userRef,
                 brand: submittedData.get('brand')?.toString() ?? '',
                 category: submittedData.get('category')?.toString() ?? '',
                 model: submittedData.get('model')?.toString() ?? '',

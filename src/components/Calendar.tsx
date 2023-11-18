@@ -8,7 +8,7 @@ import Box from '@mui/material/Box/Box'
 import Button from '@mui/material/Button/Button'
 import Chip from '@mui/material/Chip';
 import CloseIcon from '@mui/icons-material/Close';
-import Dialog, { DialogProps } from '@mui/material/Dialog';
+import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import Divider from '@mui/material/Divider';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -21,13 +21,12 @@ import Typography from '@mui/material/Typography/Typography'
 import Toolbar from '@mui/material/Toolbar/Toolbar';
 import IconButton from '@mui/material/IconButton/IconButton';
 import AppBar from '@mui/material/AppBar/AppBar';
-import ListItem from '@mui/material/ListItem/ListItem';
 import ListItemText from '@mui/material/ListItemText/ListItemText';
 import List from '@mui/material/List/List';
 import ListItemButton from '@mui/material/ListItemButton/ListItemButton';
 
 const style = {
-    position: 'fixed' as 'fixed',
+    position: 'fixed',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',

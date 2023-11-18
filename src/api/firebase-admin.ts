@@ -7,6 +7,7 @@ import { IEvent, Event } from '@/models/event'
 import { doc, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore'
 import { getDb } from './firebase'
 import { EVENTS_COLLECTION } from './firebase-events'
+import { USERS_COLLECTION } from './firebase-users'
 
 const app: App = initApp()
 
@@ -116,7 +117,7 @@ async function toggleClaim(userId: string, claimName: string) {
     if (claims === undefined || claims === null) {
         return Promise.reject()
     }
-    let claimValue = claims[claimName];
+    const claimValue = claims[claimName];
     if (claimValue === undefined || claimValue === null) {
         setClaim(userId, claimName, false)
     } else {
@@ -139,18 +140,15 @@ async function checkClaim(userId: string, claimName: string): Promise<boolean> {
     if (claims === undefined || claims === null) {
         return Promise.reject()
     }
-    let claimValue = claims[claimName];
+    const claimValue = claims[claimName];
     return (claimValue !== undefined && claimValue === true) ? true : false
 }
 
 export async function addEvent(object: any) {
-
-    const createdBy: string = 'server'
-
     const eventParams: IEvent = {
         type: '',
         note: JSON.stringify(object),
-        createdBy: createdBy,
+        createdBy: doc(getDb(), `${USERS_COLLECTION}/system`),
         createdAt: serverTimestamp() as Timestamp,
         modifiedAt: serverTimestamp() as Timestamp
     }
