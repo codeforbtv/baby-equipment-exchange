@@ -7,13 +7,14 @@ import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserContext } from '@/contexts/UserContext'
+//Lib
+import { getAccountType } from '@/api/firebase'
+import { getUserAccount, setUserAccount } from '@/api/firebase-users'
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './AccountEdit.module.css'
-import { getAccountType } from '@/api/firebase'
-import { getUserAccount, setUserAccount } from '@/api/firebase-users'
 
 type AccountFormData = {
     name: string | null
