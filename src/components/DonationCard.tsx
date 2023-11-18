@@ -1,9 +1,8 @@
 //Icons
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faImage } from '@fortawesome/free-solid-svg-icons'
+import InfoIcon from '@mui/icons-material/Info';
 //Styles
 import styles from './Card.module.css'
-import ImageListItem from '@mui/material/ImageListItem'
+import { IconButton, ImageListItem, ImageListItemBar } from '@mui/material'
 
 type DonationCardProps = {
     category: string | null | undefined
@@ -15,13 +14,27 @@ type DonationCardProps = {
 }
 
 export default function DonationCard({ category, brand, model, description, active, images}: DonationCardProps) {
-    const image = "'url(" + images[0] + "')"
+    const image = images[0]
     return (
-        <div className={styles['grid__item']} key={image}>
-            <h3 className={styles['grid__item__title']}>
-                {brand} {model}
-            </h3>
-            <FontAwesomeIcon icon={faImage} className={styles['thumbnail__image']} />
-        </div>
+        <ImageListItem key={image} className={styles['grid__item']}>
+        <img
+          src={image}
+          style={{width: "100%", height: "100%", objectFit: "fill"}}
+          alt={`Brand ${brand} and model ${model} description ${description}`}
+          loading="lazy"
+        />
+        <ImageListItemBar
+          title={brand}
+          subtitle={model}
+          actionIcon={
+            <IconButton
+              sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+              aria-label={`details about ${brand} ${model}`}
+            >
+              <InfoIcon />
+            </IconButton>
+          }
+        />
+      </ImageListItem>
     )
 }

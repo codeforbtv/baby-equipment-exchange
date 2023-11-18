@@ -5,6 +5,8 @@ import { Donation } from '@/models/donation'
 import DonationCard from './DonationCard'
 import SearchBar from './SearchBar'
 import Filter from './Filter'
+//Components
+import { ImageList } from '@mui/material'
 //Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
@@ -12,9 +14,9 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 import React, { useEffect, useState } from 'react'
 //Libs
 import { getAllDonations, getDonations } from '@/api/firebase-donations'
+import { canReadDonations } from '@/api/firebase'
 //Styles
 import styles from './Browse.module.css'
-import { canReadDonations, getUserId } from '@/api/firebase'
 
 const Browse: React.FC = () => {
     const [donations, setDonations] = useState([] as Donation[])
@@ -34,17 +36,14 @@ const Browse: React.FC = () => {
     useEffect(() => {
         canReadDonations()
         .then(async (hasReadDonationsPermission) => {
-            const uid = await getUserId();
             let donations = []
             if (hasReadDonationsPermission === true) {
                 donations = await getAllDonations()
             } else {
                 donations = await getDonations()
             }
-            console.log(donations)
             setDonations(donations)
         }).catch((error) => {
-            console.log(error)
             // eslint-disable-line no-empty
         })
     }, [])
@@ -64,24 +63,21 @@ const Browse: React.FC = () => {
             </div>
             {isSearchVisible && <SearchBar />}
             {isFilterVisible && <Filter />}
-            <div className={styles['browse__grid']}>
+            <ImageList className={styles['browse__grid']}>
                 {donations.map((donation) => {
-                    // An active donation must have at least one photo for display.
+                        // An active donation must have at least one photo for display.
                     return (
                         <DonationCard
-                                key={donation.images[0]}
+                                key={donation.images[0] as string}
                                 category={donation.category}
                                 brand={donation.brand}
                                 model={donation.model}
                                 description={donation.description}
                                 active={donation.active}
-                                images={donation.images}
-                                createdAt={donation.createdAt.toDate()}
-                                modifiedAt={donation.modifiedAt.toDate()}
+                                images={donation.images as string[]}
                             />
-                    )
-                })}
-            </div>
+                    )})}
+            </ImageList>
         </>
     )
 }

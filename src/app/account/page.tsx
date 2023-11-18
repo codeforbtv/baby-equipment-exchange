@@ -1,11 +1,9 @@
 'use client'
 //Components
 import Link from 'next/link'
-import ButtonContainer from '@/components/ButtonContainer'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { Button } from '@mui/material'
 import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined'
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 //Hooks
 import { useEffect, useState } from 'react'
 import { useUserContext } from '@/contexts/UserContext'
@@ -16,26 +14,10 @@ import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './Account.module.css'
 import { getAccountType } from '@/api/firebase'
 import { getUserAccount } from '@/api/firebase-users'
-
-type UserDonations = {
-    category: string
-    brand: string
-    model: string
-    active: boolean
-}[]
-
-//Temporary holder for dummy data - to be updated with database link
-const dummyDonations: UserDonations = [
-    { category: 'High Chairs', brand: 'Acme', model: 'Ultra Deluxe', active: true },
-    { category: 'Cribs', brand: 'Babys-r-us', model: 'Rocker 1000', active: true },
-    { category: 'Strollers', brand: 'Acme', model: 'Mustang', active: false },
-    { category: 'Cribs', brand: 'Fischer Price', model: 'Econoline', active: false },
-    { category: 'High Chairs', brand: 'Skymall', model: 'Deluxe', active: true }
-]
+import Browse from '@/components/Browse'
 
 export default function Account() {
     const [accountType, setAccountType] = useState<string>('')
-    const [userDonations, setUserDonations] = useState<UserDonations>(dummyDonations)
     const { currentUser } = useUserContext()
     const [accountInfo, setAccountInfo] = useState<AccountInfo>({
         name: '',
@@ -82,17 +64,6 @@ export default function Account() {
             })
     }, [])
 
-    const userDonationList = userDonations.map((donation, index) => {
-        return (
-            <div key={index} className={styles['donations__list__item']}>
-                <p>{donation.category}</p>
-                <p>{donation.brand}</p>
-                <p>{donation.model}</p>
-                <p className={`${donation.active ? styles.active : ''}`}>{`${donation.active ? 'Active' : 'Pending'}`}</p>
-            </div>
-        )
-    })
-
     return (
         <ProtectedRoute>
             <div className={styles['account__container']}>
@@ -124,7 +95,7 @@ export default function Account() {
                     </h4>
                     
                     <h2>Donations:</h2>
-                    <div className={styles['donations__list']}>{userDonationList}</div>
+                    <Browse />
                 </div>
             </div>
         </ProtectedRoute>

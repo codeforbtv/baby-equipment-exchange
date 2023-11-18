@@ -1,6 +1,6 @@
 //Libs
 import { getDb, getFirebaseStorage, getUserId } from './firebase'
-import { FirebaseStorage, getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage'
+import { getBytes, getDownloadURL, getMetadata, getStorage, ref, uploadBytes } from 'firebase/storage'
 //Models
 import { IImage, Image, imageFactory } from '@/models/image'
 import { IImageDetail, ImageDetail } from '@/models/image-detail'
@@ -9,6 +9,7 @@ import { addDoc, collection, doc, DocumentData, DocumentReference, getDoc, Query
 import { v4 as uuidv4 } from 'uuid'
 import { USERS_COLLECTION } from './firebase-users'
 import { getApp } from 'firebase/app'
+import { unescape } from 'querystring'
 
 export const IMAGES_COLLECTION = 'Images'
 export const IMAGE_DETAILS_COLLECTION = 'ImageDetails'
@@ -104,14 +105,24 @@ export async function getImage(id: string): Promise<Image> {
     return snapshot.data() as Image
 }
 
-export async function getImageDownloadURL(documentReference: DocumentReference<Image>): Promise<string> {
-    const imageSnapshot = await getDoc(documentReference)
-    if (imageSnapshot.exists()) {
-        const imageDocument = imageSnapshot.data()
-        const bucketUrl = imageDocument.getDownloadURL()
-        const storage: FirebaseStorage = await getStorage(getApp())
-        const storageReference = ref(storage, bucketUrl)
-        return await getDownloadURL(storageReference)
+/** Retrieve a file from storage enforcing Firebase Storage security rules.
+ * 
+ */
+export async function imageReferenceConverter(...documentReferences: DocumentReference<Image>[]): Promise<string[]> {
+    const images: string[] = []
+    for (const documentReference of documentReferences) {
+        const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter))
+        if (imageSnapshot.exists()) {
+            const imageDocument = imageSnapshot.data()
+            const bucketUrl = imageDocument.getDownloadURL()
+            const storageRef = ref(getStorage(getApp()), bucketUrl)
+            const fullMetadata = await getMetadata(storageRef)
+            if (fullMetadata == null || fullMetadata.contentType == null) {
+                return Promise.reject(new Error("Unable to retrieve metadata."))
+            }
+            const url = await getDownloadURL(storageRef)
+            images.push(url)
+        }
     }
-    return Promise.reject()
+    return images
 }

@@ -1,6 +1,8 @@
 .grid__item {
-    padding: 5px;
-    width: 45%;
+    padding: 0.5em;
+    height: 65em;
+    width: 65em;
+    margin: 1.5%;
     margin: 2.5%;
     background-color: white;
     border: 1px solid black;
@@ -25,17 +27,19 @@
 }
 
 /* Tablets */
-@media screen and (min-width: 480px) {
+/* @media screen and (min-width: 480px) {
     .grid__item {
+        height: 22%;
         width: 22%;
         margin: 1.5%;
     }
-}
+} */
 
 /* Laptops and above */
-@media screen and (min-width: 800px) {
+/* @media screen and (min-width: 800px) {
     .grid__item {
-        width: 22%;
+        height: 22%;
+        width: 45%;
         margin: 1.5%;
     }
-}
+} */
