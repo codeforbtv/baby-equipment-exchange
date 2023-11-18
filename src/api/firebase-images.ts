@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { USERS_COLLECTION } from './firebase-users'
 import { getApp } from 'firebase/app'
 import { unescape } from 'querystring'
+import { getImageAsSignedUrl } from './firebase-admin'
 
 export const IMAGES_COLLECTION = 'Images'
 export const IMAGE_DETAILS_COLLECTION = 'ImageDetails'
@@ -114,13 +115,8 @@ export async function imageReferenceConverter(...documentReferences: DocumentRef
         const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter))
         if (imageSnapshot.exists()) {
             const imageDocument = imageSnapshot.data()
-            const bucketUrl = imageDocument.getDownloadURL()
-            const storageRef = ref(getStorage(getApp()), bucketUrl)
-            const fullMetadata = await getMetadata(storageRef)
-            if (fullMetadata == null || fullMetadata.contentType == null) {
-                return Promise.reject(new Error("Unable to retrieve metadata."))
-            }
-            const url = await getDownloadURL(storageRef)
+            let url = imageDocument.getDownloadURL()
+            url = await getImageAsSignedUrl(url)
             images.push(url)
         }
     }

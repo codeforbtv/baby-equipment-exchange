@@ -3,11 +3,13 @@
 import admin from 'firebase-admin'
 import { App, getApp } from 'firebase-admin/app'
 import { getAuth, Auth, UserRecord } from 'firebase-admin/auth'
+import { getStorage } from 'firebase-admin/storage'
 import { IEvent, Event } from '@/models/event'
 import { doc, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore'
 import { getDb } from './firebase'
 import { EVENTS_COLLECTION } from './firebase-events'
 import { USERS_COLLECTION } from './firebase-users'
+import { firebaseConfig } from '../../firebase-config'
 
 const app: App = initApp()
 
@@ -24,10 +26,12 @@ function initApp(): App {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const fs = require('fs') // Suppress the @typescript-eslint/no-var-requires rule.
         const serviceAccount = fs.existsSync('./serviceAccountKey.json') ? require('../../serviceAccountKey.json') : undefined
+        const appConfig = {
+            ...firebaseConfig,
+            credential: admin.credential.cert(serviceAccount)
+        }
         _app = admin.initializeApp(
-            {
-                credential: admin.credential.cert(serviceAccount)
-            },
+            appConfig,
             'admin'
         )
     }
@@ -76,7 +80,7 @@ export async function setClaimForAdmin(userId: string, isAdmin: boolean) {
     setClaim(userId, claimName, isAdmin)
 }
 
-export async function setClaimForAidWorker(userId: string, isAidWorker:boolean) {
+export async function setClaimForAidWorker(userId: string, isAidWorker: boolean) {
     const claimName = 'aid-worker'
     setClaim(userId, claimName, isAidWorker)
 }
@@ -156,4 +160,19 @@ export async function addEvent(object: any) {
     const event: Event = new Event(eventParams);
     const eventRef = doc(getDb(), EVENTS_COLLECTION)
     await setDoc(eventRef, event)
+}
+
+export async function getImageAsSignedUrl(url: string) {
+    const fileName = url.split('/')[3]
+    const file = getStorage(app).bucket().file(fileName)
+    const accessibleAtTime = new Date()
+    const expirationTime = new Date()
+    expirationTime.setMinutes(expirationTime.getMinutes() + 2)
+    return (await file.getSignedUrl(
+        {
+            version: 'v4',
+            action: 'read',
+            accessibleAt: accessibleAtTime,
+            expires: expirationTime
+        }))[0]
 }
