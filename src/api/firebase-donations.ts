@@ -211,7 +211,7 @@ export async function addDonation(newDonation: DonationBody) {
                 transaction.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail))
             })
         } catch (error) {
-            // eslint-disable-line no-empty
+            addEvent(error)    
         }
     } catch (error) {
         addEvent(newDonation)
