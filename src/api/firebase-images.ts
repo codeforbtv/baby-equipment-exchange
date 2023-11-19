@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { USERS_COLLECTION } from './firebase-users'
 import { getApp } from 'firebase/app'
 import { unescape } from 'querystring'
-import { getImageAsSignedUrl } from './firebase-admin'
+import { addEvent, getImageAsSignedUrl } from './firebase-admin'
 
 export const IMAGES_COLLECTION = 'Images'
 export const IMAGE_DETAILS_COLLECTION = 'ImageDetails'
@@ -94,6 +94,7 @@ export async function uploadImages(files: FileList): Promise<DocumentReference[]
         }
         return documentRefs
     } catch (error) {
+	addEvent({error: error})
         // eslint-disable-line no-empty
     }
     return Promise.reject()
@@ -112,13 +113,17 @@ export async function getImage(id: string): Promise<Image> {
 export async function imageReferenceConverter(...documentReferences: DocumentReference<Image>[]): Promise<string[]> {
     const images: string[] = []
     for (const documentReference of documentReferences) {
-        const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter))
-        if (imageSnapshot.exists()) {
-            const imageDocument = imageSnapshot.data()
-            let url = imageDocument.getDownloadURL()
-            url = await getImageAsSignedUrl(url)
-            images.push(url)
-        }
+	try {
+            const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter))
+            if (imageSnapshot.exists()) {
+                const imageDocument = imageSnapshot.data()
+                let url = imageDocument.getDownloadURL()
+                url = await getImageAsSignedUrl(url)
+                images.push(url)
+            }
+	} catch (error) {
+            addEvent({error: error})
+	}
     }
     return images
 }
