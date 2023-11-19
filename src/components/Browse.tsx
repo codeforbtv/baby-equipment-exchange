@@ -13,6 +13,7 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 //Hooks
 import React, { useEffect, useState } from 'react'
 //Libs
+import { addEvent } from '@/api/firebase-admin'
 import { getAllDonations, getDonations } from '@/api/firebase-donations'
 import { canReadDonations } from '@/api/firebase'
 //Styles
@@ -44,7 +45,7 @@ const Browse: React.FC = () => {
             }
             setDonations(donations)
         }).catch((error) => {
-            // eslint-disable-line no-empty
+            addEvent({location: 'component/Browse', error: error})
         })
     }, [])
 
