@@ -21,7 +21,6 @@ export default function DonationCard({ category, brand, model, description, acti
           src={image}
           style={{width: "100%", height: "100%", objectFit: "fill"}}
           alt={`Brand ${brand} and model ${model} description ${description}`}
-          loading="lazy"
         />
         <ImageListItemBar
           title={brand}
