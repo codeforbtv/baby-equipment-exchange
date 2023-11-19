@@ -30,7 +30,7 @@ import { DONATION_DETAILS_COLLECTION } from './firebase-donations'
 export const USERS_COLLECTION = 'Users'
 export const USER_DETAILS_COLLECTION = 'UserDetails'
 
-const userConverter = {
+export const userConverter = {
     toFirestore(user: User): DocumentData {
         const userData: IUser = {
             name: user.getName(),
@@ -305,13 +305,15 @@ export async function setUserAccount(accountInformation: AccountInformation) {
 
 export async function addNote(note: NoteBody) {
     try {
+	const currentTime = new Date()
+	const currentTimeString = currentTime.toDateString()
         const userId: string = await getUserId()
         const eventParams: IEvent = {
             type: '',
             note: note.text,
-            createdBy: doc(getDb(), `${USERS_COLLECTION}/${userId}`),
-            createdAt: serverTimestamp() as  Timestamp,
-            modifiedAt: serverTimestamp() as Timestamp
+            createdBy: `${USERS_COLLECTION}/${userId}`,
+            createdAt: currentTimeString,
+            modifiedAt: currentTimeString
         }
         const event = new Event(eventParams)
 
