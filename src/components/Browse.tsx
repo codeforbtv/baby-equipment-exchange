@@ -44,8 +44,12 @@ const Browse: React.FC = () => {
                 donations = await getDonations()
             }
             setDonations(donations)
-        }).catch((error) => {
-            addEvent({location: 'component/Browse', error: error})
+        }).catch((error: any) => {
+            const keys: any[] = []
+            for (const key in error) {
+                keys.push(keys)
+            }
+            addEvent({location: 'component/Browse', keys: keys})
         })
     }, [])
 

@@ -210,8 +210,12 @@ export async function addDonation(newDonation: DonationBody) {
 
                 transaction.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail))
             })
-        } catch (error) {
-            addEvent(error)    
+        } catch (error: any) {
+            const keys: any[] = []
+            for (const key in error) {
+                keys.push(key)
+            }
+            addEvent({location: 'addDonation', keys: keys})    
         }
     } catch (error) {
         addEvent(newDonation)

@@ -1,178 +1,97 @@
-'use server'
+'use client'
+import { connectFunctionsEmulator, httpsCallable, Functions, getFunctions } from 'firebase/functions'
 
-import admin from 'firebase-admin'
-import { App, getApp } from 'firebase-admin/app'
-import { getAuth, Auth, UserRecord } from 'firebase-admin/auth'
-import { getStorage } from 'firebase-admin/storage'
-import { IEvent, Event } from '@/models/event'
-import { doc, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore'
-import { getDb } from './firebase'
-import { EVENTS_COLLECTION } from './firebase-events'
-import { USERS_COLLECTION } from './firebase-users'
-import { firebaseConfig } from '../../firebase-config'
+import { getApp } from '@/api/firebase'
 
-const app: App = initApp()
+const functions = initFunctions()
 
-function initApp(): App {
-    let _app: App
-    let tryInitialize = false
-    // If an Error is thrown, assume the app has not yet been initialized
-    try {
-        _app = getApp('admin')
-    } catch (error) {
-        tryInitialize = true
+function initFunctions() {
+    const _functions: Functions = getFunctions(getApp(), "us-east1")
+    if (
+        (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
+        process?.env?.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
+    ) {
+        const FIREBASE_EMULATORS_FUNCTIONS_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FUNCTIONS_PORT ?? '5001')
+        connectFunctionsEmulator(_functions, '127.0.0.1', FIREBASE_EMULATORS_FUNCTIONS_PORT)
     }
-    if (tryInitialize === true) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const fs = require('fs') // Suppress the @typescript-eslint/no-var-requires rule.
-        const serviceAccount = fs.existsSync('./serviceAccountKey.json') ? require('../../serviceAccountKey.json') : undefined
-        const appConfig = {
-            ...firebaseConfig,
-            credential: admin.credential.cert(serviceAccount)
-        }
-        _app = admin.initializeApp(
-            appConfig,
-            'admin'
-        )
-    }
-    return _app!
+    return _functions
 }
+// Functions
+const callIsEmailInUse = httpsCallable(functions, 'isEmailInUse')
+const callSetClaimForDonationReadAccess = httpsCallable(functions, 'setClaimForDonationReadAccess')
+const callToggleCanReadDonations = httpsCallable(functions, 'toggleCanReadDonations')
+const callSetClaimForAdmin = httpsCallable(functions, 'setClaimForAdmin')
+const callSetClaimForAidWorker = httpsCallable(functions, 'setClaimForAidWorker')
+const callSetClaimForNewUser = httpsCallable(functions, 'setClaimForNewUser')
+const callSetClaimForVerified = httpsCallable(functions, 'setClaimForVerified')
+const callSetClaimForVolunteer = httpsCallable(functions, 'setClaimForVolunteer')
+const callToggleClaimForAdmin = httpsCallable(functions, 'toggleClaimForAdmin')
+const callToggleClaimForAidWorker = httpsCallable(functions, 'toggleClaimForAidWorker')
+const callToggleClaimForVerified = httpsCallable(functions, 'toggleClaimForVerified')
+const callToggleClaimForVolunteer = httpsCallable(functions, 'toggleClaimForVolunteer')
+const callAddEvent = httpsCallable(functions, 'addEvent')
+const callGetImageAsSignedUrl = httpsCallable(functions, 'getImageAsSignedUrl')
 
-function initAuth(): Auth {
-    return getAuth(app)
-}
-
-export async function isEmailInUse(email: string): Promise<boolean> {
-    try {
-        const userRecord: UserRecord = await getAuth(app).getUserByEmail(email)
-        if (userRecord !== undefined) {
-            return true
-        }
-    } catch (error) {
-        // eslint-disable-line no-empty
-    }
-    return false
+export async function isEmailInUse(email: string) {
+    const response = await callIsEmailInUse({email: email})
+    const data: any = response.data
+    return data.value
 }
 
 export async function setClaimForNewUser(userId: string) {
-    await getAuth(app).setCustomUserClaims(userId, {
-        donor: true,
-        verified: true
-    })
+    callSetClaimForNewUser({userId: userId})
 }
 
 // Action based claims.
+
 export async function setClaimForDonationReadAccess(userId: string, canReadDonations: boolean) {
-    const claimName = 'can-read-donations'
-    setClaim(userId, claimName, canReadDonations)
+    callSetClaimForDonationReadAccess({userId: userId, canReadDonations: canReadDonations})
 }
 
 export async function toggleCanReadDonations(userId: string) {
-    const claimName = 'can-read-donations'
-    const currentClaim = await checkClaim(userId, claimName)
-    setClaim(userId, claimName, !currentClaim)
+    callToggleCanReadDonations({userId: userId})
 }
 
 // Role based claims.
 
 export async function setClaimForAdmin(userId: string, isAdmin: boolean) {
-    const claimName = 'admin'
-    setClaim(userId, claimName, isAdmin)
+    callSetClaimForAdmin({userId: userId, isAdmin: isAdmin})
 }
 
 export async function setClaimForAidWorker(userId: string, isAidWorker: boolean) {
-    const claimName = 'aid-worker'
-    setClaim(userId, claimName, isAidWorker)
+    callSetClaimForAidWorker({userId: userId, isAidWorker: isAidWorker})
 }
 
 export async function setClaimForVerified(userId: string, isVerified: boolean) {
-    const claimName = 'verified'
-    setClaim(userId, claimName, isVerified)
+    callSetClaimForVerified({userId: userId, isVerified: isVerified})
 }
 
 export async function setClaimForVolunteer(userId: string, isVolunteer: boolean) {
-    const claimName = 'volunteer'
-    setClaim(userId, claimName, isVolunteer)
+    callSetClaimForVolunteer({userId: userId, isVolunteer: isVolunteer})
 }
 
 export async function toggleClaimForAdmin(userId: string) {
-    const claimName = 'admin'
-    toggleClaim(userId, claimName)
+    callToggleClaimForAdmin({userId: userId})
 }
 
 export async function toggleClaimForAidWorker(userId: string) {
-    const claimName = 'aid-worker'
-    toggleClaim(userId, claimName)
+    callToggleClaimForAidWorker({userId: userId})
 }
 
 export async function toggleClaimForVerified(userId: string) {
-    const claimName = 'verified'
-    toggleClaim(userId, claimName)
+    callToggleClaimForVerified({userId: userId})
 }
 
 export async function toggleClaimForVolunteer(userId: string) {
-    const claimName = 'volunteer'
-    toggleClaim(userId, claimName)
-}
-
-async function toggleClaim(userId: string, claimName: string) {
-    const adminAuth = getAuth(app)
-    const claims = (await adminAuth.getUser(userId)).customClaims
-    if (claims === undefined || claims === null) {
-        return Promise.reject()
-    }
-    const claimValue = claims[claimName];
-    if (claimValue === undefined || claimValue === null) {
-        setClaim(userId, claimName, false)
-    } else {
-        setClaim(userId, claimName, !claimValue)
-    }
-}
-
-async function setClaim(userId: string, claimName: string, claimValue: any) {
-    const adminAuth = getAuth(app)
-    const customClaims = (await adminAuth.getUser(userId)).customClaims
-    adminAuth.setCustomUserClaims(userId, {
-        [claimName]: claimValue,
-        ...customClaims
-    })
-}
-
-async function checkClaim(userId: string, claimName: string): Promise<boolean> {
-    const adminAuth = getAuth(app)
-    const claims = (await adminAuth.getUser(userId)).customClaims
-    if (claims === undefined || claims === null) {
-        return Promise.reject()
-    }
-    const claimValue = claims[claimName];
-    return (claimValue !== undefined && claimValue === true) ? true : false
+    callToggleClaimForVolunteer({userId: userId})
 }
 
 export async function addEvent(object: any) {
-    const eventParams: IEvent = {
-        type: '',
-        note: JSON.stringify(object),
-        createdBy: doc(getDb(), `${USERS_COLLECTION}/system`),
-        createdAt: serverTimestamp() as Timestamp,
-        modifiedAt: serverTimestamp() as Timestamp
-    }
-
-    const event: Event = new Event(eventParams);
-    const eventRef = doc(getDb(), EVENTS_COLLECTION)
-    await setDoc(eventRef, event)
+    callAddEvent({object: object})
 }
 
 export async function getImageAsSignedUrl(url: string) {
-    const fileName = url.split('/')[3]
-    const file = getStorage(app).bucket().file(fileName)
-    const accessibleAtTime = new Date()
-    const expirationTime = new Date()
-    expirationTime.setMinutes(expirationTime.getMinutes() + 2)
-    return (await file.getSignedUrl(
-        {
-            version: 'v4',
-            action: 'read',
-            accessibleAt: accessibleAtTime,
-            expires: expirationTime
-        }))[0]
+    const response = await callGetImageAsSignedUrl({url: url})
+    const data: any = response.data
+    return data.url
 }

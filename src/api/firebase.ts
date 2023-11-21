@@ -1,7 +1,8 @@
 //Firebase modules
 import { FirebaseApp, initializeApp } from 'firebase/app'
 import { connectFirestoreEmulator, doc, Firestore, getFirestore } from 'firebase/firestore'
-import { FirebaseStorage, connectStorageEmulator, getStorage } from 'firebase/storage'
+import { connectFunctionsEmulator, Functions, getFunctions } from 'firebase/functions'
+import { connectStorageEmulator, FirebaseStorage, getStorage } from 'firebase/storage'
 import {
     Auth,
     UserCredential,
@@ -62,7 +63,7 @@ function initFirebaseStorage() {
 }
 
 export function getApp(): FirebaseApp {
-    if (app === undefined) {
+    if (app == null) {
         app = initializeApp(firebaseConfig)
     }
     return app

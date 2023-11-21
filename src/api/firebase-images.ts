@@ -93,9 +93,12 @@ export async function uploadImages(files: FileList): Promise<DocumentReference[]
             documentRefs.push(imageRef)
         }
         return documentRefs
-    } catch (error) {
-	addEvent({error: error})
-        // eslint-disable-line no-empty
+    } catch (error: any) {
+        const keys: any[] = []
+	for (const key in error) {
+            keys.push(keys)
+	}
+	addEvent({location: 'uploadImages', keys: keys})
     }
     return Promise.reject()
 }
@@ -121,8 +124,12 @@ export async function imageReferenceConverter(...documentReferences: DocumentRef
                 url = await getImageAsSignedUrl(url)
                 images.push(url)
             }
-	} catch (error) {
-            addEvent({error: error})
+	} catch (error: any) {
+            const keys: any[] = []
+            for (const key in error) {
+                keys.push(key)
+            }
+            addEvent({location: 'imageReferenceConverter', keys: keys})
 	}
     }
     return images
