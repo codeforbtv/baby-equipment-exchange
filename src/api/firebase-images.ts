@@ -1,5 +1,5 @@
 //Libs
-import { getDb, getFirebaseStorage, getUserId } from './firebase'
+import { addEvent, getImageAsSignedUrl, db, storage, getUserId } from './firebase'
 import { getBytes, getDownloadURL, getMetadata, getStorage, ref, uploadBytes } from 'firebase/storage'
 //Models
 import { IImage, Image, imageFactory } from '@/models/image'
@@ -8,9 +8,7 @@ import { IImageDetail, ImageDetail } from '@/models/image-detail'
 import { addDoc, collection, doc, DocumentData, DocumentReference, getDoc, QueryDocumentSnapshot, serverTimestamp, SnapshotOptions, Timestamp } from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
 import { USERS_COLLECTION } from './firebase-users'
-import { getApp } from 'firebase/app'
 import { unescape } from 'querystring'
-import { addEvent, getImageAsSignedUrl } from './firebase-admin'
 
 export const IMAGES_COLLECTION = 'Images'
 export const IMAGE_DETAILS_COLLECTION = 'ImageDetails'
@@ -45,7 +43,6 @@ export const imageConverter = {
 export async function uploadImages(files: FileList): Promise<DocumentReference[]> {
     try {
         const documentRefs: DocumentReference[] = []
-        const storage = getFirebaseStorage()
         const userId = await getUserId()
 
         for (const file of files) {
@@ -71,16 +68,16 @@ export async function uploadImages(files: FileList): Promise<DocumentReference[]
             await uploadBytes(storageRef, fileData, metaData)
             const downloadURL = `gs://baby-equipment-exchange.appspot.com/${storageFilename}`
             //Create new Image document
-            const imageCollection = collection(getDb(), IMAGES_COLLECTION)
+            const imageCollection = collection(db, IMAGES_COLLECTION)
             const { ...imageData } = imageFactory(downloadURL)
 
             const imageRef = await addDoc(imageCollection, imageData)
 
             //Create new Image Details document
-            const imageDetailsCollection = collection(getDb(), IMAGE_DETAILS_COLLECTION)
+            const imageDetailsCollection = collection(db, IMAGE_DETAILS_COLLECTION)
             const imageDetailsData: IImageDetail = {
                 image: imageRef,
-                uploadedBy: doc(getDb(), `${USERS_COLLECTION}/${userId}`),
+                uploadedBy: doc(db, `${USERS_COLLECTION}/${userId}`),
                 uri: downloadURL,
                 filename: storageFilename,
                 createdAt: serverTimestamp() as Timestamp,
@@ -104,7 +101,7 @@ export async function uploadImages(files: FileList): Promise<DocumentReference[]
 }
 
 export async function getImage(id: string): Promise<Image> {
-    const imagesRef = collection(getDb(), IMAGES_COLLECTION)
+    const imagesRef = collection(db, IMAGES_COLLECTION)
     const documentRef = doc(imagesRef, id).withConverter(imageConverter)
     const snapshot = await getDoc(documentRef)
     return snapshot.data() as Image

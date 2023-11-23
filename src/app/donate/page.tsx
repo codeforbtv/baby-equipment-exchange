@@ -21,7 +21,7 @@ import globalStyles from '@/styles/globalStyles.module.scss'
 import styles from './Donate.module.css'
 import { DocumentReference, doc } from 'firebase/firestore'
 import { USERS_COLLECTION } from '@/api/firebase-users'
-import { getDb } from '@/api/firebase'
+import { db } from '@/api/firebase'
 
 type DonationFormData = {
     category: string | null
@@ -111,7 +111,7 @@ export default function Donate() {
             }
 
             const userId = currentUser.uid
-            const userRef = doc(getDb(), `${USERS_COLLECTION}/${userId}`)
+            const userRef = doc(db, `${USERS_COLLECTION}/${userId}`)
 
             //upload images if included
             if (images) {

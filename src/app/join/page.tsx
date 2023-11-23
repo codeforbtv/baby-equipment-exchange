@@ -5,11 +5,10 @@ import { Box, Button, Paper, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 //Libs
-import { onAuthStateChangedListener, createNewUser } from '@/api/firebase'
+import { createNewUser, isEmailInUse, onAuthStateChangedListener } from '@/api/firebase'
 //Styling
 import globalStyles from '@/styles/globalStyles.module.scss'
 import { UserBody } from '@/types/post-data'
-import { isEmailInUse } from '@/api/firebase-admin'
 import Loader from '@/components/Loader'
 
 export default function NewAccount() {

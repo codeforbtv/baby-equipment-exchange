@@ -23,23 +23,10 @@ type Event = {
     modifiedAt: string;
 }
 
-const app: App = initApp()
+const app: App = admin.initializeApp()
 
-function initApp(): App {
-    let _app: App
-        const firebaseConfig = require('../../firebaseConfig.json') // eslint-disable-line @typescript-eslint/no-var-requires
-	const serviceAccount = require('../../serviceAccountKey.json') // eslint-disable-line @typescript-eslint/no-var-requires
-        const appConfig = {
-            ...firebaseConfig,
-            credential: admin.credential.cert(serviceAccount)
-        }
-        _app = admin.initializeApp(
-            appConfig
-        )
-    return _app!
-}
-
-export const isEmailInUse = onCall(async (request: any) => {
+export const isEmailInUse = onCall(
+async (request: any) => {
     try {
         const email = request.data.email 
         const userRecord: UserRecord = await getAuth(app).getUserByEmail(email)
@@ -53,7 +40,8 @@ export const isEmailInUse = onCall(async (request: any) => {
 })
 
 
-export const setClaimForNewUser = onCall(async (request: any) => {
+export const setClaimForNewUser = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId 
         await getAuth(app).setCustomUserClaims(userId, {
@@ -66,7 +54,8 @@ export const setClaimForNewUser = onCall(async (request: any) => {
 })
 
 // Action based claims.
-export const setClaimForDonationReadAccess = onCall(async (request: any) => {
+export const setClaimForDonationReadAccess = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId
         const canReadDonations = request.data.canReadDonations
@@ -77,7 +66,8 @@ export const setClaimForDonationReadAccess = onCall(async (request: any) => {
     }
 })
 
-export const toggleCanReadDonations = onCall(async (request: any) => {
+export const toggleCanReadDonations = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId
         const claimName = 'can-read-donations'
@@ -90,7 +80,8 @@ export const toggleCanReadDonations = onCall(async (request: any) => {
 
 // Role based claims.
 
-export const setClaimForAdmin = onCall(async (request: any) => {
+export const setClaimForAdmin = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId
         const isAdmin = request.data.isAdmin
@@ -101,7 +92,8 @@ export const setClaimForAdmin = onCall(async (request: any) => {
     }
 })
 
-export const setClaimForAidWorker = onCall(async (request: any) => {
+export const setClaimForAidWorker = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId
         const isAidWorker = request.data.isAidWorker
@@ -112,7 +104,8 @@ export const setClaimForAidWorker = onCall(async (request: any) => {
     }
 })
 
-export const setClaimForVerified = onCall(async (request: any) => {
+export const setClaimForVerified = onCall(
+        async (request: any) => {
     try {
          const userId = request.data.userId
          const isVerified = request.data.isVerified
@@ -123,7 +116,8 @@ export const setClaimForVerified = onCall(async (request: any) => {
     }
 })
 
-export const setClaimForVolunteer = onCall(async (request: any) => {
+export const setClaimForVolunteer = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId
         const isVolunteer = request.data.isVolunteer
@@ -134,7 +128,8 @@ export const setClaimForVolunteer = onCall(async (request: any) => {
     }
 })
 
-export const toggleClaimForAdmin = onCall( async (request: any) => {
+export const toggleClaimForAdmin = onCall(
+                                          async (request: any) => {
     try {
         const userId = request.data.userId
         const claimName = 'admin'
@@ -144,7 +139,8 @@ export const toggleClaimForAdmin = onCall( async (request: any) => {
     }
 })
 
-export const toggleClaimForAidWorker = onCall(async (request: any) => {
+export const toggleClaimForAidWorker = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId
         const claimName = 'aid-worker'
@@ -154,7 +150,8 @@ export const toggleClaimForAidWorker = onCall(async (request: any) => {
     }
 })
 
-export const toggleClaimForVerified = onCall(async (request: any) => {
+export const toggleClaimForVerified = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId
         const claimName = 'verified'
@@ -164,7 +161,8 @@ export const toggleClaimForVerified = onCall(async (request: any) => {
     }
 })
 
-export const toggleClaimForVolunteer = onCall(async (request: any) => {
+export const toggleClaimForVolunteer = onCall(
+        async (request: any) => {
     try {
         const userId = request.data.userId
         const claimName = 'volunteer'
@@ -221,7 +219,8 @@ async function checkClaim(userId: string, claimName: string) {
     return Promise.reject()
 }
 
-export const addEvent = onCall(async (request: any) => {
+export const addEvent = onCall(
+async (request: any) => {
     try {
         const object = request.data.object
         _addEvent(object)
@@ -231,7 +230,7 @@ export const addEvent = onCall(async (request: any) => {
 })
 
 async function _addEvent(object: any) {
-     logger.error(object)
+     logger.info(object)
      try {
         const currentTime = new Date()
         const currentTimeString = currentTime.toDateString()
@@ -266,9 +265,11 @@ export const getImageAsSignedUrl = onCall(async (request: any) => {
                 accessibleAt: accessibleAtTime,
                 expires: expirationTime
             }))
+        logger.info(signedUrlResponse[0])
         return {url: signedUrlResponse[0]}
     } catch (error) {
         _addEvent({location: 'getImageAsSignedUrl'})
     }
-    return  Promise.reject()
-})
+        return  Promise.reject()
+    }
+)

@@ -13,9 +13,8 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
 //Hooks
 import React, { useEffect, useState } from 'react'
 //Libs
-import { addEvent } from '@/api/firebase-admin'
 import { getAllDonations, getDonations } from '@/api/firebase-donations'
-import { canReadDonations } from '@/api/firebase'
+import { addEvent, canReadDonations } from '@/api/firebase'
 //Styles
 import styles from './Browse.module.css'
 

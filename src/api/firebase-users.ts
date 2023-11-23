@@ -1,5 +1,5 @@
 //Libs
-import { getDb, getUserId } from './firebase'
+import { addEvent, db, getUserId } from './firebase'
 import { 
     arrayUnion,
     collection,
@@ -24,7 +24,6 @@ import { IUserDetail, UserDetail } from '@/models/user-detail'
 import { AccountInformation, UserBody, NoteBody } from '@/types/post-data'
 import { stripNullUndefined } from '@/utils/utils'
 import { Event, IEvent } from '@/models/event'
-import { addEvent } from './firebase-admin'
 import { DONATION_DETAILS_COLLECTION } from './firebase-donations'
 
 export const USERS_COLLECTION = 'Users'
@@ -120,7 +119,7 @@ export async function addUser(newUser: UserBody) {
     }
 
     const userDetailParams: IUserDetail = {
-        user: doc(getDb(), `${USERS_COLLECTION}/${newUser.user}`),
+        user: doc(db, `${USERS_COLLECTION}/${newUser.user}`),
         emails: [newUser.email!],
         phones: [],
         addresses: [],
@@ -138,12 +137,12 @@ export async function addUser(newUser: UserBody) {
     const userDetail = new UserDetail(userDetailParams)
 
     try {
-        await runTransaction(getDb(), async (transaction) => {
+        await runTransaction(db, async (transaction) => {
             if (newUser.user == null) {
                 throw new Error("A document reference to the new user must exist already.")
             }
             const userRef = newUser.user
-            const userDetailRef = doc(getDb(), `${DONATION_DETAILS_COLLECTION}/${newUser.user.id}`)
+            const userDetailRef = doc(db, `${DONATION_DETAILS_COLLECTION}/${newUser.user.id}`)
             transaction.set(userRef, userConverter.toFirestore(user))
             transaction.set(userDetailRef, userDetailConverter.toFirestore(userDetail))
         })
@@ -165,7 +164,7 @@ export async function getUserAccount(): Promise<AccountInformation> {
 
 export async function getAllUserAccounts() {
 
-    const q = query(collection(getDb(), USERS_COLLECTION))
+    const q = query(collection(db, USERS_COLLECTION))
     const snapshot = await getDocs(q)
     const userIds: string[] = snapshot.docs.map((doc) => doc.id)
     const userAccounts: AccountInformation[] = []
@@ -180,9 +179,9 @@ export async function getAllUserAccounts() {
 }
 
 async function _getUserAccount(userId: string): Promise<AccountInformation> {
-    const userRef = doc(getDb(), `${USERS_COLLECTION}/${userId}`).withConverter(userConverter)
+    const userRef = doc(db, `${USERS_COLLECTION}/${userId}`).withConverter(userConverter)
     const userDocument: DocumentSnapshot<User> = await getDoc(userRef)
-    const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, userId).withConverter(userDetailConverter)
+    const userDetailsRef = doc(db, USER_DETAILS_COLLECTION, userId).withConverter(userDetailConverter)
     const userDetailDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef)
     let accountInformation: AccountInformation = {
         name: '',
@@ -232,9 +231,9 @@ async function _getUserAccount(userId: string): Promise<AccountInformation> {
 export async function setUserAccount(accountInformation: AccountInformation) {
     try {
         const userId: string = await getUserId()
-        const userRef = doc(getDb(), USERS_COLLECTION, userId).withConverter(userConverter)
+        const userRef = doc(db, USERS_COLLECTION, userId).withConverter(userConverter)
         const userDocument: DocumentSnapshot<User> = await getDoc(userRef)
-        const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, userId).withConverter(userDetailConverter)
+        const userDetailsRef = doc(db, USER_DETAILS_COLLECTION, userId).withConverter(userDetailConverter)
         const userDetailDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef)
         if (userDocument.exists() && userDetailDocument.exists()) {
             const userChanges: any = {}
@@ -318,7 +317,7 @@ export async function addNote(note: NoteBody) {
         const event = new Event(eventParams)
 
         if (note.destinationCollection === USERS_COLLECTION) {
-            const userDetailsRef = doc(getDb(), USER_DETAILS_COLLECTION, note.destinationId).withConverter(userDetailConverter)
+            const userDetailsRef = doc(db, USER_DETAILS_COLLECTION, note.destinationId).withConverter(userDetailConverter)
             await updateDoc(
                 userDetailsRef,
                 {
