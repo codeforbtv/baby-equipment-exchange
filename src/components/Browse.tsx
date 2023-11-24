@@ -69,7 +69,7 @@ const Browse: React.FC = () => {
             {isFilterVisible && <Filter />}
             <ImageList className={styles['browse__grid']}>
                 {donations.map((donation) => {
-                        // An active donation must have at least one photo for display.
+                    // An active donation must have at least one photo for display.
                     return (
                         <DonationCard
                                 key={donation.images[0] as string}

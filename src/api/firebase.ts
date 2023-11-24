@@ -28,7 +28,7 @@ export const auth: Auth = initFirebaseAuth()
 const functions = initFunctions()
 
 function initFunctions() {
-    const _functions: Functions = getFunctions(app, "us-east1")
+    const _functions: Functions = getFunctions(app, 'us-east1')
     if (
         (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
         process?.env?.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
@@ -56,67 +56,72 @@ const callAddEvent = httpsCallable(functions, 'addEvent')
 const callGetImageAsSignedUrl = httpsCallable(functions, 'getImageAsSignedUrl')
 
 export async function isEmailInUse(email: string) {
-    const response = await callIsEmailInUse({email: email})
+    const response = await callIsEmailInUse({ email: email })
     const data: any = response.data
     return data.value
 }
 
 export async function setClaimForNewUser(userId: string) {
-    callSetClaimForNewUser({userId: userId})
+    callSetClaimForNewUser({ userId: userId })
 }
 
 // Action based claims.
 
 export async function setClaimForDonationReadAccess(userId: string, canReadDonations: boolean) {
-    callSetClaimForDonationReadAccess({userId: userId, canReadDonations: canReadDonations})
+    callSetClaimForDonationReadAccess({ userId: userId, canReadDonations: canReadDonations })
 }
 
 export async function toggleCanReadDonations(userId: string) {
-    callToggleCanReadDonations({userId: userId})
+    callToggleCanReadDonations({ userId: userId })
 }
 
 // Role based claims.
 
 export async function setClaimForAdmin(userId: string, isAdmin: boolean) {
-    callSetClaimForAdmin({userId: userId, isAdmin: isAdmin})
+    callSetClaimForAdmin({ userId: userId, isAdmin: isAdmin })
 }
 
 export async function setClaimForAidWorker(userId: string, isAidWorker: boolean) {
-    callSetClaimForAidWorker({userId: userId, isAidWorker: isAidWorker})
+    callSetClaimForAidWorker({ userId: userId, isAidWorker: isAidWorker })
 }
 
 export async function setClaimForVerified(userId: string, isVerified: boolean) {
-    callSetClaimForVerified({userId: userId, isVerified: isVerified})
+    callSetClaimForVerified({ userId: userId, isVerified: isVerified })
 }
 
 export async function setClaimForVolunteer(userId: string, isVolunteer: boolean) {
-    callSetClaimForVolunteer({userId: userId, isVolunteer: isVolunteer})
+    callSetClaimForVolunteer({ userId: userId, isVolunteer: isVolunteer })
 }
 
 export async function toggleClaimForAdmin(userId: string) {
-    callToggleClaimForAdmin({userId: userId})
+    callToggleClaimForAdmin({ userId: userId })
 }
 
 export async function toggleClaimForAidWorker(userId: string) {
-    callToggleClaimForAidWorker({userId: userId})
+    callToggleClaimForAidWorker({ userId: userId })
 }
 
 export async function toggleClaimForVerified(userId: string) {
-    callToggleClaimForVerified({userId: userId})
+    callToggleClaimForVerified({ userId: userId })
 }
 
 export async function toggleClaimForVolunteer(userId: string) {
-    callToggleClaimForVolunteer({userId: userId})
+    callToggleClaimForVolunteer({ userId: userId })
 }
 
 export async function addEvent(object: any) {
-    callAddEvent({object: object})
+    callAddEvent({ object: object })
 }
 
 export async function getImageAsSignedUrl(url: string) {
-    const response = await callGetImageAsSignedUrl({url: url})
-    const data: any = response.data
-    return data.url
+    try {
+        const response = await callGetImageAsSignedUrl({ url: url })
+        await addEvent({ location: 'getImageAsSignedUrl', response: response })
+        const signedUrl: any = response.data
+        return signedUrl
+    } catch (error) {
+        await addEvent({ location: 'getImageAsSignedUrl', error: error })
+    }
 }
 
 function initDb(): Firestore {
@@ -171,7 +176,7 @@ export async function getAccountType(): Promise<string> {
 }
 
 export async function canReadDonations(): Promise<boolean> {
-    return checkClaim('can-read-donations') 
+    return checkClaim('can-read-donations')
 }
 
 export async function isAdmin(): Promise<boolean> {
@@ -200,8 +205,8 @@ async function checkClaim(claimName: string): Promise<boolean> {
     if (claims === undefined || claims === null) {
         return Promise.reject()
     }
-    const claimValue = claims[claimName];
-    return (claimValue !== undefined && claimValue === true) ? true : false
+    const claimValue = claims[claimName]
+    return claimValue !== undefined && claimValue === true ? true : false
 }
 
 export function getUserEmail(): string | null | undefined {
