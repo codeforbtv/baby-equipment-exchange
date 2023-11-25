@@ -211,6 +211,7 @@ export default function Donate() {
                                                     accept="image/png, image/jpeg"
                                                     capture="environment"
                                                     onChange={previewPhotos}
+                                                    multiple
                                                 />
                                                 <Button variant="contained" component="span">Add Files</Button>
                                             </label>
