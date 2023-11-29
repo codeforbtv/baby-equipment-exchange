@@ -13,9 +13,9 @@ import {
 } from 'firebase/firestore'
 //Models
 import { IStorage, Storage } from '@/models/storage'
-import { StorageForm } from '@/types/post-data'
+import { StorageBody } from '@/types/post-data'
 //Libs
-import { getDb } from './firebase'
+import { db } from './firebase'
 
 const STORAGE_COLLECTION = 'Storage'
 
@@ -50,7 +50,7 @@ const storageConverter = {
     }
 }
 
-export async function addStorage(newStorage: StorageForm) {
+export async function addStorage(newStorage: StorageBody) {
     const storageParams: IStorage = {
         active: newStorage.active,
         name: newStorage.name,
@@ -60,12 +60,12 @@ export async function addStorage(newStorage: StorageForm) {
         modifiedAt: serverTimestamp() as Timestamp
     }
     const storage = new Storage(storageParams)
-    const storageRef = doc(getDb(), STORAGE_COLLECTION)
+    const storageRef = doc(db, STORAGE_COLLECTION)
     await setDoc(storageRef, storage)
 }
 
 export async function getAllStorage(): Promise<Storage[]> {
-    const q = query(collection(getDb(), STORAGE_COLLECTION)).withConverter(storageConverter)
+    const q = query(collection(db, STORAGE_COLLECTION)).withConverter(storageConverter)
     const snapshot = await getDocs(q)
     return snapshot.docs.map((doc) => doc.data())
 }

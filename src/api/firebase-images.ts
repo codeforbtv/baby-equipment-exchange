@@ -1,17 +1,30 @@
 //Libs
-import { getDb, getFirebaseStorage, getUserId } from './firebase'
-import { ref, uploadBytes } from 'firebase/storage'
+import { addEvent, getImageAsSignedUrl, db, storage, getUserId } from './firebase'
+import { getBytes, getDownloadURL, getMetadata, getStorage, ref, uploadBytes } from 'firebase/storage'
 //Models
 import { IImage, Image, imageFactory } from '@/models/image'
 import { IImageDetail, ImageDetail } from '@/models/image-detail'
 //Modules
-import { addDoc, collection, doc, DocumentData, getDoc, QueryDocumentSnapshot, serverTimestamp, SnapshotOptions, Timestamp } from 'firebase/firestore'
+import {
+    addDoc,
+    collection,
+    doc,
+    DocumentData,
+    DocumentReference,
+    getDoc,
+    QueryDocumentSnapshot,
+    serverTimestamp,
+    SnapshotOptions,
+    Timestamp
+} from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
+import { USERS_COLLECTION } from './firebase-users'
+import { unescape } from 'querystring'
 
-const IMAGES_COLLECTION = 'Images'
-const IMAGE_DETAILS_COLLECTION = 'ImageDetails'
+export const IMAGES_COLLECTION = 'Images'
+export const IMAGE_DETAILS_COLLECTION = 'ImageDetails'
 
-const imageConverter = {
+export const imageConverter = {
     toFirestore(image: Image): DocumentData {
         const imageData: IImage = {
             downloadURL: image.getDownloadURL(),
@@ -38,10 +51,9 @@ const imageConverter = {
     }
 }
 
-export async function uploadImages(files: FileList): Promise<string[]> {
+export async function uploadImages(files: FileList): Promise<DocumentReference[]> {
     try {
-        const documentIds = []
-        const storage = getFirebaseStorage()
+        const documentRefs: DocumentReference[] = []
         const userId = await getUserId()
 
         for (const file of files) {
@@ -67,16 +79,16 @@ export async function uploadImages(files: FileList): Promise<string[]> {
             await uploadBytes(storageRef, fileData, metaData)
             const downloadURL = `gs://baby-equipment-exchange.appspot.com/${storageFilename}`
             //Create new Image document
-            const imageCollection = collection(getDb(), IMAGES_COLLECTION)
+            const imageCollection = collection(db, IMAGES_COLLECTION)
             const { ...imageData } = imageFactory(downloadURL)
 
             const imageRef = await addDoc(imageCollection, imageData)
 
             //Create new Image Details document
-            const imageDetailsCollection = collection(getDb(), IMAGE_DETAILS_COLLECTION)
+            const imageDetailsCollection = collection(db, IMAGE_DETAILS_COLLECTION)
             const imageDetailsData: IImageDetail = {
-                image: imageRef.id,
-                uploadedBy: userId,
+                image: imageRef,
+                uploadedBy: doc(db, `${USERS_COLLECTION}/${userId}`),
                 uri: downloadURL,
                 filename: storageFilename,
                 createdAt: serverTimestamp() as Timestamp,
@@ -86,18 +98,54 @@ export async function uploadImages(files: FileList): Promise<string[]> {
             await addDoc(imageDetailsCollection, imageDetail)
 
             // Return the newly created id values of Images collection documents.
-            documentIds.push(imageRef.id)
+            documentRefs.push(imageRef)
         }
-        return documentIds
-    } catch (error) {
-        // eslint-disable-line no-empty
+        return documentRefs
+    } catch (error: any) {
+        const keys: any[] = []
+        for (const key in error) {
+            keys.push(keys)
+        }
+        addEvent({ location: 'uploadImages', keys: keys })
     }
     return Promise.reject()
 }
 
 export async function getImage(id: string): Promise<Image> {
-    const imagesRef = collection(getDb(), IMAGES_COLLECTION)
+    const imagesRef = collection(db, IMAGES_COLLECTION)
     const documentRef = doc(imagesRef, id).withConverter(imageConverter)
     const snapshot = await getDoc(documentRef)
     return snapshot.data() as Image
+}
+
+/** Retrieve a file from storage enforcing Firebase Storage security rules.
+ *
+ */
+export async function imageReferenceConverter(...documentReferences: DocumentReference<Image>[]): Promise<string[]> {
+    const images: string[] = []
+    for (const documentReference of documentReferences) {
+        try {
+            const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter))
+            if (imageSnapshot.exists()) {
+                const imageDocument = imageSnapshot.data()
+                let url = imageDocument.getDownloadURL()
+                url = await getImageAsSignedUrl(url)
+                images.push(url)
+            }
+        } catch (error: any) {
+            const keys: any[] = []
+            for (const key in error) {
+                keys.push(key)
+            }
+            addEvent({
+                location: 'imageReferenceConverter',
+                keys: keys,
+                customData: error.customData,
+                details: error.details,
+                name: error.name,
+                code: error.code
+            })
+        }
+    }
+    return images
 }

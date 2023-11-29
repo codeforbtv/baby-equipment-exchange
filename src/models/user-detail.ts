@@ -1,5 +1,5 @@
 //Firebase types
-import { Timestamp } from 'firebase/firestore'
+import { DocumentReference, Timestamp } from 'firebase/firestore'
 //Plain JavaScript objects
 import { IAddress } from './address'
 
@@ -7,6 +7,7 @@ export interface IUserDetail {
     [key: string]:
         | string
         | number
+        | DocumentReference
         | Timestamp
         | IAddress
         | IAddress[]
@@ -14,13 +15,15 @@ export interface IUserDetail {
         | null
         | undefined
         | (() => string)
+        | (() => DocumentReference)
         | (() => IAddress[])
+        | (() => DocumentReference[])
         | (() => string[])
         | (() => Timestamp)
         | (() => IAddress | null | undefined)
         | (() => number | null | undefined)
         | (() => string | null | undefined)
-    user: string
+    user: DocumentReference
     email: string | null | undefined
     address: IAddress | null | undefined
     phone: string | null | undefined
@@ -38,6 +41,7 @@ export class UserDetail implements IUserDetail {
     [key: string]:
         | string
         | number
+        | DocumentReference
         | Timestamp
         | IAddress
         | IAddress[]
@@ -45,13 +49,14 @@ export class UserDetail implements IUserDetail {
         | null
         | undefined
         | (() => string)
+        | (() => DocumentReference)
         | (() => IAddress[])
         | (() => string[])
         | (() => Timestamp)
         | (() => IAddress | null | undefined)
         | (() => number | null | undefined)
         | (() => string | null | undefined)
-    user: string
+    user: DocumentReference
     emails: string[]
     phones: string[]
     addresses: IAddress[]
@@ -79,7 +84,7 @@ export class UserDetail implements IUserDetail {
         this.website = args.website
     }
 
-    getUser(): string {
+    getUser(): DocumentReference {
         return this.user
     }
 

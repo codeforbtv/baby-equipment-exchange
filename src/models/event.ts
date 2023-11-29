@@ -1,19 +1,17 @@
-import { Timestamp } from "firebase/firestore";
-
 export interface IEvent {
     type: string
     note: string
     createdBy: string
-    createdAt: Timestamp
-    modifiedAt: Timestamp
+    createdAt: string
+    modifiedAt: string
 }
 
 export class Event implements IEvent {
     type: string
     note: string
     createdBy: string
-    createdAt: Timestamp
-    modifiedAt: Timestamp
+    createdAt: string
+    modifiedAt: string
 
     constructor(args: IEvent) {
         this.type = args.type
@@ -35,11 +33,11 @@ export class Event implements IEvent {
         return this.createdBy
     }
 
-    getCreatedAt(): Timestamp {
+    getCreatedAt(): string {
         return this.createdAt
     }
 
-    getModifiedAt(): Timestamp {
+    getModifiedAt(): string {
         return this.modifiedAt
     }
 }

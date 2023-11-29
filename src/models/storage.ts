@@ -3,7 +3,7 @@ import { Timestamp, serverTimestamp } from 'firebase/firestore'
 //Plain JavaScript objects
 import { IAddress } from './address'
 import { IContact } from './contact'
-import { StorageForm } from '@/types/post-data'
+import { StorageBody } from '@/types/post-data'
 
 export interface IStorage {
     [key: string]: boolean | string | IAddress | IContact | Timestamp | (() => boolean) | (() => IAddress) | (() => IContact) | (() => string) | (() => Timestamp)

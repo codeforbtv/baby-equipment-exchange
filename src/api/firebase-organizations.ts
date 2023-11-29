@@ -13,9 +13,9 @@ import {
 } from 'firebase/firestore'
 //Models
 import { IOrganization, Organization } from '@/models/organization'
-import { OrganizationForm } from '@/types/post-data'
+import { OrganizationBody } from '@/types/post-data'
 //Libs
-import { getDb } from './firebase'
+import { db } from './firebase'
 
 const ORGANIZATIONS_COLLECTION = 'Organizations'
 
@@ -64,7 +64,7 @@ const organizationConverter = {
     }
 }
 
-export async function addOrganization(newOrganization: OrganizationForm) {
+export async function addOrganization(newOrganization: OrganizationBody) {
     const organizationParams: IOrganization = {
         name: newOrganization.name,
         diaperBank: newOrganization.diaperBank,
@@ -82,12 +82,12 @@ export async function addOrganization(newOrganization: OrganizationForm) {
     }
 
     const organization = new Organization(organizationParams)
-    const organizationRef = doc(getDb(), ORGANIZATIONS_COLLECTION)
+    const organizationRef = doc(db, ORGANIZATIONS_COLLECTION)
     await setDoc(organizationRef, organization)
 }
 
 export async function getOrganizations(): Promise<Organization[]> {
-    const q = query(collection(getDb(), ORGANIZATIONS_COLLECTION)).withConverter(organizationConverter)
+    const q = query(collection(db, ORGANIZATIONS_COLLECTION)).withConverter(organizationConverter)
     const snapshot = await getDocs(q)
     return snapshot.docs.map((doc) => doc.data())
 }

@@ -1,5 +1,6 @@
 import { IAddress } from '@/models/address'
 import { IContact } from '@/models/contact'
+import { DocumentReference } from 'firebase/firestore'
 
 export type AccountInformation = {
     name: string
@@ -8,23 +9,23 @@ export type AccountInformation = {
     photo: string | null | undefined
 }
 
-export type DonationForm = {
-    user: string
+export type DonationBody = {
+    user: DocumentReference
     category: string
     brand: string
     model: string
     description: string
-    images: string[]
+    images: DocumentReference[]
 }
 
-export type NewUser = {
-    user: string | undefined | null // The Firebase auth id of the new user.
+export type UserBody = {
+    user: DocumentReference | undefined | null // The Firebase auth id of the new user.
     name: string | undefined | null
     email: string | undefined | null
     photo: string | undefined | null // The Images document id of the user's profile photo.
 }
 
-export type OrganizationForm = {
+export type OrganizationBody = {
     name: string,
     diaperBank: boolean,
     babyProductExchange: boolean
@@ -38,14 +39,14 @@ export type OrganizationForm = {
     notes: string,
 }
 
-export type StorageForm = {
+export type StorageBody = {
     active: boolean,
     name: string,
     address: IAddress,
     pointOfContact: IContact
 }
 
-export type Note = {
+export type NoteBody = {
     text: string,
     destinationId: string,
     destinationCollection: string

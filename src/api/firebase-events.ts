@@ -6,8 +6,6 @@ import {
 } from 'firebase/firestore'
 //Models
 import { IEvent, Event } from '@/models/event'
-//Libs
-import { getDb } from './firebase'
 
 export const EVENTS_COLLECTION = 'Event'
 

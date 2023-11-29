@@ -1,23 +1,23 @@
 //Firebase types
-import { Timestamp } from 'firebase/firestore'
+import { DocumentReference, Timestamp } from 'firebase/firestore'
 //Plain Javascript objects
 import { Address } from './address'
 import { Contact } from './contact'
 
 export interface IDonationDetail {
     [key: string]: any
-    donation: string
+    donation: DocumentReference
     availability: string | null | undefined
-    donor: string
+    donor: DocumentReference
     tagNumber: string | null | undefined
     tagNumberForItemDelivered: string | null | undefined
     sku: string | null | undefined
     recipientOrganization: string | null | undefined
-    images: string[]
+    images: DocumentReference[]
     recipientContact: Contact | null | undefined
     recipientAddress: Address | null | undefined
     requestor: Contact | null | undefined
-    storage: string[] | null | undefined
+    storage: DocumentReference[] | null | undefined
     dateReceived: number | null | undefined
     dateDistributed: number | null | undefined
     scheduledPickupDate: number | null | undefined
@@ -28,18 +28,18 @@ export interface IDonationDetail {
 
 export class DonationDetail implements IDonationDetail {
     [key: string]: any
-    donation: string
+    donation: DocumentReference
     availability: string | null | undefined
-    donor: string
+    donor: DocumentReference
     tagNumber: string | null | undefined
     tagNumberForItemDelivered: string | null | undefined
     sku: string | null | undefined
     recipientOrganization: string | null | undefined
-    images: string[]
+    images: DocumentReference[]
     recipientContact: Contact | null | undefined
     recipientAddress: Address | null | undefined
     requestor: Contact | null | undefined
-    storage: string[] | null | undefined
+    storage: DocumentReference[] | null | undefined
     dateReceived: number | null | undefined
     dateDistributed: number | null | undefined
     scheduledPickupDate: number | null | undefined
@@ -68,7 +68,7 @@ export class DonationDetail implements IDonationDetail {
         this.modifiedAt = args.modifiedAt
     }
 
-    getDonation(): string {
+    getDonation(): DocumentReference {
         return this.donation
     }
 
@@ -76,7 +76,7 @@ export class DonationDetail implements IDonationDetail {
         return this.availability
     }
 
-    getDonor(): string {
+    getDonor(): DocumentReference {
         return this.donor
     }
 
@@ -96,7 +96,7 @@ export class DonationDetail implements IDonationDetail {
         return this.recipientOrganization
     }
 
-    getImages(): string[] {
+    getImages(): DocumentReference[] {
         return this.images
     }
 
@@ -122,7 +122,7 @@ export class DonationDetail implements IDonationDetail {
         return this.requestor
     }
 
-    getStorage(): string[] | null | undefined {
+    getStorage(): DocumentReference[] | null | undefined {
         return this.storage
     }
 
@@ -150,7 +150,7 @@ export class DonationDetail implements IDonationDetail {
         return this.modifiedAt
     }
 
-    setDonation(donation: string) {
+    setDonation(donation: DocumentReference) {
         this.donation = donation
     }
 }
