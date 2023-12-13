@@ -1,6 +1,6 @@
 // Libs
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import * as admin from 'firebase-admin';
@@ -57,23 +57,22 @@ export const createNewUser = onCall(async (request: any) => {
         const displayName = request.data.displayName;
         const email = request.data.email;
 
-        await db
-            .runTransaction(async (transaction) => {
+            await db.runTransaction(async (transaction) => {
                 const userRef = db.collection(USERS_COLLECTION).doc(userId);
-
+    
                 if ((await userRef.get()).exists) {
-                    logger.error({ error: `attempt to create an existing user ${userId} with https onCall method.`, data: request.data });
+                    logger.error({error: `attempt to create an existing user ${userId} with https onCall method.`, data: request.data});
                     // Return if the user already exists.
                     return;
                 }
-
+                        
                 const userParams = {
                     name: displayName,
                     pendingDonations: [],
                     createdAt: FieldValue.serverTimestamp(),
                     modifiedAt: FieldValue.serverTimestamp()
                 };
-
+            
                 const userDetailParams = {
                     user: userRef,
                     emails: [email],
@@ -89,15 +88,14 @@ export const createNewUser = onCall(async (request: any) => {
 
                 transaction.create(userRef, userParams);
                 transaction.create(userDetailRef, userDetailParams);
-            })
-            .catch((error) => logger.error({ location: 'createNewUser', error: error }));
+            }).catch(error => logger.error({location: 'createNewUser', error:error}));
 
         await getAuth(app).setCustomUserClaims(userId, {
             donor: true,
             verified: false
         });
     } catch (error) {
-        _addEvent({ location: 'createNewUser (onCall)', error: error, data: request.data });
+        _addEvent({location: 'createNewUser (onCall)', error: error, data:request.data });
     }
 });
 
@@ -146,7 +144,7 @@ export const isEmailInvalid = onCall(async (request: any) => {
         const email = request.data.email;
         const userRecord: UserRecord = await getAuth(app).getUserByEmail(email);
         if (userRecord !== undefined) {
-            logger.error({ error: `${email} was queried via this onCall method.`, data: request.data });
+            logger.error({error: `${email} was queried via this onCall method.`, data: request.data });
             return { value: true };
         } else {
             return { value: false };
@@ -535,7 +533,7 @@ async function _verifyAdmin(request: any) {
     if (adminClaimValue == null || adminClaimValue !== true) {
         throw new HttpsError('internal', 'Internal error');
     }
-}
+} 
 
 function _verifyAuthenticated(request: any) {
     if (!request?.auth) {
