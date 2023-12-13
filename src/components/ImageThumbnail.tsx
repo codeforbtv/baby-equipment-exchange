@@ -1,12 +1,12 @@
 //Styles
-import styles from './ImageThumbnail.module.css'
+import styles from './ImageThumbnail.module.css';
 
 type ImageThumbnailProps = {
-    file: File
-    width: string
-    margin: string
-    removeFunction: (fileToRemove: File) => void
-}
+    file: File;
+    width: string;
+    margin: string;
+    removeFunction: (fileToRemove: File) => void;
+};
 
 export default function ImageThumbnail(props: ImageThumbnailProps) {
     return (
@@ -16,5 +16,5 @@ export default function ImageThumbnail(props: ImageThumbnailProps) {
                 X
             </button>
         </div>
-    )
+    );
 }

@@ -1,35 +1,35 @@
-'use client'
+'use client';
 //Components
-import InputContainer from '@/components/InputContainer'
-import ImageThumbnail from '@/components/ImageThumbnail'
-import ProtectedRoute from '@/components/ProtectedRoute'
-import { Box, Button, NativeSelect, TextField } from '@mui/material'
+import InputContainer from '@/components/InputContainer';
+import ImageThumbnail from '@/components/ImageThumbnail';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { Box, Button, NativeSelect, TextField } from '@mui/material';
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
-import ToasterNotification from '@/components/ToasterNotification'
-import Loader from '@/components/Loader'
+import ToasterNotification from '@/components/ToasterNotification';
+import Loader from '@/components/Loader';
 //Hooks
-import { useState, useEffect, ReactElement } from 'react'
-import { useRouter } from 'next/navigation'
-import { useUserContext } from '@/contexts/UserContext'
+import { useState, useEffect, ReactElement } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUserContext } from '@/contexts/UserContext';
 
 //Apis
-import { uploadImages } from '@/api/firebase-images'
-import { addDonation } from '@/api/firebase-donations'
+import { uploadImages } from '@/api/firebase-images';
+import { addDonation } from '@/api/firebase-donations';
 
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss'
-import styles from './Donate.module.css'
-import { DocumentReference, doc } from 'firebase/firestore'
-import { USERS_COLLECTION } from '@/api/firebase-users'
-import { db } from '@/api/firebase'
+import globalStyles from '@/styles/globalStyles.module.scss';
+import styles from './Donate.module.css';
+import { DocumentReference, doc } from 'firebase/firestore';
+import { USERS_COLLECTION } from '@/api/firebase-users';
+import { db } from '@/api/firebase';
 
 type DonationFormData = {
-    category: string | null
-    brand: string | null
-    model: string | null
-    description: string | null
-    images: FileList | null | undefined
-}
+    category: string | null;
+    brand: string | null;
+    model: string | null;
+    description: string | null;
+    images: FileList | null | undefined;
+};
 
 //This will be initially set from the database if editing an existing donation
 const dummyDonationData: DonationFormData = {
@@ -38,91 +38,91 @@ const dummyDonationData: DonationFormData = {
     model: 'Model Name',
     description: '',
     images: null
-}
+};
 
 export default function Donate() {
-    const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle')
-    const [formData, setFormData] = useState<DonationFormData>(dummyDonationData)
-    const [images, setImages] = useState<FileList | null>()
-    const [imageElements, setImageElements] = useState<ReactElement[]>([])
-    const { currentUser } = useUserContext()
-    const router = useRouter()
+    const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
+    const [formData, setFormData] = useState<DonationFormData>(dummyDonationData);
+    const [images, setImages] = useState<FileList | null>();
+    const [imageElements, setImageElements] = useState<ReactElement[]>([]);
+    const { currentUser } = useUserContext();
+    const router = useRouter();
 
     function previewPhotos(e: React.ChangeEvent<HTMLInputElement>) {
-        const imageList = new DataTransfer()
+        const imageList = new DataTransfer();
         //include existing images in the imageList files
         if (images) {
             for (let i = 0; i < images.length; i++) {
-                const file = new File([images[i]], images[i].name)
-                imageList.items.add(file)
+                const file = new File([images[i]], images[i].name);
+                imageList.items.add(file);
             }
         }
         //add any newly uploaded images to the imageList files
         if (e.target.files) {
             for (let i = 0; i < e.target.files.length; i++) {
-                const file = new File([e.target.files[i]], e.target.files[i].name)
-                imageList.items.add(file)
+                const file = new File([e.target.files[i]], e.target.files[i].name);
+                imageList.items.add(file);
             }
         }
-        setImages(imageList.files)
+        setImages(imageList.files);
     }
 
     function removeImage(fileToRemove: File) {
         if (images) {
-            const imageList = new DataTransfer()
-            const imagesArray = Array.from(images)
+            const imageList = new DataTransfer();
+            const imagesArray = Array.from(images);
             imagesArray.forEach((image) => {
                 if (image.name !== fileToRemove.name) {
-                    const file = new File([image], image.name)
-                    imageList.items.add(file)
+                    const file = new File([image], image.name);
+                    imageList.items.add(file);
                 }
-            })
-            setImages(imageList.files)
+            });
+            setImages(imageList.files);
         }
     }
 
     useEffect(() => {
-        const tempImages = []
+        const tempImages = [];
         if (images) {
             for (let i = 0; i < images.length; i++) {
-                const imagePreview = <ImageThumbnail key={i} removeFunction={removeImage} file={images[i]} width={'32%'} margin={'.66%'} />
-                tempImages.push(imagePreview)
+                const imagePreview = <ImageThumbnail key={i} removeFunction={removeImage} file={images[i]} width={'32%'} margin={'.66%'} />;
+                tempImages.push(imagePreview);
             }
-            setImageElements(tempImages)
+            setImageElements(tempImages);
         }
-    }, [images])
+    }, [images]);
 
     function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLTextAreaElement>) {
         setFormData((prev) => {
-            return { ...prev, [e.target.name]: e.target.value }
-        })
+            return { ...prev, [e.target.name]: e.target.value };
+        });
     }
 
     //Use this to handle passing form data to the database on submission
     async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault()
+        e.preventDefault();
         try {
-            setSubmitState('submitting')
-            const submittedData = new FormData(e.currentTarget)
-            let imageRefs: DocumentReference[] = []
+            setSubmitState('submitting');
+            const submittedData = new FormData(e.currentTarget);
+            let imageRefs: DocumentReference[] = [];
 
             if (currentUser == null) {
-                throw new Error("Unable to access the user account.")
+                throw new Error('Unable to access the user account.');
             }
 
-            const userId = currentUser.uid
-            const userRef = doc(db, `${USERS_COLLECTION}/${userId}`)
+            const userId = currentUser.uid;
+            const userRef = doc(db, `${USERS_COLLECTION}/${userId}`);
 
             //upload images if included
             if (images) {
-                const imageList = new DataTransfer()
-                const imageFiles = submittedData.getAll('images')
+                const imageList = new DataTransfer();
+                const imageFiles = submittedData.getAll('images');
                 imageFiles.map((file) => {
                     if (file instanceof File) {
-                        imageList.items.add(file)
+                        imageList.items.add(file);
                     }
-                })
-                imageRefs = await uploadImages(imageList.files)
+                });
+                imageRefs = await uploadImages(imageList.files);
             }
 
             const newDonation = {
@@ -132,13 +132,13 @@ export default function Donate() {
                 model: submittedData.get('model')?.toString() ?? '',
                 description: submittedData.get('description')?.toString() ?? '',
                 images: imageRefs
-            }
+            };
 
-            await addDonation(newDonation)
-            setSubmitState('idle')
-            router.push('/')
+            await addDonation(newDonation);
+            setSubmitState('idle');
+            router.push('/');
         } catch (error) {
-            setSubmitState('error')
+            setSubmitState('error');
         }
     }
 
@@ -152,7 +152,7 @@ export default function Donate() {
                     <div className={globalStyles['content__container']}>
                         <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
                             <Box className={styles['form__section--left']}>
-                                <Box display={"flex"} flexDirection={"column"} gap={1}>
+                                <Box display={'flex'} flexDirection={'column'} gap={1}>
                                     <NativeSelect
                                         variant="outlined"
                                         style={{ padding: '.25rem .5rem' }}
@@ -213,15 +213,18 @@ export default function Donate() {
                                                     onChange={previewPhotos}
                                                     multiple
                                                 />
-                                                <Button variant="contained" component="span">Add Files</Button>
+                                                <Button variant="contained" component="span">
+                                                    Add Files
+                                                </Button>
                                             </label>
-
                                         </div>
                                     </div>
                                 </InputContainer>
                             </Box>
                             <Box className={styles['form__section--bottom']}>
-                                <Button variant="contained" type={'submit'} endIcon={<UploadOutlinedIcon />} >Submit</Button>
+                                <Button variant="contained" type={'submit'} endIcon={<UploadOutlinedIcon />}>
+                                    Submit
+                                </Button>
                             </Box>
                         </Box>
                     </div>
@@ -229,5 +232,5 @@ export default function Donate() {
             )}
             {submitState === 'error' && <ToasterNotification status="Submission failed" />}
         </ProtectedRoute>
-    )
+    );
 }

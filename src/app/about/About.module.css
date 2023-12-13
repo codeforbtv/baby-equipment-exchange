@@ -1,7 +1,7 @@
 .about__heading,
 .about__paragraph {
     display: inline-block;
-    margin: .7rem 0;
+    margin: 0.7rem 0;
 }
 
 .about__heading {
@@ -10,11 +10,10 @@
 
 .about__paragraph {
     margin: 0px 1rem;
-    ;
 }
 
 .about__paragraph--list-label {
-    margin: 1rem 0 .5rem 0;
+    margin: 1rem 0 0.5rem 0;
 }
 
 .about__list {
@@ -26,8 +25,8 @@
     font-weight: 800;
 }
 
-.about__list *[class*="about__answer"] p {
-        font-weight: 500;
+.about__list *[class*='about__answer'] p {
+    font-weight: 500;
 }
 
 .about__answer {

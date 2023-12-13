@@ -1,13 +1,13 @@
-'use client'
+'use client';
 //Styles
-import styles from './InputContainer.module.css'
+import styles from './InputContainer.module.css';
 
 type InputProps = {
-    label: string
-    for: string
-    footnote?: string
-    children: React.ReactNode
-}
+    label: string;
+    for: string;
+    footnote?: string;
+    children: React.ReactNode;
+};
 
 export default function InputContainer(props: InputProps) {
     return (
@@ -16,5 +16,5 @@ export default function InputContainer(props: InputProps) {
             {props.children}
             {props.footnote && <p className={styles['footnote']}>{props.footnote}</p>}
         </div>
-    )
+    );
 }
