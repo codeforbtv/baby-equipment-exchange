@@ -16,7 +16,7 @@ export default function NewAccount() {
     const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('pending');
     const [displayName, setDisplayName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
-    const [emailInUse, setEmailInUse] = useState<boolean>(false);
+    const [emailInvalid, setEmailInvalid] = useState<boolean>(false);
     const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState<boolean>(false);
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -74,7 +74,7 @@ export default function NewAccount() {
     };
 
     const handleEmailInput = async (): Promise<void> => {
-        setEmailInUse(await isEmailInvalid(email));
+        setEmailInvalid(await isEmailInvalid(email));
     };
 
     return (
@@ -107,8 +107,8 @@ export default function NewAccount() {
                                     placeholder="Input email"
                                     autoComplete="email"
                                     value={email}
-                                    error={emailInUse}
-                                    helperText={emailInUse ? 'Invalid email.' : undefined}
+                                    error={emailInvalid}
+                                    helperText={emailInvalid ? 'Invalid email.' : undefined}
                                     required
                                     inputProps={{
                                         onBlur: handleEmailInput
@@ -140,7 +140,7 @@ export default function NewAccount() {
                                     required
                                     onChange={handleConfirmPassword}
                                 />
-                                <Button variant="contained" type={'submit'} disabled={emailInUse || passwordsDoNotMatch}>
+                                <Button variant="contained" type={'submit'} disabled={emailInvalid || passwordsDoNotMatch}>
                                     Join
                                 </Button>
                             </Box>
