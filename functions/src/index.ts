@@ -1,4 +1,5 @@
 // Libs
+import * as functionsV1 from 'firebase-functions/v1';
 import { setGlobalOptions } from 'firebase-functions/v2';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
@@ -9,9 +10,11 @@ import { getAuth, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
+const region = 'us-east1';
+
 setGlobalOptions({
     maxInstances: 10,
-    region: 'us-east1'
+    region: region
 });
 
 const EVENTS_COLLECTION = 'Event';
@@ -48,56 +51,67 @@ export const checkClaims = onCall(async (request: any) => {
     throw new HttpsError('internal', 'Internal error');
 });
 
-export const createNewUser = onCall(async (request: any) => {
+export const addEvent = onCall(async (request: any) => {
     try {
-        logger.error('calling db');
-        const db = getFirestore(app);
-        logger.error(request.data.userId);
-        const userId = request.data.userId;
-        const displayName = request.data.displayName;
-        const email = request.data.email;
-
-            await db.runTransaction(async (transaction) => {
-                const userRef = db.collection(USERS_COLLECTION).doc(userId);
-    
-                if ((await userRef.get()).exists) {
-                    logger.error({error: `attempt to create an existing user ${userId} with https onCall method.`, data: request.data});
-                    // Return if the user already exists.
-                    return;
-                }
-                        
-                const userParams = {
-                    name: displayName,
-                    pendingDonations: [],
-                    createdAt: FieldValue.serverTimestamp(),
-                    modifiedAt: FieldValue.serverTimestamp()
-                };
-            
-                const userDetailParams = {
-                    user: userRef,
-                    emails: [email],
-                    phones: [],
-                    addresses: [],
-                    websites: [],
-                    createdAt: FieldValue.serverTimestamp(),
-                    modifiedAt: FieldValue.serverTimestamp(),
-                    email: email
-                };
-
-                const userDetailRef = db.collection(USER_DETAILS_COLLECTION).doc(userId);
-
-                transaction.create(userRef, userParams);
-                transaction.create(userDetailRef, userDetailParams);
-            }).catch(error => logger.error({location: 'createNewUser', error:error}));
-
-        await getAuth(app).setCustomUserClaims(userId, {
-            donor: true,
-            verified: false
-        });
+        const object = request.data.object;
+        _addEvent(object);
     } catch (error) {
-        _addEvent({location: 'createNewUser (onCall)', error: error, data:request.data });
+        logger.error(error);
     }
 });
+
+export const createNewUser = functionsV1
+    .region(region)
+    .auth.user()
+    .onCreate(async (user: UserRecord) => {
+        try {
+            const db = getFirestore(app);
+            await db
+                .runTransaction(async (transaction) => {
+                    const userRef = db.collection(USERS_COLLECTION).doc(user.uid);
+                    if ((await userRef.get()).exists) {
+                        logger.error({ error: `attempt to create an existing user ${user.uid} with https onCall method.`, data: user });
+                        // Return if the user already exists.
+                        return;
+                    }
+
+                    const userParams = {
+                        name: user.displayName ?? '',
+                        pendingDonations: [],
+                        createdAt: FieldValue.serverTimestamp(),
+                        modifiedAt: FieldValue.serverTimestamp()
+                    };
+
+                    const userDetailParams = {
+                        user: userRef,
+                        emails: [user.email],
+                        phones: [],
+                        addresses: [],
+                        websites: [],
+                        createdAt: FieldValue.serverTimestamp(),
+                        modifiedAt: FieldValue.serverTimestamp(),
+                        email: user.email
+                    };
+
+                    const userDetailRef = db.collection(USER_DETAILS_COLLECTION).doc(user.uid);
+
+                    transaction.create(userRef, userParams);
+                    transaction.create(userDetailRef, userDetailParams);
+                })
+                .catch((error) => logger.error({ location: 'createNewUser', error: error }));
+            // Claims may have already been set elsewhere.
+            const adminAuth = getAuth(app);
+            const userRecord = await adminAuth.getUser(user.uid);
+            if (userRecord.customClaims == null || Object.keys(userRecord.customClaims).length == 0) {
+                await adminAuth.setCustomUserClaims(user.uid, {
+                    donor: true,
+                    verified: false
+                });
+            }
+        } catch (error) {
+            _addEvent({ location: 'createNewUser (onCall)', error: error, data: user });
+        }
+    });
 
 export const getImageAsSignedUrl = onCall(async (request: any) => {
     let fileExists = null;
@@ -139,12 +153,36 @@ export const getImageAsSignedUrl = onCall(async (request: any) => {
     return Promise.reject();
 });
 
+export const getUidByEmail = onCall(async (request: any): Promise<any> => {
+    try {
+        _verifyAuthenticated(request);
+        if (request.data == undefined) {
+            throw new Error('Data was not provided in this request.');
+        }
+        const data = request.data;
+        if (request.options == undefined) {
+            throw new Error('Options were not provided in this request.');
+        }
+        const options = data.options;
+        if (options.email == undefined) {
+            throw new Error("'email' is not defined in options.");
+        }
+        const email = options.email;
+        const adminAuth = getAuth(app);
+        const uid = (await adminAuth.getUserByEmail(email)).uid;
+        return uid;
+    } catch (error) {
+        _addEvent({ location: 'getUidByEmail' });
+    }
+    return Promise.reject();
+});
+
 export const isEmailInvalid = onCall(async (request: any) => {
     try {
         const email = request.data.email;
         const userRecord: UserRecord = await getAuth(app).getUserByEmail(email);
         if (userRecord !== undefined) {
-            logger.error({error: `${email} was queried via this onCall method.`, data: request.data });
+            logger.error({ error: `${email} was queried via this onCall method.`, data: request.data });
             return { value: true };
         } else {
             return { value: false };
@@ -172,6 +210,32 @@ export const setClaimForNewUser = onCall(async (request: any) => {
         });
     } catch (error) {
         _addEvent({ location: 'setClaimForNewUser' });
+    }
+});
+
+export const setClaims = onCall(async (request: any) => {
+    try {
+        _verifyAuthenticated(request);
+        await _verifyAdmin(request);
+        if (request.data == null) {
+            throw new Error('No data provided in the request.');
+        }
+        const data = request.data;
+        if (data.options == null) {
+            throw new Error('Options are not present in the request.');
+        }
+        const options = data.options;
+        if (options.userId == null) {
+            throw new Error('A userId is not supplied in the request');
+        }
+        const userId = options.userId;
+        if (options.claims == null) {
+            throw new Error('Claims are not supplied in the request.');
+        }
+        const claims = options.claims;
+        await getAuth(app).setCustomUserClaims(userId, claims);
+    } catch (error) {
+        _addEvent({ location: 'setClaimForNewUser', error: error });
     }
 });
 
@@ -266,61 +330,39 @@ export const setClaimForVolunteer = onCall(async (request: any) => {
     }
 });
 
-export const toggleClaimForAdmin = onCall(async (request: any) => {
+export const registerNewUser = onCall(async (request: any) => {
     try {
+        const data = request.data;
         _verifyAuthenticated(request);
         await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const claimName = 'admin';
-        _toggleClaim(userId, claimName);
+        if (data.options == null) {
+            throw new Error('Options were not provided in the request.');
+        }
+        const options = data.options;
+        for (const key of ['displayName', 'email', 'password']) {
+            if (options[key] == null) {
+                throw new Error(`${key} was not provided in the request.`);
+            }
+        }
+        const displayName = options.displayName;
+        const email = options.email;
+        const password = options.password;
+        const properties = {
+            displayName: displayName,
+            email: email,
+            password: password,
+            emailVerified: false,
+            disabled: false
+        };
+        const adminAuth = admin.auth();
+        const userRecord = await adminAuth.createUser(properties);
+        const claims = options.claims;
+        await adminAuth.setCustomUserClaims(userRecord.uid, claims);
+        return { ok: true };
     } catch (error) {
-        _addEvent({ location: 'toggleClaimForAdmin' });
+        _addEvent({ location: 'registerNewUser', error: error });
     }
-});
-
-export const toggleClaimForAidWorker = onCall(async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const claimName = 'aid-worker';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        _addEvent({ location: 'toggleClaimForAidWorker' });
-    }
-});
-
-export const toggleClaimForDonor = onCall(async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const claimName = 'donor';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        _addEvent({ location: 'toggleClaimForDonor' });
-    }
-});
-
-export const toggleClaimForVerified = onCall(async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const claimName = 'verified';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        _addEvent({ location: 'toggleClaimForVerified' });
-    }
-});
-
-export const toggleClaimForVolunteer = onCall(async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const claimName = 'volunteer';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        _addEvent({ location: 'toggleClaimForVolunteer' });
-    }
+    return { ok: false };
 });
 
 export const setUserAccount = onCall(async (request: any) => {
@@ -427,7 +469,64 @@ export const setUserAccount = onCall(async (request: any) => {
     return new HttpsError('internal', 'Internal error.');
 });
 
-// Utility Methods
+export const toggleClaimForAdmin = onCall(async (request: any) => {
+    try {
+        _verifyAuthenticated(request);
+        await _verifyAdmin(request);
+        const userId = request.data.userId;
+        const claimName = 'admin';
+        _toggleClaim(userId, claimName);
+    } catch (error) {
+        _addEvent({ location: 'toggleClaimForAdmin' });
+    }
+});
+
+export const toggleClaimForAidWorker = onCall(async (request: any) => {
+    try {
+        _verifyAuthenticated(request);
+        const userId = request.data.userId;
+        const claimName = 'aid-worker';
+        _toggleClaim(userId, claimName);
+    } catch (error) {
+        _addEvent({ location: 'toggleClaimForAidWorker' });
+    }
+});
+
+export const toggleClaimForDonor = onCall(async (request: any) => {
+    try {
+        _verifyAuthenticated(request);
+        const userId = request.data.userId;
+        const claimName = 'donor';
+        _toggleClaim(userId, claimName);
+    } catch (error) {
+        _addEvent({ location: 'toggleClaimForDonor' });
+    }
+});
+
+export const toggleClaimForVerified = onCall(async (request: any) => {
+    try {
+        _verifyAuthenticated(request);
+        await _verifyAdmin(request);
+        const userId = request.data.userId;
+        const claimName = 'verified';
+        _toggleClaim(userId, claimName);
+    } catch (error) {
+        _addEvent({ location: 'toggleClaimForVerified' });
+    }
+});
+
+export const toggleClaimForVolunteer = onCall(async (request: any) => {
+    try {
+        _verifyAuthenticated(request);
+        const userId = request.data.userId;
+        const claimName = 'volunteer';
+        _toggleClaim(userId, claimName);
+    } catch (error) {
+        _addEvent({ location: 'toggleClaimForVolunteer' });
+    }
+});
+
+// Non-exported utility methods
 async function _checkClaims(userId: string, ...claimNames: string[]) {
     try {
         let userClaims = {};
@@ -452,17 +551,7 @@ async function _checkClaims(userId: string, ...claimNames: string[]) {
     return Promise.reject();
 }
 
-export const addEvent = onCall(async (request: any) => {
-    try {
-        const object = request.data.object;
-        _addEvent(object);
-    } catch (error) {
-        logger.error(error);
-    }
-});
-
 async function _addEvent(object: any) {
-    logger.info(object);
     try {
         const currentTime = new Date();
         const currentTimeString = currentTime.toDateString();
@@ -533,7 +622,7 @@ async function _verifyAdmin(request: any) {
     if (adminClaimValue == null || adminClaimValue !== true) {
         throw new HttpsError('internal', 'Internal error');
     }
-} 
+}
 
 function _verifyAuthenticated(request: any) {
     if (!request?.auth) {

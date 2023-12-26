@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getAllUserAccounts } from '@/api/firebase-users';
 // Styles
 import styles from './Browse.module.css';
+import NewUserDialog from './NewUserDialog';
 
 export default function UserManagement() {
     const [currentUser, setCurrentuser] = useState();
@@ -73,6 +74,7 @@ export default function UserManagement() {
                 </div>
                 {isSearchVisible && <SearchBar />}
                 {isFilterVisible && <Filter />}
+                <NewUserDialog initAsOpen={isNewUserDialogVisible} closeController={closeNewUserDialog} />
                 <ImageList className={styles['browse__grid']}>
                     {users.map((userAccountInformation: AccountInformation) => {
                         const userId = userAccountInformation.contact?.user?.id;

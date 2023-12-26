@@ -12,8 +12,7 @@ import {
     onAuthStateChanged,
     NextOrObserver,
     User,
-    connectAuthEmulator,
-    createUserWithEmailAndPassword
+    connectAuthEmulator
 } from 'firebase/auth';
 // Types
 import { AccountInformation, UserBody } from '@/types/post-data';
@@ -87,24 +86,26 @@ function initFunctions() {
 }
 
 // Functions
+const callAddEvent = httpsCallable(functions, 'addEvent');
 const callCheckClaims = httpsCallable(functions, 'checkClaims');
-const callCreateNewUser = httpsCallable(functions, 'createNewUser');
+const callGetImageAsSignedUrl = httpsCallable(functions, 'getImageAsSignedUrl');
+const callGetUidByEmail = httpsCallable(functions, 'getUidByEmail');
 const callIsEmailInvalid = httpsCallable(functions, 'isEmailInvalid');
-const callSetClaimForDonationReadAccess = httpsCallable(functions, 'setClaimForDonationReadAccess');
-const callToggleCanReadDonations = httpsCallable(functions, 'toggleCanReadDonations');
+const callRegisterNewUser = httpsCallable(functions, 'registerNewUser');
 const callSetClaimForAdmin = httpsCallable(functions, 'setClaimForAdmin');
 const callSetClaimForAidWorker = httpsCallable(functions, 'setClaimForAidWorker');
+const callSetClaimForDonationReadAccess = httpsCallable(functions, 'setClaimForDonationReadAccess');
 const callSetClaimForDonor = httpsCallable(functions, 'setClaimForDonor');
 const callSetClaimForNewUser = httpsCallable(functions, 'setClaimForNewUser');
 const callSetClaimForVerified = httpsCallable(functions, 'setClaimForVerified');
 const callSetClaimForVolunteer = httpsCallable(functions, 'setClaimForVolunteer');
+const callSetClaims = httpsCallable(functions, 'setClaims');
+const callSetUserAccount = httpsCallable(functions, 'setUserAccount');
+const callToggleCanReadDonations = httpsCallable(functions, 'toggleCanReadDonations');
 const callToggleClaimForAdmin = httpsCallable(functions, 'toggleClaimForAdmin');
 const callToggleClaimForAidWorker = httpsCallable(functions, 'toggleClaimForAidWorker');
 const callToggleClaimForVerified = httpsCallable(functions, 'toggleClaimForVerified');
 const callToggleClaimForVolunteer = httpsCallable(functions, 'toggleClaimForVolunteer');
-const callAddEvent = httpsCallable(functions, 'addEvent');
-const callGetImageAsSignedUrl = httpsCallable(functions, 'getImageAsSignedUrl');
-const callSetUserAccount = httpsCallable(functions, 'setUserAccount');
 
 export async function checkClaims(userId: string, ...claimNames: string[]): Promise<any> {
     if (claimNames.length === 0) {
@@ -136,6 +137,29 @@ export async function toggleCanReadDonations(userId: string) {
 }
 
 // Role based claims.
+export async function canReadDonations(): Promise<boolean> {
+    return checkClaim('can-read-donations');
+}
+
+export async function isAdmin(): Promise<boolean> {
+    return checkClaim('admin');
+}
+
+export async function isAidWorker(): Promise<boolean> {
+    return checkClaim('aid-worker');
+}
+
+export async function isDonor(): Promise<boolean> {
+    return checkClaim('donor');
+}
+
+export async function isVerified(): Promise<boolean> {
+    return checkClaim('verified');
+}
+
+export async function isVolunteer(): Promise<boolean> {
+    return checkClaim('volunteer');
+}
 
 export async function setClaimForAdmin(userId: string, isAdmin: boolean) {
     callSetClaimForAdmin({ userId: userId, isAdmin: isAdmin });
@@ -173,6 +197,8 @@ export async function toggleClaimForVolunteer(userId: string) {
     callToggleClaimForVolunteer({ userId: userId });
 }
 
+// Utilitarian
+
 export async function addEvent(object: any) {
     callAddEvent({ object: object });
 }
@@ -203,30 +229,6 @@ export async function getAccountType(): Promise<string> {
     return accountType;
 }
 
-export async function canReadDonations(): Promise<boolean> {
-    return checkClaim('can-read-donations');
-}
-
-export async function isAdmin(): Promise<boolean> {
-    return checkClaim('admin');
-}
-
-export async function isAidWorker(): Promise<boolean> {
-    return checkClaim('aid-worker');
-}
-
-export async function isDonor(): Promise<boolean> {
-    return checkClaim('donor');
-}
-
-export async function isVerified(): Promise<boolean> {
-    return checkClaim('verified');
-}
-
-export async function isVolunteer(): Promise<boolean> {
-    return checkClaim('volunteer');
-}
-
 async function checkClaim(claimName: string): Promise<boolean> {
     await auth.authStateReady();
     const claims = (await auth.currentUser?.getIdTokenResult(true))?.claims;
@@ -241,28 +243,29 @@ export function getUserEmail(): string | null | undefined {
     return auth.currentUser?.email;
 }
 
+export async function getUidByEmail(email: string) {
+    await auth.authStateReady();
+    const options = { email };
+    const uid = await callGetUidByEmail({ options });
+    return uid;
+}
+
 export async function getUserId(): Promise<string> {
     await auth.authStateReady();
     const currentUser = auth.currentUser?.uid;
     return currentUser ?? Promise.reject();
 }
 
-export async function createNewUser(newUser: UserBody, password: string) {
-    try {
-        await addEvent({ message: 'creating a new user' });
-        if (newUser.email == null || newUser.name == null || newUser.user == null) {
-            return;
-        }
-        await addEvent({ message: 'assigned variables for creating a new user' });
-        const displayName = newUser.name;
-        const email = newUser.email;
-        const userId = newUser.user;
-        await addEvent({ message: `${email} ${userId}` });
-        // callCreateNewUser({ userId: userId, displayName: displayName, email: email })
-        // .catch( (reason) => addEvent({reason: reason}));
-    } catch (error) {
-        addEvent({ location: 'createNewUser client method', error: error, newUser: newUser });
-    }
+export async function registerNewUser(options: any): Promise<any> {
+    const response = await callRegisterNewUser(options);
+    const data: any = response.data;
+    const okResponse = data.ok ?? false;
+    return { ok: okResponse };
+}
+
+export async function setClaims(userId: string, claims: any) {
+    const options = { userId, claims };
+    await callSetClaims({ options });
 }
 
 export async function setUserAccount(userId: string, accountInformation: AccountInformation) {

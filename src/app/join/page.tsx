@@ -5,7 +5,7 @@ import { Alert, Box, Button, Paper, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
-import { addEvent, auth, createNewUser, isEmailInvalid, onAuthStateChangedListener } from '@/api/firebase';
+import { addEvent, auth, isEmailInvalid, onAuthStateChangedListener } from '@/api/firebase';
 //Styling
 import globalStyles from '@/styles/globalStyles.module.scss';
 import { UserBody } from '@/types/post-data';
@@ -34,30 +34,22 @@ export default function NewAccount() {
         try {
             createUserWithEmailAndPassword(auth, email, password)
                 .then((user) => {
-                    const newUser: UserBody = {
-                        user: user.user.uid,
-                        name: displayName,
-                        email: email,
-                        photo: undefined
-                    };
-                    createNewUser(newUser, password)
-                        .then((postCreate) => {
-                            // Force the client Firebase App instance to regenerate a new token
-                            user.user.getIdTokenResult(true).then((route) => {
-                                router.push('/');
-                            });
+                    user.user
+                        .getIdTokenResult(true)
+                        .then((_) => {
+                            router.push('/');
                         })
-                        .catch((error) => addEvent({ location: 'createUserWithEmailAndPassword (inner)', newUser: createNewUser, error: error }));
+                        .catch((error) => addEvent({ location: 'createUserWithEmailAndPassword (inner)', user: user, error: error }));
                 })
-                .catch((error) => addEvent({ location: 'createUserWithEmailAndPassword', newUser: createNewUser, error: error }));
+                .catch((error) => addEvent({ location: 'createUserWithEmailAndPassword', error: error }));
         } catch (error) {
-            addEvent({ location: 'handleAccountCreate', newUser: createNewUser, error: error });
+            addEvent({ location: 'handleAccountCreate', error: error });
         }
     };
 
     const handlePassword = (event: React.ChangeEvent<HTMLInputElement>): void => {
         setPassword(event.target.value);
-        if (confirmPassword.length != 0 && event.target.value != confirmPassword) {
+        if (password.length != 0 && event.target.value != confirmPassword) {
             setPasswordsDoNotMatch(true);
         } else {
             setPasswordsDoNotMatch(false);
@@ -133,7 +125,7 @@ export default function NewAccount() {
                                     label="Confirm Password"
                                     name="confirmPassword"
                                     id="confirmPassword"
-                                    placeholder=" Confirm password"
+                                    placeholder="Confirm password"
                                     value={confirmPassword}
                                     error={passwordsDoNotMatch}
                                     helperText={passwordsDoNotMatch ? 'Passwords do not match.' : undefined}
