@@ -51,7 +51,7 @@ export const imageConverter = {
     }
 };
 
-export async function uploadImages(files: FileList): Promise<DocumentReference[]> {
+export async function uploadImages(files: File[]): Promise<DocumentReference[]> {
     try {
         const documentRefs: DocumentReference[] = [];
         const userId = await getUserId();

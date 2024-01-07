@@ -19,7 +19,6 @@ import styles from './Browse.module.css';
 import NewUserDialog from './NewUserDialog';
 
 export default function UserManagement() {
-    const [currentUser, setCurrentuser] = useState();
     const [users, setUsers] = useState<AccountInformation[]>([]);
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
@@ -74,7 +73,7 @@ export default function UserManagement() {
                 </div>
                 {isSearchVisible && <SearchBar />}
                 {isFilterVisible && <Filter />}
-                <NewUserDialog initAsOpen={isNewUserDialogVisible} closeController={closeNewUserDialog} />
+                <NewUserDialog initialParameters={{ initAsOpen: isNewUserDialogVisible }} controllers={{ closeController: closeNewUserDialog }} />
                 <ImageList className={styles['browse__grid']}>
                     {users.map((userAccountInformation: AccountInformation) => {
                         const userId = userAccountInformation.contact?.user?.id;

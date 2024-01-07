@@ -1,11 +1,16 @@
 //API
 import { getUidByEmail, isEmailInvalid, registerNewUser, setClaims } from '@/api/firebase';
 //Styles
-import styles from './Card.module.css';
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, FormControl, FormControlLabel, FormGroup, FormLabel, TextField } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-export default function NewUserDialog({ initAsOpen, closeController }: { initAsOpen: boolean; closeController: () => void }) {
+export default function NewUserDialog({
+    initialParameters,
+    controllers
+}: {
+    initialParameters: { [key: string]: boolean };
+    controllers: { [key: string]: () => void };
+}) {
     const [displayName, setDisplayName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -61,7 +66,7 @@ export default function NewUserDialog({ initAsOpen, closeController }: { initAsO
                     setEmailInvalid(false);
                     setIsVerified(false);
                     setIsVolunteer(false);
-                    closeController();
+                    controllers.closeController();
                 }
             });
         }
@@ -148,8 +153,9 @@ export default function NewUserDialog({ initAsOpen, closeController }: { initAsO
     };
 
     return (
-        <Dialog open={initAsOpen} onClose={closeController}>
+        <Dialog open={initialParameters.initAsOpen} onClose={controllers.closeController}>
             <DialogContent>
+                <h3>New user</h3>
                 <FormControl sx={{ display: 'flex', gap: 1 }} component="fieldset">
                     <FormLabel component="legend">Roles</FormLabel>
                     <FormGroup id="roles" aria-label="Roles" row>
@@ -277,7 +283,7 @@ export default function NewUserDialog({ initAsOpen, closeController }: { initAsO
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleFormSubmit}>create</Button>
-                <Button onClick={closeController}>close</Button>
+                <Button onClick={controllers.closeController}>close</Button>
             </DialogActions>
         </Dialog>
     );

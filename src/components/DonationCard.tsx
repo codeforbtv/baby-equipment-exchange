@@ -1,20 +1,29 @@
-//Icons
-import InfoIcon from '@mui/icons-material/Info';
-//Styles
-import styles from './Card.module.css';
+// Components
 import { IconButton, ImageListItem, ImageListItemBar } from '@mui/material';
+import Loader from './Loader';
+// Hooks
+import { Suspense, lazy, useState } from 'react';
+// Icons
+import InfoIcon from '@mui/icons-material/Info';
+// Styles
+import styles from './Card.module.css';
+// Types
+import { DonationCardProps } from '@/types/DonationCardProps';
 
-type DonationCardProps = {
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
-    description: string | null | undefined;
-    active: boolean | null | undefined;
-    images: Array<string>;
-};
+const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
-export default function DonationCard({ category, brand, model, description, active, images }: DonationCardProps) {
+export default function DonationCard({ active, category, brand, description, images, model }: DonationCardProps) {
+    const [showDialog, setShowDialog] = useState<boolean>(false);
     const image = images[0];
+
+    const closeDialog = () => {
+        setShowDialog(false);
+    };
+
+    const openDialog = () => {
+        setShowDialog(true);
+    };
+
     return (
         <ImageListItem key={image} className={styles['grid__item']}>
             <img
@@ -26,11 +35,17 @@ export default function DonationCard({ category, brand, model, description, acti
                 title={brand}
                 subtitle={model}
                 actionIcon={
-                    <IconButton sx={{ color: 'rgba(255, 255, 255, 0.54)' }} aria-label={`details about ${brand} ${model}`}>
+                    <IconButton sx={{ color: 'rgba(255, 255, 255, 0.54)' }} aria-label={`details about ${brand} ${model}`} onClick={openDialog}>
                         <InfoIcon />
                     </IconButton>
                 }
             />
+            <Suspense fallback={<Loader />}>
+                <ExistingDonationDialog
+                    initialParameters={{ initAsOpen: showDialog, data: { active, category, brand, description, model, images } }}
+                    controllers={{ closeController: closeDialog }}
+                />
+            </Suspense>
         </ImageListItem>
     );
 }

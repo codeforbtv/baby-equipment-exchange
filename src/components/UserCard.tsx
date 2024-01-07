@@ -9,10 +9,7 @@ import {
     setClaimForVolunteer,
     setUserAccount
 } from '@/api/firebase';
-//Icons
-import InfoIcon from '@mui/icons-material/Info';
-//Styles
-import styles from './Card.module.css';
+//Components
 import {
     Button,
     Checkbox,
@@ -28,11 +25,16 @@ import {
     ImageListItemBar,
     TextField
 } from '@mui/material';
-import { AccountInformation } from '@/types/post-data';
-import React, { useEffect, useState } from 'react';
 import Loader from './Loader';
+//Hooks
+import React, { useEffect, useState } from 'react';
+//Icons
+import InfoIcon from '@mui/icons-material/Info';
+//Interfaces
 import { IContact } from '@/models/contact';
 import { IAddress } from '@/models/address';
+//Styles
+import styles from './Card.module.css';
 
 type UserCardProps = {
     name: string;
@@ -46,7 +48,6 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
     const [editView, showEditView] = useState<boolean>(false);
     const user = contact?.user;
     const userId = contact?.user?.id;
-    const image = photo ?? '';
     const [displayName, setDisplayName] = useState<string>(contact?.name ?? '');
     const [email, setEmail] = useState<string>(contact?.email ?? '');
     const [phoneNumber, setPhoneNumber] = useState<string>(contact?.phone ?? '');
@@ -224,6 +225,7 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
                 />
                 <Dialog open={editView} onClose={handleHideEditView}>
                     <DialogContent>
+                        <h3>`Edit ${displayName != null && displayName.length != 0 ? displayName : 'user'}`</h3>
                         <FormControl component="fieldset">
                             <FormLabel component="legend">Roles</FormLabel>
                             <FormGroup id="roles" aria-label="Roles" row>
