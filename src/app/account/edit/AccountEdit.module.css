@@ -25,7 +25,6 @@
     .form__section--left {
         grid-area: left;
         padding: 5px;
-    
     }
     .form__section--right {
         grid-area: right;

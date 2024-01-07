@@ -1,13 +1,13 @@
 //Components
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 //Fonts
-import {montserrat, garamond} from '../styles/fonts'
+import { montserrat, garamond } from '../styles/fonts';
 
 //Providers
-import { UserProvider } from '@/contexts/UserContext'
+import { UserProvider } from '@/contexts/UserContext';
 //Styles
-import globalStyles from '@/styles/globalStyles.module.scss'
+import globalStyles from '@/styles/globalStyles.module.scss';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -20,5 +20,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </UserProvider>
             </body>
         </html>
-    )
+    );
 }

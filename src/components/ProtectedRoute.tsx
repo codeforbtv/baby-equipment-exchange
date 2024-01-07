@@ -1,30 +1,30 @@
-'use client'
+'use client';
 //Components
-import Loader from './Loader'
+import Loader from './Loader';
 //hooks
-import { useRouter } from 'next/navigation'
-import { Suspense, useEffect } from 'react'
-import { useUserContext } from '@/contexts/UserContext'
+import { useRouter } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
+import { useUserContext } from '@/contexts/UserContext';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss'
+import globalStyles from '@/styles/globalStyles.module.scss';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { currentUser, isLoading } = useUserContext()
-    const router = useRouter()
+    const { currentUser, isLoading } = useUserContext();
+    const router = useRouter();
 
     useEffect(() => {
         if (!isLoading && !currentUser) {
-            router.push('/login')
+            router.push('/login');
         }
-    }, [currentUser, isLoading])
+    }, [currentUser, isLoading]);
 
     if (isLoading) {
         return (
             <div className={globalStyles['content__container']}>
                 <Loader />
             </div>
-        )
+        );
     }
 
-    if (currentUser) return <Suspense fallback={<Loader />}>{children}</Suspense>
+    if (currentUser) return <Suspense fallback={<Loader />}>{children}</Suspense>;
 }

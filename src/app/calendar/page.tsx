@@ -1,12 +1,10 @@
-'use client'
+'use client';
 
 //Components
-import CalendarComponent from '@/components/Calendar'
+import CalendarComponent from '@/components/Calendar';
 
-import React, { useContext } from 'react'
+import React, { useContext } from 'react';
 
 export default function Calendar() {
-    return (
-        <CalendarComponent />
-    )
+    return <CalendarComponent />;
 }

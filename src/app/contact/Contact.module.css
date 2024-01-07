@@ -6,12 +6,12 @@
     margin: 1rem auto;
 }
 
-.contact-details__container .contact__heading{
+.contact-details__container .contact__heading {
     margin-top: 0;
-    font-size: .9rem;
+    font-size: 0.9rem;
 }
 .contact-details__container .contact__paragraph {
-    font-size: .9rem;
+    font-size: 0.9rem;
     font-family: var(--font-montserrat);
     font-weight: 500;
     width: 60%;
@@ -20,8 +20,8 @@
     overflow: hidden;
 }
 
-.contact-details__container .contact__paragraph--email{
-    font-size: .75rem;
+.contact-details__container .contact__paragraph--email {
+    font-size: 0.75rem;
 }
 
 .contact__paragraph a {
@@ -32,16 +32,15 @@
 /* Tablets */
 @media screen and (min-width: 480px) {
     .contact-details__container .contact__paragraph,
-    .contact-details__container .contact__heading  {
-        font-size: .95rem;
-    } 
+    .contact-details__container .contact__heading {
+        font-size: 0.95rem;
+    }
 }
 
 /* Laptops and above */
 @media screen and (min-width: 800px) {
     .contact-details__container .contact__paragraph,
-    .contact-details__container .contact__heading  {
+    .contact-details__container .contact__heading {
         font-size: 1.2rem;
     }
-    
 }

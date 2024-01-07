@@ -1,8 +1,8 @@
 //Icons
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 //Styles
-import styles from './SearchBar.module.css'
+import styles from './SearchBar.module.css';
 export default function SearchBar() {
     return (
         <div className={styles['search__container']}>
@@ -17,5 +17,5 @@ export default function SearchBar() {
             </div>
             <hr />
         </div>
-    )
+    );
 }

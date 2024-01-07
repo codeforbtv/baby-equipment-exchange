@@ -1,24 +1,24 @@
-'use client'
+'use client';
 //Components
-import Link from 'next/link'
-import ProtectedRoute from '@/components/ProtectedRoute'
-import { Button } from '@mui/material'
-import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined'
+import Link from 'next/link';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import { Button } from '@mui/material';
+import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 //Hooks
-import { useEffect, useState } from 'react'
-import { useUserContext } from '@/contexts/UserContext'
+import { useEffect, useState } from 'react';
+import { useUserContext } from '@/contexts/UserContext';
 //Models
-import { AccountInformation as AccountInfo } from '@/types/post-data'
+import { AccountInformation as AccountInfo } from '@/types/post-data';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss'
-import styles from './Account.module.css'
-import { getAccountType } from '@/api/firebase'
-import { getUserAccount } from '@/api/firebase-users'
-import Browse from '@/components/Browse'
+import globalStyles from '@/styles/globalStyles.module.scss';
+import styles from './Account.module.css';
+import { getAccountType } from '@/api/firebase';
+import { getUserAccount } from '@/api/firebase-users';
+import Browse from '@/components/Browse';
 
 export default function Account() {
-    const [accountType, setAccountType] = useState<string>('')
-    const { currentUser } = useUserContext()
+    const [accountType, setAccountType] = useState<string>('');
+    const { currentUser } = useUserContext();
     const [accountInfo, setAccountInfo] = useState<AccountInfo>({
         name: '',
         contact: {
@@ -39,30 +39,30 @@ export default function Account() {
             longitude: undefined
         },
         photo: undefined
-    })
+    });
 
     useEffect(() => {
         (async () => {
             if (currentUser) {
                 try {
-                    const accountInfo = await getUserAccount()
-                    setAccountInfo(accountInfo)
+                    const accountInfo = await getUserAccount();
+                    setAccountInfo(accountInfo);
                 } catch (error) {
                     // eslint-disable-line no-empty
                 }
             }
-        })()
-    }, [])
+        })();
+    }, []);
 
     useEffect(() => {
         getAccountType()
             .then((acctType) => {
-                setAccountType(acctType!)
+                setAccountType(acctType!);
             })
             .catch((_reason: any) => {
-                setAccountType('(unavailable)')
-            })
-    }, [])
+                setAccountType('(unavailable)');
+            });
+    }, []);
 
     return (
         <ProtectedRoute>
@@ -73,7 +73,9 @@ export default function Account() {
                     <div className={styles['account__header']}>
                         <h2>Account Details</h2>
                         <div>
-                            <Button component={Link} href="/account/edit" variant="contained" endIcon={<PermIdentityOutlinedIcon />}>Edit Profile</Button>
+                            <Button component={Link} href="/account/edit" variant="contained" endIcon={<PermIdentityOutlinedIcon />}>
+                                Edit Profile
+                            </Button>
                         </div>
                     </div>
                     <h4>Usertype: {accountType}</h4>
@@ -93,11 +95,11 @@ export default function Account() {
                         {accountInfo.location?.zipcode}
                         <br />
                     </h4>
-                    
+
                     <h2>Donations:</h2>
                     <Browse />
                 </div>
             </div>
         </ProtectedRoute>
-    )
+    );
 }

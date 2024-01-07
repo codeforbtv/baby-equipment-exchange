@@ -1,5 +1,5 @@
 //Styles
-import styles from './Loader.module.css'
+import styles from './Loader.module.css';
 
 export default function Loader() {
     return (
@@ -7,5 +7,5 @@ export default function Loader() {
             <h3>Loading ... </h3>
             <div className={styles['loader-wheel']}></div>
         </div>
-    )
+    );
 }

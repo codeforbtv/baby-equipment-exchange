@@ -1,13 +1,13 @@
-'use client'
+'use client';
 //Components
-import Link from 'next/link'
+import Link from 'next/link';
 //Icons
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCircleRight } from '@fortawesome/free-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleRight } from '@fortawesome/free-regular-svg-icons';
 //Styles
-import styles from './ButtonContainer.module.css'
+import styles from './ButtonContainer.module.css';
 
-type OnClick = (event: React.MouseEvent<HTMLButtonElement>) => void
+type OnClick = (event: React.MouseEvent<HTMLButtonElement>) => void;
 
 export enum Theme {
     light = 'light',
@@ -15,15 +15,15 @@ export enum Theme {
 }
 
 type ButtonProps = {
-    type?: 'submit' | 'reset' | 'button' | undefined
-    text: string
-    theme?: Theme
-    hasIcon?: boolean
-    onClick?: OnClick
-    link?: string
-    width?: string
-    disabled?: boolean
-}
+    type?: 'submit' | 'reset' | 'button' | undefined;
+    text: string;
+    theme?: Theme;
+    hasIcon?: boolean;
+    onClick?: OnClick;
+    link?: string;
+    width?: string;
+    disabled?: boolean;
+};
 
 export default function ButtonContainer(props: ButtonProps) {
     return (
@@ -65,5 +65,5 @@ export default function ButtonContainer(props: ButtonProps) {
                 </button>
             )}
         </div>
-    )
+    );
 }

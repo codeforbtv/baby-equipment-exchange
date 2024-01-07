@@ -1,17 +1,17 @@
-'use client'
+'use client';
 //Components
-import Link from 'next/link'
-import { slide as Menu } from 'react-burger-menu'
+import Link from 'next/link';
+import { slide as Menu } from 'react-burger-menu';
 //Hooks
-import { useEffect, useState } from 'react'
-import { useUserContext } from '@/contexts/UserContext'
+import { useEffect, useState } from 'react';
+import { useUserContext } from '@/contexts/UserContext';
 //Icons
 import StrollerOutlinedIcon from '@mui/icons-material/StrollerOutlined';
 //Libs
-import { signOutUser } from '@/api/firebase'
+import { signOutUser } from '@/api/firebase';
 
 //Styles
-import styles from './Header.module.css'
+import styles from './Header.module.css';
 
 const burgerMenuStyles = {
     bmBurgerButton: {
@@ -65,31 +65,31 @@ const burgerMenuStyles = {
         background: 'rgba(200, 200, 200, 0.7)',
         height: 'calc(100% + 2.5rem)'
     }
-}
+};
 
 export default function Header() {
-    const [isOpen, setIsOpen] = useState(false)
-    const { currentUser } = useUserContext()
+    const [isOpen, setIsOpen] = useState(false);
+    const { currentUser } = useUserContext();
 
     function handleIsOpen() {
-        setIsOpen(!isOpen)
+        setIsOpen(!isOpen);
     }
     function closeMenu() {
-        setIsOpen(false)
+        setIsOpen(false);
     }
 
     useEffect(() => {
-        const headerTitle = document.getElementById("headerTitle")!;
+        const headerTitle = document.getElementById('headerTitle')!;
         if (window.scrollY > headerTitle.offsetHeight * 2) {
-            headerTitle.style.visibility = "hidden";
+            headerTitle.style.visibility = 'hidden';
         }
         const handleTitle = () => {
             if (window.scrollY > headerTitle.offsetHeight * 2) {
-                headerTitle.style.visibility = "hidden";
+                headerTitle.style.visibility = 'hidden';
             } else {
-                headerTitle.style.visibility = "visible";
+                headerTitle.style.visibility = 'visible';
             }
-        }
+        };
         window.addEventListener('scroll', handleTitle);
         return () => {
             window.removeEventListener('scroll', handleTitle);
@@ -101,7 +101,9 @@ export default function Header() {
             <header className={styles['header--primary']}>
                 <Link className={styles['header__logo']} href="/">
                     <StrollerOutlinedIcon />
-                    <h4 id="headerTitle" className={styles['header__title']}>Baby Equipment Exchange</h4>
+                    <h4 id="headerTitle" className={styles['header__title']}>
+                        Baby Equipment Exchange
+                    </h4>
                 </Link>
             </header>
             <div className={styles['header__spacer']}></div>
@@ -130,13 +132,13 @@ export default function Header() {
                     id="signout"
                     href={currentUser ? '/login?status=signed_out' : '/login'}
                     onClick={() => {
-                        closeMenu()
-                        if (currentUser) signOutUser()
+                        closeMenu();
+                        if (currentUser) signOutUser();
                     }}
                 >
                     {currentUser ? 'Sign Out' : 'Login'}
                 </Link>
             </Menu>
         </div>
-    )
+    );
 }

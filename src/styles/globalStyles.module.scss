@@ -1,13 +1,13 @@
-@use "sass:map";
+@use 'sass:map';
 $palette: (
-    text-header: #A8351B,
-    primary: #FFF,
-    secondary: #95B8B5,
-    text-body: #5E5E5E,
-    text-hyperlink: #3D9991,
+    text-header: #a8351b,
+    primary: #fff,
+    secondary: #95b8b5,
+    text-body: #5e5e5e,
+    text-hyperlink: #3d9991,
     text-visited: #000,
-    error: #A8351B,
-    footer: #1F1F1F
+    error: #a8351b,
+    footer: #1f1f1f
 );
 
 /* Variables and global styling */
@@ -32,7 +32,7 @@ $palette: (
 
     font-family: 'adobe-garamond-pro';
     box-sizing: border-box;
-    &[class*="MuiInput"]{
+    &[class*='MuiInput'] {
         box-sizing: content-box;
     }
 }
@@ -99,7 +99,7 @@ $palette: (
 
 .body--wrapper a,
 .body--wrapper a:visited {
-    color: map.get($palette, "text-visited");
+    color: map.get($palette, 'text-visited');
 }
 
 .formContainer {
@@ -111,10 +111,10 @@ $palette: (
 
 .body--wrapper a {
     &:hover {
-        color: map.get($palette, "text-hyperlink");
+        color: map.get($palette, 'text-hyperlink');
     }
-    &[class*="MuiButton"],
-    &:visited[class*="MuiButton"] {
+    &[class*='MuiButton'],
+    &:visited[class*='MuiButton'] {
         color: white;
     }
 }

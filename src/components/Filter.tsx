@@ -1,7 +1,7 @@
 //Hooks
 //Styles
-import ButtonContainer from './ButtonContainer'
-import styles from './Filter.module.css'
+import ButtonContainer from './ButtonContainer';
+import styles from './Filter.module.css';
 
 export default function Filter() {
     return (
@@ -30,5 +30,5 @@ export default function Filter() {
             </div>
             <hr />
         </>
-    )
+    );
 }

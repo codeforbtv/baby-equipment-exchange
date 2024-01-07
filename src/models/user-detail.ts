@@ -1,7 +1,7 @@
 //Firebase types
-import { DocumentReference, Timestamp } from 'firebase/firestore'
+import { DocumentReference, Timestamp } from 'firebase/firestore';
 //Plain JavaScript objects
-import { IAddress } from './address'
+import { IAddress } from './address';
 
 export interface IUserDetail {
     [key: string]:
@@ -22,19 +22,19 @@ export interface IUserDetail {
         | (() => Timestamp)
         | (() => IAddress | null | undefined)
         | (() => number | null | undefined)
-        | (() => string | null | undefined)
-    user: DocumentReference
-    email: string | null | undefined
-    address: IAddress | null | undefined
-    phone: string | null | undefined
-    website: string | null | undefined
-    emails: string[]
-    phones: string[]
-    addresses: IAddress[]
-    websites: string[]
-    notes: string
-    createdAt: Timestamp
-    modifiedAt: Timestamp
+        | (() => string | null | undefined);
+    user: DocumentReference;
+    email: string | null | undefined;
+    address: IAddress | null | undefined;
+    phone: string | null | undefined;
+    website: string | null | undefined;
+    emails: string[];
+    phones: string[];
+    addresses: IAddress[];
+    websites: string[];
+    notes: string;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class UserDetail implements IUserDetail {
@@ -55,80 +55,80 @@ export class UserDetail implements IUserDetail {
         | (() => Timestamp)
         | (() => IAddress | null | undefined)
         | (() => number | null | undefined)
-        | (() => string | null | undefined)
-    user: DocumentReference
-    emails: string[]
-    phones: string[]
-    addresses: IAddress[]
-    websites: string[]
-    address: IAddress | null | undefined
-    email: string | null | undefined
-    phone: string | null | undefined
-    website: string | null | undefined
-    notes: string
-    createdAt: Timestamp
-    modifiedAt: Timestamp
+        | (() => string | null | undefined);
+    user: DocumentReference;
+    emails: string[];
+    phones: string[];
+    addresses: IAddress[];
+    websites: string[];
+    address: IAddress | null | undefined;
+    email: string | null | undefined;
+    phone: string | null | undefined;
+    website: string | null | undefined;
+    notes: string;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
     constructor(args: IUserDetail) {
-        this.user = args.user
-        this.emails = args.emails
-        this.phones = args.phones
-        this.addresses = args.addresses
-        this.websites = args.websites
-        this.notes = args.notes
-        this.createdAt = args.createdAt
-        this.modifiedAt = args.modifiedAt
-        this.address = args.address
-        this.email = args.email
-        this.phone = args.phone
-        this.website = args.website
+        this.user = args.user;
+        this.emails = args.emails;
+        this.phones = args.phones;
+        this.addresses = args.addresses;
+        this.websites = args.websites;
+        this.notes = args.notes;
+        this.createdAt = args.createdAt;
+        this.modifiedAt = args.modifiedAt;
+        this.address = args.address;
+        this.email = args.email;
+        this.phone = args.phone;
+        this.website = args.website;
     }
 
     getUser(): DocumentReference {
-        return this.user
+        return this.user;
     }
 
     getEmails(): string[] {
-        return this.emails
+        return this.emails;
     }
 
     getPhones(): string[] {
-        return this.phones
+        return this.phones;
     }
 
     getPrimaryAddress(): IAddress | null | undefined {
-        return this.address
+        return this.address;
     }
 
     getPrimaryEmail(): string | null | undefined {
-        return this.email
+        return this.email;
     }
 
     getPrimaryPhone(): string | null | undefined {
-        return this.phone
+        return this.phone;
     }
 
     getPrimaryWebsite(): string | null | undefined {
-        return this.website
+        return this.website;
     }
 
     getAddresses(): IAddress[] {
-        return this.addresses
+        return this.addresses;
     }
 
     getWebsites(): string[] {
-        return this.websites
+        return this.websites;
     }
 
     getNotes(): string {
-        return this.notes
+        return this.notes;
     }
 
     getCreatedAt(): Timestamp {
-        return this.createdAt
+        return this.createdAt;
     }
 
     getModifiedAt(): Timestamp {
-        return this.modifiedAt
+        return this.modifiedAt;
     }
 }

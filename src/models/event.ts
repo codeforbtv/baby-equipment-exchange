@@ -1,43 +1,45 @@
+import { DocumentReference } from 'firebase/firestore';
+
 export interface IEvent {
-    type: string
-    note: string
-    createdBy: string
-    createdAt: string
-    modifiedAt: string
+    type: string;
+    note: string;
+    createdBy: DocumentReference;
+    createdAt: string;
+    modifiedAt: string;
 }
 
 export class Event implements IEvent {
-    type: string
-    note: string
-    createdBy: string
-    createdAt: string
-    modifiedAt: string
+    type: string;
+    note: string;
+    createdBy: DocumentReference;
+    createdAt: string;
+    modifiedAt: string;
 
     constructor(args: IEvent) {
-        this.type = args.type
-        this.note = args.note
-        this.createdBy = args.createdBy
-        this.createdAt = args.createdAt
-        this.modifiedAt = args.modifiedAt
+        this.type = args.type;
+        this.note = args.note;
+        this.createdBy = args.createdBy;
+        this.createdAt = args.createdAt;
+        this.modifiedAt = args.modifiedAt;
     }
 
     getType(): string {
-        return this.type
+        return this.type;
     }
 
     getNote(): string {
-        return this.note
+        return this.note;
     }
 
-    getCreatedBy(): string {
-        return this.createdBy
+    getCreatedBy(): DocumentReference {
+        return this.createdBy;
     }
 
     getCreatedAt(): string {
-        return this.createdAt
+        return this.createdAt;
     }
 
     getModifiedAt(): string {
-        return this.modifiedAt
+        return this.modifiedAt;
     }
 }

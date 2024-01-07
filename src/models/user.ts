@@ -1,70 +1,70 @@
-//Firebase types
-import { FieldValue, Timestamp } from 'firebase/firestore'
-//Plain JavaScript objects
-import { IDonation } from './donation'
+// Firebase types
+import { DocumentReference, FieldValue, Timestamp } from 'firebase/firestore';
 
 export interface IUser {
     [key: string]:
         | string
-        | IDonation[]
+        | DocumentReference
+        | DocumentReference[]
         | FieldValue
         | Timestamp
         | null
         | undefined
         | (() => string)
-        | (() => IDonation[])
-        | (() => string | null | undefined)
-        | (() => FieldValue)
+        | (() => DocumentReference[])
+        | (() => DocumentReference | null | undefined)
+        | (() => FieldValue);
 
-    name: string
-    pendingDonations: IDonation[]
-    photo: string | null | undefined
-    createdAt: Timestamp
-    modifiedAt: Timestamp
+    name: string;
+    pendingDonations: DocumentReference[];
+    photo: DocumentReference | null | undefined;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 }
 
 export class User implements IUser {
     [key: string]:
         | string
-        | IDonation[]
+        | DocumentReference
+        | DocumentReference[]
         | Timestamp
         | null
         | undefined
         | (() => string)
-        | (() => IDonation[])
-        | (() => string | null | undefined)
-        | (() => Timestamp)
-    name: string
-    pendingDonations: IDonation[]
-    photo: string | null | undefined
-    createdAt: Timestamp
-    modifiedAt: Timestamp
+        | (() => DocumentReference[])
+        | (() => DocumentReference | null | undefined)
+        | (() => Timestamp);
+    name: string;
+    pendingDonations: DocumentReference[];
+    photo: DocumentReference | null | undefined;
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
 
     constructor(args: IUser) {
-        this.name = args.name
-        this.pendingDonations = args.pendingDonations
-        this.photo = args.photo
-        this.createdAt = args.createdAt
-        this.modifiedAt = args.modifiedAt
+        this.name = args.name;
+        this.pendingDonations = args.pendingDonations;
+        this.photo = args.photo;
+        this.createdAt = args.createdAt;
+        this.modifiedAt = args.modifiedAt;
     }
 
     getName(): string {
-        return this.name
+        return this.name;
     }
 
-    getPendingDonations(): IDonation[] {
-        return this.pendingDonations
+    getPendingDonations(): DocumentReference[] {
+        return this.pendingDonations;
     }
 
-    getPhoto(): string | null | undefined {
-        return this.photo
+    getPhoto(): DocumentReference | null | undefined {
+        return this.photo;
     }
 
     getCreatedAt(): Timestamp {
-        return this.createdAt
+        return this.createdAt;
     }
 
     getModifiedAt(): Timestamp {
-        return this.modifiedAt
+        return this.modifiedAt;
     }
 }

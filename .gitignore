@@ -16,6 +16,9 @@ package-lock.json
 /.next/
 /out/
 
+# Firebase
+**/*.firebase
+
 # production
 /build
 
@@ -38,15 +41,19 @@ next-env.d.ts
 
 # Firebase emulator
 firestore-data
+**/*firebase-export*
 
 # Sensitive configuration files
 .env.local
 .firebaserc
-firebase-config.js
-firebase.json
-storage.rules
-*adminsdk*
-*serviceAccount*
+**/*irebase-config*
+**/*irebaseConfig*
+**/firebase.json
+**/*.rules
+**/*secret*
+**/*indexes*
+**/*adminsdk*
+**/*service*
 
 #VSCODE Preferences
 .vscode
