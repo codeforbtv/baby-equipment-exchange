@@ -1,28 +1,17 @@
-//Modules
-import {
-    DocumentData,
-    collection,
-    getDocs,
-    query,
-    QueryDocumentSnapshot,
-    SnapshotOptions,
-    doc,
-    setDoc,
-    serverTimestamp,
-    Timestamp
-} from 'firebase/firestore'
-//Models
-import { IOrganization, Organization } from '@/models/organization'
-import { OrganizationBody } from '@/types/post-data'
-//Libs
-import { db } from './firebase'
+// Modules
+import { DocumentData, collection, getDocs, query, QueryDocumentSnapshot, SnapshotOptions, doc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+// Models
+import { IOrganization, Organization } from '@/models/organization';
+import { OrganizationBody } from '@/types/post-data';
+// Libs
+import { db } from './firebase';
 
-const ORGANIZATIONS_COLLECTION = 'Organizations'
+export const ORGANIZATIONS_COLLECTION = 'Organizations';
 
-const organizationConverter = {
+export const organizationConverter = {
     toFirestore(organization: Organization): DocumentData {
         const organizationData: IOrganization = {
-            name : organization.getName(),
+            name: organization.getName(),
             diaperBank: organization.isDiaperBank(),
             babyProductExchange: organization.isBabyProductExchange(),
             lowIncome: organization.isLowIncome(),
@@ -35,16 +24,16 @@ const organizationConverter = {
             notes: organization.getNotes(),
             createdAt: organization.getCreatedAt(),
             modifiedAt: organization.getModifiedAt()
-        }
+        };
         for (const key in organizationData) {
             if (organizationData[key] === undefined || organizationData[key] === null) {
-                delete organizationData[key]
-            } 
+                delete organizationData[key];
+            }
         }
-        return organizationData
+        return organizationData;
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Organization {
-        const data = snapshot.data(options)
+        const data = snapshot.data(options);
         const organizationData: IOrganization = {
             name: data.name,
             diaperBank: data.diaperBank,
@@ -59,10 +48,10 @@ const organizationConverter = {
             notes: data.notes,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
-        }
-        return new Organization(organizationData)
+        };
+        return new Organization(organizationData);
     }
-}
+};
 
 export async function addOrganization(newOrganization: OrganizationBody) {
     const organizationParams: IOrganization = {
@@ -79,15 +68,15 @@ export async function addOrganization(newOrganization: OrganizationBody) {
         notes: newOrganization.notes,
         createdAt: serverTimestamp() as Timestamp,
         modifiedAt: serverTimestamp() as Timestamp
-    }
+    };
 
-    const organization = new Organization(organizationParams)
-    const organizationRef = doc(db, ORGANIZATIONS_COLLECTION)
-    await setDoc(organizationRef, organization)
+    const organization = new Organization(organizationParams);
+    const organizationRef = doc(db, ORGANIZATIONS_COLLECTION);
+    await setDoc(organizationRef, organization);
 }
 
 export async function getOrganizations(): Promise<Organization[]> {
-    const q = query(collection(db, ORGANIZATIONS_COLLECTION)).withConverter(organizationConverter)
-    const snapshot = await getDocs(q)
-    return snapshot.docs.map((doc) => doc.data())
+    const q = query(collection(db, ORGANIZATIONS_COLLECTION)).withConverter(organizationConverter);
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => doc.data());
 }

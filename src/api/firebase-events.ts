@@ -1,13 +1,9 @@
-//Modules
-import {
-    DocumentData,
-    QueryDocumentSnapshot,
-    SnapshotOptions,
-} from 'firebase/firestore'
-//Models
-import { IEvent, Event } from '@/models/event'
+// Modules
+import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
+// Models
+import { IEvent, Event } from '@/models/event';
 
-export const EVENTS_COLLECTION = 'Event'
+export const EVENTS_COLLECTION = 'Event';
 
 const eventConverter = {
     toFirestore(event: Event): DocumentData {
@@ -17,18 +13,18 @@ const eventConverter = {
             createdBy: event.getCreatedBy(),
             createdAt: event.getCreatedAt(),
             modifiedAt: event.getModifiedAt()
-        }
-        return eventData
+        };
+        return eventData;
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Event {
-        const data = snapshot.data(options)
+        const data = snapshot.data(options);
         const eventData: IEvent = {
             type: data.type,
             note: data.note,
             createdBy: data.createdBy,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
-        }
-        return new Event(eventData)
+        };
+        return new Event(eventData);
     }
-}
+};
