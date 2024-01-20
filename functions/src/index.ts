@@ -29,7 +29,7 @@ type Event = {
     modifiedAt: string;
 };
 
-const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG!);
+const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG ?? '{}');
 
 const app: App = admin.initializeApp({
     credential: applicationDefault(),

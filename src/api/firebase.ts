@@ -1,4 +1,3 @@
-// Modules
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, Firestore, getFirestore } from 'firebase/firestore';
 import { connectFunctionsEmulator, httpsCallable, Functions, getFunctions } from 'firebase/functions';
@@ -14,10 +13,9 @@ import {
     User,
     connectAuthEmulator
 } from 'firebase/auth';
-// Types
 import { AccountInformation, UserBody } from '@/types/post-data';
 
-import { firebaseConfig } from '../../firebase-config';
+const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG ?? '{}');
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 export const db: Firestore = initDb();
