@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project assists the collection and distribution of unused and gently used baby and child equipment. Over twenty different organizations are served by this exchange. 
+This project assists the collection and distribution of unused and gently used baby and child equipment. Over twenty different organizations are served by this exchange.
 
 ### Set up
 
@@ -63,18 +63,30 @@ If you have performed the above step, the following step should not be necessary
 firebase login
 ```
 
+Set the `FIREBASE_CONFIG` environment variable. For more details about what is in a Firebase config, visit [Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects).
+
+```
+export FIREBASE_CONFIG="{ \
+  \"apiKey\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
+  \"authDomain\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
+  \"projectId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
+  \"storageBucket\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
+  \"messagingSenderId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
+  \"appId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" \
+}"
+```
+
 #### Configuration File Dependencies
 
 This is a list of all configuration files required for the Emulator Suite to run. All of these files go in the project root directory (e.g. `/home/user/projects/baby-equipment-exchange`), where `dotenv-config.js` and `package.json` and `next.config.js` are all found
 
-- `.env.local` See [This Page](https://firebase.google.com/docs/functions/config-env?gen=2nd#emulator_support) for more details
-- `.firebaserc`
-- `firebase.json` [for deployment configuration](https://firebase.google.com/docs/cli#the_firebasejson_file) and [when configuring the emulator suite](https://firebase.google.com/docs/emulator-suite/install_and_configure#configure_emulator_suite)
-- `firestore.rules`
-- `firestore.indexes.json`
-- `firebase-config.ts`, `firebaseConfig.json` Note that these files store the same content ([the Firebase config](https://support.google.com/firebase/answer/7015592?hl=en#zippy=%2Cin-this-article)), but in different formats
-- `storage.rules`
-- `serviceAccount.json`
+-   `.env.local` See [This Page](https://firebase.google.com/docs/functions/config-env?gen=2nd#emulator_support) for more details
+-   `.firebaserc`
+-   `firebase.json` [for deployment configuration](https://firebase.google.com/docs/cli#the_firebasejson_file) and [when configuring the emulator suite](https://firebase.google.com/docs/emulator-suite/install_and_configure#configure_emulator_suite)
+-   `firestore.rules`
+-   `firestore.indexes.json`
+-   `storage.rules`
+-   `serviceAccount.json`
 
 The environment variable, `FIREBASE_EMULATORS_IMPORT_DIRECTORY` must be set. The directory should be a path exclusively for Firebase emulator data. If the directory exists, the emulator will attempt to import the data. If the directory does not exist, the emulator will export data to the directory on exit.
 
@@ -84,7 +96,7 @@ The environment variable, `FIREBASE_EMULATORS_IMPORT_DIRECTORY` must be set. The
 FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 ```
 
-************************************firebase.json************************************ — (Same directory as above) Contains configurations for deploying the app and the emulator suite:
+****************\*\*\*\*****************firebase.json****************\*\*\*\***************** — (Same directory as above) Contains configurations for deploying the app and the emulator suite:
 
 ```
 {
@@ -149,7 +161,7 @@ FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 }
 ```
 
-******************************firestore.rules****************************** — (Same directory as above) The Firestore Security Rules the emulator should enforce [Get started with Cloud Firestore Security Rules  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/security/get-started)
+**************\*\***************firestore.rules**************\*\*************** — (Same directory as above) The Firestore Security Rules the emulator should enforce [Get started with Cloud Firestore Security Rules  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/security/get-started)
 
 ```
 rules_version = '2';
@@ -197,7 +209,7 @@ service cloud.firestore {
         match /ImageDetails/{document=**} {
         allow create, read: if request.auth != null;
         }
-        match /Users/{userId} { 
+        match /Users/{userId} {
         allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
         }
         match /UserDetails/{userId} {
@@ -207,7 +219,7 @@ service cloud.firestore {
 }
 ```
 
-**************************************************firestore.indexes.json************************************************** — (Same directory as above)  Database index definitions the emulator should have set [Manage indexes in Cloud Firestore  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/query-data/indexing)
+************************\*\*************************firestore.indexes.json************************\*\************************* — (Same directory as above) Database index definitions the emulator should have set [Manage indexes in Cloud Firestore  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/query-data/indexing)
 
 ```
 {
@@ -216,33 +228,7 @@ service cloud.firestore {
 }
 ```
 
-************************************firebase-config.ts************************************ — (Same directory as above) This project places the *Firebase config* in the `firebase-config.ts` TypeScript file. For more details about what is in a Firebase config [Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects)
-
-```
-export const firebaseConfig = {
-    apiKey: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    authDomain: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    projectId: "bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    storageBucket: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    messagingSenderId: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    appId: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  };
-```
-
-firebaseConfig.json — (Same directory as above) ********The Firebase config file in JSON format. ***This file is used by the Cloud Functions ‘sub-project’ `/home/user/projects/baby-equipment-exchange/functions`**
-
-```
-{
-  "apiKey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "authDomain": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "projectId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "storageBucket": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,
-  "messagingSenderId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  "appId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-}
-```
-
-******************************************serviceAccount.json****************************************** — (Same directory as above)  The credentials for a Service Account that is authorized to carry-out work in Google Cloud on behalf of the Firebase project [Service accounts overview  |  IAM Documentation  |  Google Cloud](https://cloud.google.com/iam/docs/service-account-overview)
+********************\*\*********************serviceAccount.json********************\*\********************* — (Same directory as above) The credentials for a Service Account that is authorized to carry-out work in Google Cloud on behalf of the Firebase project [Service accounts overview  |  IAM Documentation  |  Google Cloud](https://cloud.google.com/iam/docs/service-account-overview)
 
 ```
 {
@@ -261,7 +247,7 @@ firebaseConfig.json — (Same directory as above) ********The Firebase config fi
   }
 ```
 
-**************************storage.rules************************** — (Same directory as above) The Storage Security Rules the emulator should enforce [Understand Firebase Security Rules for Cloud Storage  |  Cloud Storage for Firebase (google.com)](https://firebase.google.com/docs/storage/security/)
+************\*\*************storage.rules************\*\************* — (Same directory as above) The Storage Security Rules the emulator should enforce [Understand Firebase Security Rules for Cloud Storage  |  Cloud Storage for Firebase (google.com)](https://firebase.google.com/docs/storage/security/)
 
 ```
 rules_version = '2';
@@ -343,8 +329,8 @@ npm run build:watch
 
 Given that,
 
-- `firebase.json` exists and is valid in `/home/user/projects/baby-equipment-exchange/`
-- `FIREBASE_EMULATORS_IMPORT_DIRECTORY` environment variable is set
+-   `firebase.json` exists and is valid in `/home/user/projects/baby-equipment-exchange/`
+-   `FIREBASE_EMULATORS_IMPORT_DIRECTORY` environment variable is set
 
 the following command should start the emulators and the app:
 
@@ -352,7 +338,7 @@ the following command should start the emulators and the app:
 npm run dev
 ```
 
-[package.json](https://github.com/codeforbtv/baby-equipment-exchange/blob/main/package.json#L6) → [src/utils/setup.cjs](https://github.com/codeforbtv/baby-equipment-exchange/blob/main/src/utils/setup.cjs#L3)  → [the emulator is initialized](https://github.com/codeforbtv/baby-equipment-exchange/blob/main/src/utils/setup.cjs#L14)
+[package.json](https://github.com/codeforbtv/baby-equipment-exchange/blob/main/package.json#L6) → [src/utils/setup.cjs](https://github.com/codeforbtv/baby-equipment-exchange/blob/main/src/utils/setup.cjs#L3) → [the emulator is initialized](https://github.com/codeforbtv/baby-equipment-exchange/blob/main/src/utils/setup.cjs#L14)
 
 The command line should display the following lines:
 
@@ -395,7 +381,7 @@ Scroll to Custom claims. Claims should already be present. If the text field is 
 
 ![Firebase Emulator Auth edit existing user](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_3.png)
 
-(Clicking outside the Edit user pop-up closes it) Scroll the slider down and select the ********Save******** button:
+(Clicking outside the Edit user pop-up closes it) Scroll the slider down and select the **\*\*\*\***Save**\*\*\*\*** button:
 
 ![Firebase Emulator Auth save button](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_3_5.png)
 

@@ -1,0 +1,160 @@
+version: 2.1
+orbs:
+    browser-tools: circleci/browser-tools@1.4.6
+jobs:
+    build-and-test:
+        docker:
+            - image: cimg/openjdk:20.0.1-browsers
+        steps:
+            - checkout
+            - restore_cache:
+                  keys:
+                      - project-deps
+            - browser-tools/install-chrome
+            - browser-tools/install-chromedriver
+            - run: echo ${CREDENTIALS} | base64 --decode > credentials.json
+            - run: npm install
+            - run: |
+                  echo '{
+                      "emulators": {
+                      "auth": {
+                          "enabled": true
+                      },
+                      "firestore": {
+                          "enabled": true
+                      },
+                      "functions": {
+                          "enabled": true
+                      },
+                      "storage": {
+                          "enabled": true
+                      }
+                      },
+                      "firestore": {
+                      "rules": "firestore.rules",
+                      "indexes": "firestore.indexes.json"
+                      },
+                      "hosting": {
+                      "source": ".",
+                      "ignore": [
+                          "firebase.json",
+                          "*/.",
+                          "*/node_modules/*"
+                      ],
+                      "frameworksBackend": {
+                          "region": "us-east1",
+                          "maxInstances":10
+                      }
+                      },
+                      "storage": {
+                      "rules": "storage.rules"
+                      },
+                      "functions": [
+                      {
+                          "source": "functions",
+                          "codebase": "default",
+                          "ignore": [
+                          "node_modules",
+                          ".git",
+                          "firebase-debug.log",
+                          "firebase-debug.*.log"
+                          ],
+                          "predeploy": [
+                          "npm --prefix \"$RESOURCE_DIR\" run build"
+                          ]
+                      }
+                      ]
+                  }' > firebase.json
+            - run: |
+                  echo '{
+                      "projects": {
+                          "default": "demo-baby-equipment-exchange"
+                      }
+                  }
+                  ' > .firebaserc
+            - run: |
+                  echo 'rules_version = "2";
+                  service cloud.firestore {
+                  match /databases/{database}/documents {
+                      // Administrator role
+                      match /Events/{document=**} {
+                          allow read: if request.auth != null && request.auth.token.admin == true;
+                      }
+                      match /Donations/{document=**} {
+                          allow read: if request.auth != null && request.auth.token.admin == true;
+                      }
+                      match /DonationDetails/{document=**} {
+                          allow read: if request.auth != null && request.auth.token.admin == true;
+                      }
+                      match /Images/{document=**} {
+                          allow read: if request.auth != null && request.auth.token.admin == true;
+                          }
+                          match /ImageDetails/{document=**} {
+                          allow read: if request.auth != null && request.auth.token.admin == true;
+                          }
+                      match /Organizations/{document=**} {
+                          allow create, read, update, write: if request.auth != null && request.auth.token.admin == true;
+                          }
+                      match /Storage/{document=**} {
+                          allow create, read, update, write: if request.auth != null && request.auth.token.admin == true;
+                          }
+                      match /Users/{document=**} {
+                          allow read: if request.auth != null && request.auth.token.admin == true;
+                      }
+                      match /UserDetails/{document=**} {
+                          allow read, update: if request.auth != null  && request.auth.token.admin == true;
+                          }
+                          // Standard user role
+                          match /Donations/{document=**} {
+                          allow create, read, update, write: if request.auth != null;
+                          }
+                          match /DonationDetails/{document=**} {
+                          allow create, read, update, write: if request.auth != null;
+                          }
+                          match /Images/{document=**} {
+                          allow create, read: if request.auth != null;
+                          }
+                          match /ImageDetails/{document=**} {
+                          allow create, read: if request.auth != null;
+                          }
+                          match /Users/{userId} { 
+                          allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
+                          }
+                          match /UserDetails/{userId} {
+                          allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
+                          }
+                      }
+                  }' > firestore.rules
+            - run: |
+                  echo 'rules_version = "2";
+                  service firebase.storage {
+                      match /b/{bucket}/o {
+                          match /{allPaths=**} {
+                          allow read, write: if request.auth != null;
+                          }
+                      }
+                  }' > storage.rules
+            - run: |
+                  echo '{
+                      "indexes": [],
+                      "fieldOverrides": []
+                  }' > firestore.indexes.json
+            - run: |
+                  echo "${APP_DATA}" > data.json
+            - run:
+                  command: npm install && npm run build
+                  working_directory: ~/project/functions
+                  name: Install dependencies and build Cloud Functions
+            - run: npm run build
+            - run: npm run test:unit
+            - run: npm run test:cypress
+            - save_cache:
+                  key: project-deps-{{ checksum "package-lock.json" }}
+                  paths:
+                      - .cache
+                      - node_modules
+                      - functions/node_modules
+workflows:
+    build-and-test:
+        jobs:
+            - build-and-test
