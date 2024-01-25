@@ -146,6 +146,7 @@ jobs:
                   working_directory: ~/project/functions
                   name: Install dependencies and build Cloud Functions
             - run: npm run build
+            - run: npx cypress install
             - run: npm run test:unit
             - run: npm run test:cypress
             - save_cache:
