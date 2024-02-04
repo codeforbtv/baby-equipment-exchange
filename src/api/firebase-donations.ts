@@ -1,18 +1,20 @@
 // Modules
 import {
+    CollectionReference,
     DocumentData,
-    collection,
-    getDocs,
-    query,
-    where,
+    DocumentReference,
+    Query,
     QueryDocumentSnapshot,
     SnapshotOptions,
+    Timestamp,
+    collection,
     doc,
+    getDoc,
+    getDocs,
+    query,
     runTransaction,
     serverTimestamp,
-    Timestamp,
-    getDoc,
-    DocumentReference
+    where
 } from 'firebase/firestore';
 // Models
 import { Donation, IDonation } from '@/models/donation';
@@ -20,7 +22,7 @@ import { DonationDetail, IDonationDetail } from '@/models/donation-detail';
 import { DonationBody } from '@/types/post-data';
 import { Image } from '@/models/image';
 // Libs
-import { addEvent, db, getUserId } from './firebase';
+import { addEvent, canReadDonations, db, getUserId } from './firebase';
 import { imageReferenceConverter } from './firebase-images';
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
@@ -121,27 +123,56 @@ const donationDetailsConverter = {
     }
 };
 
-export async function getAllDonations(): Promise<Donation[]> {
-    const donationDetailsRef = collection(db, DONATION_DETAILS_COLLECTION).withConverter(donationDetailsConverter);
-    const donationDetailsSnapshot = await getDocs(donationDetailsRef);
-    const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data());
-    return await _getDonations(...donationDetails);
-}
-
-export async function getActiveDonations(): Promise<Donation[]> {
-    const activeDonationDetailsQuery = query(collection(db, DONATION_DETAILS_COLLECTION), where('active', '==', true)).withConverter(donationDetailsConverter);
-    const donationDetailsSnapshot = await getDocs(activeDonationDetailsQuery);
-    const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data());
-    return await _getDonations(...donationDetails);
-}
-
-export async function getDonations(): Promise<Donation[]> {
-    const uid = await getUserId();
-    const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
-    const donationDetailsQuery = query(collection(db, DONATION_DETAILS_COLLECTION), where('donor', '==', userRef)).withConverter(donationDetailsConverter);
-    const donationDetailsSnapshot = await getDocs(donationDetailsQuery);
-    const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc) => doc.data());
-    return await _getDonations(...donationDetails);
+/** Supplies donation item inventory to a user.
+ *
+ * Supplies donation item inventory to a user. In order to view donations a user has not
+ * created themselves, a user must have a `can-read-donations` claim.
+ *
+ * To satisfy consecution, a query clause involving the `donor` field must only evaluate
+ * if the `donor` field in a collection containing donation items is *equal* to
+ * the calling client's current authenticated session.
+ *
+ * @filter An object that defines what kind(s) of donation items to return.
+ * @return A Promise of a list of Donations, else a rejected promise.
+ */
+export async function getDonations(filter: null | undefined): Promise<Donation[]> {
+    try {
+        const uid = await getUserId();
+        const hasClaimOnReadingDonations: boolean = await canReadDonations();
+        const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
+        // Claim: can-read-donations
+        // If a user has a claim on reading donations,
+        // consider all available documents within the collection.
+        const collectionRef = collection(db, DONATION_DETAILS_COLLECTION);
+        const conjunctions = [];
+        if (hasClaimOnReadingDonations !== true) {
+            // If an authenticated client, denoted by userRef,
+            // does not have a claim on reading donations,
+            // limit the result set to the donations a user account has submitted.
+            // (A note on consecution) any clause where `donor` is not equal to userRef,
+            // violates this method's defined behavior.
+            conjunctions.push(where('donor', '==', userRef));
+        }
+        const q = query(collectionRef, ...conjunctions).withConverter(donationDetailsConverter);
+        const donationDetailsSnapshot = await getDocs(q);
+        const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc: any) => doc.data());
+        const donations: Donation[] = [];
+        for (const donationDetail of donationDetails) {
+            const donationRef = donationDetail.getDonation().withConverter(donationConverter);
+            const donationSnapshot = await getDoc(donationRef);
+            if (donationSnapshot.exists()) {
+                const donation = donationSnapshot.data();
+                const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[];
+                imagesRef.push(...(donationDetail.getImages() as DocumentReference<Image>[]));
+                donation.images = await imageReferenceConverter(...imagesRef);
+                donations.push(donation);
+            }
+        }
+        return donations;
+    } catch (error: any) {
+        addEvent({ location: 'api/firebase-donations', error: error });
+    }
+    return Promise.reject();
 }
 
 async function _getDonations(...donationDetails: DonationDetail[]): Promise<Donation[]> {
