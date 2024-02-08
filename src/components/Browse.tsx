@@ -14,8 +14,8 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 // Hooks
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 // Libs
-import { getAllDonations, getDonations } from '@/api/firebase-donations';
-import { addEvent, canReadDonations, isAdmin } from '@/api/firebase';
+import { getDonations } from '@/api/firebase-donations';
+import { addEvent } from '@/api/firebase';
 // Styles
 import styles from './Browse.module.css';
 
@@ -53,13 +53,7 @@ const Browse: React.FC = () => {
     useEffect(() => {
         (async () => {
             try {
-                const hasReadDonationsPermission = await canReadDonations();
-                let donations = [];
-                if (hasReadDonationsPermission === true) {
-                    donations = await getAllDonations();
-                } else {
-                    donations = await getDonations();
-                }
+                const donations = await getDonations(null);
                 setDonations(donations);
                 setIsLoading(false);
             } catch (error: any) {
