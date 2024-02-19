@@ -15,6 +15,7 @@ export interface IDonation {
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp);
+    id: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
@@ -39,6 +40,7 @@ export class Donation implements IDonation {
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp);
+    id: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
@@ -49,6 +51,7 @@ export class Donation implements IDonation {
     modifiedAt: Timestamp;
 
     constructor(args: IDonation) {
+        this.id = args.id;
         this.category = args.category;
         this.brand = args.brand;
         this.model = args.model;
@@ -57,6 +60,10 @@ export class Donation implements IDonation {
         this.images = args.images;
         this.createdAt = args.createdAt as Timestamp;
         this.modifiedAt = args.modifiedAt as Timestamp;
+    }
+
+    getId(): string {
+        return this.id;
     }
 
     getCategory(): string | null | undefined {
