@@ -25,10 +25,7 @@ const functions = initFunctions();
 
 function initDb(): Firestore {
     let _db: Firestore;
-    if (
-        (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
-        process?.env?.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
-    ) {
+    if ((process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') && process?.env?.NEXT_PUBLIC_IMPORT_DIRECTORY != null) {
         const FIREBASE_EMULATORS_FIRESTORE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FIRESTORE_PORT ?? '8080');
         _db = getFirestore(app);
         connectFirestoreEmulator(_db, '127.0.0.1', FIREBASE_EMULATORS_FIRESTORE_PORT);
@@ -40,10 +37,7 @@ function initDb(): Firestore {
 
 function initFirebaseAuth() {
     let _auth: Auth;
-    if (
-        (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
-        process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
-    ) {
+    if ((process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') && process.env.NEXT_PUBLIC_IMPORT_DIRECTORY != null) {
         const FIREBASE_EMULATORS_AUTH_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_AUTH_PORT ?? '9099');
         _auth = getAuth(app);
         connectAuthEmulator(_auth, `http://127.0.0.1:${FIREBASE_EMULATORS_AUTH_PORT}`);
@@ -55,10 +49,7 @@ function initFirebaseAuth() {
 
 function initFirebaseStorage() {
     let _storage: FirebaseStorage;
-    if (
-        (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
-        process?.env?.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
-    ) {
+    if ((process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') && process?.env?.NEXT_PUBLIC_IMPORT_DIRECTORY != null) {
         const FIREBASE_EMULATORS_STORAGE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_STORAGE_PORT ?? '9199');
         _storage = getStorage(app);
         connectStorageEmulator(_storage, '127.0.0.1', FIREBASE_EMULATORS_STORAGE_PORT);
@@ -70,10 +61,7 @@ function initFirebaseStorage() {
 
 function initFunctions() {
     let _functions: Functions;
-    if (
-        (process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') &&
-        process?.env?.NEXT_PUBLIC_FIREBASE_EMULATORS_IMPORT_DIRECTORY !== undefined
-    ) {
+    if ((process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') && process?.env?.NEXT_PUBLIC_IMPORT_DIRECTORY != null) {
         const FIREBASE_EMULATORS_FUNCTIONS_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FUNCTIONS_PORT ?? '5001');
         _functions = getFunctions(app, 'us-east1');
         connectFunctionsEmulator(_functions, '127.0.0.1', FIREBASE_EMULATORS_FUNCTIONS_PORT);
