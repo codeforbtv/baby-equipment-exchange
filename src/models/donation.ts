@@ -1,6 +1,12 @@
 //Firebase types
 import { DocumentReference, Timestamp } from 'firebase/firestore';
 
+export interface IDonationCache {
+    [key: string]: string | number;
+    id: string;
+    modifiedAt: number;
+}
+
 export interface IDonation {
     [key: string]:
         | boolean
