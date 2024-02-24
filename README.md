@@ -63,11 +63,11 @@ If you have performed the above step, the following step should not be necessary
 firebase login
 ```
 
-Set the `FIREBASE_CONFIG` environment variable. For more details about what is in a Firebase config, visit [Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects):
+Set the `NEXT_PUBLIC_FIREBASE_CONFIG` environment variable. For more details about what is in a Firebase config, visit [Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects):
 
 
 ```
-export FIREBASE_CONFIG="{ \
+export NEXT_PUBLIC_FIREBASE_CONFIG="{ \
   \"apiKey\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
   \"authDomain\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
   \"projectId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
@@ -77,7 +77,7 @@ export FIREBASE_CONFIG="{ \
 }"
 ```
 
-or, `export FIREBASE_CONFIG="$(cat <path_to_Firebace_JSON_configuration_file)"`.
+or, `export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat <path_to_Firebace_JSON_configuration_file)"`.
 
 #### Configuration File Dependencies
 
@@ -99,7 +99,7 @@ The environment variable, `FIREBASE_EMULATORS_IMPORT_DIRECTORY` must be set. The
 FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 ```
 
-******\*\*\*\*******\*\*\*\*******\*\*\*\*******firebase.json******\*\*\*\*******\*\*\*\*******\*\*\*\******* — (Same directory as above) Contains configurations for deploying the app and the emulator suite:
+**firebase.json** — (Same directory as above) Contains configurations for deploying the app and the emulator suite:
 
 ```
 {
@@ -164,7 +164,7 @@ FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 }
 ```
 
-******\*\*******\*\*******\*\*******firestore.rules******\*\*******\*\*******\*\******* — (Same directory as above) The Firestore Security Rules the emulator should enforce [Get started with Cloud Firestore Security Rules  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/security/get-started)
+**firestore.rules** — (Same directory as above) The Firestore Security Rules the emulator should enforce [Get started with Cloud Firestore Security Rules  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/security/get-started)
 
 ```
 rules_version = '2';
@@ -222,7 +222,7 @@ service cloud.firestore {
 }
 ```
 
-**********\*\*\*\***********\*\***********\*\*\*\***********firestore.indexes.json**********\*\*\*\***********\*\***********\*\*\*\*********** — (Same directory as above) Database index definitions the emulator should have set [Manage indexes in Cloud Firestore  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/query-data/indexing)
+**firestore.indexes.json** — (Same directory as above) Database index definitions the emulator should have set [Manage indexes in Cloud Firestore  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/query-data/indexing)
 
 ```
 {
@@ -231,7 +231,7 @@ service cloud.firestore {
 }
 ```
 
-********\*\*\*\*********\*\*********\*\*\*\*********serviceAccount.json********\*\*\*\*********\*\*********\*\*\*\********* — (Same directory as above) The credentials for a Service Account that is authorized to carry-out work in Google Cloud on behalf of the Firebase project [Service accounts overview  |  IAM Documentation  |  Google Cloud](https://cloud.google.com/iam/docs/service-account-overview)
+**serviceAccount.json** — (Same directory as above) The credentials for a Service Account that is authorized to carry-out work in Google Cloud on behalf of the Firebase project [Service accounts overview  |  IAM Documentation  |  Google Cloud](https://cloud.google.com/iam/docs/service-account-overview)
 
 ```
 {
@@ -250,7 +250,7 @@ service cloud.firestore {
   }
 ```
 
-****\*\*\*\*****\*\*****\*\*\*\*****storage.rules****\*\*\*\*****\*\*****\*\*\*\***** — (Same directory as above) The Storage Security Rules the emulator should enforce [Understand Firebase Security Rules for Cloud Storage  |  Cloud Storage for Firebase (google.com)](https://firebase.google.com/docs/storage/security/)
+**storage.rules** — (Same directory as above) The Storage Security Rules the emulator should enforce [Understand Firebase Security Rules for Cloud Storage  |  Cloud Storage for Firebase (google.com)](https://firebase.google.com/docs/storage/security/)
 
 ```
 rules_version = '2';
@@ -384,7 +384,7 @@ Scroll to Custom claims. Claims should already be present. If the text field is 
 
 ![Firebase Emulator Auth edit existing user](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_3.png)
 
-(Clicking outside the Edit user pop-up closes it) Scroll the slider down and select the **\*\*\*\***Save**\*\*\*\*** button:
+(Clicking outside the Edit user pop-up closes it) Scroll the slider down and select the **Save** button:
 
 ![Firebase Emulator Auth save button](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_3_5.png)
 
