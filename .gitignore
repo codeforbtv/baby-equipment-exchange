@@ -45,7 +45,6 @@ firestore-data
 
 # Sensitive configuration files
 .env.local
-.firebaserc
 **/*irebase-config*
 **/*irebaseConfig*
 **/firebase.json
@@ -54,6 +53,8 @@ firestore-data
 **/*indexes*
 **/*adminsdk*
 **/*service*
+firebaseConfig.json   # Added line
+serviceAccount.json   # Added line
 
 #VSCODE Preferences
 .vscode
