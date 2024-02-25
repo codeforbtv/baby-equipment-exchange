@@ -83,7 +83,7 @@ RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/fi
 
 
 # Expose the ports your application uses
-EXPOSE 4400 4000 4500 9099 8080 9150 5000 9199 3000 4000 5000
+EXPOSE 4400 4000 4500 9099 8080 9150 5000 9199 3000 4000
 
 # CMD ["npm", "run", "dev"]
 
@@ -95,5 +95,5 @@ EXPOSE 4400 4000 4500 9099 8080 9150 5000 9199 3000 4000 5000
 # # docker run -dit -dp 3000:3000 -dp 4000:4000 -dp 5000:5000 --name baby-equipment-app babyequipments:1.01 
 
 # # for debugging
-# # docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 5000:5000 -p 9199:9199 --name baby-equipment-app babyequipments:1.01
+# # docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app babyequipments:1.01
 # # docker exec -it baby-equipment-app /bin/bash 
