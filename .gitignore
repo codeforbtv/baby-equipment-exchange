@@ -47,10 +47,7 @@ firestore-data
 .env.local
 **/*irebase-config*
 **/*irebaseConfig*
-**/firebase.json
-**/*.rules
 **/*secret*
-**/*indexes*
 **/*adminsdk*
 **/*service*
 firebaseConfig.json   # Added line
