@@ -45,7 +45,7 @@ ARG NEXT_PUBLIC_FIREBASE_CONFIG
 ENV FIREBASE_CONFIG=$FIREBASE_CONFIG
 ENV NEXT_PUBLIC_FIREBASE_CONFIG=$NEXT_PUBLIC_FIREBASE_CONFIG
 RUN chmod +x /home/user/projects/baby-equipment-exchange/
-ENTRYPOINT ["/home/user/projects/baby-equipment-exchange/entrypoint.sh"]
+
 
 RUN npm install -g firebase-tools
 RUN touch /home/user/projects/baby-equipment-exchange/.env.local
@@ -87,7 +87,7 @@ RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/fi
 EXPOSE 4400 4000 4500 9099 8080 9150 5000 9199 3000 4000
 
 # CMD ["npm", "run", "dev"]
-
+# ENTRYPOINT ["/home/user/projects/baby-equipment-exchange/entrypoint.sh"]
 
 # # docker build -t babyequipments:1.01 .
 # # if you want to run docker container with disk volume presisted on your host machine us this
