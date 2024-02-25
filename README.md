@@ -17,13 +17,17 @@ docker build -t babyequipments:1.01 .
 ```
 7. run the below to run a docker container  
 ```
-docker run -dit -dp 3000:3000 -dp 4000:4000 -dp 5000:5000 --name baby-equipment-app babyequipments:1.01 
+docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app babyequipments:1.01
 ```
 8. in visual studio code press ctrl+shit+p to open command palette and select Dev Containers: Attach to Running Container (https://code.visualstudio.com/docs/devcontainers/attach-container)
 9. select the Attach to Container inline action on the container you want to connect to
 10. verify your connection by going to the remote tab in VScode
 11. open folder and navigate to /home/user/projects/baby-equipment-exchange/
-12. see the output you can run in your host machine browser http://localhost:3000
+12. open a new terminal in VScode (verify that it's connected to the container not your host machine) the following command should start the emulators and the app:
+```
+npm run dev
+```
+13. see the output you can run in your host machine browser http://localhost:3000
 
 
 ### inside the container 
