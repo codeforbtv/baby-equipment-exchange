@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "demo-bee"
-  }
+    "c4btv": "baby-equipment-exchange"
+  },
+  "targets": {},
+  "etags": {}
 }
