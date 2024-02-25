@@ -7,7 +7,7 @@ This project assists the collection and distribution of unused and gently used b
 ### Dev remote Setup (Recommended)
 
 1. install Docker desktop (or equivalent in Mac and Linux)
-2. download folder "docker_image_build_files" from the repo, it's better not to clone the entire repo but you will not develop on this cloned repo 
+2. download folder "docker_image_build_files" from the repo, it's better not to clone the entire repo because you will not develop on this cloned repo 
 3. you still need 2 additional files to authernticate locally contact the repo admin to get them, you need "firebaseConfig.json" and "serviceAccount.json", after you acquire them put those 2 files inside the  "/docker_image_build_files/firebase_emulator_files/"
 4. install visual studio code.
 5. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
