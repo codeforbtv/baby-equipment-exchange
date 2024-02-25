@@ -45,7 +45,6 @@ firestore-data
 
 # Sensitive configuration files
 .env.local
-.firebaserc
 **/*irebase-config*
 **/*irebaseConfig*
 **/firebase.json
