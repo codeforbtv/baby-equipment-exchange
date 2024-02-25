@@ -23,7 +23,11 @@ docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500
 9. select the Attach to Container inline action on the container you want to connect to
 10. verify your connection by going to the remote tab in VScode
 11. open folder and navigate to /home/user/projects/baby-equipment-exchange/
-12. see the output you can run in your host machine browser http://localhost:3000
+12. open a new terminal in VScode (verify that it's connected to the container not your host machine) the following command should start the emulators and the app:
+```
+npm run dev
+```
+13. see the output you can run in your host machine browser http://localhost:3000
 
 
 ### inside the container 
