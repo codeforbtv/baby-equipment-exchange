@@ -6,24 +6,24 @@ This project assists the collection and distribution of unused and gently used b
 
 ### Dev remote Setup (Recommended)
 
-1- install Docker desktop (or equivalent in Mac and Linux)
-2- download folder "docker_image_build_files" from the repo, it's better not to clone the entire repo but you will not develop on this cloned repo 
-3- you still need 2 additional files to authernticate locally contact the repo admin to get them, you need "firebaseConfig.json" and "serviceAccount.json", after you acquire them put those 2 files inside the  "/docker_image_build_files/firebase_emulator_files/"
-4- install visual studio code
-5- run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
-6- open a terminal and run the below lines to build a docker image (if we find a way to secure some of the json files we can just share the docker image)
+1. install Docker desktop (or equivalent in Mac and Linux)
+2. download folder "docker_image_build_files" from the repo, it's better not to clone the entire repo but you will not develop on this cloned repo 
+3. you still need 2 additional files to authernticate locally contact the repo admin to get them, you need "firebaseConfig.json" and "serviceAccount.json", after you acquire them put those 2 files inside the  "/docker_image_build_files/firebase_emulator_files/"
+4. install visual studio code.
+5. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
+6. open a terminal and run the below lines to build a docker image (if we find a way to secure some of the json files we can just share the docker image)
 ```
 docker build -t babyequipments:1.01 .
 ```
-7- run the below to run a docker container  
+7. run the below to run a docker container  
 ```
 docker run -dit -dp 3000:3000 -dp 4000:4000 -dp 5000:5000 --name baby-equipment-app babyequipments:1.01 
 ```
-8- in visual studio code press ctrl+shit+p to open command palette and select Dev Containers: Attach to Running Container (https://code.visualstudio.com/docs/devcontainers/attach-container)
-9- select the Attach to Container inline action on the container you want to connect to
-10- verify your connection by going to the remote tab in VScode
-11- open folder and navigate to /home/user/projects/baby-equipment-exchange/
-12- see the output you can run in your host machine browser http://localhost:3000
+8. in visual studio code press ctrl+shit+p to open command palette and select Dev Containers: Attach to Running Container (https://code.visualstudio.com/docs/devcontainers/attach-container)
+9. select the Attach to Container inline action on the container you want to connect to
+10. verify your connection by going to the remote tab in VScode
+11. open folder and navigate to /home/user/projects/baby-equipment-exchange/
+12. see the output you can run in your host machine browser http://localhost:3000
 
 
 
