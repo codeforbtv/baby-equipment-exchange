@@ -14,7 +14,8 @@ WORKDIR /home/user/projects/
 
 
 # # Clone GitHub repository
-ARG GITHUB_REPO="https://github.com/codeforbtv/baby-equipment-exchange.git"
+# ARG GITHUB_REPO="https://github.com/codeforbtv/baby-equipment-exchange.git"
+ARG GITHUB_REPO="https://github.com/abdullahalhoothy/baby-equipment-exchange.git"
 ARG REPO_DIR="/home/user/projects/baby-equipment-exchange"
 RUN git clone ${GITHUB_REPO}
 WORKDIR ${REPO_DIR}
