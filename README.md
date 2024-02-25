@@ -63,11 +63,11 @@ If you have performed the above step, the following step should not be necessary
 firebase login
 ```
 
-Set the `NEXT_PUBLIC_FIREBASE_CONFIG` environment variable. For more details about what is in a Firebase config, visit [Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects):
+Set the `FIREBASE_CONFIG` environment variable. For more details about what is in a Firebase config, visit [Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects):
 
 
 ```
-export NEXT_PUBLIC_FIREBASE_CONFIG="{ \
+export FIREBASE_CONFIG="{ \
   \"apiKey\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
   \"authDomain\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
   \"projectId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
@@ -77,7 +77,7 @@ export NEXT_PUBLIC_FIREBASE_CONFIG="{ \
 }"
 ```
 
-or, `export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat <path_to_Firebace_JSON_configuration_file)"`.
+or, `export FIREBASE_CONFIG="$(cat <path_to_Firebace_JSON_configuration_file)"`.
 
 #### Configuration File Dependencies
 
