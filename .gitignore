@@ -54,6 +54,8 @@ firestore-data
 **/*indexes*
 **/*adminsdk*
 **/*service*
+firebaseConfig.json   # Added line
+serviceAccount.json   # Added line
 
 #VSCODE Preferences
 .vscode
