@@ -11,7 +11,7 @@ This project assists the collection and distribution of unused and gently used b
 3. you still need 2 additional files to authernticate locally contact the repo admin to get them, you need "firebaseConfig.json" and "serviceAccount.json", after you acquire them put those 2 files inside the  "/docker_image_build_files/firebase_emulator_files/"
 4. install visual studio code.
 5. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
-6. open a terminal and run the below lines to build a docker image (if we find a way to secure some of the json files we can just share the docker image)
+6. open a terminal, navigate to "/docker_image_build_files/" and run the below lines to build a docker image (if we find a way to secure some of the json files we can just share the docker image)
 ```
 docker build -t babyequipments:1.01 .
 ```
