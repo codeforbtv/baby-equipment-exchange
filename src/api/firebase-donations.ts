@@ -177,22 +177,6 @@ export async function getDonations(filter: null | undefined): Promise<Donation[]
     return Promise.reject();
 }
 
-async function _getDonations(...donationDetails: DonationDetail[]): Promise<Donation[]> {
-    const donations: Donation[] = [];
-    for (const donationDetail of donationDetails) {
-        const donationRef = donationDetail.getDonation().withConverter(donationConverter);
-        const donationSnapshot = await getDoc(donationRef);
-        if (donationSnapshot.exists()) {
-            const donation = donationSnapshot.data();
-            const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[];
-            imagesRef.push(...(donationDetail.getImages() as DocumentReference<Image>[]));
-            donation.images = await imageReferenceConverter(...imagesRef);
-            donations.push(donation);
-        }
-    }
-    return donations;
-}
-
 export async function addDonation(newDonation: DonationBody) {
     try {
         await runTransaction(db, async (transaction) => {
