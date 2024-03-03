@@ -20,12 +20,11 @@ docker build -t babyequipments:1.01 .
 docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app babyequipments:1.01
 ```
 8. Download VScode extension called "Remote Development"
-9. ![image](https://github.com/abdullahalhoothy/baby-equipment-exchange/assets/46547131/dcc8dd09-61f7-4a71-83ad-a19e8f411dfc)
-11. in visual studio code press ctrl+shit+p to open command palette and select Dev Containers: Attach to Running Container (https://code.visualstudio.com/docs/devcontainers/attach-container)
-12. select the Attach to Container inline action on the container you want to connect to
-13. verify your connection by going to the remote tab in VScode
-14. open folder and navigate to /home/user/projects/baby-equipment-exchange/
-15. open a new terminal in VScode (verify that it's connected to the container not your host machine) the following command should start the emulators and the app:
+9. in visual studio code press ctrl+shit+p to open command palette and select Dev Containers: Attach to Running Container (https://code.visualstudio.com/docs/devcontainers/attach-container)
+10. select the Attach to Container inline action on the container you want to connect to
+11. verify your connection by going to the remote tab in VScode
+12. open folder and navigate to /home/user/projects/baby-equipment-exchange/
+13. open a new terminal in VScode (verify that it's connected to the container not your host machine) the following command should start the emulators and the app:
 ```
 export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
 export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
