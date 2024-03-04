@@ -33,7 +33,73 @@ npm run dev
 13. see the output you can run in your host machine browser http://localhost:3000
 
 
-### inside the container 
+### Dev Local Setup
+Below are linux command used to setup the environment 
+
+1. Install required packages
+```
+sudo apt install default-jdk
+sudo apt update
+sudo apt install git
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+nvm install 18.19.0
+nvm use 18.19.0
+sudo mkdir -p /home/user/projects/
+sudo chown -R $(whoami) /home/user/projects/
+
+cd /home/user/projects/
+sudo git clone https://github.com/codeforbtv/baby-equipment-exchange.git
+
+cd /home/user/projects/baby-equipment-exchange
+sudo wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+sudo apt-get install -f
+echo 'export PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome' >> ~/.bashrc
+source ~/.bashrc
+sudo wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip
+sudo unzip chromedriver_linux64.zip
+sudo mv chromedriver /usr/bin/chromedriver
+sudo chown root:root /usr/bin/chromedriver
+sudo chmod +x /usr/bin/chromedriver
+sudo chown -R $(whoami) /home/user/projects/
+cd /home/user/projects/baby-equipment-exchange/
+npm install -g firebase-tools
+```
+
+2. Setup environment variables
+```
+sudo touch /home/user/projects/baby-equipment-exchange/.env.local
+sudo echo 'GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"' >> /home/user/projects/baby-equipment-exchange/.env.local
+sudo echo 'FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"' >> /home/user/projects/baby-equipment-exchange/.env.local
+sudo apt-get install jq
+echo FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
+sudo echo NEXT_PUBLIC_FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
+
+export FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
+export GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
+export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)" 
+export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)" 
+```
+
+3. install npm requirments and build project
+```
+npm install
+
+cd /home/user/projects/baby-equipment-exchange/functions
+npm install
+npm run build
+
+cd /home/user/projects/baby-equipment-exchange
+
+npm run build
+
+firebase experiments:enable webframeworks
+firebase use --add
+npm run dev
+```
+
+
+
 #### Automatically compiling Firebase Functions changes
 
 If one intends to make changes to cloud functions located in `/home/user/projects/baby-equipment-exchange**/functions**/src/index.ts` while using the Emulator Suite, `npm run build` would need to be called in the `/home/user/projects/baby-equipment-exchange**/functions**` directory each time a change is made.
