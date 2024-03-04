@@ -4,7 +4,7 @@
 
 This project assists the collection and distribution of unused and gently used baby and child equipment. Over twenty different organizations are served by this exchange.
 
-### Dev remote Setup (Recommended for consistency, you can dev local if you don't want to work with docker)
+## Dev remote Setup (Recommended for consistency, you can dev local if you don't want to work with docker)
 
 1. install Docker desktop (or equivalent in Mac and Linux)
 2. download folder "docker_image_build_files" from the repo, it's better not to clone the entire repo because you will not develop on this cloned repo 
@@ -33,7 +33,7 @@ npm run dev
 13. see the output you can run in your host machine browser http://localhost:3000
 
 
-### Dev Local Setup
+## Dev Local Setup
 Below are linux command used to setup the environment 
 
 1. Install required packages
