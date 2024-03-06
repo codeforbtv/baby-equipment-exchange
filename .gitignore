@@ -57,5 +57,5 @@ serviceAccount.json
 .vscode
 
 # personal containers
-# /.devcontainer/**
+/.devcontainer/**
 .github
