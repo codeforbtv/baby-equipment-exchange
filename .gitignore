@@ -55,3 +55,8 @@ serviceAccount.json
 
 #VSCODE Preferences
 .vscode
+
+# personal containers
+/.devcontainer/*
+.devcontainer
+.github
