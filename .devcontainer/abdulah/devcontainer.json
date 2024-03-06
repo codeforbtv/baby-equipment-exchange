@@ -1,0 +1,7 @@
+{
+    "name": "Baby Equipment App Development",
+    "dockerFile": "Dockerfile",
+    "context": "./docker_image_build_files",
+    "forwardPorts": [3000, 4000, 5000, 4400, 4500, 9099, 8080, 9150, 9199],
+    "overrideCommand": false
+}
