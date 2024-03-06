@@ -7,8 +7,6 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# RUN nvm install 18.19.0
-# RUN nvm use 18.19.0
 RUN mkdir -p /home/user/projects/
 WORKDIR /home/user/projects/
 
@@ -37,7 +35,6 @@ RUN wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_l
 # at the moment the json files must be in the same directory as the dockerfile
 # Copy all JSON files from the Dockerfile's directory to the specified working directory in the Docker image
 COPY firebase_emulator_files/ ${REPO_DIR}/
-# COPY firebase_emulator_files/entrypoint.sh /home/user/projects/baby-equipment-exchange/ 
 WORKDIR ${REPO_DIR}
 # Set default environment variables (these will be overwritten before build with terraform)
 ARG FIREBASE_CONFIG
@@ -70,31 +67,10 @@ RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/fi
     firebase experiments:enable webframeworks
 
 
-# RUN npm install
-# WORKDIR /home/user/projects/baby-equipment-exchange/functions
-# # RUN npm install
-# # RUN npm run build
-# # WORKDIR /home/user/projects/baby-equipment-exchange
-# # RUN npm run build
-# # RUN firebase experiments:enable webframeworks
-
-# # Define a volume in the image, this is to be passed from terraform
-# VOLUME ["/home/user/projects/baby-equipment-exchange"]
-# # docker run -v E:\Babyequipment\docker_volume:/home/user/projects/baby-equipment-exchange -w /home/user/projects/baby-equipment-exchange -d --name your_container_name your_image_name
+# Define a volume in the image, this is to be passed from terraform
+VOLUME ["/home/user/projects/baby-equipment-exchange"]
 
 
 # Expose the ports your application uses
 EXPOSE 4400 4000 4500 9099 8080 9150 5000 9199 3000 4000
 
-# CMD ["npm", "run", "dev"]
-# ENTRYPOINT ["/home/user/projects/baby-equipment-exchange/entrypoint.sh"]
-
-# # docker build -t babyequipments:1.01 .
-# # if you want to run docker container with disk volume presisted on your host machine us this
-# # docker run -dit -dp 3000:3000 -dp 4000:4000 -dp 5000:5000 --name baby-equipment-app -v E:\Babyequipment\docker_volume:/home/user/projects/baby-equipment-exchange babyequipments:1.01
-# # else use the below and save your code changes to git
-# # docker run -dit -dp 3000:3000 -dp 4000:4000 -dp 5000:5000 --name baby-equipment-app babyequipments:1.01 
-
-# # for debugging
-# # docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app babyequipments:1.01
-# # docker exec -it baby-equipment-app /bin/bash 

@@ -34,7 +34,7 @@ npm run dev
 
 
 ## Dev Local Setup
-Below are linux command used to setup the environment 
+Below are linux command used to setup the environment. notes for setup on Mac are in `docs\setup_notes.md`
 
 1. Install required packages
 ```

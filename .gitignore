@@ -50,8 +50,8 @@ firestore-data
 **/*secret*
 **/*adminsdk*
 **/*service*
-firebaseConfig.json   # Added line
-serviceAccount.json   # Added line
+firebaseConfig.json   
+serviceAccount.json   
 
 #VSCODE Preferences
 .vscode
