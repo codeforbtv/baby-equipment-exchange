@@ -54,8 +54,8 @@ ENV GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/
 ENV CYPRESS_INSTALL_BINARY=0
 
 # Use a RUN command to export the environment variables
-RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)" && \
-    npm install && \
+RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)" 
+RUN npm install && \
     cd /home/user/projects/baby-equipment-exchange/functions && \
     npm install && \
     npm run build && \
