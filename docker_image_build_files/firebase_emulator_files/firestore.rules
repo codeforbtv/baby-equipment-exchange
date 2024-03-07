@@ -1,0 +1,53 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+      // Administrator role
+      match /Events/{document=**} {
+        allow read: if request.auth != null && request.auth.token.admin == true;
+      }
+      match /Donations/{document=**} {
+        allow read: if request.auth != null && request.auth.token.admin == true;
+      }
+      match /DonationDetails/{document=**} {
+        allow read: if request.auth != null && request.auth.token.admin == true;
+      }
+      match /Images/{document=**} {
+        allow read: if request.auth != null && request.auth.token.admin == true;
+        }
+        match /ImageDetails/{document=**} {
+        allow read: if request.auth != null && request.auth.token.admin == true;
+        }
+      match /Organizations/{document=**} {
+        allow create, read, update, write: if request.auth != null && request.auth.token.admin == true;
+        }
+      match /Storage/{document=**} {
+        allow create, read, update, write: if request.auth != null && request.auth.token.admin == true;
+        }
+      match /Users/{document=**} {
+        allow read: if request.auth != null && request.auth.token.admin == true;
+      }
+      match /UserDetails/{document=**} {
+        allow read, update: if request.auth != null  && request.auth.token.admin == true;
+        }
+      // Standard user role
+        match /Donations/{document=**} {
+        allow create, read, update, write: if request.auth != null;
+        }
+        match /DonationDetails/{document=**} {
+        allow create, read, update, write: if request.auth != null;
+        }
+      match /Images/{document=**} {
+        allow create, read: if request.auth != null;
+        }
+        match /ImageDetails/{document=**} {
+        allow create, read: if request.auth != null;
+        }
+        match /Users/{userId} {
+        allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
+        }
+        match /UserDetails/{userId} {
+        allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
+        }
+  }
+}
