@@ -38,9 +38,7 @@ COPY firebase_emulator_files/ ${REPO_DIR}/
 WORKDIR ${REPO_DIR}
 # Set default environment variables (these will be overwritten before build with terraform)
 ARG FIREBASE_CONFIG
-ARG NEXT_PUBLIC_FIREBASE_CONFIG
 ENV FIREBASE_CONFIG=$FIREBASE_CONFIG
-ENV NEXT_PUBLIC_FIREBASE_CONFIG=$NEXT_PUBLIC_FIREBASE_CONFIG
 RUN chmod +x /home/user/projects/baby-equipment-exchange/
 
 
@@ -49,15 +47,13 @@ RUN touch /home/user/projects/baby-equipment-exchange/.env.local
 # the below envinroment variables should be passed through terraform
 RUN echo 'GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"' >> /home/user/projects/baby-equipment-exchange/.env.local
 RUN echo 'FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"' >> /home/user/projects/baby-equipment-exchange/.env.local
-RUN echo FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local && \
-    echo NEXT_PUBLIC_FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
+RUN echo FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
 ENV FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 ENV GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
 ENV CYPRESS_INSTALL_BINARY=0
 
 # Use a RUN command to export the environment variables
 RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)" && \
-    export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)" && \
     npm install && \
     cd /home/user/projects/baby-equipment-exchange/functions && \
     npm install && \

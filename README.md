@@ -28,7 +28,6 @@ docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500
 ```
 
 export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
-export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
 npm run dev
 
 ```
@@ -75,11 +74,9 @@ sudo echo 'GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-ex
 sudo echo 'FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"' >> /home/user/projects/baby-equipment-exchange/.env.local
 sudo apt-get install jq
 echo FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
-sudo echo NEXT_PUBLIC_FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
 export FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 export GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
-export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)" 
-export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)" 
+export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
 ```
 
 3. install npm requirments and build project
