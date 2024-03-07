@@ -44,15 +44,17 @@ firestore-data
 
 # Sensitive configuration files
 .env.local
-.firebaserc
 **/*irebase-config*
 **/*irebaseConfig*
-**/firebase.json
-**/*.rules
 **/*secret*
-**/*indexes*
 **/*adminsdk*
 **/*service*
+firebaseConfig.json   
+serviceAccount.json   
 
 #VSCODE Preferences
 .vscode
+
+# personal containers
+/.devcontainer/**
+.github

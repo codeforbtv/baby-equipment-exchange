@@ -1,0 +1,50 @@
+{
+    "emulators": {
+      "auth": {
+        "enabled": true
+      },
+      "firestore": {
+        "enabled": true
+      },
+      "functions": {
+        "enabled": true
+      },
+      "storage": {
+        "enabled": true
+      }
+    },
+    "firestore": {
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"
+    },
+    "hosting": {
+      "source": ".",
+      "ignore": [
+        "firebase.json",
+        "*/.",
+        "*/node_modules/*"
+      ],
+      "frameworksBackend": {
+        "region": "us-east1",
+        "maxInstances":10
+      }
+    },
+    "storage": {
+      "rules": "storage.rules"
+    },
+    "functions": [
+      {
+        "source": "functions",
+        "codebase": "default",
+        "ignore": [
+          "node_modules",
+          ".git",
+          "firebase-debug.log",
+          "firebase-debug.*.log"
+        ],
+        "predeploy": [
+          "npm --prefix \"$RESOURCE_DIR\" run build"
+        ]
+      }
+    ]
+}
