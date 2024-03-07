@@ -61,8 +61,8 @@ RUN cd /home/user/projects/baby-equipment-exchange/functions && \
     npm install && \
     npm run build
 
-RUN cd /home/user/projects/baby-equipment-exchange && \
-    npm run build
+RUN cd /home/user/projects/baby-equipment-exchange
+RUN npm run build
 RUN firebase experiments:enable webframeworks
 
 
