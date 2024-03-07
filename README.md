@@ -1,8 +1,8 @@
 # The Baby Equipment Exchange
 
-## Introduction
+## Introduction...
 
-This project assists the collection and distribution of unused and gently used baby and child equipment. Over twenty different organizations are served by this exchange.
+This project assists the collection and distribution of unused and gently used baby and child equipment. Over twenty dif.ferent organizations are served by this exchange.
 
 ## Dev remote Setup (Recommended for consistency, you can dev local if you don't want to work with docker)
 
@@ -26,11 +26,12 @@ docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500
 12. open folder and navigate to /home/user/projects/baby-equipment-exchange/
 13. open a new terminal in VScode (verify that it's connected to the container not your host machine) the following command should start the emulators and the app:
 ```
+
 export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
-export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
 npm run dev
+
 ```
-13. see the output you can run in your host machine browser http://localhost:3000
+14. see the output you can run in your host machine browser http://localhost:3000
 
 
 ## Dev Local Setup
@@ -73,12 +74,9 @@ sudo echo 'GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-ex
 sudo echo 'FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"' >> /home/user/projects/baby-equipment-exchange/.env.local
 sudo apt-get install jq
 echo FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
-sudo echo NEXT_PUBLIC_FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
-
 export FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 export GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
-export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)" 
-export NEXT_PUBLIC_FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)" 
+export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
 ```
 
 3. install npm requirments and build project
@@ -168,7 +166,7 @@ Scroll to Custom claims. Claims should already be present. If the text field is 
 
 ![Firebase Emulator Auth edit existing user](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_3.png)
 
-(Clicking outside the Edit user pop-up closes it) Scroll the slider down and select the **\*\*\*\***Save**\*\*\*\*** button:
+(Clicking outside the Edit user pop-up closes it) Scroll the slider down and select the **Save** button:
 
 ![Firebase Emulator Auth save button](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_3_5.png)
 

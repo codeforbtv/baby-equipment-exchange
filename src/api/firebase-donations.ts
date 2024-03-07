@@ -33,6 +33,7 @@ export const DONATION_DETAILS_COLLECTION = 'DonationDetails';
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
         const donationData: IDonation = {
+            id: donation.getId(),
             category: donation.getCategory(),
             brand: donation.getBrand(),
             model: donation.getModel(),
@@ -52,6 +53,7 @@ const donationConverter = {
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Donation {
         const data = snapshot.data(options);
         const donationData: IDonation = {
+            id: data.id,
             category: data.category,
             brand: data.brand,
             model: data.model,
@@ -175,80 +177,54 @@ export async function getDonations(filter: null | undefined): Promise<Donation[]
     return Promise.reject();
 }
 
-async function _getDonations(...donationDetails: DonationDetail[]): Promise<Donation[]> {
-    const donations: Donation[] = [];
-    for (const donationDetail of donationDetails) {
-        const donationRef = donationDetail.getDonation().withConverter(donationConverter);
-        const donationSnapshot = await getDoc(donationRef);
-        if (donationSnapshot.exists()) {
-            const donation = donationSnapshot.data();
-            const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[];
-            imagesRef.push(...(donationDetail.getImages() as DocumentReference<Image>[]));
-            donation.images = await imageReferenceConverter(...imagesRef);
-            donations.push(donation);
-        }
-    }
-    return donations;
-}
-
 export async function addDonation(newDonation: DonationBody) {
     try {
-        const userId: string = await getUserId();
-        const donationParams: IDonation = {
-            category: newDonation.category,
-            brand: newDonation.brand,
-            model: newDonation.model,
-            description: newDonation.description,
-            active: false,
-            images: [], // Only approved images display here.
-            createdAt: serverTimestamp() as Timestamp,
-            modifiedAt: serverTimestamp() as Timestamp
-        };
-
-        const donationDetailParams: IDonationDetail = {
-            donation: doc(db, `${DONATIONS_COLLECTION}/${userId}`),
-            availability: undefined,
-            donor: doc(db, `${USERS_COLLECTION}/${userId}`),
-            tagNumber: undefined,
-            tagNumberForItemDelivered: undefined,
-            sku: undefined,
-            recipientOrganization: undefined,
-            images: newDonation.images,
-            recipientContact: undefined,
-            recipientAddress: undefined,
-            requestor: undefined,
-            storage: undefined,
-            dateReceived: undefined,
-            dateDistributed: undefined,
-            scheduledPickupDate: undefined,
-            dateOrderFulfilled: undefined,
-            createdAt: serverTimestamp() as Timestamp,
-            modifiedAt: serverTimestamp() as Timestamp
-        };
-
-        const donation = new Donation(donationParams);
-        const donationDetail = new DonationDetail(donationDetailParams);
-
-        try {
-            await runTransaction(db, async (transaction) => {
-                // Generate document references with firebase-generated IDs
-                const donationRef = doc(collection(db, DONATIONS_COLLECTION));
-                const donationDetailRef = doc(collection(db, DONATION_DETAILS_COLLECTION));
-                // Assign donation reference to donation detail
-                donationDetail.setDonation(donationRef);
-
-                transaction.set(donationRef, donationConverter.toFirestore(donation));
-
-                transaction.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail));
-            });
-        } catch (error: any) {
-            const keys: any[] = [];
-            for (const key in error) {
-                keys.push(key);
-            }
-            addEvent({ location: 'addDonation', keys: keys });
+        await runTransaction(db, async (transaction) => {
+            // Generate document references with firebase-generated IDs
+            const donationRef = doc(collection(db, DONATIONS_COLLECTION));
+            const donationDetailRef = doc(collection(db, DONATION_DETAILS_COLLECTION));
+            const userId: string = await getUserId();
+            const donationParams: IDonation = {
+                id: donationRef.id,
+                category: newDonation.category,
+                brand: newDonation.brand,
+                model: newDonation.model,
+                description: newDonation.description,
+                active: false,
+                images: [], // Only approved images display here.
+                createdAt: serverTimestamp() as Timestamp,
+                modifiedAt: serverTimestamp() as Timestamp
+            };
+            const donationDetailParams: IDonationDetail = {
+                donation: donationRef,
+                availability: undefined,
+                donor: doc(db, `${USERS_COLLECTION}/${userId}`),
+                tagNumber: undefined,
+                tagNumberForItemDelivered: undefined,
+                sku: undefined,
+                recipientOrganization: undefined,
+                images: newDonation.images,
+                recipientContact: undefined,
+                recipientAddress: undefined,
+                requestor: undefined,
+                storage: undefined,
+                dateReceived: undefined,
+                dateDistributed: undefined,
+                scheduledPickupDate: undefined,
+                dateOrderFulfilled: undefined,
+                createdAt: serverTimestamp() as Timestamp,
+                modifiedAt: serverTimestamp() as Timestamp
+            };
+            const donation = new Donation(donationParams);
+            const donationDetail = new DonationDetail(donationDetailParams);
+            transaction.set(donationRef, donationConverter.toFirestore(donation));
+            transaction.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail));
+        });
+    } catch (error: any) {
+        const keys: any[] = [];
+        for (const key in error) {
+            keys.push(key);
         }
-    } catch (error) {
-        addEvent(newDonation);
+        addEvent({ location: 'addDonation', keys: keys });
     }
 }
