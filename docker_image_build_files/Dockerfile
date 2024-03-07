@@ -10,7 +10,9 @@ RUN apt-get update && \
 RUN mkdir -p /home/user/projects/
 WORKDIR /home/user/projects/
 
-
+# Define a build argument for the timestamp to force fresh git clone
+ARG BUILD_TIMESTAMP
+RUN echo "Build timestamp: ${BUILD_TIMESTAMP}"
 # # Clone GitHub repository
 ARG GITHUB_REPO="https://github.com/codeforbtv/baby-equipment-exchange.git"
 ARG REPO_DIR="/home/user/projects/baby-equipment-exchange"
