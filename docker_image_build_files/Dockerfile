@@ -55,11 +55,13 @@ ENV CYPRESS_INSTALL_BINARY=0
 
 # Use a RUN command to export the environment variables
 RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)" 
-RUN npm install && \
-    cd /home/user/projects/baby-equipment-exchange/functions && \
+RUN npm install
+
+RUN cd /home/user/projects/baby-equipment-exchange/functions && \
     npm install && \
-    npm run build && \
-    cd /home/user/projects/baby-equipment-exchange && \
+    npm run build
+
+RUN cd /home/user/projects/baby-equipment-exchange && \
     npm run build
 RUN firebase experiments:enable webframeworks
 
