@@ -60,8 +60,8 @@ RUN npm install && \
     npm install && \
     npm run build && \
     cd /home/user/projects/baby-equipment-exchange && \
-    npm run build && \
-    firebase experiments:enable webframeworks
+    npm run build
+RUN firebase experiments:enable webframeworks
 
 
 # Define a volume in the image, this is to be passed from terraform
