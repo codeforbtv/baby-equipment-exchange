@@ -47,3 +47,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            FIREBASE_CONFIG_BASE64=${{secrets.FIREBASE_CONFIG_BASE64}}
+            SERVICE_ACCOUNT_BASE64=${{secrets.SERVICE_ACCOUNT_BASE64}}

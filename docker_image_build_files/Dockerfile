@@ -42,6 +42,14 @@ ARG FIREBASE_CONFIG
 ENV FIREBASE_CONFIG=$FIREBASE_CONFIG
 RUN chmod +x /home/user/projects/baby-equipment-exchange/
 
+# Accept build-time variables
+ARG FIREBASE_CONFIG_BASE64
+ARG SERVICE_ACCOUNT_BASE64
+
+# Use a RUN command to create the files from the arguments
+RUN echo "$FIREBASE_CONFIG_BASE64" | base64 -d > /home/user/projects/baby-equipment-exchange/firebaseConfig.json
+RUN echo "$SERVICE_ACCOUNT_BASE64" | base64 -d > /home/user/projects/baby-equipment-exchange/serviceAccount.json
+
 
 RUN npm install -g firebase-tools
 RUN touch /home/user/projects/baby-equipment-exchange/.env.local
@@ -54,16 +62,14 @@ ENV GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/
 ENV CYPRESS_INSTALL_BINARY=0
 
 # Use a RUN command to export the environment variables
-RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)" 
-RUN npm install
-
-RUN cd /home/user/projects/baby-equipment-exchange/functions && \
+RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)" && \
     npm install && \
-    npm run build
-
-RUN cd /home/user/projects/baby-equipment-exchange
-RUN npm run build
-RUN firebase experiments:enable webframeworks
+    cd /home/user/projects/baby-equipment-exchange/functions && \
+    npm install && \
+    npm run build && \
+    cd /home/user/projects/baby-equipment-exchange && \
+    npm run build && \
+    firebase experiments:enable webframeworks
 
 
 # Define a volume in the image, this is to be passed from terraform
