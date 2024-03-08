@@ -16,7 +16,7 @@ This project assists the collection and distribution of unused and gently used b
 - Give your token a name, set the expiration, and select at least the read:packages scope under package permissions. - If you also want to push or delete packages, select the appropriate additional scopes.
 - Click Generate token at the bottom of the page and make sure to copy your new personal access token; you won't be able to see it again.
 3. Log in to GitHub Packages
-Use the docker login command to authenticate with GitHub Packages, replacing USERNAME with your GitHub username and TOKEN with the PAT you just created:
+Use the docker login command to authenticate with GitHub Packages, use the PAT you just created for CR_PAT:
 ```
 export CR_PAT="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 echo $CR_PAT | docker login ghcr.io -u codeforbtv --password-stdin
@@ -25,20 +25,12 @@ echo $CR_PAT | docker login ghcr.io -u codeforbtv --password-stdin
 ```
 docker pull ghcr.io/codeforbtv/baby-equipment-exchange:latest
 ```
-
-
-2. download folder "docker_image_build_files" from the repo, it's better not to clone the entire repo because you will not develop on this cloned repo 
-3. you still need 2 additional files to authernticate locally contact the repo admin to get them, you need "firebaseConfig.json" and "serviceAccount.json", after you acquire them put those 2 files inside the  "/docker_image_build_files/firebase_emulator_files/"
-4. install visual studio code.
-5. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
-6. open a terminal, navigate to "/docker_image_build_files/" and run the below lines to build a docker image (if we find a way to secure some of the json files we can just share the docker image)
+5. run the docker container
 ```
-docker build -t babyequipments:1.01 .
+docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app ghcr.io/abdullahalhoothy/baby-equipment-exchange:latest
 ```
-7. run the below to run a docker container  
-```
-docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app babyequipments:1.01
-```
+6. install visual studio code.
+7. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
 8. Download VScode extension called "Remote Development"
 9. in visual studio code press ctrl+shit+p to open command palette and select Dev Containers: Attach to Running Container (https://code.visualstudio.com/docs/devcontainers/attach-container)
 10. select the Attach to Container inline action on the container you want to connect to
@@ -52,6 +44,9 @@ npm run dev
 
 ```
 14. see the output you can run in your host machine browser http://localhost:3000
+
+
+
 
 
 ## Dev Local Setup
