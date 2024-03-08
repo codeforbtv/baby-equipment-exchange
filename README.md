@@ -7,31 +7,47 @@ This project assists the collection and distribution of unused and gently used b
 ## Dev remote Setup (Recommended for consistency, you can dev local if you don't want to work with docker)
 
 1. install Docker desktop (or equivalent in Mac and Linux)
-2. download folder "docker_image_build_files" from the repo, it's better not to clone the entire repo because you will not develop on this cloned repo 
-3. you still need 2 additional files to authernticate locally contact the repo admin to get them, you need "firebaseConfig.json" and "serviceAccount.json", after you acquire them put those 2 files inside the  "/docker_image_build_files/firebase_emulator_files/"
-4. install visual studio code.
-5. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
-6. open a terminal, navigate to "/docker_image_build_files/" and run the below lines to build a docker image (if we find a way to secure some of the json files we can just share the docker image)
+
+2. the Docker image is hosted in a the GitHub Packages repository, you'll need to authenticate with GitHub Packages to pull and run the image.you need to authenticate using a GitHub Personal Access Token (PAT) with at least read:packages permission. If you haven't already, generate a PAT by following these steps:
+- go to GitHub and log in.
+- click on your profile picture in the top right corner and go to Settings.
+- on the left sidebar, click Developer settings.
+- click on Personal access tokens and then Generate new token.
+- give your token a name, set the expiration, and select at least the read:packages scope under package permissions. - If you also want to push or delete packages, select the appropriate additional scopes.
+- click Generate token at the bottom of the page and make sure to copy your new personal access token; you won't be able to see it again.
+3. log in to GitHub Packages
+Use the docker login command to authenticate with GitHub Packages, use the PAT you just created for CR_PAT:
 ```
-docker build -t babyequipments:1.01 .
+export CR_PAT="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+echo $CR_PAT | docker login ghcr.io -u codeforbtv --password-stdin
 ```
-7. run the below to run a docker container  
+4. now that you're authenticated, you can pull and run the Docker image
 ```
-docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app babyequipments:1.01
+docker pull ghcr.io/codeforbtv/baby-equipment-exchange:latest
 ```
-8. Download VScode extension called "Remote Development"
+5. run the docker container
+```
+docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app ghcr.io/codeforbtv/baby-equipment-exchange:latest
+```
+6. install visual studio code.
+7. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
+8. download VScode extension called "Remote Development"
 9. in visual studio code press ctrl+shit+p to open command palette and select Dev Containers: Attach to Running Container (https://code.visualstudio.com/docs/devcontainers/attach-container)
 10. select the Attach to Container inline action on the container you want to connect to
 11. verify your connection by going to the remote tab in VScode
 12. open folder and navigate to /home/user/projects/baby-equipment-exchange/
-13. open a new terminal in VScode (verify that it's connected to the container not your host machine) the following command should start the emulators and the app:
+13. create a new file called serviceAccount.json, you need to contact the repo admin to get the content of this file
+14. open a new terminal in VScode (verify that it's connected to the container not your host machine) the following command should start the emulators and the app:
 ```
-
+export GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
 export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
 npm run dev
 
 ```
-14. see the output you can run in your host machine browser http://localhost:3000
+15. see the output you can run in your host machine browser http://localhost:3000
+
+
+
 
 
 ## Dev Local Setup
