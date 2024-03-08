@@ -6,6 +6,15 @@ RUN apt-get update && \
     apt-get install -y git default-jdk jq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+RUN wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip && \
+    mv chromedriver /usr/bin/chromedriver && \
+    chmod +x /usr/bin/chromedriver && \
+    rm -f chromedriver_linux64.zip
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    dpkg -i google-chrome-stable_current_amd64.deb || true && \
+    apt-get install -f -y && \
+    rm -f google-chrome-stable_current_amd64.deb
 
 RUN mkdir -p /home/user/projects/
 WORKDIR /home/user/projects/
@@ -21,17 +30,10 @@ WORKDIR ${REPO_DIR}
 RUN git checkout main
 
 
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-    dpkg -i google-chrome-stable_current_amd64.deb || true && \
-    apt-get install -f -y && \
-    rm -f google-chrome-stable_current_amd64.deb
+
 # the below envinroment variables should be passed through terraform
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
-RUN wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip && \
-    unzip chromedriver_linux64.zip && \
-    mv chromedriver /usr/bin/chromedriver && \
-    chmod +x /usr/bin/chromedriver && \
-    rm -f chromedriver_linux64.zip
+
 # in the future the below files need to be passed through terraform
 # at the moment the json files must be in the same directory as the dockerfile
 # Copy all JSON files from the Dockerfile's directory to the specified working directory in the Docker image
@@ -45,7 +47,6 @@ RUN chmod +x /home/user/projects/baby-equipment-exchange/
 # Accept build-time variables
 ARG FIREBASE_CONFIG_BASE64
 ARG SERVICE_ACCOUNT_BASE64
-
 # Use a RUN command to create the files from the arguments
 RUN echo "$FIREBASE_CONFIG_BASE64" | base64 -d > /home/user/projects/baby-equipment-exchange/firebaseConfig.json
 RUN echo "$SERVICE_ACCOUNT_BASE64" | base64 -d > /home/user/projects/baby-equipment-exchange/serviceAccount.json
@@ -62,14 +63,15 @@ ENV GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/
 ENV CYPRESS_INSTALL_BINARY=0
 
 # Use a RUN command to export the environment variables
-RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)" && \
+RUN export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json | jq -c .)"  && \
     npm install && \
     cd /home/user/projects/baby-equipment-exchange/functions && \
     npm install && \
     npm run build && \
     cd /home/user/projects/baby-equipment-exchange && \
-    npm run build && \
-    firebase experiments:enable webframeworks
+    firebase experiments:enable webframeworks && \
+    npm run build 
+    
 
 
 # Define a volume in the image, this is to be passed from terraform
