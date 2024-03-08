@@ -28,7 +28,7 @@ ARG REPO_DIR="/home/user/projects/baby-equipment-exchange"
 RUN git clone ${GITHUB_REPO}
 WORKDIR ${REPO_DIR}
 RUN git checkout main
-
+RUN mkdir -p data_directory
 
 
 # the below envinroment variables should be passed through terraform
