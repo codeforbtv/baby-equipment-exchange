@@ -7,6 +7,26 @@ This project assists the collection and distribution of unused and gently used b
 ## Dev remote Setup (Recommended for consistency, you can dev local if you don't want to work with docker)
 
 1. install Docker desktop (or equivalent in Mac and Linux)
+
+2. the Docker image is hosted in a the GitHub Packages repository, you'll need to authenticate with GitHub Packages to pull and run the image.you need to authenticate using a GitHub Personal Access Token (PAT) with at least read:packages permission. If you haven't already, generate a PAT by following these steps:
+- Go to GitHub and log in.
+- Click on your profile picture in the top right corner and go to Settings.
+- On the left sidebar, click Developer settings.
+- Click on Personal access tokens and then Generate new token.
+- Give your token a name, set the expiration, and select at least the read:packages scope under package permissions. - If you also want to push or delete packages, select the appropriate additional scopes.
+- Click Generate token at the bottom of the page and make sure to copy your new personal access token; you won't be able to see it again.
+3. Log in to GitHub Packages
+Use the docker login command to authenticate with GitHub Packages, replacing USERNAME with your GitHub username and TOKEN with the PAT you just created:
+```
+export CR_PAT="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+echo $CR_PAT | docker login ghcr.io -u codeforbtv --password-stdin
+```
+4. Now that you're authenticated, you can pull and run the Docker image
+```
+docker pull ghcr.io/codeforbtv/baby-equipment-exchange:latest
+```
+
+
 2. download folder "docker_image_build_files" from the repo, it's better not to clone the entire repo because you will not develop on this cloned repo 
 3. you still need 2 additional files to authernticate locally contact the repo admin to get them, you need "firebaseConfig.json" and "serviceAccount.json", after you acquire them put those 2 files inside the  "/docker_image_build_files/firebase_emulator_files/"
 4. install visual studio code.
