@@ -27,7 +27,7 @@ docker pull ghcr.io/codeforbtv/baby-equipment-exchange:latest
 ```
 5. run the docker container
 ```
-docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app ghcr.io/abdullahalhoothy/baby-equipment-exchange:latest
+docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app ghcr.io/codeforbtv/baby-equipment-exchange:latest
 ```
 6. install visual studio code.
 7. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
