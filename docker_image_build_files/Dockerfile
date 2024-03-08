@@ -56,9 +56,9 @@ RUN npm install -g firebase-tools
 RUN touch /home/user/projects/baby-equipment-exchange/.env.local
 # the below envinroment variables should be passed through terraform
 RUN echo 'GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"' >> /home/user/projects/baby-equipment-exchange/.env.local
-RUN echo 'FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"' >> /home/user/projects/baby-equipment-exchange/.env.local
+RUN echo 'FIREBASE_EMULATORS_IMPORT_DIRECTORY="/home/user/projects/baby-equipment-exchange/data_directory/"' >> /home/user/projects/baby-equipment-exchange/.env.local
 RUN echo FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
-ENV FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
+ENV FIREBASE_EMULATORS_IMPORT_DIRECTORY="/home/user/projects/baby-equipment-exchange/data_directory/"
 ENV GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
 ENV CYPRESS_INSTALL_BINARY=0
 
