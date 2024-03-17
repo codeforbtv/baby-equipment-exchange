@@ -1,8 +1,9 @@
 services:
+
   firebase:
     build:
       context: .
-      dockerfile: ./firebase/Dockerfile
+      dockerfile: ./firebase/firebase.Dockerfile
     command: firebase emulators:start --only functions
     environment:
       - FIREBASE_TOKEN
@@ -14,18 +15,38 @@ services:
       - "5001:5001" # Cloud Functions
     healthcheck:
       test: ["CMD", "curl", "-f", "http://firebase:4000"]
-      interval: 20s
+      interval: 15s
+      start_period: 5s
+
   functions:
     build:
       context: .
-      dockerfile: ./functions/Dockerfile
+      dockerfile: ./functions/functions.Dockerfile
     volumes:
       - ./functions:/usr/src/app
+      - /usr/src/app/functions/node_modules
     command: npm run build:watch
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-none}
       - FIREBASE_CONFIG=${FIREBASE_CONFIG:-default}
       - NODE_ENV=development
+    healthcheck:
+      test: ["CMD", "curl", "http://firebase:5001"]
+      interval: 15s
+      start_period: 5s
     depends_on:
       firebase:
+        condition: service_healthy
+
+  server-equipment-exchange:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3000:3000"
+    command: npm run start:dev
+    depends_on:
+      functions:
         condition: service_healthy

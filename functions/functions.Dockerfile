@@ -1,9 +1,8 @@
-# Docker compose build context is set to the root of the project
+# Docker compose build context is set to the root of the project, so we need to target the functions/ directory.
 
 FROM node:18-bullseye
 
 WORKDIR /usr/src/app
-
 
 # Copy the package definitions first to bust the cache if they change.
 COPY functions/package*.json .

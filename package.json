@@ -8,6 +8,7 @@
         "test:unit": "node ./src/utils/setup.cjs --cmd=1",
         "build": "next build",
         "start": "next start",
+        "start:dev": "next dev",
         "lint": "next lint",
         "format": "prettier --write ."
     },
