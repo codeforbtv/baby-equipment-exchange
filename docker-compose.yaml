@@ -1,0 +1,31 @@
+services:
+  firebase:
+    build:
+      context: .
+      dockerfile: ./firebase/Dockerfile
+    command: firebase emulators:start --only functions
+    environment:
+      - FIREBASE_TOKEN
+    volumes:
+      - ./functions:/usr/src/app/functions
+    ports:
+      # https://firebase.google.com/docs/emulator-suite/install_and_configure#port_configuration
+      - "4000:4000" # Emulator Suite UI
+      - "5001:5001" # Cloud Functions
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://firebase:4000"]
+      interval: 20s
+  functions:
+    build:
+      context: .
+      dockerfile: ./functions/Dockerfile
+    volumes:
+      - ./functions:/usr/src/app
+    command: npm run build:watch
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-none}
+      - FIREBASE_CONFIG=${FIREBASE_CONFIG:-default}
+      - NODE_ENV=development
+    depends_on:
+      firebase:
+        condition: service_healthy

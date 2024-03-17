@@ -1,0 +1,13 @@
+# Ignore all files by default
+*
+
+# Include what we want
+!src
+!lib
+!package.json
+!package-lock.json
+!tsconfig.json
+!webpack.config.js
+
+# Comes from project root
+!.firebase_config 
