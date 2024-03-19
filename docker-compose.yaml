@@ -1,52 +1,48 @@
 services:
 
   firebase:
+    image: baby-equipment-exchange-image
     build:
       context: .
-      dockerfile: ./firebase/firebase.Dockerfile
+      target: firebase
     command: firebase emulators:start --only functions
     environment:
       - FIREBASE_TOKEN
     volumes:
-      - ./functions:/usr/src/app/functions
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/functions/node_modules
     ports:
       # https://firebase.google.com/docs/emulator-suite/install_and_configure#port_configuration
       - "4000:4000" # Emulator Suite UI
       - "5001:5001" # Cloud Functions
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://firebase:4000"]
-      interval: 15s
-      start_period: 5s
 
   functions:
+    image: baby-equipment-exchange-image
     build:
       context: .
-      dockerfile: ./functions/functions.Dockerfile
+      target: functions
+    working_dir: /usr/src/app/functions
     volumes:
-      - ./functions:/usr/src/app
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
       - /usr/src/app/functions/node_modules
     command: npm run build:watch
     environment:
-      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-none}
-      - FIREBASE_CONFIG=${FIREBASE_CONFIG:-default}
+      - GOOGLE_APPLICATION_CREDENTIALS
       - NODE_ENV=development
-    healthcheck:
-      test: ["CMD", "curl", "http://firebase:5001"]
-      interval: 15s
-      start_period: 5s
     depends_on:
-      firebase:
-        condition: service_healthy
+      - firebase
 
   server-equipment-exchange:
+    image: baby-equipment-exchange-image
     build:
       context: .
-      dockerfile: Dockerfile
+      target: app
     volumes:
       - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/functions/node_modules
     ports:
       - "3000:3000"
-    command: npm run start:dev
-    depends_on:
-      functions:
-        condition: service_healthy
+    command: npm run dev
