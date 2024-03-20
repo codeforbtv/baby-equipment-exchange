@@ -7,7 +7,8 @@ services:
       target: firebase
     command: firebase emulators:start --only functions
     environment:
-      - FIREBASE_TOKEN
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-service-account.json}
+      - FIREBASE_CONFIG=${FIREBASE_CONFIG:-firebase-config.json}
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -29,7 +30,8 @@ services:
       - /usr/src/app/functions/node_modules
     command: npm run build:watch
     environment:
-      - GOOGLE_APPLICATION_CREDENTIALS
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-service-account.json}
+      - FIREBASE_CONFIG=${FIREBASE_CONFIG:-firebase-config.json}
       - NODE_ENV=development
     depends_on:
       - firebase
@@ -45,4 +47,6 @@ services:
       - /usr/src/app/functions/node_modules
     ports:
       - "3000:3000"
-    command: npm run dev
+    command: npm run alt-dev
+    environment:
+      - FIREBASE_CONFIG=${FIREBASE_CONFIG:-firebase-config.json}
