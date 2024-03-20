@@ -191,6 +191,36 @@ async function _getDonations(...donationDetails: DonationDetail[]): Promise<Dona
     return donations;
 }
 
+//TODO images CORS error.
+export async function getDonationById(id: string): Promise<DonationDetail> {
+    try {
+        const uid = await getUserId();
+        const hasClaimOnReadingDonations: boolean = await canReadDonations();
+        const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
+        const donationCollectionRef = collection(db, DONATIONS_COLLECTION);
+        const donationDetailsCollectionRef = collection(db, DONATION_DETAILS_COLLECTION);
+        const donationRef = doc(donationCollectionRef, `${id}`).withConverter(donationConverter);
+        const conjunctions = [where('donation', '==', donationRef)];
+        //if user cannot read all donations, only fetch donation if it was donated by current user
+        if (hasClaimOnReadingDonations !== true) {
+            conjunctions.push(where('donor', '==', userRef));
+        }
+
+        const q = query(donationDetailsCollectionRef, ...conjunctions).withConverter(donationDetailsConverter);
+
+        const donationDetailsSnapshot = await getDocs(q);
+        const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc: any) => doc.data());
+
+        if (donationDetails.length !== 1) {
+            throw new Error('You are unauthorized to view this donation.');
+        }
+        return donationDetails[0];
+    } catch (error: any) {
+        addEvent({ location: 'api/firebase-donations', error: error });
+    }
+    return Promise.reject();
+}
+
 export async function addDonation(newDonation: DonationBody) {
     try {
         const userId: string = await getUserId();

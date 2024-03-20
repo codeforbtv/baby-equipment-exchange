@@ -6,7 +6,8 @@ import DonationCard from './DonationCard';
 import Filter from './Filter';
 import Loader from './Loader';
 import SearchBar from './SearchBar';
-// Components
+import AlgoliaHits from './AlgoliaHits';
+import AlgoliaSearchBox from './AlgoliaSearchBox';
 import { Button, ImageList } from '@mui/material';
 // Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,6 +17,8 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 // Libs
 import { getDonations } from '@/api/firebase-donations';
 import { addEvent } from '@/api/firebase';
+import algoliasearch from 'algoliasearch/lite';
+import { InstantSearch } from 'react-instantsearch';
 // Styles
 import styles from './Browse.module.css';
 
@@ -24,6 +27,7 @@ const NewDonationDialog = lazy(() => import('@/components/NewDonationDialog'));
 const Browse: React.FC = () => {
     const [donations, setDonations] = useState<Donation[] | null>();
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
+    const [showHits, setShowHits] = useState<boolean>(false);
     const [isDialogActive, setIsDialogActive] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -66,6 +70,8 @@ const Browse: React.FC = () => {
         })();
     }, []);
 
+    const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_API_KEY;
+
     return isLoading || donations == null ? (
         <Loader />
     ) : (
@@ -90,7 +96,20 @@ const Browse: React.FC = () => {
                             <FontAwesomeIcon icon={faFilter} />
                         </div>
                     </div>
-                    <>{isSearchVisible && <SearchBar />}</>
+                    <>
+                        {
+                            //only show search if an Algolia API Key is set,
+                            isSearchVisible &&
+                                (algoliaApiKey != undefined ? (
+                                    <InstantSearch searchClient={algoliasearch('HIVWVAMJA9', algoliaApiKey)} indexName="donations">
+                                        <AlgoliaSearchBox inputHandler={setShowHits} />
+                                        {showHits && <AlgoliaHits />}
+                                    </InstantSearch>
+                                ) : (
+                                    <div>Search currently disabled</div>
+                                ))
+                        }
+                    </>
                     <>{isFilterVisible && <Filter />}</>
                     <ImageList className={styles['browse__grid']}>
                         {donations.map((donation) => {
