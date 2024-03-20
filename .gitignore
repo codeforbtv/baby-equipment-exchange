@@ -55,3 +55,4 @@ serviceAccount.json
 #VSCODE Preferences
 .vscode
 
+.env
