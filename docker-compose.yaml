@@ -1,7 +1,7 @@
 services:
 
   firebase:
-    image: baby-equipment-exchange-image
+    image: baby-equipment-exchange-firebase
     build:
       context: .
       target: firebase
@@ -19,7 +19,7 @@ services:
       - "5001:5001" # Cloud Functions
 
   functions:
-    image: baby-equipment-exchange-image
+    image: baby-equipment-exchange-functions
     build:
       context: .
       target: functions
@@ -36,8 +36,8 @@ services:
     depends_on:
       - firebase
 
-  server-equipment-exchange:
-    image: baby-equipment-exchange-image
+  nextjs:
+    image: baby-equipment-exchange-nextjs
     build:
       context: .
       target: app

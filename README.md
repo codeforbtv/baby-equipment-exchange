@@ -2,7 +2,46 @@
 
 ## Introduction...
 
-This project assists the collection and distribution of unused and gently used baby and child equipment. Over twenty dif.ferent organizations are served by this exchange.
+This project assists the collection and distribution of unused and gently used baby and child equipment. Over twenty different organizations are served by this exchange.
+
+## Dev Local Setup - Docker Compose Option
+[Docker compose](https://docs.docker.com/compose/intro/features-uses/) provides a way to manage and orchestrate local environment services.
+
+Currently, we use 3 services:
+- firebase - Our firebase emulator which provides access to local firebase services
+- functions - A convenient wrapper around our firebase functions project which aims to automate the dev build + reloading of the functions compilation.
+- nextjs - Our main nextjs application
+
+Pre-requisities
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+Config Setup
+1. Create / Acquire firebase configuration, `firebase-config.json`, put in the root directory.
+2. Acquire Service Account Credentials, `service-account.json`, put in the root directory.
+
+** Both of these files should be ignored by git **
+
+Quick Start: `docker compose build && docker compose up -d`
+
+In general, the urls that should be available after doing this:
+- http://localhost:3000 - nextjs app
+- http://localhost:4000 - firebase emulator ui
+- http://localhost:5001 - functions api
+
+Common Commands:
+- Build `docker compose build` (builds all images)
+- Start `docker compose up -d` (starts all services)
+- Stop `docker compose down --remove-orphans --volumes` (stops all containers and cleans up)
+
+Other Commands:
+- Logs `docker compose logs --follow` (shows logs across all services)
+- Run `docker compose run --no-deps -T --rm <service> <command>` (runs a one time <command> on a <service> (--no-deps dont start any other services) (--rm remove after run) (-T if running a background command that requires no input/shell))
+
+Cleanup Commands:
+Over time, images, containers, volumes will need to be cleaned up.
+- Everything `docker system prune -a` 
+- Images `docker image prune -a`
+- Volumes `docker volume prune -a`
 
 ## Dev remote Setup (Recommended for consistency, you can dev local if you don't want to work with docker)
 
