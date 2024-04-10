@@ -1,15 +1,16 @@
 'use client';
+import { CustomHit } from '@/types/AlgoliaTypes';
+import type { BaseHit } from 'instantsearch.js';
 import styles from './AlgoliaHits.module.css';
 import { useRouter } from 'next/navigation';
 
-import { AlgoliaHitCardProps } from '@/types/AlgoliaTypes';
-
-// @ts-ignore
-export default function AlgoliaHitCard({ hit, clickHandler }: AlgoliaHitCardProps) {
+export default function AlgoliaHitCard(hit: BaseHit) {
     const router = useRouter();
+    const customHit = hit as CustomHit;
+
     return (
-        <div onClick={() => router.push(`/donations/${hit.objectID}`)} className={styles['hit__container']}>
-            <span style={{ fontWeight: 'bold' }}>{hit.model}</span> {hit.brand} {hit.category} <i>{hit.description}</i>
+        <div onClick={() => router.push(`/donations/${customHit.objectID}`)} className={styles['hit__container']}>
+            <span style={{ fontWeight: 'bold' }}>{customHit.model}</span> {customHit.brand} {customHit.category} <i>{customHit.description}</i>
         </div>
     );
 }

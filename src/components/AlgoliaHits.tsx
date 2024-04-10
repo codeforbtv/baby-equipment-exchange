@@ -1,8 +1,6 @@
 'use-client';
 import { useHits, UseHitsProps } from 'react-instantsearch';
-
 import AlgoliaHitCard from './AlgoliaHitCard';
-
 import styles from './AlgoliaHits.module.css';
 
 export default function AlgoliaHits(props: UseHitsProps) {
