@@ -4,7 +4,7 @@ import type { BaseHit } from 'instantsearch.js';
 import styles from './AlgoliaHits.module.css';
 import { useRouter } from 'next/navigation';
 
-export default function AlgoliaHitCard(hit: BaseHit) {
+export default function AlgoliaHitCard({ hit }: BaseHit) {
     const router = useRouter();
     const customHit = hit as CustomHit;
 

@@ -1,5 +1,5 @@
 import { FormEvent, useRef, useState } from 'react';
-import { useSearchBox, UseSearchBoxProps } from 'react-instantsearch';
+import { useSearchBox } from 'react-instantsearch';
 import { CustomSearchBox } from '@/types/AlgoliaTypes';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

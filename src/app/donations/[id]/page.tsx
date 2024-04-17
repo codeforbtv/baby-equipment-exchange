@@ -34,17 +34,17 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
     }
 
     if (!isLoading && donationDetails === null) {
-        return <p>An error has occured.</p>;
+        return <p>You are not authorized to view this donation.</p>;
     }
 
     if (!isLoading && donationDetails !== null) {
         const donation = donationDetails.donation;
         return (
-            <>
-                <h3>Donation Details</h3>
-                {donation.brand}
-                {donation.model}
-            </>
+            <div>
+                <h1>Donation Details</h1>
+                <h2>{donation.brand}</h2>
+                <h3>{donation.model}</h3>
+            </div>
         );
     }
 }
