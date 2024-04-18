@@ -15,9 +15,7 @@ import {
 } from 'firebase/auth';
 import { AccountInformation, UserBody } from '@/types/post-data';
 
-import { firebaseConfig } from '../../firebase-config.js';
-
-// const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG ?? '{}');
+const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG ?? '{}');
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 export const db: Firestore = initDb();
