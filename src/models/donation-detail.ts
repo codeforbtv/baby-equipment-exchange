@@ -3,6 +3,7 @@ import { DocumentReference, Timestamp } from 'firebase/firestore';
 //Plain Javascript objects
 import { Address } from './address';
 import { Contact } from './contact';
+import { Donation } from './donation';
 
 export interface IDonationDetail {
     [key: string]: any;
@@ -153,4 +154,8 @@ export class DonationDetail implements IDonationDetail {
     setDonation(donation: DocumentReference) {
         this.donation = donation;
     }
+}
+
+export class DonationDetailNoRefs implements Omit<DonationDetail, 'donation'> {
+    donation!: Donation;
 }

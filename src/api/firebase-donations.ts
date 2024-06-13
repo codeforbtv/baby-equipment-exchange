@@ -18,7 +18,7 @@ import {
 } from 'firebase/firestore';
 // Models
 import { Donation, IDonation } from '@/models/donation';
-import { DonationDetail, IDonationDetail } from '@/models/donation-detail';
+import { DonationDetail, IDonationDetail, DonationDetailNoRefs } from '@/models/donation-detail';
 import { DonationBody } from '@/types/post-data';
 import { Image } from '@/models/image';
 // Libs
@@ -171,6 +171,70 @@ export async function getDonations(filter: null | undefined): Promise<Donation[]
             }
         }
         return donations;
+    } catch (error: any) {
+        addEvent({ location: 'api/firebase-donations', error: error });
+    }
+    return Promise.reject();
+}
+
+async function _getDonations(...donationDetails: DonationDetail[]): Promise<Donation[]> {
+    const donations: Donation[] = [];
+    for (const donationDetail of donationDetails) {
+        const donationRef = donationDetail.getDonation().withConverter(donationConverter);
+        const donationSnapshot = await getDoc(donationRef);
+        if (donationSnapshot.exists()) {
+            const donation = donationSnapshot.data();
+            const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[];
+            imagesRef.push(...(donationDetail.getImages() as DocumentReference<Image>[]));
+            donation.images = await imageReferenceConverter(...imagesRef);
+            donations.push(donation);
+        }
+    }
+    return donations;
+}
+
+export async function getDonationById(id: string): Promise<DonationDetailNoRefs> {
+    try {
+        const uid = await getUserId();
+        const hasClaimOnReadingDonations: boolean = await canReadDonations();
+        const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
+        const donationCollectionRef = collection(db, DONATIONS_COLLECTION);
+        const donationDetailsCollectionRef = collection(db, DONATION_DETAILS_COLLECTION);
+        const donationRef = doc(donationCollectionRef, `${id}`).withConverter(donationConverter);
+        const conjunctions = [where('donation', '==', donationRef)];
+        //if user cannot read all donations, only fetch donation if it was donated by current user
+        if (hasClaimOnReadingDonations !== true) {
+            conjunctions.push(where('donor', '==', userRef));
+        }
+
+        const q = query(donationDetailsCollectionRef, ...conjunctions).withConverter(donationDetailsConverter);
+
+        const donationDetailsSnapshot = await getDocs(q);
+        const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc: any) => doc.data());
+
+        if (donationDetails.length !== 1) {
+            throw new Error('You are unauthorized to view this donation.');
+        }
+
+        let donation;
+        const donationSnapshot = await getDoc(donationRef);
+        if (donationSnapshot.exists()) {
+            //handleDonationImages
+            donation = donationSnapshot.data();
+            const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[];
+            imagesRef.push(...(donationDetails[0].getImages() as DocumentReference<Image>[]));
+            donation.images = await imageReferenceConverter(...imagesRef);
+        }
+
+        if (donation) {
+            const donationDetail: DonationDetailNoRefs = {
+                ...donationDetails[0],
+                donation: donation
+            };
+            return donationDetail;
+        } else {
+            return Promise.reject();
+        }
     } catch (error: any) {
         addEvent({ location: 'api/firebase-donations', error: error });
     }
