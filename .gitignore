@@ -7,7 +7,6 @@
 /.pnp
 .pnp.js
 .cache
-package-lock.json
 
 # testing
 /coverage
@@ -45,15 +44,15 @@ firestore-data
 
 # Sensitive configuration files
 .env.local
-.firebaserc
 **/*irebase-config*
 **/*irebaseConfig*
-**/firebase.json
-**/*.rules
 **/*secret*
-**/*indexes*
 **/*adminsdk*
 **/*service*
+firebaseConfig.json   
+serviceAccount.json   
 
 #VSCODE Preferences
 .vscode
+
+.env

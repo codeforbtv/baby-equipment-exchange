@@ -1,320 +1,157 @@
 # The Baby Equipment Exchange
 
-## Introduction
+## Introduction...
 
 This project assists the collection and distribution of unused and gently used baby and child equipment. Over twenty different organizations are served by this exchange.
 
-### Set up
+## Dev Local Setup - Docker Compose Option
+[Docker compose](https://docs.docker.com/compose/intro/features-uses/) provides a way to manage and orchestrate local environment services.
 
-### Dependencies
+Currently, we use 3 services:
+- firebase - Our firebase emulator which provides access to local firebase services
+- functions - A convenient wrapper around our firebase functions project which aims to automate the dev build + reloading of the functions compilation.
+- nextjs - Our main nextjs application
 
-#### Java dependency
+Pre-requisities
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-The emulator suite requires Java JDK version 11 or higher and the [Firebase CLI](https://github.com/firebase/firebase-tools) must be installed.
+Config Setup
+1. Create / Acquire firebase configuration, `firebase-config.json`, put in the root directory.
+2. Acquire Service Account Credentials, `service-account.json`, put in the root directory.
 
-[https://docs.oracle.com/en/java/javase/21/install/installation-jdk-macos.html#GUID-2FE451B0-9572-4E38-A1A5-568B77B146DE](https://docs.oracle.com/en/java/javase/21/install/installation-jdk-macos.html#GUID-2FE451B0-9572-4E38-A1A5-568B77B146DE)
+** Both of these files should be ignored by git **
 
-#### Node v18 dependency
+Quick Start: `docker compose build && docker compose up -d`
 
-This project uses Google Cloud Functions.
+In general, the urls that should be available after doing this:
+- http://localhost:3000 - nextjs app
+- http://localhost:4000 - firebase emulator ui
+- http://localhost:5001 - functions api
 
-Google Cloud Functions only support the Long Term Support (LTS) versions of the Node.js runtime. LTS version of Node.js are denoted by even numbers (16.0., 18.0, 20.0). Cloud Function’s support for Node.js 20 is still in preview.
+Common Commands:
+- Build `docker compose build` (builds all images)
+- Start `docker compose up -d` (starts all services)
+- Stop `docker compose down --remove-orphans --volumes` (stops all containers and cleans up)
 
-This is why `./functions/src/package.json` targets Node v18:
+Other Commands:
+- Logs `docker compose logs --follow` (shows logs across all services)
+- Run `docker compose run --no-deps -T --rm <service> <command>` (runs a one time <command> on a <service> (--no-deps dont start any other services) (--rm remove after run) (-T if running a background command that requires no input/shell))
+
+Cleanup Commands:
+Over time, images, containers, volumes will need to be cleaned up.
+- Everything `docker system prune -a` 
+- Images `docker image prune -a`
+- Volumes `docker volume prune -a`
+
+## Dev remote Setup (Recommended for consistency, you can dev local if you don't want to work with docker)
+
+1. install Docker desktop (or equivalent in Mac and Linux)
+
+2. the Docker image is hosted in a the GitHub Packages repository, you'll need to authenticate with GitHub Packages to pull and run the image.you need to authenticate using a GitHub Personal Access Token (PAT) with at least read:packages permission. If you haven't already, generate a PAT by following these steps:
+- go to GitHub and log in.
+- click on your profile picture in the top right corner and go to Settings.
+- on the left sidebar, click Developer settings.
+- click on Personal access tokens and then Generate new token.
+- give your token a name, set the expiration, and select at least the read:packages scope under package permissions. - If you also want to push or delete packages, select the appropriate additional scopes.
+- click Generate token at the bottom of the page and make sure to copy your new personal access token; you won't be able to see it again.
+3. log in to GitHub Packages
+Use the docker login command to authenticate with GitHub Packages, use the PAT you just created for CR_PAT:
+```
+export CR_PAT="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+echo $CR_PAT | docker login ghcr.io -u codeforbtv --password-stdin
+```
+4. now that you're authenticated, you can pull and run the Docker image
+```
+docker pull ghcr.io/codeforbtv/baby-equipment-exchange:latest
+```
+5. run the docker container
+```
+docker run -dit -p 3000:3000 -p 4000:4000 -p 5000:5000 -p 4400:4400 -p 4500:4500 -p 9099:9099 -p 8080:8080 -p 9150:9150 -p 9199:9199 --name baby-equipment-app ghcr.io/codeforbtv/baby-equipment-exchange:latest
+```
+6. install visual studio code.
+7. run visual studio code and install Visual Studio Code Dev Containers extension, for documentation on this extension (https://code.visualstudio.com/docs/devcontainers/containers)
+8. download VScode extension called "Remote Development"
+9. in visual studio code press ctrl+shit+p to open command palette and select Dev Containers: Attach to Running Container (https://code.visualstudio.com/docs/devcontainers/attach-container)
+10. select the Attach to Container inline action on the container you want to connect to
+11. verify your connection by going to the remote tab in VScode
+12. open folder and navigate to /home/user/projects/baby-equipment-exchange/
+13. create a new file called serviceAccount.json, you need to contact the repo admin to get the content of this file
+14. open a new terminal in VScode (verify that it's connected to the container not your host machine) the following command should start the emulators and the app:
+```
+export GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
+export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
+npm run dev
 
 ```
-...
-"engines": {
-"node": "18"
-}
-...
+15. see the output you can run in your host machine browser http://localhost:3000
+
+
+
+
+
+## Dev Local Setup
+Below are linux command used to setup the environment. notes for setup on Mac are in `docs\setup_notes.md`
+
+1. Install required packages
 ```
+sudo apt install default-jdk
+sudo apt update
+sudo apt install git
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+nvm install 18.19.0
+nvm use 18.19.0
+sudo mkdir -p /home/user/projects/
+sudo chown -R $(whoami) /home/user/projects/
 
-nvm can be installed with Homebrew:
+cd /home/user/projects/
+sudo git clone https://github.com/codeforbtv/baby-equipment-exchange.git
 
-```
-brew install nvm
-nvm install 18.19.0 # The latest version of Node v18 as of December 12th, 2023
-nvm use 18.9.0
-node -v # -> v.18.19.0
-```
-
-`nvm use system` can be used to switch back to the default version of Node.
-
-#### **The Firebase Emulator Suite**
-
-Globally install the Firebase CLI [firebase-tools - npm (npmjs.com)](https://www.npmjs.com/package/firebase-tools):
-
-```
+cd /home/user/projects/baby-equipment-exchange
+sudo wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+sudo apt-get install -f
+echo 'export PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome' >> ~/.bashrc
+source ~/.bashrc
+sudo wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip
+sudo unzip chromedriver_linux64.zip
+sudo mv chromedriver /usr/bin/chromedriver
+sudo chown root:root /usr/bin/chromedriver
+sudo chmod +x /usr/bin/chromedriver
+sudo chown -R $(whoami) /home/user/projects/
+cd /home/user/projects/baby-equipment-exchange/
 npm install -g firebase-tools
 ```
 
-#### Having Account Access to the Google Cloud Project or Application Default Credentials Dependency
-
-Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable with the path to the Service Account Credentials (see the next section, Configuration File Dependencies serviceAccount.json) [How Application Default Credentials works  |  Authentication  |  Google Cloud](https://cloud.google.com/docs/authentication/application-default-credentials):
-
+2. Setup environment variables
 ```
+sudo touch /home/user/projects/baby-equipment-exchange/.env.local
+sudo echo 'GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"' >> /home/user/projects/baby-equipment-exchange/.env.local
+sudo echo 'FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"' >> /home/user/projects/baby-equipment-exchange/.env.local
+sudo apt-get install jq
+echo FIREBASE_CONFIG=\"$(jq -c . < firebaseConfig.json)\" >> .env.local
+export FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 export GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
+export FIREBASE_CONFIG="$(cat /home/user/projects/baby-equipment-exchange/firebaseConfig.json)"
 ```
 
-If you have performed the above step, the following step should not be necessary:
-
+3. install npm requirments and build project
 ```
-firebase login
-```
-
-Set the `FIREBASE_CONFIG` environment variable. For more details about what is in a Firebase config, visit [Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects):
-
-
-```
-export FIREBASE_CONFIG="{ \
-  \"apiKey\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
-  \"authDomain\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
-  \"projectId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
-  \"storageBucket\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
-  \"messagingSenderId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\", \
-  \"appId\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" \
-}"
-```
-
-or, `export FIREBASE_CONFIG="$(cat <path_to_Firebace_JSON_configuration_file)"`.
-
-#### Configuration File Dependencies
-
-This is a list of all configuration files required for the Emulator Suite to run. All of these files go in the project root directory (e.g. `/home/user/projects/baby-equipment-exchange`), where `dotenv-config.js` and `package.json` and `next.config.js` are all found
-
--   `.env.local` See [This Page](https://firebase.google.com/docs/functions/config-env?gen=2nd#emulator_support) for more details
--   `.firebaserc`
--   `firebase.json` [for deployment configuration](https://firebase.google.com/docs/cli#the_firebasejson_file) and [when configuring the emulator suite](https://firebase.google.com/docs/emulator-suite/install_and_configure#configure_emulator_suite)
--   `firestore.rules`
--   `firestore.indexes.json`
--   `storage.rules`
--   `serviceAccount.json`
-
-The environment variable, `FIREBASE_EMULATORS_IMPORT_DIRECTORY` must be set. The directory should be a path exclusively for Firebase emulator data. If the directory exists, the emulator will attempt to import the data. If the directory does not exist, the emulator will export data to the directory on exit.
-
-**.env.local** — (Same directory as `dotenv-config.js` and `package.json` and `next.config.js`) Stores all environment variables that are picked-up by an environment variable loader. This projects uses [dot-env - npm (npmjs.com)](https://www.npmjs.com/package/dot-env). Add the following line to this .env.local file:
-
-```
-FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
-```
-
-******\*\*\*\*******\*\*\*\*******\*\*\*\*******firebase.json******\*\*\*\*******\*\*\*\*******\*\*\*\******* — (Same directory as above) Contains configurations for deploying the app and the emulator suite:
-
-```
-{
-    "emulators": {
-      "auth": {
-        "enabled": true
-      },
-      "firestore": {
-        "enabled": true
-      },
-      "functions": {
-        "enabled": true
-      },
-      "storage": {
-        "enabled": true
-      }
-    },
-    "firestore": {
-      "rules": "firestore.rules",
-      "indexes": "firestore.indexes.json"
-    },
-    "hosting": {
-      "source": ".",
-      "ignore": [
-        "firebase.json",
-        "*/.",
-        "*/node_modules/*"
-      ],
-      "frameworksBackend": {
-        "region": "us-east1",
-        "maxInstances":10
-      }
-    },
-    "storage": {
-      "rules": "storage.rules"
-    },
-    "functions": [
-      {
-        "source": "functions",
-        "codebase": "default",
-        "ignore": [
-          "node_modules",
-          ".git",
-          "firebase-debug.log",
-          "firebase-debug.*.log"
-        ],
-        "predeploy": [
-          "npm --prefix \"$RESOURCE_DIR\" run build"
-        ]
-      }
-    ]
-}
-```
-
-**.firebaserc** — (Same directory as above) Google Firebase site/project information is described in this file:
-
-```
-{
-  "projects": {
-    "default": "demo-bee"
-  }
-}
-```
-
-******\*\*******\*\*******\*\*******firestore.rules******\*\*******\*\*******\*\******* — (Same directory as above) The Firestore Security Rules the emulator should enforce [Get started with Cloud Firestore Security Rules  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/security/get-started)
-
-```
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-      // Administrator role
-      match /Events/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-      }
-      match /Donations/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-      }
-      match /DonationDetails/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-      }
-      match /Images/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-        }
-        match /ImageDetails/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-        }
-      match /Organizations/{document=**} {
-        allow create, read, update, write: if request.auth != null && request.auth.token.admin == true;
-        }
-      match /Storage/{document=**} {
-        allow create, read, update, write: if request.auth != null && request.auth.token.admin == true;
-        }
-      match /Users/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-      }
-      match /UserDetails/{document=**} {
-        allow read, update: if request.auth != null  && request.auth.token.admin == true;
-        }
-      // Standard user role
-        match /Donations/{document=**} {
-        allow create, read, update, write: if request.auth != null;
-        }
-        match /DonationDetails/{document=**} {
-        allow create, read, update, write: if request.auth != null;
-        }
-      match /Images/{document=**} {
-        allow create, read: if request.auth != null;
-        }
-        match /ImageDetails/{document=**} {
-        allow create, read: if request.auth != null;
-        }
-        match /Users/{userId} {
-        allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
-        }
-        match /UserDetails/{userId} {
-        allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
-        }
-  }
-}
-```
-
-**********\*\*\*\***********\*\***********\*\*\*\***********firestore.indexes.json**********\*\*\*\***********\*\***********\*\*\*\*********** — (Same directory as above) Database index definitions the emulator should have set [Manage indexes in Cloud Firestore  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/query-data/indexing)
-
-```
-{
-    "indexes": [],
-    "fieldOverrides": []
-}
-```
-
-********\*\*\*\*********\*\*********\*\*\*\*********serviceAccount.json********\*\*\*\*********\*\*********\*\*\*\********* — (Same directory as above) The credentials for a Service Account that is authorized to carry-out work in Google Cloud on behalf of the Firebase project [Service accounts overview  |  IAM Documentation  |  Google Cloud](https://cloud.google.com/iam/docs/service-account-overview)
-
-```
-{
-    "type": "service_account",
-    "project_id": "project,
-    "private_key_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "private_key": "-----BEGIN PRIVATE KEY-----
-    \\?????????????????????x?x????????????????????????????xx??xx????+??\???????xx+?x??x???????????????????????????????x??/??x?x????+????x\???x??????/x??????x????xx??/????????x?????????????x?x????xx?/???x\???x????????????????????????xxx?????????x???????x?x?+????????????\???x????????/xx???x????+???x??x??x?????x??x??????x?x????x????????\?????????????x???????????????x???????x????x??????????????????????\???x?????????????????????????????x?xx???x?????????/?/???????????x\?x???????x???/???????xx??????x????????????????x???????x????x??/??\?????????x??x?????????xx??x???/????xx?x????????x????????x?????x??\?x????x?x??????x?/????x??????????????xx??x?????x?????????xx??x???\??????????????????x???x???x???????x????x?x???x?x???+?xx?x?????x??\????x???+x?x?????x?????x?x+???+??????????????????????x??xx???????\?????/???????????x??x?????xx??/???????????x??x????x????+?????????\???x?????x?????x?x?????x?????????????x???x??x????????x???x???+?x?\?x???????x?xx?xx????xx????????????????????x????xx??????xx?????x??\?????x????????????x???x?x???xx???x???xx?x?????/?x??x?????????+???\????x?x/??xx???x??x?x??x???x?????x??x???????????x????????/????x?x\???/+????x??????xx?+??x\n-----END PRIVATE KEY-----\n",
-    "client_email": "client@serviceaccount.com",
-    "client_id": "xxxxxxxxxxxxxxxxxxxxx",
-    "auth_uri": "https:/example.com/o/oauth2/auth",
-    "token_uri": "https://example.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.example.com",
-    "universe_domain": "domain"
-  }
-```
-
-****\*\*\*\*****\*\*****\*\*\*\*****storage.rules****\*\*\*\*****\*\*****\*\*\*\***** — (Same directory as above) The Storage Security Rules the emulator should enforce [Understand Firebase Security Rules for Cloud Storage  |  Cloud Storage for Firebase (google.com)](https://firebase.google.com/docs/storage/security/)
-
-```
-rules_version = '2';
-
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-### Installation and Setup
-
-#### npm install
-
-Both the directory defining the Cloud Functions and the main app must be installed and built.
-
-The package.json in the `home/user/projects/baby-equipment-exchange/**functions**` directory may rely on dependencies present in the node_modules directory of `/home/user/projects/baby-equipment-exchange`, so perform an `npm install` in the project root directory first:
-
-```
-cd "/home/user/projects/baby-equipment-exchange"
 npm install
-```
 
-Then, install the dependencies necessary for this app’s Cloud Functions:
-
-```
-cd "/home/user/projects/baby-equipment-exchange/**functions/**"
+cd /home/user/projects/baby-equipment-exchange/functions
 npm install
-```
-
-#### npm run build
-
-From `/home/user/projects/baby-equipment-exchange`, build the cloud functions with:
-
-```
-**cd ./functions** && npm run build
-```
-
-From the project root, `/home/user/projects/baby-equipment-exchange/`:
-
-```
 npm run build
-```
 
-#### Set the Firebase project for the current directory (the cloned baby-equipment-exchange directory)
+cd /home/user/projects/baby-equipment-exchange
 
-To set the active Firebase project for the current directory, run:
+npm run build
 
-```
+firebase experiments:enable webframeworks
 firebase use --add
+npm run dev
 ```
 
-when prompted, provide the name of the project and an alias for it:
 
-```
-**?** Which project do you want to add? **baby-equipment-exchange**
-**?** What alias do you want to use for this project? (e.g. staging) **c4btv**
-```
 
 #### Automatically compiling Firebase Functions changes
 
@@ -384,7 +221,7 @@ Scroll to Custom claims. Claims should already be present. If the text field is 
 
 ![Firebase Emulator Auth edit existing user](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_3.png)
 
-(Clicking outside the Edit user pop-up closes it) Scroll the slider down and select the **\*\*\*\***Save**\*\*\*\*** button:
+(Clicking outside the Edit user pop-up closes it) Scroll the slider down and select the **Save** button:
 
 ![Firebase Emulator Auth save button](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_3_5.png)
 
