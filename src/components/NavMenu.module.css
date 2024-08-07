@@ -1,0 +1,31 @@
+.menu__link {
+    font-family: var(--primary-font);
+    color: white;
+    padding: 0.5rem 0;
+    font-size: 1.25rem;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.nav__menu {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.menu__close {
+    cursor: pointer;
+}
+
+.menu__bars,
+.close__btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.close__btn {
+    padding: 4px;
+    margin: 0 0 0 auto;
+}
