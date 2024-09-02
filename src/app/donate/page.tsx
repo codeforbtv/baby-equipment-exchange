@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import { uploadImages } from '@/api/firebase-images';
 import { addDonation } from '@/api/firebase-donations';
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
 import { DocumentReference, doc } from 'firebase/firestore';
 import { USERS_COLLECTION } from '@/api/firebase-users';
@@ -138,7 +138,7 @@ export default function Donate() {
                             Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
                         </li>
                     </ul>
-                    <div className={globalStyles['content__container']}>
+                    <div className="content__container">
                         <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
                             <Box className={styles['form__section--left']}>
                                 <Box display={'flex'} flexDirection={'column'} gap={1}>

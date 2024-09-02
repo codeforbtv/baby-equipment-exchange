@@ -11,7 +11,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 //Libs
 import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '@/api/firebase';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../../styles/globalStyles.css';
 import styles from './Login.module.css';
 
 export default function Login() {
@@ -44,7 +44,7 @@ export default function Login() {
             <div className={styles['login__container']}>
                 <h1>Login</h1>
                 <h4>[Page Summary]</h4>
-                <div className={globalStyles['content__container']}>
+                <div className="content__container">
                     {loginState === 'pending' && <Loader />}
                     {loginState === 'loggedOut' && (
                         <>

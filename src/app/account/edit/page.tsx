@@ -13,7 +13,7 @@ import { getUserAccount, setUserAccount } from '@/api/firebase-users';
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../../../styles/globalStyles.css';
 import styles from './AccountEdit.module.css';
 
 type AccountFormData = {
@@ -136,7 +136,7 @@ export default function EditAccount() {
         <ProtectedRoute>
             <Box className={styles['account__container']}>
                 <h1>Edit Account</h1>
-                <Box display={'flex'} justifyContent="space-evenly" className={globalStyles['content__container']}>
+                <Box display={'flex'} justifyContent="space-evenly" className="content__container">
                     <Paper component={Box} flexDirection={'column'} className={styles['account__header']}>
                         <h4>
                             {formData.name} ({accountType})

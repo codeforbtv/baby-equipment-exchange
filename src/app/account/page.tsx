@@ -10,7 +10,7 @@ import { useUserContext } from '@/contexts/UserContext';
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../../styles/globalStyles.css';
 import styles from './Account.module.css';
 import { getAccountType } from '@/api/firebase';
 import { getUserAccount } from '@/api/firebase-users';
@@ -69,7 +69,7 @@ export default function Account() {
             <div className={styles['account__container']}>
                 <h1>Account</h1>
                 <h4>[Page Summary]</h4>
-                <div className={globalStyles['content__container']}>
+                <div className="content__container">
                     <div className={styles['account__header']}>
                         <h2>Account Details</h2>
                         <div>

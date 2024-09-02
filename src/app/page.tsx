@@ -7,7 +7,7 @@ import React, { useContext } from 'react';
 
 //Styles
 import styles from './HomeStyles.module.css';
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../styles/globalStyles.css';
 import { Button } from '@mui/material';
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 //Hooks
@@ -31,7 +31,7 @@ export default function Home() {
             <div className={styles['home__container']}>
                 <h1>Browse</h1>
                 <h4>[Page Summary]</h4>
-                <Paper className={globalStyles['content__container']} elevation={8} square={false}>
+                <Paper className="content__container" elevation={8} square={false}>
                     {content}
                 </Paper>
             </div>

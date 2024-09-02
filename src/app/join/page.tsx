@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 //Libs
 import { addEvent, auth, isEmailInvalid, onAuthStateChangedListener } from '@/api/firebase';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../../styles/globalStyles.css';
 import { UserBody } from '@/types/post-data';
 import Loader from '@/components/Loader';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -74,7 +74,7 @@ export default function NewAccount() {
             <div>
                 <h1>Join</h1>
                 <Alert severity="warning">The Join page and account creation features have been deprecated.</Alert>
-                <Paper className={globalStyles['content__container']} elevation={8} square={false}>
+                <Paper className="content__container" elevation={8} square={false}>
                     {loginState === 'pending' && <Loader />}
                     {loginState === 'loggedOut' && (
                         <>

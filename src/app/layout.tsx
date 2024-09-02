@@ -7,15 +7,15 @@ import { montserrat, garamond } from '../styles/fonts';
 //Providers
 import { UserProvider } from '@/contexts/UserContext';
 //Styles
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../styles/globalStyles.css';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" className={`${montserrat.variable} ${garamond.variable}`}>
-            <body className={globalStyles['body--wrapper']}>
+            <body className="body--wrapper">
                 <UserProvider>
                     <Header />
-                    <div className={globalStyles['page--wrapper']}>{children}</div>
+                    <div className="page--wrapper">{children}</div>
                     <Footer />
                 </UserProvider>
             </body>

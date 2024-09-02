@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../styles/globalStyles.css';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { currentUser, isLoading } = useUserContext();
@@ -20,7 +20,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
     if (isLoading) {
         return (
-            <div className={globalStyles['content__container']}>
+            <div className="content__container">
                 <Loader />
             </div>
         );
