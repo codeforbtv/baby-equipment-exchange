@@ -5,7 +5,7 @@ import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 //Hooks
 import { useState } from 'react';
 //Styling
-import '../..//globalStyles.css';
+import '../../styles/globalStyles.css';
 import styles from './Contact.module.css';
 
 type ContactFormData = {
@@ -26,10 +26,10 @@ export default function Contact() {
 
     return (
         <>
-            <div className={styles['contact__container']}>
+            <div className="page--container">
                 <h1>Contact</h1>
                 <h4>Send a message to the exchange administrators</h4>
-                <div className="content__container">
+                <div className="content--container">
                     <Box>
                         <div className={styles['contact-details__container']}>
                             <h4 className={styles['contact__heading']}>Address:</h4>

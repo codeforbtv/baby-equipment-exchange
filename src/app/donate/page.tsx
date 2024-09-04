@@ -115,7 +115,7 @@ export default function Donate() {
         <ProtectedRoute>
             {submitState === 'submitting' && <Loader />}
             {(submitState === 'idle' || submitState === 'error') && (
-                <div className={styles['donate__container']}>
+                <div className="page--container">
                     <h1>Donate</h1>
                     <p>
                         Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we do
@@ -138,7 +138,7 @@ export default function Donate() {
                             Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
                         </li>
                     </ul>
-                    <div className="content__container">
+                    <div className="content--container">
                         <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
                             <Box className={styles['form__section--left']}>
                                 <Box display={'flex'} flexDirection={'column'} gap={1}>

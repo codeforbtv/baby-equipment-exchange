@@ -9,6 +9,7 @@
     --error: #a8351b;
     --footer: #1f1f1f;
     --primary-font: 'Graphik', 'EB Garamond', serif;
+    --font-montserrat: 'Montserrat', 'Arial', sans-serif;
     --button-dark: black;
     --button-light: white;
     --webkit-font-smoothing: subpixel-antialiased;
@@ -89,12 +90,16 @@
     font-family: var(--primary-font);
 }
 
-.content__container {
+.page--container {
     box-sizing: border-box;
+    width: 100%;
+    padding: 1rem;
+}
+
+.content--container {
     width: 100%;
     background-color: var(--bg-gray);
     margin: 0px auto;
-    padding: 1rem;
 }
 
 .body--wrapper a,

@@ -135,9 +135,9 @@ export default function About() {
 
     return (
         <>
-            <div className={styles['about_container']}>
+            <div className="page--container">
                 <h1>About</h1>
-                <div className="content__container">
+                <div className="content--container">
                     <h2>The Project</h2>
                     <p>
                         Vermont Connector has launched the Baby & Child Product Exchange in partnership with twenty-five social services and mutual aid

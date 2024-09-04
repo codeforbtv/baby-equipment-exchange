@@ -41,10 +41,10 @@ export default function Login() {
 
     return (
         <>
-            <div className={styles['login__container']}>
+            <div className="page-container">
                 <h1>Login</h1>
                 <h4>[Page Summary]</h4>
-                <div className="content__container">
+                <div className="content--container">
                     {loginState === 'pending' && <Loader />}
                     {loginState === 'loggedOut' && (
                         <>

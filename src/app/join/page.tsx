@@ -71,7 +71,7 @@ export default function NewAccount() {
 
     return (
         <>
-            <div>
+            <div className="page--container">
                 <h1>Join</h1>
                 <Alert severity="warning">The Join page and account creation features have been deprecated.</Alert>
                 <Paper className="content__container" elevation={8} square={false}>
