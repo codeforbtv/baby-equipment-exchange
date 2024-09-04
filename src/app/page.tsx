@@ -7,7 +7,7 @@ import React, { useContext } from 'react';
 
 //Styles
 import styles from './HomeStyles.module.css';
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../styles/globalStyles.css';
 import { Button } from '@mui/material';
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 //Hooks
@@ -28,13 +28,13 @@ export default function Home() {
     const content = currentUser ? <Dashboard /> : loginElement;
     return (
         <ProtectedRoute>
-            <div className={styles['home__container']}>
+            <div className="page--header">
                 <h1>Browse</h1>
                 <h4>[Page Summary]</h4>
-                <Paper className={globalStyles['content__container']} elevation={8} square={false}>
-                    {content}
-                </Paper>
             </div>
+            <Paper className="content--container" elevation={8} square={false}>
+                {content}
+            </Paper>
         </ProtectedRoute>
     );
 }

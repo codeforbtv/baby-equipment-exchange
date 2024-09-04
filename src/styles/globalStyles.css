@@ -1,24 +1,26 @@
-@use 'sass:map';
-$palette: (
-    text-header: #a8351b,
-    primary: #fff,
-    secondary: #95b8b5,
-    text-body: #5e5e5e,
-    text-hyperlink: #3d9991,
-    text-visited: #000,
-    error: #a8351b,
-    footer: #1f1f1f
-);
-
-/* Variables and global styling */
-.body--wrapper {
+/* variables */
+:root {
+    --text-header: #a8351b;
+    --primary: #fff;
+    --secondary: #95b8b5;
+    --bg-gray: #f1f1f1;
+    --text-body: #5e5e5e;
+    --text-hyperlink: #3d9991;
+    --text-visited: #000;
+    --error: #a8351b;
+    --footer: #1f1f1f;
     --primary-font: 'Graphik', 'EB Garamond', serif;
+    --font-montserrat: 'Montserrat', 'Arial', sans-serif;
+    --adobe-garamond-pro: 'Adobe Garamond Pro', 'Garamond', serif;
     --button-dark: black;
     --button-light: white;
+    --webkit-font-smoothing: subpixel-antialiased;
+}
+
+.body--wrapper {
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     -moz-osx-font-smoothing: auto;
-    --webkit-font-smoothing: subpixel-antialiased;
     display: grid;
     grid-template: max-content 1fr max-content / 1fr;
     min-height: 100vh;
@@ -26,15 +28,16 @@ $palette: (
 }
 
 .body--wrapper * {
-    &.MuiTypography-root {
-        font-family: 'adobe-garamond-pro';
-    }
-
-    font-family: 'adobe-garamond-pro';
+    font-family: var(--adobe-garamond-pro);
     box-sizing: border-box;
-    &[class*='MuiInput'] {
-        box-sizing: content-box;
-    }
+}
+
+.body--wrapper *[class*='MuiInput'] {
+    box-sizing: content-box;
+}
+
+.body--wrapper * .MuiTypography-root {
+    font-family: var(--adobe-garamond-pro);
 }
 
 .body--wrapper h1,
@@ -43,7 +46,7 @@ $palette: (
 .body--wrapper h4,
 .body--wrapper h5,
 .body--wrapper h6 {
-    font-family: 'proxima-nova';
+    font-family: var(--primary-font);
 }
 
 .body--wrapper h1 {
@@ -80,26 +83,35 @@ $palette: (
 
 .body--wrapper p,
 .body--wrapper footer {
-    font-family: var(--adobe-garamond-pro);
+    font-family: var(--primary-font);
     font-weight: 600;
 }
 
+.body--wrapper li {
+    font-family: var(--primary-font);
+    font-weight: 400;
+}
+
 .page--wrapper {
-    padding: 2px 10px;
+    box-sizing: border-box;
     font-family: var(--primary-font);
 }
 
-.content__container {
-    box-sizing: border-box;
+.page--header {
     width: 100%;
-    background-color: var(--bg-grey);
+    padding: 1rem;
+}
+
+.content--container {
+    width: 100%;
+    background-color: var(--bg-gray);
     margin: 0px auto;
     padding: 1rem;
 }
 
 .body--wrapper a,
 .body--wrapper a:visited {
-    color: map.get($palette, 'text-visited');
+    color: var(--text-visited);
 }
 
 .formContainer {
@@ -109,14 +121,13 @@ $palette: (
     margin: '30px auto';
 }
 
-.body--wrapper a {
-    &:hover {
-        color: map.get($palette, 'text-hyperlink');
-    }
-    &[class*='MuiButton'],
-    &:visited[class*='MuiButton'] {
-        color: white;
-    }
+.body--wrapper a:hover {
+    color: var(--text-hyperlink);
+}
+
+.body--wrapper a[class*='MuiButton'],
+.body--wrapper a:visited[class*='MuiButton'] {
+    color: white;
 }
 
 .MuiFilledInput-root {
@@ -125,16 +136,16 @@ $palette: (
     background-color: '#F3F6F9';
     border: '1px solid';
     border-color: '#E0E3E7';
+}
 
-    &:hover {
-        background-color: 'transparent';
-    }
+.MuiFilledInput-root:hover {
+    background-color: 'transparent';
+}
 
-    &.Mui-focused {
-        background-color: 'transparent';
-        box-shadow: 0 1px 6px '#E0E3E7';
-        border-color: '#E0E3E7';
-    }
+.MuiFilledInput-root.Mui-focused {
+    background-color: 'transparent';
+    box-shadow: 0 1px 6px '#E0E3E7';
+    border-color: '#E0E3E7';
 }
 
 .TextField {

@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 //Libs
 import { addEvent, auth, isEmailInvalid, onAuthStateChangedListener } from '@/api/firebase';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../../styles/globalStyles.css';
 import { UserBody } from '@/types/post-data';
 import Loader from '@/components/Loader';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -71,75 +71,75 @@ export default function NewAccount() {
 
     return (
         <>
-            <div>
+            <div className="page--header">
                 <h1>Join</h1>
                 <Alert severity="warning">The Join page and account creation features have been deprecated.</Alert>
-                <Paper className={globalStyles['content__container']} elevation={8} square={false}>
-                    {loginState === 'pending' && <Loader />}
-                    {loginState === 'loggedOut' && (
-                        <>
-                            <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate}>
-                                <TextField
-                                    type="text"
-                                    label="Display Name"
-                                    name="displayName"
-                                    id="displayName"
-                                    placeholder="Provide a display name"
-                                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                        setDisplayName(event.target.value);
-                                    }}
-                                    value={displayName}
-                                    required
-                                />
-                                <TextField
-                                    type="text"
-                                    label="Email"
-                                    name="email"
-                                    id="email"
-                                    placeholder="Input email"
-                                    autoComplete="email"
-                                    value={email}
-                                    error={emailInvalid}
-                                    helperText={emailInvalid ? 'Invalid email.' : undefined}
-                                    required
-                                    inputProps={{
-                                        onBlur: handleEmailInput
-                                    }}
-                                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                        setEmail(event.target.value);
-                                    }}
-                                />
-                                <TextField
-                                    type="password"
-                                    label="Password"
-                                    name="password"
-                                    id="password"
-                                    placeholder="Input password"
-                                    autoComplete="current-password"
-                                    value={password}
-                                    required
-                                    onChange={handlePassword}
-                                />
-                                <TextField
-                                    type="password"
-                                    label="Confirm Password"
-                                    name="confirmPassword"
-                                    id="confirmPassword"
-                                    placeholder="Confirm password"
-                                    value={confirmPassword}
-                                    error={passwordsDoNotMatch}
-                                    helperText={passwordsDoNotMatch ? 'Passwords do not match.' : undefined}
-                                    required
-                                    onChange={handleConfirmPassword}
-                                />
-                                <Button variant="contained" type={'submit'} disabled={emailInvalid || passwordsDoNotMatch}>
-                                    Join
-                                </Button>
-                            </Box>
-                        </>
-                    )}
-                </Paper>
             </div>
+            <Paper className="content--container" elevation={8} square={false}>
+                {loginState === 'pending' && <Loader />}
+                {loginState === 'loggedOut' && (
+                    <>
+                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate}>
+                            <TextField
+                                type="text"
+                                label="Display Name"
+                                name="displayName"
+                                id="displayName"
+                                placeholder="Provide a display name"
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setDisplayName(event.target.value);
+                                }}
+                                value={displayName}
+                                required
+                            />
+                            <TextField
+                                type="text"
+                                label="Email"
+                                name="email"
+                                id="email"
+                                placeholder="Input email"
+                                autoComplete="email"
+                                value={email}
+                                error={emailInvalid}
+                                helperText={emailInvalid ? 'Invalid email.' : undefined}
+                                required
+                                inputProps={{
+                                    onBlur: handleEmailInput
+                                }}
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setEmail(event.target.value);
+                                }}
+                            />
+                            <TextField
+                                type="password"
+                                label="Password"
+                                name="password"
+                                id="password"
+                                placeholder="Input password"
+                                autoComplete="current-password"
+                                value={password}
+                                required
+                                onChange={handlePassword}
+                            />
+                            <TextField
+                                type="password"
+                                label="Confirm Password"
+                                name="confirmPassword"
+                                id="confirmPassword"
+                                placeholder="Confirm password"
+                                value={confirmPassword}
+                                error={passwordsDoNotMatch}
+                                helperText={passwordsDoNotMatch ? 'Passwords do not match.' : undefined}
+                                required
+                                onChange={handleConfirmPassword}
+                            />
+                            <Button variant="contained" type={'submit'} disabled={emailInvalid || passwordsDoNotMatch}>
+                                Join
+                            </Button>
+                        </Box>
+                    </>
+                )}
+            </Paper>
         </>
     );
 }

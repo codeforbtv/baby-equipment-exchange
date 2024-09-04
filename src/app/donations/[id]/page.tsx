@@ -40,10 +40,12 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
     if (!isLoading && donationDetails !== null) {
         const donation = donationDetails.donation;
         return (
-            <div>
+            <div className="page--header">
                 <h1>Donation Details</h1>
-                <h2>{donation.brand}</h2>
-                <h3>{donation.model}</h3>
+                <div className="content--container">
+                    <h2>{donation.brand}</h2>
+                    <h3>{donation.model}</h3>
+                </div>
             </div>
         );
     }

@@ -10,7 +10,7 @@ import { useUserContext } from '@/contexts/UserContext';
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../../styles/globalStyles.css';
 import styles from './Account.module.css';
 import { getAccountType } from '@/api/firebase';
 import { getUserAccount } from '@/api/firebase-users';
@@ -66,39 +66,39 @@ export default function Account() {
 
     return (
         <ProtectedRoute>
-            <div className={styles['account__container']}>
+            <div className="page--header">
                 <h1>Account</h1>
                 <h4>[Page Summary]</h4>
-                <div className={globalStyles['content__container']}>
-                    <div className={styles['account__header']}>
-                        <h2>Account Details</h2>
-                        <div>
-                            <Button component={Link} href="/account/edit" variant="contained" endIcon={<PermIdentityOutlinedIcon />}>
-                                Edit Profile
-                            </Button>
-                        </div>
+            </div>
+            <div className="content--container">
+                <div className={styles['account__header']}>
+                    <h2>Account Details</h2>
+                    <div>
+                        <Button component={Link} href="/account/edit" variant="contained" endIcon={<PermIdentityOutlinedIcon />}>
+                            Edit Profile
+                        </Button>
                     </div>
-                    <h4>Usertype: {accountType}</h4>
-                    <h4>Display name {accountInfo.contact?.name}</h4>
-                    <h4>
-                        Contact: <br />
-                        Phone: {accountInfo.contact?.phone}
-                        <br />
-                        Email: {accountInfo.contact?.email}
-                    </h4>
-                    <h4>
-                        Location: <br />
-                        {accountInfo.location?.line_1}
-                        <br />
-                        {accountInfo.location?.city} {accountInfo.location?.state}
-                        <br />
-                        {accountInfo.location?.zipcode}
-                        <br />
-                    </h4>
-
-                    <h2>Donations:</h2>
-                    <Browse />
                 </div>
+                <h4>Usertype: {accountType}</h4>
+                <h4>Display name {accountInfo.contact?.name}</h4>
+                <h4>
+                    Contact: <br />
+                    Phone: {accountInfo.contact?.phone}
+                    <br />
+                    Email: {accountInfo.contact?.email}
+                </h4>
+                <h4>
+                    Location: <br />
+                    {accountInfo.location?.line_1}
+                    <br />
+                    {accountInfo.location?.city} {accountInfo.location?.state}
+                    <br />
+                    {accountInfo.location?.zipcode}
+                    <br />
+                </h4>
+
+                <h2>Donations:</h2>
+                <Browse />
             </div>
         </ProtectedRoute>
     );

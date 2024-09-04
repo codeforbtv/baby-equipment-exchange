@@ -13,7 +13,7 @@ import { getUserAccount, setUserAccount } from '@/api/firebase-users';
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data';
 //Styling
-import globalStyles from '@/styles/globalStyles.module.scss';
+import '../../../styles/globalStyles.css';
 import styles from './AccountEdit.module.css';
 
 type AccountFormData = {
@@ -134,86 +134,86 @@ export default function EditAccount() {
 
     return (
         <ProtectedRoute>
-            <Box className={styles['account__container']}>
+            <div className="page--header">
                 <h1>Edit Account</h1>
-                <Box display={'flex'} justifyContent="space-evenly" className={globalStyles['content__container']}>
-                    <Paper component={Box} flexDirection={'column'} className={styles['account__header']}>
-                        <h4>
-                            {formData.name} ({accountType})
-                        </h4>
-                    </Paper>
-                    <Box component="form" className={styles['form']} id="editAccount" onSubmit={handleFormSubmit}>
-                        <Box className={styles['form__section--right']} display={'flex'} flexDirection={'column'} gap={3}>
-                            <Divider textAlign="center">Contact</Divider>
-                            <TextField
-                                type="email"
-                                label="Email"
-                                placeholder="Input email"
-                                name="contactEmail"
-                                id="contactEmail"
-                                onChange={handleInputChange}
-                                value={formData.contactEmail ? formData.contactEmail : ''}
-                                variant="standard"
-                            />
-                            <TextField
-                                type="tel"
-                                label="Phone Number"
-                                name="contactPhone"
-                                id="contactPhone"
-                                onChange={handleInputChange}
-                                value={formData.contactPhone ? formData.contactPhone : ''}
-                                variant="standard"
-                            />
-                        </Box>
-                        <Box className={styles['form__section--left']} display={'flex'} flexDirection={'column'} gap={1}>
-                            <Divider textAlign="center">Location</Divider>
-                            <TextField
-                                type="text"
-                                placeholder="input address"
-                                label="Street Address"
-                                name="locationStreet"
-                                id="locationStreet"
-                                onChange={handleInputChange}
-                                value={formData.locationStreet ? formData.locationStreet : ''}
-                                variant="standard"
-                            />
-                            <TextField
-                                type="text"
-                                placeholder="input city"
-                                label="City"
-                                name="locationCity"
-                                id="locationCity"
-                                onChange={handleInputChange}
-                                value={formData.locationCity ? formData.locationCity : ''}
-                                variant="standard"
-                            />
-                            <TextField
-                                label="State"
-                                placeholder="input state"
-                                type="text"
-                                name="locationState"
-                                id="locationState"
-                                onChange={handleInputChange}
-                                value={formData.locationState ? formData.locationState : ''}
-                                variant="standard"
-                            />
-                            <TextField
-                                label="Zip Code"
-                                placeholder="input zip code"
-                                type="text"
-                                name="locationZip"
-                                id="locationZip"
-                                onChange={handleInputChange}
-                                value={formData.locationZip ? formData.locationZip : ''}
-                                variant="standard"
-                            />
-                        </Box>
-                        <div className={styles['form__section--button-bottom']}>
-                            <Button variant="contained" type={'submit'} endIcon={<PermIdentityOutlinedIcon />}>
-                                Save
-                            </Button>
-                        </div>
+            </div>
+            <Box display={'flex'} justifyContent="space-evenly" className="content--container">
+                <Paper component={Box} flexDirection={'column'} className={styles['account__header']}>
+                    <h4>
+                        {formData.name} ({accountType})
+                    </h4>
+                </Paper>
+                <Box component="form" className={styles['form']} id="editAccount" onSubmit={handleFormSubmit}>
+                    <Box className={styles['form__section--right']} display={'flex'} flexDirection={'column'} gap={3}>
+                        <Divider textAlign="center">Contact</Divider>
+                        <TextField
+                            type="email"
+                            label="Email"
+                            placeholder="Input email"
+                            name="contactEmail"
+                            id="contactEmail"
+                            onChange={handleInputChange}
+                            value={formData.contactEmail ? formData.contactEmail : ''}
+                            variant="standard"
+                        />
+                        <TextField
+                            type="tel"
+                            label="Phone Number"
+                            name="contactPhone"
+                            id="contactPhone"
+                            onChange={handleInputChange}
+                            value={formData.contactPhone ? formData.contactPhone : ''}
+                            variant="standard"
+                        />
                     </Box>
+                    <Box className={styles['form__section--left']} display={'flex'} flexDirection={'column'} gap={1}>
+                        <Divider textAlign="center">Location</Divider>
+                        <TextField
+                            type="text"
+                            placeholder="input address"
+                            label="Street Address"
+                            name="locationStreet"
+                            id="locationStreet"
+                            onChange={handleInputChange}
+                            value={formData.locationStreet ? formData.locationStreet : ''}
+                            variant="standard"
+                        />
+                        <TextField
+                            type="text"
+                            placeholder="input city"
+                            label="City"
+                            name="locationCity"
+                            id="locationCity"
+                            onChange={handleInputChange}
+                            value={formData.locationCity ? formData.locationCity : ''}
+                            variant="standard"
+                        />
+                        <TextField
+                            label="State"
+                            placeholder="input state"
+                            type="text"
+                            name="locationState"
+                            id="locationState"
+                            onChange={handleInputChange}
+                            value={formData.locationState ? formData.locationState : ''}
+                            variant="standard"
+                        />
+                        <TextField
+                            label="Zip Code"
+                            placeholder="input zip code"
+                            type="text"
+                            name="locationZip"
+                            id="locationZip"
+                            onChange={handleInputChange}
+                            value={formData.locationZip ? formData.locationZip : ''}
+                            variant="standard"
+                        />
+                    </Box>
+                    <div className={styles['form__section--button-bottom']}>
+                        <Button variant="contained" type={'submit'} endIcon={<PermIdentityOutlinedIcon />}>
+                            Save
+                        </Button>
+                    </div>
                 </Box>
             </Box>
         </ProtectedRoute>

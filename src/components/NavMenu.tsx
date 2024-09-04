@@ -36,23 +36,23 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                 </button>
                 <div className={styles['nav__menu']}>
                     <Link className={styles['menu__link']} id="home" href="/" onClick={closeMenu}>
-                        Home
+                        <span>Home</span>
                     </Link>
                     {currentUser && (
                         <>
                             <Link className={styles['menu__link']} id="donate" href="/donate" onClick={closeMenu}>
-                                <ListItemText primary="Donate" />
+                                <span>Donate</span>
                             </Link>
                             <Link className={styles['menu__link']} id="account" href="/account" onClick={closeMenu}>
-                                Account
+                                <span>Account</span>
                             </Link>
                         </>
                     )}
                     <Link className={styles['menu__link']} id="about" href="/about" onClick={closeMenu}>
-                        About
+                        <span>About</span>
                     </Link>
                     <Link className={styles['menu__link']} id="contact" href="/contact" onClick={closeMenu}>
-                        Contact
+                        <span>Contact</span>
                     </Link>
                     <Link
                         className={styles['menu__link']}
@@ -63,7 +63,7 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                             if (currentUser) signOutUser();
                         }}
                     >
-                        {currentUser ? 'Sign Out' : 'Login'}
+                        {currentUser ? <span>Sign Out</span> : <span>Login</span>}
                     </Link>
                 </div>
             </Drawer>
