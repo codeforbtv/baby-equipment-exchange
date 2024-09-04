@@ -40,7 +40,7 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
     if (!isLoading && donationDetails !== null) {
         const donation = donationDetails.donation;
         return (
-            <div className="page--container">
+            <div className="page--header">
                 <h1>Donation Details</h1>
                 <div className="content--container">
                     <h2>{donation.brand}</h2>

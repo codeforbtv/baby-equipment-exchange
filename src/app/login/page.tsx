@@ -41,50 +41,51 @@ export default function Login() {
 
     return (
         <>
-            <div className="page-container">
+            <div className="page--header">
                 <h1>Login</h1>
                 <h4>[Page Summary]</h4>
-                <div className="content--container">
-                    {loginState === 'pending' && <Loader />}
-                    {loginState === 'loggedOut' && (
-                        <>
-                            <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleLogin}>
-                                <TextField
-                                    type="text"
-                                    name="email"
-                                    id="email"
-                                    label="Email"
-                                    placeholder="Input Email"
-                                    autoComplete="email"
-                                    value={email}
-                                    required
-                                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                        setEmail(event.target.value);
-                                    }}
-                                />
-                                <TextField
-                                    type="password"
-                                    name="password"
-                                    id="password"
-                                    label="Password"
-                                    placeholder="Input Password"
-                                    autoComplete="current-password"
-                                    value={password}
-                                    required
-                                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                        setPassword(event.target.value);
-                                    }}
-                                />
-                                <Button variant="contained" type="submit" endIcon={<VpnKeyOutlinedIcon />}>
-                                    Login
-                                </Button>
-                            </Box>
-                            <hr />
-                            <span>Instructions for forgotten password.</span>
-                        </>
-                    )}
-                </div>
             </div>
+            <div className="content--container">
+                {loginState === 'pending' && <Loader />}
+                {loginState === 'loggedOut' && (
+                    <>
+                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleLogin}>
+                            <TextField
+                                type="text"
+                                name="email"
+                                id="email"
+                                label="Email"
+                                placeholder="Input Email"
+                                autoComplete="email"
+                                value={email}
+                                required
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setEmail(event.target.value);
+                                }}
+                            />
+                            <TextField
+                                type="password"
+                                name="password"
+                                id="password"
+                                label="Password"
+                                placeholder="Input Password"
+                                autoComplete="current-password"
+                                value={password}
+                                required
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setPassword(event.target.value);
+                                }}
+                            />
+                            <Button variant="contained" type="submit" endIcon={<VpnKeyOutlinedIcon />}>
+                                Login
+                            </Button>
+                        </Box>
+                        <hr />
+                        <span>Instructions for forgotten password.</span>
+                    </>
+                )}
+            </div>
+
             {status && <ToasterNotification status={status} />}
         </>
     );

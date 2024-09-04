@@ -135,28 +135,28 @@ export default function About() {
 
     return (
         <>
-            <div className="page--container">
+            <div className="page--header">
                 <h1>About</h1>
-                <div className="content--container">
-                    <h2>The Project</h2>
-                    <p>
-                        Vermont Connector has launched the Baby & Child Product Exchange in partnership with twenty-five social services and mutual aid
-                        organizations{' '}
-                    </p>
-                    <p>The exchange provides durable equipment to families in need through partner referrals and community donations.</p>
-                    <h4 className={styles['about__heading']}>Learn More:</h4>
-                    <p className={styles['about__paragraph']}>
-                        <a href="https://www.wendyriceconsulting.com/">Click here for Vermont Connector&apos;s project page</a>
-                    </p>
-                    <br />
-                    <h2>Donations</h2>
-                    <p className={styles['about__paragraph--list-label']}>List of item accepted:</p>
-                    <ul className={styles['about__list']}>{itemTypesAcceptedList}</ul>
-                    <p className={styles['about__paragraph--list-label']}>List of items not accepted:</p>
-                    <ul className={styles['about__list']}>{itemTypesNotAcceptedList}</ul>
-                    <p>Read the full FAQ documents.</p>
-                    <ul className={styles['about__list']}>{faqList}</ul>
-                </div>
+            </div>
+            <div className="content--container">
+                <h2>The Project</h2>
+                <p>
+                    Vermont Connector has launched the Baby & Child Product Exchange in partnership with twenty-five social services and mutual aid
+                    organizations{' '}
+                </p>
+                <p>The exchange provides durable equipment to families in need through partner referrals and community donations.</p>
+                <h4 className={styles['about__heading']}>Learn More:</h4>
+                <p className={styles['about__paragraph']}>
+                    <a href="https://www.wendyriceconsulting.com/">Click here for Vermont Connector&apos;s project page</a>
+                </p>
+                <br />
+                <h2>Donations</h2>
+                <p className={styles['about__paragraph--list-label']}>List of item accepted:</p>
+                <ul className={styles['about__list']}>{itemTypesAcceptedList}</ul>
+                <p className={styles['about__paragraph--list-label']}>List of items not accepted:</p>
+                <ul className={styles['about__list']}>{itemTypesNotAcceptedList}</ul>
+                <p>Read the full FAQ documents.</p>
+                <ul className={styles['about__list']}>{faqList}</ul>
             </div>
         </>
     );

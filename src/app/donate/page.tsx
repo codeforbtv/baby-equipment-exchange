@@ -115,29 +115,32 @@ export default function Donate() {
         <ProtectedRoute>
             {submitState === 'submitting' && <Loader />}
             {(submitState === 'idle' || submitState === 'error') && (
-                <div className="page--container">
-                    <h1>Donate</h1>
-                    <p>
-                        Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we do
-                        not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could be
-                        subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to recall.
-                    </p>
-                    <p>Please reference the following web pages if you have any questions about safety/recall status of these items:</p>
-                    <ul>
-                        <li>
-                            Consumer Product Safety Commission (<a href="https://www.cpsc.gov/">cpsc.gov</a>)
-                        </li>
-                        <li>Reseller&apos;s Guide to Selling Safer Products</li>
-                        <li>
-                            SaferProducts.gov (<a href="https://www.saferproducts.gov">saferproducts.gov</a>)
-                        </li>
-                        <li>
-                            Recalls.gov (<a href="https://www.recalls.gov/">recalls.gov</a>)
-                        </li>
-                        <li>
-                            Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
-                        </li>
-                    </ul>
+                <>
+                    <div className="page--header">
+                        <h1>Donate</h1>
+                        <p>
+                            Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we
+                            do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could
+                            be subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to
+                            recall.
+                        </p>
+                        <p>Please reference the following web pages if you have any questions about safety/recall status of these items:</p>
+                        <ul>
+                            <li>
+                                Consumer Product Safety Commission (<a href="https://www.cpsc.gov/">cpsc.gov</a>)
+                            </li>
+                            <li>Reseller&apos;s Guide to Selling Safer Products</li>
+                            <li>
+                                SaferProducts.gov (<a href="https://www.saferproducts.gov">saferproducts.gov</a>)
+                            </li>
+                            <li>
+                                Recalls.gov (<a href="https://www.recalls.gov/">recalls.gov</a>)
+                            </li>
+                            <li>
+                                Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
+                            </li>
+                        </ul>
+                    </div>
                     <div className="content--container">
                         <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
                             <Box className={styles['form__section--left']}>
@@ -220,7 +223,7 @@ export default function Donate() {
                             </Box>
                         </Box>
                     </div>
-                </div>
+                </>
             )}
             {submitState === 'error' && <ToasterNotification status="Submission failed" />}
         </ProtectedRoute>

@@ -28,13 +28,13 @@ export default function Home() {
     const content = currentUser ? <Dashboard /> : loginElement;
     return (
         <ProtectedRoute>
-            <div className="page--container">
+            <div className="page--header">
                 <h1>Browse</h1>
                 <h4>[Page Summary]</h4>
-                <Paper className="content--container" elevation={8} square={false}>
-                    {content}
-                </Paper>
             </div>
+            <Paper className="content--container" elevation={8} square={false}>
+                {content}
+            </Paper>
         </ProtectedRoute>
     );
 }
