@@ -28,10 +28,10 @@ export default function Home() {
     const content = currentUser ? <Dashboard /> : loginElement;
     return (
         <ProtectedRoute>
-            <div className={styles['home__container']}>
+            <div className="page--container">
                 <h1>Browse</h1>
                 <h4>[Page Summary]</h4>
-                <Paper className="content__container" elevation={8} square={false}>
+                <Paper className="content--container" elevation={8} square={false}>
                     {content}
                 </Paper>
             </div>

@@ -20,6 +20,7 @@ import { addEvent } from '@/api/firebase';
 import algoliasearch from 'algoliasearch/lite';
 import { InstantSearch } from 'react-instantsearch';
 // Styles
+import '../styles/globalStyles.css';
 import styles from './Browse.module.css';
 
 const NewDonationDialog = lazy(() => import('@/components/NewDonationDialog'));
