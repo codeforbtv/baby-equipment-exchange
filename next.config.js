@@ -5,10 +5,10 @@ const config = fs.readFileSync(process.env.FIREBASE_CONFIG ?? 'firebase-config.j
 const nextConfig = {
     env: {
         NEXT_PUBLIC_FIREBASE_CONFIG: config
-    },
-    experimental: {
-        serverActions: true
-    }
+    }//,
+    // experimental: {
+    //     serverActions: true
+    // }
 };
 
 module.exports = nextConfig;

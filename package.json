@@ -21,6 +21,7 @@
         "not IE 11"
     ],
     "dependencies": {
+        "@babel/preset-env": "^7.25.4",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@fortawesome/fontawesome-svg-core": "^6.4.2",
@@ -51,10 +52,13 @@
         "postcss": "8.4.31",
         "react": "18.2.0",
         "react-dom": "18.2.0",
-        "react-instantsearch": "^7.6.0",
         "tailwindcss": "3.4.1",
-        "typescript": "5.2.2",
+        "typescript": "^5.2.2",
         "uuid": "^9.0.1"
+    },
+    "disabledDependencies": {
+        "react-instantsearch": "^7.6.0",
+        "next": "^14.2.8"
     },
     "devDependencies": {
         "@argos-ci/cli": "^0.6.0",
@@ -62,9 +66,9 @@
         "@testing-library/jest-dom": "^6.1.3",
         "@testing-library/react": "^14.0.0",
         "@types/jest": "^29.5.5",
-        "@types/node": "^20.11.6",
-        "@types/react": "^18.2.51",
-        "@types/react-dom": "^18.2.18",
+        "@types/node": "20.4.1",
+        "@types/react": "18.2.14",
+        "@types/react-dom": "18.2.8",
         "@types/react-redux": "^7.1.27",
         "@types/uuid": "^9.0.4",
         "@typescript-eslint/eslint-plugin": "^6.7.4",
@@ -83,6 +87,6 @@
         "prettier": "^3.0.0",
         "puppeteer": "^21.3.8",
         "ts-node": "^10.9.1",
-        "typescript": "^5.3.3"
+        "typescript": "^5.2.2"
     }
 }
