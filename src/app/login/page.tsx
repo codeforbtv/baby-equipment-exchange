@@ -6,7 +6,7 @@ import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import { Box, TextField, Button } from '@mui/material';
 
 //Hooks
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 //Libs
 import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '@/api/firebase';
@@ -19,6 +19,27 @@ export default function Login() {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const router = useRouter();
+
+    return (
+        <>
+            <Suspense fallback={<Loader />}>
+                <LoginForm 
+                    loginState={loginState} 
+                    setLoginState={setLoginState} 
+                    email={email} 
+                    setEmail={setEmail} 
+                    password={password} 
+                    setPassword={setPassword} 
+                    router={router} 
+                />
+            </Suspense>
+        </>
+    );
+}
+
+function LoginForm({ 
+    loginState, setLoginState, email, setEmail, password, setPassword, router 
+}: any) {
     const searchParams = useSearchParams();
     const status = searchParams.get('status');
 
@@ -27,7 +48,7 @@ export default function Login() {
             if (user) router.push('/');
             else setLoginState('loggedOut');
         });
-    }, []);
+    }, [router]);
 
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
