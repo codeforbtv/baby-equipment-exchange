@@ -6,9 +6,6 @@ const nextConfig = {
     env: {
         NEXT_PUBLIC_FIREBASE_CONFIG: config
     },
-    experimental: {
-        serverActions: true
-    }
 };
 
 module.exports = nextConfig;
