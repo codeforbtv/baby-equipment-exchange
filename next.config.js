@@ -1,9 +1,7 @@
 dotenv = require('dotenv');
 dotenv.configure();
-//const fs = require('fs');
-//const config = fs.readFileSync(process.env.FIREBASE_CONFIG ?? 'firebase-config.json', 'utf-8');
-
-const config = process.env.FIREBASE_CONFIG;
+const fs = require('fs');
+const config = fs.readFileSync(process.env.FIREBASE_CONFIG ?? 'firebase-config.json', 'utf-8');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
