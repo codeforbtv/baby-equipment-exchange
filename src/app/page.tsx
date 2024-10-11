@@ -1,9 +1,9 @@
 'use client';
 //Components
 //import Dashboard from '@/components/Dashboard';
-import { Paper } from '@mui/material';
+//import { Paper } from '@mui/material';
 //Libs
-import React, { useContext } from 'react';
+//import React, { useContext } from 'react';
 
 //Styles
 import styles from './HomeStyles.module.css';
