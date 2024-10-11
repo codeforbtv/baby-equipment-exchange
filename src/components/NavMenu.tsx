@@ -11,7 +11,6 @@ import Link from 'next/link';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Drawer from '@mui/material/Drawer';
-import ListItemText from '@mui/material/ListItemText';
 
 //styles
 import styles from './NavMenu.module.css';
