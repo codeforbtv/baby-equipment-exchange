@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "node ./src/utils/setup.cjs --cmd=0",
+        "dev": "next dev",
         "test:cypress": "npx cypress run --headless --component",
         "test:unit": "node ./src/utils/setup.cjs --cmd=1",
         "alt-dev": "next dev",

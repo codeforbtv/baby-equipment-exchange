@@ -1,12 +1,14 @@
 require('dotenv').config();
-//const fs = require('fs');
-//const config = fs.readFileSync(process.env.FIREBASE_CONFIG ?? 'firebase-config.json', 'utf-8');
+// const fs = require('fs');
+// const config = fs.readFileSync(process.env.FIREBASE_CONFIG ?? 'firebase-config.json', 'utf-8');
+
+const config = process.env.FIREBASE_CONFIG ?? './firebase-config.json';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     env: {
-        NEXT_PUBLIC_FIREBASE_CONFIG: process.env.FIREBASE_CONFIG
-    }//,
+        NEXT_PUBLIC_FIREBASE_CONFIG: config
+    } //,
     // experimental: {
     //     serverActions: true
     // }
