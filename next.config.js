@@ -1,19 +1,21 @@
 const fs = require('fs');
 const path = require('path');
 
-let firebaseJSONConfig = '';
+//let firebaseJSONConfig = '';
 
-try {
-    const firebaseConfigFilePath = process.env.FIREBASE_CONFIG ?? 'firebase-config.json';
-    firebaseJSONConfig = fs.readFileSync(path.resolve(__dirname, firebaseConfigFilePath), 'utf-8');
-} catch (error) {
-    console.error('Error loading Firebase config file:', error);
-}
+//try {
+//   const firebaseConfigFilePath = process.env.FIREBASE_CONFIG ?? 'firebase-config.json';
+//    firebaseJSONConfig = fs.readFileSync(path.resolve(__dirname, firebaseConfigFilePath), 'utf-8');
+//} catch (error) {
+//    console.error('Error loading Firebase config file:', error);
+//}
+
+const config = process.env.FIREBASE_CONFIG ?? 'firebase-config.json';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     env: {
-        NEXT_PUBLIC_FIREBASE_CONFIG: firebaseJSONConfig 
+        NEXT_PUBLIC_FIREBASE_CONFIG: config 
     },
 };
 
