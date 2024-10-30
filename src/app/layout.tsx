@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { montserrat, garamond } from '../styles/fonts';
 
 //Providers
-//import { UserProvider } from '@/contexts/UserContext';
+import { UserProvider } from '@/contexts/UserContext';
 //Styles
 import '../styles/globalStyles.css';
 
@@ -13,11 +13,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en" className={`${montserrat.variable} ${garamond.variable}`}>
             <body className="body--wrapper">
-                {/*<UserProvider>*/}
+                <UserProvider>
                     <Header />
                     <div className="page--wrapper">{children}</div>
                     <Footer />
-                {/*</UserProvider>*/}
+                </UserProvider>
             </body>
         </html>
     );

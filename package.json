@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "node ./src/utils/setup.cjs --cmd=0",
         "test:cypress": "npx cypress run --headless --component",
         "test:unit": "node ./src/utils/setup.cjs --cmd=1",
         "alt-dev": "next dev",
@@ -21,7 +21,6 @@
         "not IE 11"
     ],
     "dependencies": {
-        "@babel/preset-env": "^7.25.4",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@fortawesome/fontawesome-svg-core": "^6.4.2",
@@ -34,12 +33,10 @@
         "@fullcalendar/timegrid": "^6.1.9",
         "@mui/icons-material": "^5.14.15",
         "@mui/material": "^5.14.15",
-        "@types/babel__generator": "^7.6.7",
         "@types/node": "20.4.1",
         "@types/react": "18.2.14",
         "@types/react-dom": "18.2.8",
-        "@types/react-instantsearch-dom": "^6.12.7",
-        "algoliasearch": "^4.22.1",
+        "algoliasearch": "^4.24.0",
         "autoprefixer": "10.4.16",
         "dexie": "^3.2.4",
         "dexie-react-hooks": "^1.1.7",
@@ -48,17 +45,13 @@
         "firebase-admin": "^11.11.0",
         "firebase-functions": "^4.3.1",
         "indexeddbshim": "13.0.0",
-        "next": "^13.5.0",
+        "next": "^14.2.15",
         "postcss": "8.4.31",
         "react": "18.2.0",
         "react-dom": "18.2.0",
+        "react-instantsearch": "^7.13.2",
         "tailwindcss": "3.4.1",
-        "typescript": "^5.2.2",
         "uuid": "^9.0.1"
-    },
-    "disabledDependencies": {
-        "react-instantsearch": "^7.6.0",
-        "next": "^14.2.8"
     },
     "devDependencies": {
         "@argos-ci/cli": "^0.6.0",
@@ -66,9 +59,9 @@
         "@testing-library/jest-dom": "^6.1.3",
         "@testing-library/react": "^14.0.0",
         "@types/jest": "^29.5.5",
-        "@types/node": "20.4.1",
-        "@types/react": "18.2.14",
-        "@types/react-dom": "18.2.8",
+        "@types/node": "^20.11.6",
+        "@types/react": "^18.2.51",
+        "@types/react-dom": "^18.2.18",
         "@types/react-redux": "^7.1.27",
         "@types/uuid": "^9.0.4",
         "@typescript-eslint/eslint-plugin": "^6.7.4",
@@ -87,6 +80,6 @@
         "prettier": "^3.0.0",
         "puppeteer": "^21.3.8",
         "ts-node": "^10.9.1",
-        "typescript": "^5.2.2"
+        "typescript": "^5.6.3"
     }
 }

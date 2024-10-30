@@ -1,17 +1,20 @@
-require('dotenv').config();
-// const fs = require('fs');
-// const config = fs.readFileSync(process.env.FIREBASE_CONFIG ?? 'firebase-config.json', 'utf-8');
+const fs = require('fs');
+const path = require('path');
 
-const config = process.env.FIREBASE_CONFIG ?? './firebase-config.json';
+let firebaseJSONConfig = '';
+
+try {
+    const firebaseConfigFilePath = process.env.FIREBASE_CONFIG ?? 'firebase-config.json';
+    firebaseJSONConfig = fs.readFileSync(path.resolve(__dirname, firebaseConfigFilePath), 'utf-8');
+} catch (error) {
+    console.error('Error loading Firebase config file:', error);
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     env: {
-        NEXT_PUBLIC_FIREBASE_CONFIG: config
-    } //,
-    // experimental: {
-    //     serverActions: true
-    // }
+        NEXT_PUBLIC_FIREBASE_CONFIG: firebaseJSONConfig 
+    },
 };
 
 module.exports = nextConfig;
