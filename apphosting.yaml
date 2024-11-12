@@ -6,7 +6,7 @@ env:
       secret: projects/375825360663/secrets/GOOGLE_APPLICATION_CREDENTIALS
 
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-      value: 'AIzaSyDfv1GI3fwfAin17N_Pf2G9fe8PPBa1UPs'
+      secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
 
     - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
       value: 'baby-equipment-exchange.firebaseapp.com'
