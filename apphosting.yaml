@@ -1,6 +1,24 @@
 env:
-  - variable: FIREBASE_CONFIG
-    secret: projects/375825360663/secrets/FIREBASE_CONFIG
+    - variable: FIREBASE_CONFIG
+      secret: projects/375825360663/secrets/FIREBASE_CONFIG
 
-  - variable: GOOGLE_APPLICATION_CREDENTIALS
-    secret: projects/375825360663/secrets/GOOGLE_APPLICATION_CREDENTIALS
+    - variable: GOOGLE_APPLICATION_CREDENTIALS
+      secret: projects/375825360663/secrets/GOOGLE_APPLICATION_CREDENTIALS
+
+    - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+      value: 'AIzaSyDfv1GI3fwfAin17N_Pf2G9fe8PPBa1UPs'
+
+    - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+      value: 'baby-equipment-exchange.firebaseapp.com'
+
+    - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      value: 'baby-equipment-exchange'
+
+    - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      value: 'baby-equipment-exchange.appspot.com'
+
+    - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+      value: '375825360663'
+
+    - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+      value: '1:375825360663:web:2307ccd57b31bf1d74b952'

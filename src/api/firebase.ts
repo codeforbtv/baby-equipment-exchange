@@ -1,4 +1,4 @@
-import { FirebaseApp, initializeApp } from 'firebase/app';
+import { FirebaseApp, FirebaseOptions, initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, Firestore, getFirestore } from 'firebase/firestore';
 import { connectFunctionsEmulator, httpsCallable, Functions, getFunctions } from 'firebase/functions';
 import { connectStorageEmulator, FirebaseStorage, getStorage } from 'firebase/storage';
@@ -14,8 +14,7 @@ import {
     connectAuthEmulator
 } from 'firebase/auth';
 import { AccountInformation, UserBody } from '@/types/post-data';
-
-const firebaseConfig = JSON.parse(process.env.NEXT_PUBLIC_FIREBASE_CONFIG ?? '{}');
+import { firebaseConfig } from './config';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 export const db: Firestore = initDb();
