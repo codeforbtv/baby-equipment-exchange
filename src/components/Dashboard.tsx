@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Browse from './Browse';
 import UserManagement from './UserManagement';
 import Loader from './Loader';
-import { isAdmin } from '@/api/firebase';
+// import { isAdmin } from '@/api/firebase';
 
 export default function Dashboard() {
     const [currentTab, setCurrentTab] = useState<number>(0);
@@ -15,8 +15,8 @@ export default function Dashboard() {
 
     useEffect(() => {
         (async () => {
-            const isUserAdmin: boolean = await isAdmin();
-            setDisplayUserManagement(isUserAdmin);
+            // const isUserAdmin: boolean = await isAdmin();
+            // setDisplayUserManagement(isUserAdmin);
             setIsLoading(false);
         })();
     }, []);
@@ -25,18 +25,18 @@ export default function Dashboard() {
         <Loader />
     ) : (
         <>
-            <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
+            {/* <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
                 <Tab label="Donations" />
                 {displayUserManagement && <Tab label="Users" />}
-            </Tabs>
+            </Tabs> */}
             <div role="tabpanel" hidden={currentTab !== 0}>
                 <Browse />
             </div>
-            {displayUserManagement && (
+            {/* {displayUserManagement && (
                 <div role="tabpanel" hidden={currentTab !== 1}>
                     <UserManagement />
                 </div>
-            )}
+            )} */}
         </>
     );
 }

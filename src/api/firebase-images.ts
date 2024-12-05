@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 // Libs
-import { addEvent, getImageAsSignedUrl, db, storage, getUserId } from './firebase';
+import { db, storage, getUserId } from './firebase';
 import { ref, uploadBytes } from 'firebase/storage';
 // Models
 import { IImage, Image, imageFactory } from '@/models/image';
@@ -21,10 +21,10 @@ import { IImageDetail, ImageDetail } from '@/models/image-detail';
 // Imported contants
 import { USERS_COLLECTION } from './firebase-users';
 
-export const IMAGES_COLLECTION = 'Images';
-export const IMAGE_DETAILS_COLLECTION = 'ImageDetails';
+const IMAGES_COLLECTION = 'Images';
+const IMAGE_DETAILS_COLLECTION = 'ImageDetails';
 
-export const imageConverter = {
+const imageConverter = {
     toFirestore(image: Image): DocumentData {
         const imageData: IImage = {
             downloadURL: image.getDownloadURL(),
@@ -106,7 +106,7 @@ export async function uploadImages(files: File[]): Promise<DocumentReference[]> 
         for (const key in error) {
             keys.push(keys);
         }
-        addEvent({ location: 'uploadImages', keys: keys });
+        // addEvent({ location: 'uploadImages', keys: keys });
     }
     return Promise.reject();
 }
@@ -122,14 +122,13 @@ export async function getImage(id: string): Promise<Image> {
  *
  */
 export async function imageReferenceConverter(...documentReferences: DocumentReference<Image>[]): Promise<string[]> {
-    const images: string[] = [];
+    const images: string[] = ['https://media1.sevendaysvt.com/sevendaysvt/imager/u/homefeature/42305671/thisoldstate1-1-45104886f8323a61.webp?cb=1732056180'];
     for (const documentReference of documentReferences) {
         try {
             const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter));
             if (imageSnapshot.exists()) {
                 const imageDocument = imageSnapshot.data();
                 let url = imageDocument.getDownloadURL();
-                url = await getImageAsSignedUrl(url);
                 images.push(url);
             }
         } catch (error: any) {
@@ -137,14 +136,14 @@ export async function imageReferenceConverter(...documentReferences: DocumentRef
             for (const key in error) {
                 keys.push(key);
             }
-            addEvent({
-                location: 'imageReferenceConverter',
-                keys: keys,
-                customData: error.customData,
-                details: error.details,
-                name: error.name,
-                code: error.code
-            });
+            // addEvent({
+            //     location: 'imageReferenceConverter',
+            //     keys: keys,
+            //     customData: error.customData,
+            //     details: error.details,
+            //     name: error.name,
+            //     code: error.code
+            // });
         }
     }
     return images;
