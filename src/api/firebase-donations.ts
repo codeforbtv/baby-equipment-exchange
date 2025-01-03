@@ -23,7 +23,7 @@ import { DonationBody } from '@/types/post-data';
 import { Image } from '@/models/image';
 // Libs
 import { db, getUserId } from './firebase';
-import { addEvent } from './firebase-events';
+import { addEvent } from './firebaseAdmin';
 import { imageReferenceConverter } from './firebase-images';
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';

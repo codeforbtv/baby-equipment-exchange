@@ -14,7 +14,34 @@ import {
     connectAuthEmulator,
     getAuth
 } from 'firebase/auth';
+
+import {
+    checkClaims,
+    addEvent,
+    createNewUser,
+    getImageAsSignedUrl,
+    getUidByEmail,
+    isEmailInvalid,
+    setClaimForNewUser,
+    setClaims,
+    setClaimForDonationReadAccess,
+    toggleCanReadDonations,
+    setClaimForAdmin,
+    setClaimForAidWorker,
+    setClaimForDonor,
+    setClaimForVerified,
+    setClaimForVolunteer,
+    registerNewUser,
+    setUserAccount,
+    toggleClaimForAdmin,
+    toggleClaimForAidWorker,
+    toggleClaimForDonor,
+    toggleClaimForVerified,
+    toggleClaimForVolunteer
+} from './firebaseAdmin';
+
 import { AccountInformation, UserBody } from '@/types/post-data';
+
 import { firebaseConfig } from './config';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
@@ -94,11 +121,11 @@ export const auth = getAuth(app);
 // const callToggleClaimForVerified = httpsCallable(functions, 'toggleClaimForVerified');
 // const callToggleClaimForVolunteer = httpsCallable(functions, 'toggleClaimForVolunteer');
 
-// export async function checkClaims(userId: string, ...claimNames: string[]): Promise<any> {
+// export async function _checkClaims(userId: string, ...claimNames: string[]): Promise<any> {
 //     if (claimNames.length === 0) {
 //         claimNames = ['admin', 'aid-worker', 'can-read-donations', 'donor', 'verified', 'volunteer'];
 //     }
-//     const response = await callCheckClaims({ userId: userId, claimNames: claimNames });
+//     const response = await checkClaims({ userId: userId, claimNames: claimNames });
 //     const data: any = response.data;
 //     return data;
 // }
@@ -124,29 +151,29 @@ export const auth = getAuth(app);
 // }
 
 // Role based claims.
-// export async function canReadDonations(): Promise<boolean> {
-//     return checkClaim('can-read-donations');
-// }
+export async function canReadDonations(): Promise<boolean> {
+    return checkClaim('can-read-donations');
+}
 
-// export async function isAdmin(): Promise<boolean> {
-//     return checkClaim('admin');
-// }
+export async function isAdmin(): Promise<boolean> {
+    return checkClaim('admin');
+}
 
-// export async function isAidWorker(): Promise<boolean> {
-//     return checkClaim('aid-worker');
-// }
+export async function isAidWorker(): Promise<boolean> {
+    return checkClaim('aid-worker');
+}
 
-// export async function isDonor(): Promise<boolean> {
-//     return checkClaim('donor');
-// }
+export async function isDonor(): Promise<boolean> {
+    return checkClaim('donor');
+}
 
-// export async function isVerified(): Promise<boolean> {
-//     return checkClaim('verified');
-// }
+export async function isVerified(): Promise<boolean> {
+    return checkClaim('verified');
+}
 
-// export async function isVolunteer(): Promise<boolean> {
-//     return checkClaim('volunteer');
-// }
+export async function isVolunteer(): Promise<boolean> {
+    return checkClaim('volunteer');
+}
 
 // export async function setClaimForAdmin(userId: string, isAdmin: boolean) {
 //     callSetClaimForAdmin({ userId: userId, isAdmin: isAdmin });
@@ -201,30 +228,30 @@ export const auth = getAuth(app);
 //     }
 // }
 
-// export async function getAccountType(): Promise<string> {
-//     let accountType: string = '';
-//     const hasAdmin = await isAdmin();
-//     const hasVerified = await isVerified();
-//     if (hasAdmin) {
-//         accountType = 'Administrator';
-//     } else {
-//         accountType = 'Donor';
-//     }
-//     if (hasVerified) {
-//         accountType += ' (unverified)';
-//     }
-//     return accountType;
-// }
+export async function getAccountType(): Promise<string> {
+    let accountType: string = '';
+    const hasAdmin = await isAdmin();
+    const hasVerified = await isVerified();
+    if (hasAdmin) {
+        accountType = 'Administrator';
+    } else {
+        accountType = 'Donor';
+    }
+    if (hasVerified) {
+        accountType += ' (unverified)';
+    }
+    return accountType;
+}
 
-// async function checkClaim(claimName: string): Promise<boolean> {
-//     await auth.authStateReady();
-//     const claims = (await auth.currentUser?.getIdTokenResult(true))?.claims;
-//     if (claims === undefined || claims === null) {
-//         return Promise.reject();
-//     }
-//     const claimValue = claims[claimName];
-//     return claimValue !== undefined && claimValue === true ? true : false;
-// }
+async function checkClaim(claimName: string): Promise<boolean> {
+    await auth.authStateReady();
+    const claims = (await auth.currentUser?.getIdTokenResult(true))?.claims;
+    if (claims === undefined || claims === null) {
+        return Promise.reject();
+    }
+    const claimValue = claims[claimName];
+    return claimValue !== undefined && claimValue === true ? true : false;
+}
 
 export function getUserEmail(): string | null | undefined {
     return auth.currentUser?.email;

@@ -1,5 +1,5 @@
 // Libs
-import { addEvent, db, getUserId } from './firebase';
+import { db, getUserId } from './firebase';
 import {
     arrayUnion,
     collection,
@@ -17,6 +17,7 @@ import {
     Timestamp,
     updateDoc
 } from 'firebase/firestore';
+import { addEvent } from './firebaseAdmin';
 // Models
 import { IUser, User } from '@/models/user';
 import { IUserDetail, UserDetail } from '@/models/user-detail';

@@ -5,7 +5,8 @@ import { Alert, Box, Button, Paper, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
-import { addEvent, auth, isEmailInvalid, onAuthStateChangedListener } from '@/api/firebase';
+import { auth, onAuthStateChangedListener } from '@/api/firebase';
+import { addEvent, isEmailInvalid } from '../../api/firebaseAdmin';
 //Styling
 import '../../styles/globalStyles.css';
 import { UserBody } from '@/types/post-data';
@@ -66,7 +67,8 @@ export default function NewAccount() {
     };
 
     const handleEmailInput = async (): Promise<void> => {
-        setEmailInvalid(await isEmailInvalid(email));
+        const validEmail = await isEmailInvalid(email);
+        setEmailInvalid(validEmail.value);
     };
 
     return (

@@ -18,23 +18,23 @@ export const EVENTS_COLLECTION = 'Event';
 
 import { app } from '@/api/firebase';
 
-export async function addEvent(object: any) {
-    try {
-        const db = getFirestore(app);
-        const currentTime = new Date();
-        const currentTimeString = currentTime.toDateString();
-        const eventParams: IEvent = {
-            type: '',
-            note: JSON.stringify(object),
-            createdBy: 'system',
-            createdAt: currentTimeString,
-            modifiedAt: currentTimeString
-        };
-        await db.collection(EVENTS_COLLECTION).add(eventParams);
-    } catch (error) {
-        console.log(error);
-    }
-}
+// export async function addEvent(object: any) {
+//     try {
+//         const db = getFirestore(app);
+//         const currentTime = new Date();
+//         const currentTimeString = currentTime.toDateString();
+//         const eventParams: IEvent = {
+//             type: '',
+//             note: JSON.stringify(object),
+//             createdBy: 'system',
+//             createdAt: currentTimeString,
+//             modifiedAt: currentTimeString
+//         };
+//         await db.collection(EVENTS_COLLECTION).add(eventParams);
+//     } catch (error) {
+//         console.log(error);
+//     }
+// }
 
 const eventConverter = {
     toFirestore(event: Event): DocumentData {

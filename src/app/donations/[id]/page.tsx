@@ -4,7 +4,7 @@ import Loader from '@/components/Loader';
 import { DonationDetailNoRefs } from '@/models/donation-detail';
 import { useEffect, useState } from 'react';
 
-import { addEvent } from '@/api/firebase';
+import { addEvent } from '../../../api/firebaseAdmin';
 
 export default function DonationDetails({ params }: { params: { id: string } }) {
     const [donationDetails, setDonationDetails] = useState<DonationDetailNoRefs | null>(null);
