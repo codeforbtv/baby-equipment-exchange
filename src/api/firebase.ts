@@ -44,7 +44,7 @@ export async function callCheckClaims(userId: string, ...claimNames: string[]): 
     return data;
 }
 
-export async function callIsEmailValid(email: string): Promise<boolean> {
+export async function callIsEmailInvalid(email: string): Promise<any> {
     const response = await isEmailInvalid({ email: email });
     const data: any = response.data;
     return data.value;

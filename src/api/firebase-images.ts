@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 // Libs
 import { db, getUserId } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/api/firebase';
+import { storage, callAddEvent } from '@/api/firebase';
 // Models
 import { IImage, Image, imageFactory } from '@/models/image';
 import { IImageDetail, ImageDetail } from '@/models/image-detail';
@@ -109,7 +109,7 @@ export async function uploadImages(files: File[]): Promise<DocumentReference[]> 
         for (const key in error) {
             keys.push(keys);
         }
-        // addEvent({ location: 'uploadImages', keys: keys });
+        callAddEvent({ location: 'uploadImages', keys: keys });
     }
     return Promise.reject();
 }
@@ -160,14 +160,14 @@ export async function imageReferenceConverter(...documentReferences: DocumentRef
             for (const key in error) {
                 keys.push(key);
             }
-            // addEvent({
-            //     location: 'imageReferenceConverter',
-            //     keys: keys,
-            //     customData: error.customData,
-            //     details: error.details,
-            //     name: error.name,
-            //     code: error.code
-            // });
+            callAddEvent({
+                location: 'imageReferenceConverter',
+                keys: keys,
+                customData: error.customData,
+                details: error.details,
+                name: error.name,
+                code: error.code
+            });
         }
     }
     return images;

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
 import { auth, onAuthStateChangedListener } from '@/api/firebase';
-import { addEvent, isEmailInvalid } from '../../api/firebaseAdmin';
+import { callAddEvent, callIsEmailInvalid } from '@/api/firebase';
 //Styling
 import '../../styles/globalStyles.css';
 import { UserBody } from '@/types/post-data';
@@ -40,11 +40,11 @@ export default function NewAccount() {
                         .then((_) => {
                             router.push('/');
                         })
-                        .catch((error) => addEvent({ location: 'createUserWithEmailAndPassword (inner)', user: user, error: error }));
+                        .catch((error) => callAddEvent({ location: 'createUserWithEmailAndPassword (inner)', user: user, error: error }));
                 })
-                .catch((error) => addEvent({ location: 'createUserWithEmailAndPassword', error: error }));
+                .catch((error) => callAddEvent({ location: 'createUserWithEmailAndPassword', error: error }));
         } catch (error) {
-            addEvent({ location: 'handleAccountCreate', error: error });
+            callAddEvent({ location: 'handleAccountCreate', error: error });
         }
     };
 
@@ -67,7 +67,7 @@ export default function NewAccount() {
     };
 
     const handleEmailInput = async (): Promise<void> => {
-        const validEmail = await isEmailInvalid(email);
+        const validEmail = await callIsEmailInvalid(email);
         setEmailInvalid(validEmail.value);
     };
 

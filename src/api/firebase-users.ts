@@ -17,7 +17,8 @@ import {
     Timestamp,
     updateDoc
 } from 'firebase/firestore';
-import { addEvent } from './firebaseAdmin';
+
+import { callAddEvent } from './firebase';
 // Models
 import { IUser, User } from '@/models/user';
 import { IUserDetail, UserDetail } from '@/models/user-detail';
@@ -279,6 +280,6 @@ export async function addNote(note: NoteBody) {
             });
         }
     } catch (error) {
-        addEvent(note);
+        callAddEvent(note);
     }
 }
