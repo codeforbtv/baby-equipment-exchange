@@ -51,7 +51,7 @@ const app = await initAdmin();
 
 const storage = getStorage(app);
 
-export const checkClaims = async (request: any) => {
+export const checkClaims = async (request: any): Promise<any> => {
     try {
         _verifyAuthenticated(request);
         await _verifyAdmin(request);
@@ -126,7 +126,7 @@ export const createNewUser = functionsV1
         }
     });
 
-export const getImageAsSignedUrl = async (request: any) => {
+export const getImageAsSignedUrl = async (request: any): Promise<any> => {
     let fileExists = null;
     try {
         _verifyAuthenticated(request);
@@ -166,7 +166,7 @@ export const getImageAsSignedUrl = async (request: any) => {
     return Promise.reject();
 };
 
-export const getUidByEmail = async (request: any): Promise<any> => {
+export const getUidByEmail = async (request: any): Promise<string> => {
     try {
         _verifyAuthenticated(request);
         if (request.data == undefined) {
@@ -190,7 +190,7 @@ export const getUidByEmail = async (request: any): Promise<any> => {
     return Promise.reject();
 };
 
-export const isEmailInvalid = async (request: any) => {
+export const isEmailInvalid = async (request: any): Promise<any> => {
     try {
         const email = request.data.email;
         const userRecord: UserRecord = await getAuth(app).getUserByEmail(email);
@@ -343,7 +343,7 @@ export const setClaimForVolunteer = async (request: any) => {
     }
 };
 
-export const registerNewUser = async (request: any) => {
+export const registerNewUser = async (request: any): Promise<any> => {
     try {
         const data = request.data;
         _verifyAuthenticated(request);
@@ -378,7 +378,7 @@ export const registerNewUser = async (request: any) => {
     return { ok: false };
 };
 
-export const setUserAccount = async (request: any) => {
+export const setUserAccount = async (request: any): Promise<any> => {
     let accountInformation: any = null;
     let userId: string | null | undefined;
     try {
