@@ -9,9 +9,6 @@
     --text-visited: #000;
     --error: #a8351b;
     --footer: #1f1f1f;
-    --primary-font: 'Graphik', 'EB Garamond', serif;
-    --font-montserrat: 'Montserrat', 'Arial', sans-serif;
-    --adobe-garamond-pro: 'Adobe Garamond Pro', 'Garamond', serif;
     --button-dark: black;
     --button-light: white;
     --webkit-font-smoothing: subpixel-antialiased;
@@ -28,26 +25,25 @@
 }
 
 .body--wrapper * {
-    font-family: var(--adobe-garamond-pro);
     box-sizing: border-box;
+    font-family: var(--font-montserrat);
 }
 
 .body--wrapper *[class*='MuiInput'] {
     box-sizing: content-box;
 }
 
-.body--wrapper * .MuiTypography-root {
-    font-family: var(--adobe-garamond-pro);
-}
+/* .body--wrapper * .MuiTypography-root {
+} */
 
-.body--wrapper h1,
+/* .body--wrapper h1,
 .body--wrapper h2,
 .body--wrapper h3,
 .body--wrapper h4,
 .body--wrapper h5,
 .body--wrapper h6 {
-    font-family: var(--primary-font);
-}
+    font-family: var(--font-montserrat);
+} */
 
 .body--wrapper h1 {
     font-weight: 700;
@@ -83,18 +79,15 @@
 
 .body--wrapper p,
 .body--wrapper footer {
-    font-family: var(--primary-font);
     font-weight: 600;
 }
 
 .body--wrapper li {
-    font-family: var(--primary-font);
     font-weight: 400;
 }
 
 .page--wrapper {
     box-sizing: border-box;
-    font-family: var(--primary-font);
 }
 
 .page--header {
@@ -102,11 +95,27 @@
     padding: 1rem;
 }
 
+.page--header > p {
+    font-family: var(--font-garamond);
+}
+
+.page--list > li {
+    font-family: var(--font-garamond);
+}
+
+.page--list > li > a {
+    font-family: var(--font-garamond);
+}
+
 .content--container {
     width: 100%;
     background-color: var(--bg-gray);
     margin: 0px auto;
     padding: 1rem;
+}
+
+.content--container > p {
+    font-family: var(--font-garamond);
 }
 
 .body--wrapper a,

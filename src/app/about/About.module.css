@@ -12,6 +12,10 @@
     margin: 0px 1rem;
 }
 
+.about__paragraph > a {
+    font-family: var(--font-garamond);
+}
+
 .about__paragraph--list-label {
     margin: 1rem 0 0.5rem 0;
 }
@@ -20,15 +24,31 @@
     margin: 0;
 }
 
+.about__list > li {
+    font-family: var(--font-garamond);
+}
+
 .about__question {
     text-decoration: underline;
     font-weight: 800;
+    font-family: var(--font-garamond);
 }
 
 .about__list *[class*='about__answer'] p {
     font-weight: 500;
+    font-family: var(--font-garamond);
+}
+
+.about__list *[class*='about__answer'] a {
+    font-weight: 500;
+    font-family: var(--font-garamond);
 }
 
 .about__answer {
     display: none;
+    font-family: var(--font-garamond);
+}
+
+.answer__list > li {
+    font-family: var(--font-garamond);
 }

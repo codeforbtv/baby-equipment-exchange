@@ -6,13 +6,16 @@
     margin: 1rem auto;
 }
 
+.contact-details__container > p {
+    font-family: var(--font-garamond);
+}
+
 .contact-details__container .contact__heading {
     margin-top: 0;
     font-size: 0.9rem;
 }
 .contact-details__container .contact__paragraph {
     font-size: 0.9rem;
-    font-family: var(--font-montserrat);
     font-weight: 500;
     width: 60%;
     text-align: left;

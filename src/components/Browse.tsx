@@ -63,7 +63,6 @@ const Browse: React.FC = () => {
                 setDonations(donations);
                 setIsLoading(false);
             } catch (error: any) {
-                console.log(error);
                 const keys: any[] = [];
                 for (const key in error) {
                     keys.push(key);

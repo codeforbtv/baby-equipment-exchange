@@ -125,7 +125,7 @@ export default function Donate() {
                             recall.
                         </p>
                         <p>Please reference the following web pages if you have any questions about safety/recall status of these items:</p>
-                        <ul>
+                        <ul className="page--list">
                             <li>
                                 Consumer Product Safety Commission (<a href="https://www.cpsc.gov/">cpsc.gov</a>)
                             </li>
