@@ -1,9 +1,10 @@
 'use client';
+
+import { ReactNode } from 'react';
+import Link from 'next/link';
 //Styling
 import '../../styles/globalStyles.css';
 import styles from './About.module.css';
-import { ReactNode } from 'react';
-import Link from 'next/link';
 
 export default function About() {
     const itemTypesAccepted: string[] = [
@@ -84,14 +85,14 @@ export default function About() {
         {
             question: 'How do you verify safety and recall standards for items donated?',
             answer: (
-                <div>
+                <>
                     <p>
                         Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we do
                         not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could be
                         subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to recall.
                         Please reference the following web pages if you have any questions about safety/recall status of these items:
                     </p>
-                    <ul>
+                    <ul className={styles['answer__list']}>
                         <li>
                             Consumer Product Safety Commission <a href="https://cspc.gov">(cpsc.gov)</a>{' '}
                         </li>
@@ -108,7 +109,7 @@ export default function About() {
                             Safercar.gov <a href="https://safercar.gov">(safercar.gov)</a>
                         </li>
                     </ul>
-                </div>
+                </>
             )
         }
     ];

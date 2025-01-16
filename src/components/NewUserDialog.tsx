@@ -1,5 +1,5 @@
 //API
-import { getUidByEmail, isEmailInvalid, registerNewUser, setClaims } from '@/api/firebase';
+import { callGetUidByEmail, callIsEmailInvalid, callRegisterNewUser, callSetClaims } from '@/api/firebase';
 //Styles
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, FormControl, FormControlLabel, FormGroup, FormLabel, TextField } from '@mui/material';
 import React, { useState } from 'react';
@@ -32,7 +32,7 @@ export default function NewUserDialog({
 
     function handleFormSubmit() {
         if (displayName != null && email != null && password != null) {
-            registerNewUser({
+            callRegisterNewUser({
                 options: {
                     displayName: displayName,
                     email: email,
@@ -148,7 +148,7 @@ export default function NewUserDialog({
 
     const validateEmail = async (): Promise<void> => {
         if (email != null) {
-            setEmailInvalid(await isEmailInvalid(email));
+            setEmailInvalid(await callIsEmailInvalid(email));
         }
     };
 

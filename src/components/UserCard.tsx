@@ -1,13 +1,13 @@
 //API
 import {
-    checkClaims,
-    setClaimForAdmin,
-    setClaimForAidWorker,
-    setClaimForDonationReadAccess,
-    setClaimForDonor,
-    setClaimForVerified,
-    setClaimForVolunteer,
-    setUserAccount
+    callCheckClaims,
+    callSetClaimForAdmin,
+    callSetClaimForAidWorker,
+    callSetClaimForDonationReadAccess,
+    callSetClaimForDonor,
+    callSetClaimForVerified,
+    callSetClaimForVolunteer,
+    callSetUserAccount
 } from '@/api/firebase';
 //Components
 import {
@@ -67,7 +67,7 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
         (async () => {
             try {
                 if (userId != null) {
-                    const userClaims = await checkClaims(userId);
+                    const userClaims = await callCheckClaims(userId);
                     setCanReadDonations(userClaims['can-read-donations']);
                     setIsAdmin(userClaims['admin']);
                     setIsAidWorker(userClaims['aid-worker']);
@@ -83,7 +83,7 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
     }, []);
 
     function handleFormSubmit() {
-        setUserAccount(userId!, {
+        callSetUserAccount(userId!, {
             name: displayName,
             contact: {
                 name: displayName,
@@ -164,37 +164,37 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
 
     const handleToggleIsAdmin = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (userId != null) {
-            setClaimForAdmin(userId, event.target.checked);
+            callSetClaimForAdmin(userId, event.target.checked);
         }
     };
 
     const handleToggleIsAidWorker = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (userId != null) {
-            setClaimForAidWorker(userId, event.target.checked);
+            callSetClaimForAidWorker(userId, event.target.checked);
         }
     };
 
     const handleToggleCanReadDonations = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (userId != null) {
-            setClaimForDonationReadAccess(userId, event.target.checked);
+            callSetClaimForDonationReadAccess(userId, event.target.checked);
         }
     };
 
     const handleToggleIsDonor = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (userId != null) {
-            setClaimForDonor(userId, event.target.checked);
+            callSetClaimForDonor(userId, event.target.checked);
         }
     };
 
     const handleToggleIsVerified = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (userId != null) {
-            setClaimForVerified(userId, event.target.checked);
+            callSetClaimForVerified(userId, event.target.checked);
         }
     };
 
     const handleToggleIsVolunteer = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (userId != null) {
-            setClaimForVolunteer(userId, event.target.checked);
+            callSetClaimForVolunteer(userId, event.target.checked);
         }
     };
 

@@ -3,7 +3,7 @@ import { DocumentReference } from 'firebase/firestore';
 export interface IEvent {
     type: string;
     note: string;
-    createdBy: string;
+    createdBy: DocumentReference | string;
     createdAt: string;
     modifiedAt: string;
 }
@@ -11,7 +11,7 @@ export interface IEvent {
 export class Event implements IEvent {
     type: string;
     note: string;
-    createdBy: string;
+    createdBy: DocumentReference | string;
     createdAt: string;
     modifiedAt: string;
 
@@ -31,7 +31,7 @@ export class Event implements IEvent {
         return this.note;
     }
 
-    getCreatedBy(): string {
+    getCreatedBy(): DocumentReference | string {
         return this.createdBy;
     }
 

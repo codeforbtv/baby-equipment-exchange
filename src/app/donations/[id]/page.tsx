@@ -4,7 +4,7 @@ import Loader from '@/components/Loader';
 import { DonationDetailNoRefs } from '@/models/donation-detail';
 import { useEffect, useState } from 'react';
 
-import { addEvent } from '@/api/firebase';
+import { callAddEvent } from '@/api/firebase';
 
 export default function DonationDetails({ params }: { params: { id: string } }) {
     const [donationDetails, setDonationDetails] = useState<DonationDetailNoRefs | null>(null);
@@ -20,7 +20,7 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
             for (const key in error) {
                 keys.push(key);
             }
-            addEvent({ location: `donations/${id}`, keys: keys });
+            callAddEvent({ location: `donations/${id}`, keys: keys });
             setIsLoading(false);
         }
     }

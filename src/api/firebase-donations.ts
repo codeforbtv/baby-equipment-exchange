@@ -22,8 +22,7 @@ import { DonationDetail, IDonationDetail, DonationDetailNoRefs } from '@/models/
 import { DonationBody } from '@/types/post-data';
 import { Image } from '@/models/image';
 // Libs
-import { db, getUserId } from './firebase';
-import { addEvent } from './firebase-events';
+import { db, getUserId, canReadDonations, callAddEvent } from './firebase';
 import { imageReferenceConverter } from './firebase-images';
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
@@ -141,21 +140,21 @@ const donationDetailsConverter = {
 export async function getDonations(filter: null | undefined): Promise<Donation[]> {
     try {
         const uid = await getUserId();
-        // const hasClaimOnReadingDonations: boolean = await canReadDonations();
+        const hasClaimOnReadingDonations: boolean = await canReadDonations();
         const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
         // Claim: can-read-donations
         // If a user has a claim on reading donations,
         // consider all available documents within the collection.
         const collectionRef = collection(db, DONATION_DETAILS_COLLECTION);
         const conjunctions = [];
-        // if (hasClaimOnReadingDonations !== true) {
-        //     // If an authenticated client, denoted by userRef,
-        //     // does not have a claim on reading donations,
-        //     // limit the result set to the donations a user account has submitted.
-        //     // (A note on consecution) any clause where `donor` is not equal to userRef,
-        //     // violates this method's defined behavior.
-        //     conjunctions.push(where('donor', '==', userRef));
-        // }
+        if (hasClaimOnReadingDonations !== true) {
+            // If an authenticated client, denoted by userRef,
+            // does not have a claim on reading donations,
+            // limit the result set to the donations a user account has submitted.
+            // (A note on consecution) any clause where `donor` is not equal to userRef,
+            // violates this method's defined behavior.
+            conjunctions.push(where('donor', '==', userRef));
+        }
         conjunctions.push(where('donor', '==', userRef));
         const q = query(collectionRef, ...conjunctions).withConverter(donationDetailsConverter);
         const donationDetailsSnapshot = await getDocs(q);
@@ -174,7 +173,7 @@ export async function getDonations(filter: null | undefined): Promise<Donation[]
         }
         return donations;
     } catch (error: any) {
-        addEvent({ location: 'api/firebase-donations', error: error });
+        callAddEvent({ location: 'api/firebase-donations', error: error });
     }
     return Promise.reject();
 }
@@ -198,17 +197,17 @@ async function _getDonations(...donationDetails: DonationDetail[]): Promise<Dona
 export async function getDonationById(id: string): Promise<DonationDetailNoRefs> {
     try {
         const uid = await getUserId();
-        // const hasClaimOnReadingDonations: boolean = await canReadDonations();
+        const hasClaimOnReadingDonations: boolean = await canReadDonations();
         const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
         const donationCollectionRef = collection(db, DONATIONS_COLLECTION);
         const donationDetailsCollectionRef = collection(db, DONATION_DETAILS_COLLECTION);
         const donationRef = doc(donationCollectionRef, `${id}`).withConverter(donationConverter);
         const conjunctions = [where('donation', '==', donationRef)];
         //if user cannot read all donations, only fetch donation if it was donated by current user
-        // if (hasClaimOnReadingDonations !== true) {
+        if (hasClaimOnReadingDonations !== true) {
+            conjunctions.push(where('donor', '==', userRef));
+        }
 
-        // }
-        conjunctions.push(where('donor', '==', userRef));
         const q = query(donationDetailsCollectionRef, ...conjunctions).withConverter(donationDetailsConverter);
 
         const donationDetailsSnapshot = await getDocs(q);
@@ -238,7 +237,7 @@ export async function getDonationById(id: string): Promise<DonationDetailNoRefs>
             return Promise.reject();
         }
     } catch (error: any) {
-        addEvent({ location: 'api/firebase-donations', error: error });
+        callAddEvent({ location: 'api/firebase-donations', error: error });
     }
     return Promise.reject();
 }
@@ -291,6 +290,6 @@ export async function addDonation(newDonation: DonationBody) {
         for (const key in error) {
             keys.push(key);
         }
-        addEvent({ location: 'addDonation', keys: keys });
+        callAddEvent({ location: 'addDonation', keys: keys });
     }
 }

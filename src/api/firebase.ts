@@ -1,127 +1,67 @@
-import { FirebaseApp, FirebaseOptions, initializeApp } from 'firebase/app';
-import { connectFirestoreEmulator, Firestore } from 'firebase/firestore';
+import { FirebaseApp, initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { connectFunctionsEmulator, httpsCallable, Functions, getFunctions } from 'firebase/functions';
-import { connectStorageEmulator, FirebaseStorage, getStorage } from 'firebase/storage';
-import {
-    Auth,
-    UserCredential,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    NextOrObserver,
-    User,
-    connectAuthEmulator,
-    getAuth
-} from 'firebase/auth';
-import { AccountInformation, UserBody } from '@/types/post-data';
+import { getStorage } from 'firebase/storage';
+import { UserCredential, signInWithEmailAndPassword, signOut, onAuthStateChanged, NextOrObserver, User, getAuth } from 'firebase/auth';
+
 import { firebaseConfig } from './config';
+import {
+    addEvent,
+    checkClaims,
+    getImageAsSignedUrl,
+    getUidByEmail,
+    isEmailInvalid,
+    registerNewUser,
+    setClaimForAdmin,
+    setClaimForAidWorker,
+    setClaimForDonationReadAccess,
+    setClaimForDonor,
+    setClaimForNewUser,
+    setClaimForVerified,
+    setClaimForVolunteer,
+    setClaims,
+    setUserAccount,
+    toggleCanReadDonations,
+    toggleClaimForAdmin,
+    toggleClaimForAidWorker,
+    toggleClaimForVerified,
+    toggleClaimForVolunteer
+} from './firebaseAdmin';
+
+import { AccountInformation } from '@/types/post-data';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
-// const functions = getFunctions(app, 'us-east1');
 
-// function initDb(): Firestore {
-//     let _db: Firestore;
-//     if ((process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') && process?.env?.NEXT_PUBLIC_IMPORT_DIRECTORY != null) {
-//         const FIREBASE_EMULATORS_FIRESTORE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FIRESTORE_PORT ?? '8080');
-//         _db = getFirestore(app);
-//         connectFirestoreEmulator(_db, '127.0.0.1', FIREBASE_EMULATORS_FIRESTORE_PORT);
-//     } else {
-//         _db = getFirestore(app);
-//     }
-//     return _db;
-// }
+export async function callCheckClaims(userId: string, ...claimNames: string[]): Promise<any> {
+    if (claimNames.length === 0) {
+        claimNames = ['admin', 'aid-worker', 'can-read-donations', 'donor', 'verified', 'volunteer'];
+    }
+    const response = await checkClaims({ userId: userId, claimNames: claimNames });
+    const data: any = response.data;
+    return data;
+}
 
-// function initFirebaseAuth() {
-//     let _auth: Auth;
-//     if ((process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') && process.env.NEXT_PUBLIC_IMPORT_DIRECTORY != null) {
-//         const FIREBASE_EMULATORS_AUTH_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_AUTH_PORT ?? '9099');
-//         _auth = getAuth(app);
-//         connectAuthEmulator(_auth, `http://127.0.0.1:${FIREBASE_EMULATORS_AUTH_PORT}`);
-//     } else {
-//         _auth = getAuth(app);
-//     }
-//     return _auth;
-// }
+export async function callIsEmailInvalid(email: string): Promise<any> {
+    const response = await isEmailInvalid({ email: email });
+    const data: any = response.data;
+    return data.value;
+}
 
-// function initFirebaseStorage() {
-//     let _storage: FirebaseStorage;
-//     if ((process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') && process?.env?.NEXT_PUBLIC_IMPORT_DIRECTORY != null) {
-//         const FIREBASE_EMULATORS_STORAGE_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_STORAGE_PORT ?? '9199');
-//         _storage = getStorage(app);
-//         connectStorageEmulator(_storage, '127.0.0.1', FIREBASE_EMULATORS_STORAGE_PORT);
-//     } else {
-//         _storage = getStorage(app);
-//     }
-//     return _storage;
-// }
+export async function callSetClaimForNewUser(userId: string): Promise<void> {
+    setClaimForNewUser({ userId: userId });
+}
 
-// function initFunctions() {
-//     let _functions: Functions;
-//     if ((process?.env?.NODE_ENV === 'test' || process?.env?.NODE_ENV === 'development') && process?.env?.NEXT_PUBLIC_IMPORT_DIRECTORY != null) {
-//         const FIREBASE_EMULATORS_FUNCTIONS_PORT = Number.parseInt(process.env.NEXT_PUBLIC_FIREBASE_EMULATORS_FUNCTIONS_PORT ?? '5001');
-//         _functions = getFunctions(app, 'us-east1');
-//         connectFunctionsEmulator(_functions, '127.0.0.1', FIREBASE_EMULATORS_FUNCTIONS_PORT);
-//     } else {
-//         _functions = getFunctions(app, 'us-east1');
-//     }
-//     return _functions;
-// }
+// Action based claims.
+export async function callSetClaimForDonationReadAccess(userId: string, canReadDonations: boolean): Promise<void> {
+    setClaimForDonationReadAccess({ userId: userId, canReadDonations: canReadDonations });
+}
 
-// Functions
-// const callAddEvent = httpsCallable(functions, 'addEvent');
-// const callCheckClaims = httpsCallable(functions, 'checkClaims');
-// const callGetImageAsSignedUrl = httpsCallable(functions, 'getImageAsSignedUrl');
-// const callGetUidByEmail = httpsCallable(functions, 'getUidByEmail');
-// const callIsEmailInvalid = httpsCallable(functions, 'isEmailInvalid');
-// const callRegisterNewUser = httpsCallable(functions, 'registerNewUser');
-// const callSetClaimForAdmin = httpsCallable(functions, 'setClaimForAdmin');
-// const callSetClaimForAidWorker = httpsCallable(functions, 'setClaimForAidWorker');
-// const callSetClaimForDonationReadAccess = httpsCallable(functions, 'setClaimForDonationReadAccess');
-// const callSetClaimForDonor = httpsCallable(functions, 'setClaimForDonor');
-// const callSetClaimForNewUser = httpsCallable(functions, 'setClaimForNewUser');
-// const callSetClaimForVerified = httpsCallable(functions, 'setClaimForVerified');
-// const callSetClaimForVolunteer = httpsCallable(functions, 'setClaimForVolunteer');
-// const callSetClaims = httpsCallable(functions, 'setClaims');
-// const callSetUserAccount = httpsCallable(functions, 'setUserAccount');
-// const callToggleCanReadDonations = httpsCallable(functions, 'toggleCanReadDonations');
-// const callToggleClaimForAdmin = httpsCallable(functions, 'toggleClaimForAdmin');
-// const callToggleClaimForAidWorker = httpsCallable(functions, 'toggleClaimForAidWorker');
-// const callToggleClaimForVerified = httpsCallable(functions, 'toggleClaimForVerified');
-// const callToggleClaimForVolunteer = httpsCallable(functions, 'toggleClaimForVolunteer');
-
-// export async function checkClaims(userId: string, ...claimNames: string[]): Promise<any> {
-//     if (claimNames.length === 0) {
-//         claimNames = ['admin', 'aid-worker', 'can-read-donations', 'donor', 'verified', 'volunteer'];
-//     }
-//     const response = await callCheckClaims({ userId: userId, claimNames: claimNames });
-//     const data: any = response.data;
-//     return data;
-// }
-
-// export async function isEmailInvalid(email: string) {
-//     const response = await callIsEmailInvalid({ email: email });
-//     const data: any = response.data;
-//     return data.value;
-// }
-
-// export async function setClaimForNewUser(userId: string) {
-//     callSetClaimForNewUser({ userId: userId });
-// }
-
-// // Action based claims.
-
-// export async function setClaimForDonationReadAccess(userId: string, canReadDonations: boolean) {
-//     callSetClaimForDonationReadAccess({ userId: userId, canReadDonations: canReadDonations });
-// }
-
-// export async function toggleCanReadDonations(userId: string) {
-//     callToggleCanReadDonations({ userId: userId });
-// }
+export async function callToggleCanReadDonations(userId: string): Promise<void> {
+    toggleCanReadDonations({ userId: userId });
+}
 
 // Role based claims.
 export async function canReadDonations(): Promise<boolean> {
@@ -148,58 +88,59 @@ export async function isVolunteer(): Promise<boolean> {
     return checkClaim('volunteer');
 }
 
-// export async function setClaimForAdmin(userId: string, isAdmin: boolean) {
-//     callSetClaimForAdmin({ userId: userId, isAdmin: isAdmin });
-// }
 
-// export async function setClaimForAidWorker(userId: string, isAidWorker: boolean) {
-//     callSetClaimForAidWorker({ userId: userId, isAidWorker: isAidWorker });
-// }
+export async function callSetClaimForAdmin(userId: string, isAdmin: boolean): Promise<void> {
+    setClaimForAdmin({ userId: userId, isAdmin: isAdmin });
+}
 
-// export async function setClaimForDonor(userId: string, isDonor: boolean) {
-//     callSetClaimForDonor({ userId: userId, isDonor: isDonor });
-// }
+export async function callSetClaimForAidWorker(userId: string, isAidWorker: boolean): Promise<void> {
+    setClaimForAidWorker({ userId: userId, isAidWorker: isAidWorker });
+}
 
-// export async function setClaimForVerified(userId: string, isVerified: boolean) {
-//     callSetClaimForVerified({ userId: userId, isVerified: isVerified });
-// }
+export async function callSetClaimForDonor(userId: string, isDonor: boolean): Promise<void> {
+    setClaimForDonor({ userId: userId, isDonor: isDonor });
+}
 
-// export async function setClaimForVolunteer(userId: string, isVolunteer: boolean) {
-//     callSetClaimForVolunteer({ userId: userId, isVolunteer: isVolunteer });
-// }
+export async function callSetClaimForVerified(userId: string, isVerified: boolean): Promise<void> {
+    setClaimForVerified({ userId: userId, isVerified: isVerified });
+}
 
-// export async function toggleClaimForAdmin(userId: string) {
-//     callToggleClaimForAdmin({ userId: userId });
-// }
+export async function callSetClaimForVolunteer(userId: string, isVolunteer: boolean): Promise<void> {
+    setClaimForVolunteer({ userId: userId, isVolunteer: isVolunteer });
+}
 
-// export async function toggleClaimForAidWorker(userId: string) {
-//     callToggleClaimForAidWorker({ userId: userId });
-// }
+export async function callToggleClaimForAdmin(userId: string): Promise<void> {
+    toggleClaimForAdmin({ userId: userId });
+}
 
-// export async function toggleClaimForVerified(userId: string) {
-//     callToggleClaimForVerified({ userId: userId });
-// }
+export async function callToggleClaimForAidWorker(userId: string): Promise<void> {
+    toggleClaimForAidWorker({ userId: userId });
+}
 
-// export async function toggleClaimForVolunteer(userId: string) {
-//     callToggleClaimForVolunteer({ userId: userId });
-// }
+export async function callToggleClaimForVerified(userId: string): Promise<void> {
+    toggleClaimForVerified({ userId: userId });
+}
 
-// // Utilitarian
+export async function callToggleClaimForVolunteer(userId: string): Promise<void> {
+    toggleClaimForVolunteer({ userId: userId });
+}
 
-// export async function addEvent(object: any) {
-//     callAddEvent({ object: object });
-// }
+// Utilitarian
+export async function callAddEvent(object: any): Promise<void> {
+    addEvent({ object: object });
+}
 
-// export async function getImageAsSignedUrl(url: string) {
-//     try {
-//         const response = await callGetImageAsSignedUrl({ url: url });
-//         await addEvent({ location: 'getImageAsSignedUrl', response: response });
-//         const signedUrl: any = response.data;
-//         return signedUrl;
-//     } catch (error) {
-//         await addEvent({ location: 'getImageAsSignedUrl', error: error });
-//     }
-// }
+export async function callGetImageAsSignedUrl(url: string): Promise<any> {
+    try {
+        const response = await getImageAsSignedUrl({ url: url });
+        await addEvent({ location: 'getImageAsSignedUrl', response: response });
+        const signedUrl: any = response.data;
+        return signedUrl;
+    } catch (error) {
+        await addEvent({ location: 'getImageAsSignedUrl', error: error });
+    }
+}
+
 
 export async function getAccountType(): Promise<string> {
     let accountType: string = '';
@@ -230,12 +171,12 @@ export function getUserEmail(): string | null | undefined {
     return auth.currentUser?.email;
 }
 
-// export async function getUidByEmail(email: string) {
-//     await auth.authStateReady();
-//     const options = { email };
-//     const uid = await callGetUidByEmail({ options });
-//     return uid;
-// }
+export async function callGetUidByEmail(email: string): Promise<string> {
+    await auth.authStateReady();
+    const options = { email };
+    const uid = await getUidByEmail({ options });
+    return uid;
+}
 
 export async function getUserId(): Promise<string> {
     await auth.authStateReady();
@@ -243,21 +184,21 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject();
 }
 
-// export async function registerNewUser(options: any): Promise<any> {
-//     const response = await callRegisterNewUser(options);
-//     const data: any = response.data;
-//     const okResponse = data.ok ?? false;
-//     return { ok: okResponse };
-// }
+export async function callRegisterNewUser(options: any): Promise<any> {
+    const response = await registerNewUser(options);
+    const data: any = response.data;
+    const okResponse = data.ok ?? false;
+    return { ok: okResponse };
+}
 
-// export async function setClaims(userId: string, claims: any) {
-//     const options = { userId, claims };
-//     await callSetClaims({ options });
-// }
+export async function callSetClaims(userId: string, claims: any): Promise<void> {
+    const options = { userId, claims };
+    await setClaims({ options });
+}
 
-// export async function setUserAccount(userId: string, accountInformation: AccountInformation) {
-//     await callSetUserAccount({ userId: userId, accountInformation: accountInformation });
-// }
+export async function callSetUserAccount(userId: string, accountInformation: AccountInformation): Promise<void> {
+    await setUserAccount({ userId: userId, accountInformation: accountInformation });
+}
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
     if (!email || !password) {

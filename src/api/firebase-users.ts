@@ -1,5 +1,5 @@
 // Libs
-import { addEvent, db, getUserId } from './firebase';
+import { db, getUserId } from './firebase';
 import {
     arrayUnion,
     collection,
@@ -17,6 +17,8 @@ import {
     Timestamp,
     updateDoc
 } from 'firebase/firestore';
+
+import { callAddEvent } from './firebase';
 // Models
 import { IUser, User } from '@/models/user';
 import { IUserDetail, UserDetail } from '@/models/user-detail';
@@ -278,6 +280,6 @@ export async function addNote(note: NoteBody) {
             });
         }
     } catch (error) {
-        addEvent(note);
+        callAddEvent(note);
     }
 }

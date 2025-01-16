@@ -16,6 +16,7 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 // Libs
 import { getDonations } from '@/api/firebase-donations';
+import { callAddEvent } from '@/api/firebase';
 
 import algoliasearch from 'algoliasearch/lite';
 import { InstantSearch } from 'react-instantsearch';
@@ -59,24 +60,24 @@ const Browse: React.FC = () => {
         (async () => {
             try {
                 const donations = await getDonations(null);
-                console.log(donations);
                 setDonations(donations);
                 setIsLoading(false);
             } catch (error: any) {
-                console.log(error);
                 const keys: any[] = [];
                 for (const key in error) {
                     keys.push(key);
                 }
-                // addEvent({ location: 'component/Browse', keys: keys });
+                callAddEvent({ location: 'component/Browse', keys: keys });
             }
         })();
     }, []);
 
     const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_API_KEY;
 
-    return isLoading || donations == null ? (
-        'It aint work'
+    if (isLoading) return <Loader />;
+
+    return donations == null ? (
+        'No donations found.'
     ) : (
         <>
             <div className={styles['browse__header']}>
@@ -116,11 +117,10 @@ const Browse: React.FC = () => {
                     <>{isFilterVisible && <Filter />}</>
                     <ImageList className={styles['browse__grid']}>
                         {donations.map((donation) => {
-                            console.log(donation);
                             // An active donation must have at least one photo for display.
                             return (
                                 <DonationCard
-                                    key={donation.images[0] as string}
+                                    key={donation.id}
                                     category={donation.category}
                                     brand={donation.brand}
                                     model={donation.model}

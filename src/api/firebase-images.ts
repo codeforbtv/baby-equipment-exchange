@@ -13,9 +13,9 @@ import {
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 // Libs
-import { db, getUserId } from './firebase';
+import { db, getUserId, storage, callAddEvent, callGetImageAsSignedUrl } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/api/firebase';
+
 // Models
 import { IImage, Image, imageFactory } from '@/models/image';
 import { IImageDetail, ImageDetail } from '@/models/image-detail';
@@ -79,8 +79,6 @@ export async function uploadImages(files: File[]): Promise<DocumentReference[]> 
             // Upload image(s) to Cloud Storage
             await uploadBytes(storageRef, fileData, metaData);
             const downloadURL = `gs://baby-equipment-exchange.appspot.com/${storageFilename}`;
-            //const downloadURL = `https://firebasestorage.googleapis.com/v0/b/baby-equipment-exchange.appspot.com/o/${storageFilename}`;
-            //https://firebasestorage.googleapis.com/v0/b/baby-equipment-exchange.appspot.com/o/
             //Create new Image document
             const imageCollection = collection(db, IMAGES_COLLECTION);
             const { ...imageData } = imageFactory(downloadURL);
@@ -109,7 +107,7 @@ export async function uploadImages(files: File[]): Promise<DocumentReference[]> 
         for (const key in error) {
             keys.push(keys);
         }
-        // addEvent({ location: 'uploadImages', keys: keys });
+        callAddEvent({ location: 'uploadImages', keys: keys });
     }
     return Promise.reject();
 }
@@ -125,7 +123,7 @@ export async function getImage(id: string): Promise<Image> {
  *
  */
 export async function imageReferenceConverter(...documentReferences: DocumentReference<Image>[]): Promise<string[]> {
-    const images: string[] = []; // ['https://media1.sevendaysvt.com/sevendaysvt/imager/u/homefeature/42305671/thisoldstate1-1-45104886f8323a61.webp?cb=1732056180'];
+    const images: string[] = [];
     for (const documentReference of documentReferences) {
         try {
             const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter));
@@ -134,40 +132,36 @@ export async function imageReferenceConverter(...documentReferences: DocumentRef
                 let url = imageDocument?.getDownloadURL();
                 await getDownloadURL(ref(storage, url))
                     .then((url) => {
-                        // `url` is the download URL for 'images/stars.jpg'
-
-                        // This can be downloaded directly:
-                        // const xhr = new XMLHttpRequest();
-                        // xhr.responseType = 'blob';
-                        // xhr.onload = (event) => {
-                        //     const blob = xhr.response;
-                        // };
-                        // xhr.open('GET', url);
-                        // xhr.send();
-                        //
-                        // // Or inserted into an <img> element
-                        // const img = document.getElementById('myimg');
-                        // img.setAttribute('src', url);
                         if (url) images.push(url);
                     })
                     .catch((error) => {
-                        // Handle any errors
+                        const keys: any[] = [];
+                        for (const key in error) {
+                            keys.push(key);
+                        }
+                        callAddEvent({
+                            location: 'imageReferenceConverter',
+                            keys: keys,
+                            customData: error.customData,
+                            details: error.details,
+                            name: error.name,
+                            code: error.code
+                        });
                     });
-                // if (url) images.push(url);
             }
         } catch (error: any) {
             const keys: any[] = [];
             for (const key in error) {
                 keys.push(key);
             }
-            // addEvent({
-            //     location: 'imageReferenceConverter',
-            //     keys: keys,
-            //     customData: error.customData,
-            //     details: error.details,
-            //     name: error.name,
-            //     code: error.code
-            // });
+            callAddEvent({
+                location: 'imageReferenceConverter',
+                keys: keys,
+                customData: error.customData,
+                details: error.details,
+                name: error.name,
+                code: error.code
+            });
         }
     }
     return images;
