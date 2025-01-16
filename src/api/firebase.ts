@@ -88,6 +88,7 @@ export async function isVolunteer(): Promise<boolean> {
     return checkClaim('volunteer');
 }
 
+
 export async function callSetClaimForAdmin(userId: string, isAdmin: boolean): Promise<void> {
     setClaimForAdmin({ userId: userId, isAdmin: isAdmin });
 }
@@ -139,6 +140,7 @@ export async function callGetImageAsSignedUrl(url: string): Promise<any> {
         await addEvent({ location: 'getImageAsSignedUrl', error: error });
     }
 }
+
 
 export async function getAccountType(): Promise<string> {
     let accountType: string = '';
