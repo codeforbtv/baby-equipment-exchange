@@ -15,7 +15,7 @@ import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 
 import { firebaseConfig } from './config';
-import '../../serviceAccount.json';
+//import '../../serviceAccount.json';
 
 const region = 'us-east1';
 
