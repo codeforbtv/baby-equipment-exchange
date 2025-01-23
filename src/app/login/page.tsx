@@ -8,6 +8,7 @@ import { Box, TextField, Button } from '@mui/material';
 //Hooks
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 //Libs
 import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '@/api/firebase';
 //Styling
@@ -23,23 +24,21 @@ export default function Login() {
     return (
         <>
             <Suspense fallback={<Loader />}>
-                <LoginForm 
-                    loginState={loginState} 
-                    setLoginState={setLoginState} 
-                    email={email} 
-                    setEmail={setEmail} 
-                    password={password} 
-                    setPassword={setPassword} 
-                    router={router} 
+                <LoginForm
+                    loginState={loginState}
+                    setLoginState={setLoginState}
+                    email={email}
+                    setEmail={setEmail}
+                    password={password}
+                    setPassword={setPassword}
+                    router={router}
                 />
             </Suspense>
         </>
     );
 }
 
-function LoginForm({ 
-    loginState, setLoginState, email, setEmail, password, setPassword, router 
-}: any) {
+function LoginForm({ loginState, setLoginState, email, setEmail, password, setPassword, router }: any) {
     const searchParams = useSearchParams();
     const status = searchParams.get('status');
 
@@ -106,6 +105,13 @@ function LoginForm({
                     </>
                 )}
             </div>
+            <hr />
+            <h4>
+                Don't have an account?{' '}
+                <Link id="join" href="./join">
+                    Join here
+                </Link>
+            </h4>
 
             {status && <ToasterNotification status={status} />}
         </>
