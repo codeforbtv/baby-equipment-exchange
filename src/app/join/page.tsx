@@ -68,7 +68,7 @@ export default function NewAccount() {
 
     const handleEmailInput = async (): Promise<void> => {
         const validEmail = await callIsEmailInvalid(email);
-        setEmailInvalid(validEmail.value);
+        setEmailInvalid(validEmail);
     };
 
     return (

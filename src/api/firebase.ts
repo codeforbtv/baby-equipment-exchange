@@ -1,7 +1,7 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { UserCredential, signInWithEmailAndPassword, signOut, onAuthStateChanged, NextOrObserver, User, getAuth } from 'firebase/auth';
+import { UserCredential, signInWithEmailAndPassword, signOut, onAuthStateChanged, NextOrObserver, User, getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 import { firebaseConfig } from './config';
 import {
@@ -44,10 +44,9 @@ export async function callCheckClaims(userId: string, ...claimNames: string[]): 
     return data;
 }
 
-export async function callIsEmailInvalid(email: string): Promise<any> {
+export async function callIsEmailInvalid(email: string): Promise<boolean> {
     const response = await isEmailInvalid({ email: email });
-    const data: any = response.data;
-    return data.value;
+    return response;
 }
 
 export async function callSetClaimForNewUser(userId: string): Promise<void> {
@@ -87,7 +86,6 @@ export async function isVerified(): Promise<boolean> {
 export async function isVolunteer(): Promise<boolean> {
     return checkClaim('volunteer');
 }
-
 
 export async function callSetClaimForAdmin(userId: string, isAdmin: boolean): Promise<void> {
     setClaimForAdmin({ userId: userId, isAdmin: isAdmin });
@@ -140,7 +138,6 @@ export async function callGetImageAsSignedUrl(url: string): Promise<any> {
         await addEvent({ location: 'getImageAsSignedUrl', error: error });
     }
 }
-
 
 export async function getAccountType(): Promise<string> {
     let accountType: string = '';
@@ -214,4 +211,9 @@ export function signOutUser(): void {
 
 export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
     onAuthStateChanged(auth, callback);
+}
+
+export async function resetPassword(email: string): Promise<void> {
+    if (!email) Promise.reject();
+    await sendPasswordResetEmail(auth, email);
 }

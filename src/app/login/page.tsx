@@ -101,7 +101,9 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
                             </Button>
                         </Box>
                         <hr />
-                        <span>Instructions for forgotten password.</span>
+                        <Link id="reset-password" href="./reset-password">
+                            Forgot password?
+                        </Link>
                     </>
                 )}
             </div>
