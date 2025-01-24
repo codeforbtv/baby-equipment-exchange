@@ -9,7 +9,7 @@ import {
     checkClaims,
     getImageAsSignedUrl,
     getUidByEmail,
-    isEmailInvalid,
+    isEmailInUse,
     registerNewUser,
     setClaimForAdmin,
     setClaimForAidWorker,
@@ -44,8 +44,8 @@ export async function callCheckClaims(userId: string, ...claimNames: string[]): 
     return data;
 }
 
-export async function callIsEmailInvalid(email: string): Promise<boolean> {
-    const response = await isEmailInvalid({ email: email });
+export async function callIsEmailInUse(email: string): Promise<boolean> {
+    const response = await isEmailInUse({ email: email });
     return response;
 }
 

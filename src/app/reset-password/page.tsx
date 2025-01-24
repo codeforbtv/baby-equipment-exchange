@@ -68,7 +68,7 @@ export default function ResetPassword() {
                         autoComplete="email"
                         value={email}
                         error={isInvalidEmail}
-                        helperText={isInvalidEmail ? 'Invalid email.' : undefined}
+                        helperText={isInvalidEmail ? 'Please enter a valid email addres' : undefined}
                         required
                         onChange={handleEmailInput}
                         onBlur={handleBlur}

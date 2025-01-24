@@ -190,9 +190,9 @@ export const getUidByEmail = async (request: any): Promise<string> => {
     return Promise.reject();
 };
 
-export const isEmailInvalid = async (request: any): Promise<boolean> => {
+export const isEmailInUse = async (request: any) => {
     try {
-        const email = request.data.email;
+        const email = request.email;
         const userRecord: UserRecord = await getAuth(app).getUserByEmail(email);
         if (userRecord !== undefined) {
             logger.error({ error: `${email} was queried via this onCall method.`, data: request.data });
@@ -202,12 +202,12 @@ export const isEmailInvalid = async (request: any): Promise<boolean> => {
         }
     } catch (error: any) {
         logger.error(error);
-        _addEvent({ location: 'isEmailInvalid', error: error, data: request.data });
+        _addEvent({ location: 'isEmailInUse', error: error, data: request.data });
         if (error.code === 'auth/user-not-found') {
             return false;
         }
         if (error.code !== 'auth/invalid-email') {
-            _addEvent({ location: 'isEmailInvalid', error: error, data: request.data });
+            _addEvent({ location: 'isEmailInUse', error: error, data: request.data });
         }
     }
     return true;
