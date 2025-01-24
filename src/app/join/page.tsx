@@ -1,6 +1,6 @@
 'use client';
 //Components
-import { Alert, Box, Button, Paper, TextField } from '@mui/material';
+import { Box, Button, Paper, TextField } from '@mui/material';
 //Hooks
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -8,7 +8,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { auth, onAuthStateChangedListener, callAddEvent, callIsEmailInUse } from '@/api/firebase';
 //Styling
 import '../../styles/globalStyles.css';
-import { UserBody } from '@/types/post-data';
 import Loader from '@/components/Loader';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
@@ -49,10 +48,6 @@ export default function NewAccount() {
             else setLoginState('loggedOut');
         });
     }, []);
-
-    useEffect(() => {
-        console.log(email);
-    }, [email]);
 
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
