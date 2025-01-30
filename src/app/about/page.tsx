@@ -148,16 +148,17 @@ export default function About() {
                 <p>The exchange provides durable equipment to families in need through partner referrals and community donations.</p>
                 <h4 className={styles['about__heading']}>Learn More:</h4>
                 <p className={styles['about__paragraph']}>
-                    <a href="https://www.wendyriceconsulting.com/">Click here for Vermont Connector&apos;s project page</a>
+                    <a href="https://www.vermontconnector.org/baby-and-child-product-exchange" target="_blank">Click here for Vermont Connector&apos;s project page</a>
                 </p>
                 <br />
                 <h2>Donations</h2>
-                <p className={styles['about__paragraph--list-label']}>List of item accepted:</p>
+                <p className={styles['about__paragraph--list-label']}>List of items accepted:</p>
                 <ul className={styles['about__list']}>{itemTypesAcceptedList}</ul>
                 <p className={styles['about__paragraph--list-label']}>List of items not accepted:</p>
                 <ul className={styles['about__list']}>{itemTypesNotAcceptedList}</ul>
-                <p>Read the full FAQ documents.</p>
-                <ul className={styles['about__list']}>{faqList}</ul>
+                <p>
+                    <a href="https://docs.google.com/document/d/198EiN4I1h1X2L46-kAJ5rS2iPGV9aBwt_mQC2eBIl-c" target="_blank">Read the full FAQ documents.</a>
+                </p>
             </div>
         </>
     );
