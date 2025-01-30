@@ -1,27 +1,46 @@
 'use client';
 //Components
-import { Alert, Box, Button, Paper, TextField } from '@mui/material';
+import { Box, Button, Paper, TextField } from '@mui/material';
 //Hooks
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 //Libs
-import { auth, onAuthStateChangedListener } from '@/api/firebase';
-import { callAddEvent, callIsEmailInvalid } from '@/api/firebase';
+import { auth, onAuthStateChangedListener, callAddEvent, callIsEmailInUse } from '@/api/firebase';
 //Styling
 import '../../styles/globalStyles.css';
-import { UserBody } from '@/types/post-data';
 import Loader from '@/components/Loader';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewAccount() {
     const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('pending');
     const [displayName, setDisplayName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
-    const [emailInvalid, setEmailInvalid] = useState<boolean>(false);
+    const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
+    const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState<boolean>(false);
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
+
     const router = useRouter();
+
+    const validateEmail = (email: string): void => {
+        if (email.length === 0 || !emailRegex.test(email)) {
+            setIsInvalidEmail(true);
+        } else {
+            setIsInvalidEmail(false);
+        }
+    };
+
+    const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+        setEmail(event.target.value);
+        validateEmail(email);
+        if (!isInvalidEmail) {
+            const emailInUse = await callIsEmailInUse(email);
+            setIsEmailInUse(emailInUse);
+        }
+    };
 
     useEffect(() => {
         onAuthStateChangedListener((user) => {
@@ -66,16 +85,18 @@ export default function NewAccount() {
         }
     };
 
-    const handleEmailInput = async (): Promise<void> => {
-        const validEmail = await callIsEmailInvalid(email);
-        setEmailInvalid(validEmail.value);
+    const handleBlur = async (): Promise<void> => {
+        validateEmail(email);
+        if (!isInvalidEmail) {
+            const emailInUse = await callIsEmailInUse(email);
+            setIsEmailInUse(emailInUse);
+        }
     };
 
     return (
         <>
             <div className="page--header">
                 <h1>Join</h1>
-                <Alert severity="warning">The Join page and account creation features have been deprecated.</Alert>
             </div>
             <Paper className="content--container" elevation={8} square={false}>
                 {loginState === 'pending' && <Loader />}
@@ -102,15 +123,11 @@ export default function NewAccount() {
                                 placeholder="Input email"
                                 autoComplete="email"
                                 value={email}
-                                error={emailInvalid}
-                                helperText={emailInvalid ? 'Invalid email.' : undefined}
+                                error={isEmailInUse || isInvalidEmail}
+                                helperText={(isInvalidEmail && 'Please enter a valid email addres') || (isEmailInUse && 'This email is already in use')}
                                 required
-                                inputProps={{
-                                    onBlur: handleEmailInput
-                                }}
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                    setEmail(event.target.value);
-                                }}
+                                onChange={handleEmailInput}
+                                onBlur={handleBlur}
                             />
                             <TextField
                                 type="password"
@@ -135,7 +152,7 @@ export default function NewAccount() {
                                 required
                                 onChange={handleConfirmPassword}
                             />
-                            <Button variant="contained" type={'submit'} disabled={emailInvalid || passwordsDoNotMatch}>
+                            <Button variant="contained" type={'submit'} disabled={isEmailInUse || passwordsDoNotMatch}>
                                 Join
                             </Button>
                         </Box>

@@ -40,6 +40,7 @@ const Browse: React.FC = () => {
 
     function closeDialog() {
         setIsDialogActive(false);
+        fetchDonations();
     }
 
     function handleNewDonation() {
@@ -53,22 +54,26 @@ const Browse: React.FC = () => {
         setIsFilterVisible((prev: any) => !prev);
     }
 
+    async function fetchDonations() {
+        try {
+            const donations = await getDonations(null);
+            setDonations(donations);
+            setIsLoading(false);
+        } catch (error: any) {
+            const keys: any[] = [];
+            for (const key in error) {
+                keys.push(key);
+            }
+            callAddEvent({ location: 'component/Browse', keys: keys });
+        }
+    }
+
     /**
      * On component render sets the donations state to the active donations retreived from Firebase.
      */
     useEffect(() => {
         (async () => {
-            try {
-                const donations = await getDonations(null);
-                setDonations(donations);
-                setIsLoading(false);
-            } catch (error: any) {
-                const keys: any[] = [];
-                for (const key in error) {
-                    keys.push(key);
-                }
-                callAddEvent({ location: 'component/Browse', keys: keys });
-            }
+            fetchDonations();
         })();
     }, []);
 
@@ -116,20 +121,22 @@ const Browse: React.FC = () => {
                     </>
                     <>{isFilterVisible && <Filter />}</>
                     <ImageList className={styles['browse__grid']}>
-                        {donations.map((donation) => {
-                            // An active donation must have at least one photo for display.
-                            return (
-                                <DonationCard
-                                    key={donation.id}
-                                    category={donation.category}
-                                    brand={donation.brand}
-                                    model={donation.model}
-                                    description={donation.description}
-                                    active={donation.active}
-                                    images={donation.images as string[]}
-                                />
-                            );
-                        })}
+                        {donations
+                            .sort((a, b) => b.modifiedAt.toDate().getTime() - a.modifiedAt.toDate().getTime())
+                            .map((donation) => {
+                                // An active donation must have at least one photo for display.
+                                return (
+                                    <DonationCard
+                                        key={donation.id}
+                                        category={donation.category}
+                                        brand={donation.brand}
+                                        model={donation.model}
+                                        description={donation.description}
+                                        active={donation.active}
+                                        images={donation.images as string[]}
+                                    />
+                                );
+                            })}
                     </ImageList>
                 </>
             )}
