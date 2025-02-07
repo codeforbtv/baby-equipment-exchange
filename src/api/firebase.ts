@@ -35,13 +35,13 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
-export async function callCheckClaims(userId: string, ...claimNames: string[]): Promise<any> {
+export async function callCheckClaims(...claimNames: string[]): Promise<any> {
     if (claimNames.length === 0) {
         claimNames = ['admin', 'aid-worker', 'can-read-donations', 'donor', 'verified', 'volunteer'];
     }
-    const response = await checkClaims({ userId: userId, claimNames: claimNames });
-    const data: any = response.data;
-    return data;
+    const idToken = await auth.currentUser?.getIdToken();
+    const response = await checkClaims({ idToken: idToken, claimNames: claimNames });
+    return response;
 }
 
 export async function callIsEmailInUse(email: string): Promise<boolean> {
@@ -161,6 +161,7 @@ async function checkClaim(claimName: string): Promise<boolean> {
         return Promise.reject();
     }
     const claimValue = claims[claimName];
+    console.log('claim value: ', claimValue);
     return claimValue !== undefined && claimValue === true ? true : false;
 }
 
@@ -189,8 +190,9 @@ export async function callRegisterNewUser(options: any): Promise<any> {
 }
 
 export async function callSetClaims(userId: string, claims: any): Promise<void> {
-    const options = { userId, claims };
-    await setClaims({ options });
+    await setClaims({ userId: userId, claims: claims });
+    //Reset token so new claims propagate
+    auth.currentUser?.getIdToken(true);
 }
 
 export async function callSetUserAccount(userId: string, accountInformation: AccountInformation): Promise<void> {

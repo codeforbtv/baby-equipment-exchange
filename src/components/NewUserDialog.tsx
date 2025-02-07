@@ -1,5 +1,5 @@
 //API
-import { callGetUidByEmail, callIsEmailInvalid, callRegisterNewUser, callSetClaims } from '@/api/firebase';
+import { callGetUidByEmail, callIsEmailInUse, callRegisterNewUser, callSetClaims } from '@/api/firebase';
 //Styles
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, FormControl, FormControlLabel, FormGroup, FormLabel, TextField } from '@mui/material';
 import React, { useState } from 'react';
@@ -148,7 +148,7 @@ export default function NewUserDialog({
 
     const validateEmail = async (): Promise<void> => {
         if (email != null) {
-            setEmailInvalid(await callIsEmailInvalid(email));
+            setEmailInvalid(await callIsEmailInUse(email));
         }
     };
 
