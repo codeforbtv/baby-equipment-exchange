@@ -9,13 +9,17 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import * as admin from 'firebase-admin';
-import { App, applicationDefault } from 'firebase-admin/app';
 import { getAuth, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
+import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
+import serviceAccount from '../../serviceAccount.json';
 
-import { firebaseConfig } from './config';
-//import '../../serviceAccount.json';
+const credentials: ServiceAccount = {
+    projectId: serviceAccount.project_id,
+    clientEmail: serviceAccount.client_email,
+    privateKey: serviceAccount.private_key
+};
 
 const region = 'us-east1';
 
@@ -42,8 +46,7 @@ export async function initAdmin() {
     }
 
     return admin.initializeApp({
-        credential: applicationDefault(),
-        ...firebaseConfig
+        credential: admin.credential.cert(credentials)
     });
 }
 
@@ -53,15 +56,15 @@ const storage = getStorage(app);
 
 export const checkClaims = async (request: any): Promise<any> => {
     try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const claimNames = request.data.claimNames;
-        return await _checkClaims(userId, claimNames);
+        const { idToken, claimNames } = request;
+        console.log('t: ', idToken, 'c: ', claimNames);
+        const response = await _checkClaims(idToken, claimNames);
+        return response;
     } catch (error) {
         _addEvent({ location: 'checkClaims' });
+        console.log('an error occuredin checkclaims: ', error);
     }
-    throw new HttpsError('internal', 'Internal error');
+    // throw new HttpsError('internal', 'Internal error');
 };
 
 export const addEvent = async (request: any) => {
@@ -226,27 +229,11 @@ export const setClaimForNewUser = async (request: any) => {
     }
 };
 
+//NOTE: Setting claims will overwrite existing claims! Must include all claims in requests.
 export const setClaims = async (request: any) => {
     try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        if (request.data == null) {
-            throw new Error('No data provided in the request.');
-        }
-        const data = request.data;
-        if (data.options == null) {
-            throw new Error('Options are not present in the request.');
-        }
-        const options = data.options;
-        if (options.userId == null) {
-            throw new Error('A userId is not supplied in the request');
-        }
-        const userId = options.userId;
-        if (options.claims == null) {
-            throw new Error('Claims are not supplied in the request.');
-        }
-        const claims = options.claims;
-        await getAuth(app).setCustomUserClaims(userId, claims);
+        const { userId, claims } = request;
+        getAuth().setCustomUserClaims(userId, claims);
     } catch (error) {
         _addEvent({ location: 'setClaimForNewUser', error: error });
     }
@@ -540,11 +527,10 @@ export const toggleClaimForVolunteer = async (request: any) => {
 };
 
 // Non-exported utility methods
-async function _checkClaims(userId: string, ...claimNames: string[]) {
+async function _checkClaims(idToken: string, claimNames: string[]) {
     try {
         let userClaims = {};
-        const adminAuth = getAuth(app);
-        const claims = (await adminAuth.getUser(userId)).customClaims;
+        const claims = await getAuth().verifyIdToken(idToken);
         if (claims === undefined || claims === null) {
             return Promise.reject();
         }
@@ -630,11 +616,16 @@ async function _setClaim(userId: string, claimName: string, claimValue: any) {
 }
 
 async function _verifyAdmin(request: any) {
-    const callee = await getAuth(app).getUser(request.auth.uid);
-    const adminClaimValue = callee.customClaims?.admin;
-    if (adminClaimValue == null || adminClaimValue !== true) {
-        throw new HttpsError('internal', 'Internal error');
-    }
+    console.log('token is ', request.idToken);
+    // const callee = await getAuth(app).getUser(request.userId);
+    // const adminClaimValue = callee.customClaims?.admin;
+    // console.log(callee, 'claimvalue: ', adminClaimValue);
+    // if (adminClaimValue == null || adminClaimValue !== true) {
+    //     throw new HttpsError('internal', 'Internal error');
+    // }
+    getAuth()
+        .verifyIdToken(request.idToken)
+        .then((claims) => console.log(claims));
 }
 
 function _verifyAuthenticated(request: any) {
