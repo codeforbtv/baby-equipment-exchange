@@ -11,6 +11,7 @@ import {
     getUidByEmail,
     isEmailInUse,
     registerNewUser,
+    listAllUsers,
     setClaimForAdmin,
     setClaimForAidWorker,
     setClaimForDonationReadAccess,
@@ -28,6 +29,7 @@ import {
 } from './firebaseAdmin';
 
 import { AccountInformation } from '@/types/post-data';
+import { UserRecord } from 'firebase-admin/auth';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -180,6 +182,15 @@ export async function getUserId(): Promise<string> {
     await auth.authStateReady();
     const currentUser = auth.currentUser?.uid;
     return currentUser ?? Promise.reject();
+}
+
+export async function getAllUsers(): Promise<any> {
+    try {
+        const usersList = await listAllUsers();
+        return usersList;
+    } catch (error) {
+        console.log('Error getting all users, ', error);
+    }
 }
 
 export async function callRegisterNewUser(options: any): Promise<any> {
