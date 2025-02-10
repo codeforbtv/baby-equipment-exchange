@@ -7,7 +7,9 @@ import {
     callSetClaimForDonor,
     callSetClaimForVerified,
     callSetClaimForVolunteer,
-    callSetUserAccount
+    callSetClaims,
+    callSetUserAccount,
+    callUpdateUser
 } from '@/api/firebase';
 //Components
 import {
@@ -39,6 +41,8 @@ import { IAddress } from '@/models/address';
 import styles from './Card.module.css';
 import { UserRecord } from 'firebase-admin/auth';
 
+import { UserCardProps } from '@/types/post-data';
+
 // type UserCardProps = {
 //     name: string | undefined;
 //     contact: IContact | null | undefined;
@@ -46,16 +50,16 @@ import { UserRecord } from 'firebase-admin/auth';
 //     photo: string | null | undefined;
 // };
 
-type UserCardProps = Omit<UserRecord, 'toJSON'>;
-
 export default function UserCard(props: UserCardProps) {
+    const { uid, email, displayName, photoURL, phoneNumber, customClaims } = props;
+
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [editView, showEditView] = useState<boolean>(false);
     // const user = contact?.user;
     // const userId = contact?.user?.id;
-    // const [displayName, setDisplayName] = useState<string>(contact?.name ?? '');
-    // const [email, setEmail] = useState<string>(contact?.email ?? '');
-    // const [phoneNumber, setPhoneNumber] = useState<string>(contact?.phone ?? '');
+    const [displayNameField, setDisplayNameField] = useState<string | undefined>(displayName);
+    const [emailField, setEmailField] = useState<string | undefined>(email);
+    const [phoneNumberField, setPhoneNumberField] = useState<string | undefined>(phoneNumber);
     // const [website, setWebsite] = useState<string>(contact?.website ?? '');
     // const [addressLine1, setAddressLine1] = useState<string>(location?.line_1 ?? '');
     // const [city, setCity] = useState<string>(location?.city ?? '');
@@ -67,8 +71,6 @@ export default function UserCard(props: UserCardProps) {
     const [isDonor, setIsDonor] = useState<boolean>(false);
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const [isVolunteer, setIsVolunteer] = useState<boolean>(false);
-
-    const { uid, email, displayName, photoURL, phoneNumber, customClaims } = props;
 
     useEffect(() => {
         (async () => {
@@ -88,7 +90,22 @@ export default function UserCard(props: UserCardProps) {
         })();
     }, []);
 
-    function handleFormSubmit() {
+    async function handleFormSubmit() {
+        const claims = {
+            admin: isAdmin,
+            'can-read-donations': canReadDonations,
+            'aid-worker': isAidWorker,
+            donor: isDonor,
+            volunteer: isVolunteer
+        };
+        const accountInformation = {
+            displayName: displayNameField,
+            email: emailField,
+            phoneNumber: `+1${phoneNumberField}`
+        };
+        await callUpdateUser(uid, accountInformation);
+        await callSetClaims(uid, claims);
+        handleHideEditView();
         // callSetUserAccount(userId!, {
         //     name: displayName,
         //     contact: {
@@ -121,88 +138,78 @@ export default function UserCard(props: UserCardProps) {
     };
 
     const handleDisplayNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // if (uid != null) {
-        //     setDisplayName(event.target.value);
-        // }
+        if (uid != null) {
+            setDisplayNameField(event.target.value);
+        }
     };
 
     const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // if (uid != null) {
-        //     setEmail(event.target.value);
-        // }
+        if (uid != null) {
+            setEmailField(event.target.value);
+        }
     };
 
     const handlePhoneNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // if (uid != null) {
-        //     setPhoneNumber(event.target.value);
-        // }
+        if (uid != null) {
+            setPhoneNumberField(event.target.value);
+        }
     };
 
-    const handleWebsiteChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // if (uid != null) {
-        //     setWebsite(event.target.value);
-        // }
-    };
+    // const handleWebsiteChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setWebsite(event.target.value);
+    //     }
+    // };
 
-    const handleStreetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // if (uid != null) {
-        //     setAddressLine1(event.target.value);
-        // }
-    };
+    // const handleStreetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setAddressLine1(event.target.value);
+    //     }
+    // };
 
-    const handleCityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // if (uid != null) {
-        //     setCity(event.target.value);
-        // }
-    };
+    // const handleCityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setCity(event.target.value);
+    //     }
+    // };
 
-    const handleStateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // if (uid != null) {
-        //     setState(event.target.value);
-        // }
-    };
+    // const handleStateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setState(event.target.value);
+    //     }
+    // };
 
-    const handleZipcodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // if (uid != null) {
-        //     setZipcode(event.target.value);
-        // }
-    };
+    // const handleZipcodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setZipcode(event.target.value);
+    //     }
+    // };
 
     const handleToggleIsAdmin = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (uid != null) {
-            callSetClaimForAdmin(uid, event.target.checked);
-        }
+        setIsAdmin(event.target.checked);
     };
 
     const handleToggleIsAidWorker = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (uid != null) {
-            callSetClaimForAidWorker(uid, event.target.checked);
-        }
+        setIsDonor(event.target.checked);
     };
 
     const handleToggleCanReadDonations = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (uid != null) {
-            callSetClaimForDonationReadAccess(uid, event.target.checked);
-        }
+        setCanReadDonations(event.target.checked);
     };
 
     const handleToggleIsDonor = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (uid != null) {
-            callSetClaimForDonor(uid, event.target.checked);
-        }
-    };
-
-    const handleToggleIsVerified = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (uid != null) {
-            callSetClaimForVerified(uid, event.target.checked);
-        }
+        setIsDonor(event.target.checked);
     };
 
     const handleToggleIsVolunteer = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (uid != null) {
-            callSetClaimForVolunteer(uid, event.target.checked);
-        }
+        setIsVolunteer(event.target.checked);
     };
+
+    // const handleToggleIsVerified = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         callSetClaimForVerified(uid, event.target.checked);
+    //     }
+    // };
 
     if (!uid) {
         return <></>;
@@ -240,8 +247,8 @@ export default function UserCard(props: UserCardProps) {
                                 <FormControlLabel label="Donor" control={<Checkbox checked={isDonor} onChange={handleToggleIsDonor} />} />
                                 <FormControlLabel label="Volunteer" control={<Checkbox checked={isVolunteer} onChange={handleToggleIsVolunteer} />} />
                             </FormGroup>
-                            <FormLabel component="legend">Verification</FormLabel>
-                            <FormControlLabel label="Verified" control={<Checkbox checked={isVerified} onChange={handleToggleIsVerified} />} />
+                            {/* <FormLabel component="legend">Verification</FormLabel>
+                            <FormControlLabel label="Verified" control={<Checkbox checked={isVerified} onChange={handleToggleIsVerified} />} /> */}
                             <FormLabel component="legend">Permission</FormLabel>
                             <FormControlLabel
                                 label="Reading Donations"

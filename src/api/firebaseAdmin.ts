@@ -14,6 +14,7 @@ import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
 import serviceAccount from '../../serviceAccount.json';
+import { UserCardProps } from '@/types/post-data';
 
 const credentials: ServiceAccount = {
     projectId: serviceAccount.project_id,
@@ -127,13 +128,26 @@ export const createNewUser = functionsV1
         }
     });
 
-export const listAllUsers = async (): Promise<any> => {
+export const updateUser = async (request: any): Promise<void> => {
+    try {
+        const { uid, accountInformation } = request;
+        console.log(uid, accountInformation);
+        await getAuth().updateUser(uid, accountInformation);
+    } catch (error) {
+        console.log('error updating user from firebaseAdmin', error);
+    }
+};
+
+export const listAllUsers = async (): Promise<UserCardProps[]> => {
     try {
         const listUsersResult = await getAuth().listUsers(1000);
-        return listUsersResult.users;
+        // return listUsersResult.users as UserCardProps[];
+        const usersList: UserCardProps[] = listUsersResult.users;
+        return usersList;
     } catch (error) {
         console.log('error listing users', error);
     }
+    return Promise.reject();
 };
 
 export const getImageAsSignedUrl = async (request: any): Promise<any> => {

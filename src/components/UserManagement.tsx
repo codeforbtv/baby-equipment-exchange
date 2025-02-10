@@ -8,7 +8,7 @@ import UserCard from './UserCard';
 // Hooks
 import React, { useEffect, useState } from 'react';
 // Types
-import { AccountInformation } from '@/types/post-data';
+import { UserCardProps } from '@/types/post-data';
 // Icons
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -21,7 +21,7 @@ import NewUserDialog from './NewUserDialog';
 import { UserRecord } from 'firebase-admin/auth';
 
 export default function UserManagement() {
-    const [users, setUsers] = useState<UserRecord[]>([]);
+    const [users, setUsers] = useState<UserCardProps[]>([]);
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
     const [isNewUserDialogVisible, setIsNewUserDialogVisible] = useState<boolean>(false);
@@ -46,7 +46,7 @@ export default function UserManagement() {
     useEffect(() => {
         (async () => {
             try {
-                const allUsers = await getAllUsers();
+                const allUsers: UserCardProps[] = await getAllUsers();
                 setUsers(allUsers);
                 setIsLoading(false);
             } catch (error) {
@@ -77,7 +77,7 @@ export default function UserManagement() {
                 {isFilterVisible && <Filter />}
                 <NewUserDialog initialParameters={{ initAsOpen: isNewUserDialogVisible }} controllers={{ closeController: closeNewUserDialog }} />
                 <List className={styles['browse__grid']}>
-                    {users.map((userRecord: UserRecord) => {
+                    {users.map((userRecord: UserCardProps) => {
                         const uid = userRecord.uid;
                         if (uid != null) {
                             return <UserCard key={userRecord.uid} {...userRecord} />;
