@@ -57,14 +57,12 @@ const storage = getStorage(app);
 export const checkClaims = async (request: any): Promise<any> => {
     try {
         const { idToken, claimNames } = request;
-        console.log('t: ', idToken, 'c: ', claimNames);
         const response = await _checkClaims(idToken, claimNames);
         return response;
     } catch (error) {
         _addEvent({ location: 'checkClaims' });
-        console.log('an error occuredin checkclaims: ', error);
     }
-    // throw new HttpsError('internal', 'Internal error');
+    throw new HttpsError('internal', 'Internal error');
 };
 
 export const addEvent = async (request: any) => {
@@ -128,6 +126,15 @@ export const createNewUser = functionsV1
             _addEvent({ location: 'createNewUser (onCall)', error: error, data: user });
         }
     });
+
+export const listAllUsers = async (): Promise<any> => {
+    try {
+        const listUsersResult = await getAuth().listUsers(1000);
+        return listUsersResult.users;
+    } catch (error) {
+        console.log('error listing users', error);
+    }
+};
 
 export const getImageAsSignedUrl = async (request: any): Promise<any> => {
     let fileExists = null;
@@ -616,7 +623,6 @@ async function _setClaim(userId: string, claimName: string, claimValue: any) {
 }
 
 async function _verifyAdmin(request: any) {
-    console.log('token is ', request.idToken);
     // const callee = await getAuth(app).getUser(request.userId);
     // const adminClaimValue = callee.customClaims?.admin;
     // console.log(callee, 'claimvalue: ', adminClaimValue);
