@@ -1,14 +1,15 @@
 import { IAddress } from '@/models/address';
 import { IContact } from '@/models/contact';
 import { DocumentReference } from 'firebase/firestore';
+import { UserRecord } from 'firebase-admin/auth';
+
+export type UserCardProps = Omit<UserRecord, 'toJSON'>;
 
 export type AccountInformation = {
-    name: string;
-    contact: IContact | null | undefined;
-    location: IAddress | null | undefined;
-    photo: DocumentReference | string | null | undefined;
+    displayName?: string;
+    email?: string;
+    phoneNunber?: string;
 };
-
 export type DonationBody = {
     user: DocumentReference;
     category: string;

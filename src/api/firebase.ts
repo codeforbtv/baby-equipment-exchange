@@ -25,10 +25,11 @@ import {
     toggleClaimForAdmin,
     toggleClaimForAidWorker,
     toggleClaimForVerified,
-    toggleClaimForVolunteer
+    toggleClaimForVolunteer,
+    updateUser
 } from './firebaseAdmin';
 
-import { AccountInformation } from '@/types/post-data';
+import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { UserRecord } from 'firebase-admin/auth';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
@@ -163,7 +164,6 @@ async function checkClaim(claimName: string): Promise<boolean> {
         return Promise.reject();
     }
     const claimValue = claims[claimName];
-    console.log('claim value: ', claimValue);
     return claimValue !== undefined && claimValue === true ? true : false;
 }
 
@@ -184,13 +184,14 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject();
 }
 
-export async function getAllUsers(): Promise<any> {
+export async function getAllUsers(): Promise<UserCardProps[]> {
     try {
         const usersList = await listAllUsers();
         return usersList;
     } catch (error) {
         console.log('Error getting all users, ', error);
     }
+    return Promise.reject();
 }
 
 export async function callRegisterNewUser(options: any): Promise<any> {
@@ -203,11 +204,20 @@ export async function callRegisterNewUser(options: any): Promise<any> {
 export async function callSetClaims(userId: string, claims: any): Promise<void> {
     await setClaims({ userId: userId, claims: claims });
     //Reset token so new claims propagate
-    auth.currentUser?.getIdToken(true);
+    // auth.currentUser?.getIdToken(true);
 }
 
 export async function callSetUserAccount(userId: string, accountInformation: AccountInformation): Promise<void> {
     await setUserAccount({ userId: userId, accountInformation: accountInformation });
+}
+
+export async function callUpdateUser(uid: string, accountInformation: AccountInformation): Promise<void> {
+    try {
+        console.log('update user: ', uid, 'with: ', accountInformation);
+        await updateUser({ uid: uid, accountInformation: accountInformation });
+    } catch (error) {
+        console.log('error updating user from firebase.ts', error);
+    }
 }
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
