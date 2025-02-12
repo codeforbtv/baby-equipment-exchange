@@ -1,9 +1,21 @@
 import { IAddress } from '@/models/address';
 import { IContact } from '@/models/contact';
 import { DocumentReference } from 'firebase/firestore';
-import { UserRecord } from 'firebase-admin/auth';
+import { UserMetadata, UserRecord } from 'firebase-admin/auth';
 
-export type UserCardProps = Omit<UserRecord, 'toJSON'>;
+export type UserCardProps = {
+    readonly uid: string;
+    readonly email?: string;
+    emailVerified: boolean;
+    displayName?: string;
+    photoURL?: string;
+    phoneNumber?: string;
+    disabled: boolean;
+    metadata: UserMetadata;
+    readonly customClaims?: {
+        [key: string]: any;
+    };
+};
 
 export type AccountInformation = {
     displayName?: string;

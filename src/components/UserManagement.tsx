@@ -14,11 +14,9 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Libs
 import { getAllUsers } from '../api/firebase';
-import { getAllUserAccounts } from '@/api/firebase-users';
 // Styles
 import styles from './Browse.module.css';
 import NewUserDialog from './NewUserDialog';
-import { UserRecord } from 'firebase-admin/auth';
 
 export default function UserManagement() {
     const [users, setUsers] = useState<UserCardProps[]>([]);

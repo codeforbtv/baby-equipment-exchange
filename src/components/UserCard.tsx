@@ -75,17 +75,19 @@ export default function UserCard(props: UserCardProps) {
     useEffect(() => {
         (async () => {
             try {
-                if (uid != null && customClaims) {
+                if (uid != null) {
+                    setIsLoading(false);
+                }
+                if (customClaims !== undefined) {
                     setCanReadDonations(customClaims['can-read-donations']);
                     setIsAdmin(customClaims['admin']);
                     setIsAidWorker(customClaims['aid-worker']);
                     setIsDonor(customClaims['donor']);
                     setIsVerified(customClaims['verified']);
                     setIsVolunteer(customClaims['volunteer']);
-                    setIsLoading(false);
                 }
             } catch (error) {
-                // eslint-disable-line no-empty
+                console.log('error fetching custom claims', error);
             }
         })();
     }, []);

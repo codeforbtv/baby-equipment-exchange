@@ -9,7 +9,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import * as admin from 'firebase-admin';
-import { getAuth, UserRecord } from 'firebase-admin/auth';
+import { getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
@@ -140,10 +140,24 @@ export const updateUser = async (request: any): Promise<void> => {
 
 export const listAllUsers = async (): Promise<UserCardProps[]> => {
     try {
-        const listUsersResult = await auth.listUsers(1000);
-        // return listUsersResult.users as UserCardProps[];
-        const usersList: UserCardProps[] = listUsersResult.users;
-        return usersList;
+        const usersList = await auth.listUsers(1000);
+        const listUsersResult: UserRecord[] = usersList.users;
+        const listUsers: UserCardProps[] = listUsersResult.map((userRecord) => {
+            const userCardProps: UserCardProps = {
+                uid: userRecord.uid,
+                email: userRecord.email,
+                emailVerified: userRecord.emailVerified,
+                displayName: userRecord.displayName,
+                photoURL: userRecord.photoURL,
+                phoneNumber: userRecord.phoneNumber,
+                disabled: userRecord.disabled,
+                metadata: userRecord.metadata,
+                customClaims: userRecord.customClaims
+            };
+            //To prevent 'Only plain objects can be passed to Client Components from Server Components' error
+            return JSON.parse(JSON.stringify(userCardProps));
+        });
+        return listUsers;
     } catch (error) {
         console.log('error listing users', error);
     }
