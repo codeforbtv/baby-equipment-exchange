@@ -52,7 +52,7 @@ export async function initAdmin() {
 }
 
 const app = await initAdmin();
-
+const auth = getAuth(app);
 const storage = getStorage(app);
 
 export const checkClaims = async (request: any): Promise<any> => {
@@ -115,10 +115,10 @@ export const createNewUser = functionsV1
                 })
                 .catch((error) => logger.error({ location: 'createNewUser', error: error }));
             // Claims may have already been set elsewhere.
-            const adminAuth = getAuth(app);
-            const userRecord = await adminAuth.getUser(user.uid);
+
+            const userRecord = await auth.getUser(user.uid);
             if (userRecord.customClaims == null || Object.keys(userRecord.customClaims).length == 0) {
-                await adminAuth.setCustomUserClaims(user.uid, {
+                await auth.setCustomUserClaims(user.uid, {
                     donor: true,
                     verified: false
                 });
@@ -132,7 +132,7 @@ export const updateUser = async (request: any): Promise<void> => {
     try {
         const { uid, accountInformation } = request;
         console.log(uid, accountInformation);
-        await getAuth().updateUser(uid, accountInformation);
+        await auth.updateUser(uid, accountInformation);
     } catch (error) {
         console.log('error updating user from firebaseAdmin', error);
     }
@@ -140,7 +140,7 @@ export const updateUser = async (request: any): Promise<void> => {
 
 export const listAllUsers = async (): Promise<UserCardProps[]> => {
     try {
-        const listUsersResult = await getAuth().listUsers(1000);
+        const listUsersResult = await auth.listUsers(1000);
         // return listUsersResult.users as UserCardProps[];
         const usersList: UserCardProps[] = listUsersResult.users;
         return usersList;
@@ -205,8 +205,7 @@ export const getUidByEmail = async (request: any): Promise<string> => {
             throw new Error("'email' is not defined in options.");
         }
         const email = options.email;
-        const adminAuth = getAuth(app);
-        const uid = (await adminAuth.getUserByEmail(email)).uid;
+        const uid = (await auth.getUserByEmail(email)).uid;
         return uid;
     } catch (error) {
         _addEvent({ location: 'getUidByEmail' });
@@ -217,7 +216,7 @@ export const getUidByEmail = async (request: any): Promise<string> => {
 export const isEmailInUse = async (request: any) => {
     try {
         const email = request.email;
-        const userRecord: UserRecord = await getAuth(app).getUserByEmail(email);
+        const userRecord: UserRecord = await auth.getUserByEmail(email);
         if (userRecord !== undefined) {
             logger.error({ error: `${email} was queried via this onCall method.`, data: request.data });
             return true;
@@ -241,7 +240,7 @@ export const setClaimForNewUser = async (request: any) => {
     try {
         _verifyAuthenticated(request);
         const userId = request.data.userId;
-        await getAuth(app).setCustomUserClaims(userId, {
+        await auth.setCustomUserClaims(userId, {
             donor: true,
             verified: false
         });
@@ -254,7 +253,7 @@ export const setClaimForNewUser = async (request: any) => {
 export const setClaims = async (request: any) => {
     try {
         const { userId, claims } = request;
-        getAuth().setCustomUserClaims(userId, claims);
+        auth.setCustomUserClaims(userId, claims);
     } catch (error) {
         _addEvent({ location: 'setClaimForNewUser', error: error });
     }
@@ -551,7 +550,7 @@ export const toggleClaimForVolunteer = async (request: any) => {
 async function _checkClaims(idToken: string, claimNames: string[]) {
     try {
         let userClaims = {};
-        const claims = await getAuth().verifyIdToken(idToken);
+        const claims = await auth.verifyIdToken(idToken);
         if (claims === undefined || claims === null) {
             return Promise.reject();
         }
@@ -591,8 +590,7 @@ async function _addEvent(object: any) {
 
 async function _checkClaim(userId: string, claimName: string) {
     try {
-        const adminAuth = getAuth(app);
-        const claims = (await adminAuth.getUser(userId)).customClaims;
+        const claims = (await auth.getUser(userId)).customClaims;
         if (claims === undefined || claims === null) {
             return Promise.reject();
         }
@@ -606,8 +604,7 @@ async function _checkClaim(userId: string, claimName: string) {
 
 async function _toggleClaim(userId: string, claimName: string) {
     try {
-        const adminAuth = getAuth(app);
-        const claims = (await adminAuth.getUser(userId)).customClaims;
+        const claims = (await auth.getUser(userId)).customClaims;
         if (claims === undefined || claims === null) {
             return Promise.reject();
         }
@@ -625,9 +622,8 @@ async function _toggleClaim(userId: string, claimName: string) {
 
 async function _setClaim(userId: string, claimName: string, claimValue: any) {
     try {
-        const adminAuth = getAuth(app);
-        const customClaims = (await adminAuth.getUser(userId)).customClaims;
-        adminAuth.setCustomUserClaims(userId, {
+        const customClaims = (await auth.getUser(userId)).customClaims;
+        auth.setCustomUserClaims(userId, {
             [claimName]: claimValue,
             ...customClaims
         });
@@ -643,9 +639,7 @@ async function _verifyAdmin(request: any) {
     // if (adminClaimValue == null || adminClaimValue !== true) {
     //     throw new HttpsError('internal', 'Internal error');
     // }
-    getAuth()
-        .verifyIdToken(request.idToken)
-        .then((claims) => console.log(claims));
+    auth.verifyIdToken(request.idToken).then((claims) => console.log(claims));
 }
 
 function _verifyAuthenticated(request: any) {
