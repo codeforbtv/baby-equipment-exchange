@@ -5,11 +5,10 @@ import { Box, Button, Paper, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 //Libs
-import { auth, onAuthStateChangedListener, callAddEvent, callIsEmailInUse } from '@/api/firebase';
+import { onAuthStateChangedListener, callAddEvent, callIsEmailInUse, createUser } from '@/api/firebase';
 //Styling
 import '../../styles/globalStyles.css';
 import Loader from '@/components/Loader';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,10 +35,6 @@ export default function NewAccount() {
     const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
         setEmail(event.target.value);
         validateEmail(email);
-        if (!isInvalidEmail) {
-            const emailInUse = await callIsEmailInUse(email);
-            setIsEmailInUse(emailInUse);
-        }
     };
 
     useEffect(() => {
@@ -52,16 +47,9 @@ export default function NewAccount() {
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         try {
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((user) => {
-                    user.user
-                        .getIdTokenResult(true)
-                        .then((_) => {
-                            router.push('/');
-                        })
-                        .catch((error) => callAddEvent({ location: 'createUserWithEmailAndPassword (inner)', user: user, error: error }));
-                })
-                .catch((error) => callAddEvent({ location: 'createUserWithEmailAndPassword', error: error }));
+            createUser(displayName, email, password)
+                .then((user) => user.user.getIdTokenResult(true).then(() => router.push('/')))
+                .catch((error) => callAddEvent({ location: 'createUser', error: error }));
         } catch (error) {
             callAddEvent({ location: 'handleAccountCreate', error: error });
         }

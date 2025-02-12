@@ -1,7 +1,18 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { UserCredential, signInWithEmailAndPassword, signOut, onAuthStateChanged, NextOrObserver, User, getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import {
+    UserCredential,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    NextOrObserver,
+    User,
+    getAuth,
+    sendPasswordResetEmail,
+    createUserWithEmailAndPassword,
+    updateProfile
+} from 'firebase/auth';
 
 import { firebaseConfig } from './config';
 import {
@@ -30,7 +41,6 @@ import {
 } from './firebaseAdmin';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
-import { UserRecord } from 'firebase-admin/auth';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -218,6 +228,16 @@ export async function callUpdateUser(uid: string, accountInformation: AccountInf
     } catch (error) {
         console.log('error updating user from firebase.ts', error);
     }
+}
+
+export async function createUser(displayName: string, email: string, password: string): Promise<UserCredential> {
+    try {
+        const newUser = await createUserWithEmailAndPassword(auth, email, password);
+        updateProfile(newUser.user, { displayName: displayName }).then(() => newUser);
+    } catch (error) {
+        console.log(error);
+    }
+    return Promise.reject();
 }
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
