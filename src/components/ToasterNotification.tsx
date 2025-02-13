@@ -10,8 +10,6 @@ interface StatusLookup {
 }
 
 const statusLookup: StatusLookup = {
-    email_in_use: 'The Email address provided is already in use',
-    invalid_login: 'The credentials provided were invalid, please try again',
     signed_out: 'You have successfully signed out',
     password_reset: 'Password reset email sucessfully sent.'
 };
