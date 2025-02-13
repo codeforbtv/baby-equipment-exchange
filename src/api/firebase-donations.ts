@@ -155,7 +155,6 @@ export async function getDonations(filter: null | undefined): Promise<Donation[]
             // violates this method's defined behavior.
             conjunctions.push(where('donor', '==', userRef));
         }
-        conjunctions.push(where('donor', '==', userRef));
         const q = query(collectionRef, ...conjunctions).withConverter(donationDetailsConverter);
         const donationDetailsSnapshot = await getDocs(q);
         const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc: any) => doc.data());

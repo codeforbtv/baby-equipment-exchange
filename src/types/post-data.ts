@@ -1,14 +1,27 @@
 import { IAddress } from '@/models/address';
 import { IContact } from '@/models/contact';
 import { DocumentReference } from 'firebase/firestore';
+import { UserMetadata, UserRecord } from 'firebase-admin/auth';
 
-export type AccountInformation = {
-    name: string;
-    contact: IContact | null | undefined;
-    location: IAddress | null | undefined;
-    photo: DocumentReference | string | null | undefined;
+export type UserCardProps = {
+    readonly uid: string;
+    readonly email?: string;
+    emailVerified: boolean;
+    displayName?: string;
+    photoURL?: string;
+    phoneNumber?: string;
+    disabled: boolean;
+    metadata: UserMetadata;
+    readonly customClaims?: {
+        [key: string]: any;
+    };
 };
 
+export type AccountInformation = {
+    displayName?: string;
+    email?: string;
+    phoneNunber?: string;
+};
 export type DonationBody = {
     user: DocumentReference;
     category: string;
