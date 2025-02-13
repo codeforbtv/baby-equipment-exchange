@@ -39,8 +39,7 @@ export default function Login() {
 }
 
 function LoginForm({ loginState, setLoginState, email, setEmail, password, setPassword, router }: any) {
-    const searchParams = useSearchParams();
-    const status = searchParams.get('status');
+    const [isInvalidLogin, setIsInvalidLogin] = useState<boolean>(false);
 
     useEffect(() => {
         onAuthStateChangedListener((user) => {
@@ -55,7 +54,7 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
             await signInAuthUserWithEmailAndPassword(email, password);
             router.push('/');
         } catch (error) {
-            router.push('/login?status=invalid_login');
+            setIsInvalidLogin(true);
         }
     };
 
@@ -78,6 +77,7 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
                                 placeholder="Input Email"
                                 autoComplete="email"
                                 value={email}
+                                error={isInvalidLogin}
                                 required
                                 onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
                                     setEmail(event.target.value);
@@ -91,6 +91,8 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
                                 placeholder="Input Password"
                                 autoComplete="current-password"
                                 value={password}
+                                error={isInvalidLogin}
+                                helperText={isInvalidLogin && 'The credentials provided were invalid, please try again'}
                                 required
                                 onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
                                     setPassword(event.target.value);
@@ -114,8 +116,6 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
                     Join here
                 </Link>
             </h4>
-
-            {status && <ToasterNotification status={status} />}
         </>
     );
 }
