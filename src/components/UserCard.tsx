@@ -7,7 +7,9 @@ import {
     callSetClaimForDonor,
     callSetClaimForVerified,
     callSetClaimForVolunteer,
-    callSetUserAccount
+    callSetClaims,
+    callSetUserAccount,
+    callUpdateUser
 } from '@/api/firebase';
 //Components
 import {
@@ -21,9 +23,11 @@ import {
     FormGroup,
     FormLabel,
     IconButton,
-    ImageListItem,
+    ListItem,
+    ListItemText,
     ImageListItemBar,
-    TextField
+    TextField,
+    ListItemButton
 } from '@mui/material';
 import Loader from './Loader';
 //Hooks
@@ -35,27 +39,32 @@ import { IContact } from '@/models/contact';
 import { IAddress } from '@/models/address';
 //Styles
 import styles from './Card.module.css';
+import { UserRecord } from 'firebase-admin/auth';
 
-type UserCardProps = {
-    name: string;
-    contact: IContact | null | undefined;
-    location: IAddress | null | undefined;
-    photo: string | null | undefined;
-};
+import { UserCardProps } from '@/types/post-data';
 
-export default function UserCard({ name, contact, location, photo }: UserCardProps) {
+// type UserCardProps = {
+//     name: string | undefined;
+//     contact: IContact | null | undefined;
+//     location: IAddress | null | undefined;
+//     photo: string | null | undefined;
+// };
+
+export default function UserCard(props: UserCardProps) {
+    const { uid, email, displayName, photoURL, phoneNumber, customClaims } = props;
+
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [editView, showEditView] = useState<boolean>(false);
-    const user = contact?.user;
-    const userId = contact?.user?.id;
-    const [displayName, setDisplayName] = useState<string>(contact?.name ?? '');
-    const [email, setEmail] = useState<string>(contact?.email ?? '');
-    const [phoneNumber, setPhoneNumber] = useState<string>(contact?.phone ?? '');
-    const [website, setWebsite] = useState<string>(contact?.website ?? '');
-    const [addressLine1, setAddressLine1] = useState<string>(location?.line_1 ?? '');
-    const [city, setCity] = useState<string>(location?.city ?? '');
-    const [state, setState] = useState<string>(location?.state ?? '');
-    const [zipcode, setZipcode] = useState<string>(location?.zipcode ?? '');
+    // const user = contact?.user;
+    // const userId = contact?.user?.id;
+    const [displayNameField, setDisplayNameField] = useState<string | undefined>(displayName);
+    const [emailField, setEmailField] = useState<string | undefined>(email);
+    const [phoneNumberField, setPhoneNumberField] = useState<string | undefined>(phoneNumber);
+    // const [website, setWebsite] = useState<string>(contact?.website ?? '');
+    // const [addressLine1, setAddressLine1] = useState<string>(location?.line_1 ?? '');
+    // const [city, setCity] = useState<string>(location?.city ?? '');
+    // const [state, setState] = useState<string>(location?.state ?? '');
+    // const [zipcode, setZipcode] = useState<string>(location?.zipcode ?? '');
     const [canReadDonations, setCanReadDonations] = useState<boolean>(false);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isAidWorker, setIsAidWorker] = useState<boolean>(false);
@@ -66,44 +75,60 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
     useEffect(() => {
         (async () => {
             try {
-                if (userId != null) {
-                    const userClaims = await callCheckClaims(userId);
-                    setCanReadDonations(userClaims['can-read-donations']);
-                    setIsAdmin(userClaims['admin']);
-                    setIsAidWorker(userClaims['aid-worker']);
-                    setIsDonor(userClaims['donor']);
-                    setIsVerified(userClaims['verified']);
-                    setIsVolunteer(userClaims['volunteer']);
+                if (uid != null) {
                     setIsLoading(false);
                 }
+                if (customClaims !== undefined) {
+                    setCanReadDonations(customClaims['can-read-donations']);
+                    setIsAdmin(customClaims['admin']);
+                    setIsAidWorker(customClaims['aid-worker']);
+                    setIsDonor(customClaims['donor']);
+                    setIsVerified(customClaims['verified']);
+                    setIsVolunteer(customClaims['volunteer']);
+                }
             } catch (error) {
-                // eslint-disable-line no-empty
+                console.log('error fetching custom claims', error);
             }
         })();
     }, []);
 
-    function handleFormSubmit() {
-        callSetUserAccount(userId!, {
-            name: displayName,
-            contact: {
-                name: displayName,
-                user: user,
-                email: email,
-                notes: contact?.notes,
-                phone: phoneNumber,
-                website: website
-            },
-            location: {
-                line_1: addressLine1,
-                line_2: location?.line_2,
-                city: city,
-                state: state,
-                zipcode: zipcode,
-                latitude: location?.latitude,
-                longitude: location?.longitude
-            },
-            photo: photo
-        }).then(() => handleHideEditView());
+    async function handleFormSubmit() {
+        const claims = {
+            admin: isAdmin,
+            'can-read-donations': canReadDonations,
+            'aid-worker': isAidWorker,
+            donor: isDonor,
+            volunteer: isVolunteer
+        };
+        const accountInformation = {
+            displayName: displayNameField,
+            email: emailField,
+            phoneNumber: `+1${phoneNumberField}`
+        };
+        await callUpdateUser(uid, accountInformation);
+        await callSetClaims(uid, claims);
+        handleHideEditView();
+        // callSetUserAccount(userId!, {
+        //     name: displayName,
+        //     contact: {
+        //         name: displayName,
+        //         user: user,
+        //         email: email,
+        //         notes: contact?.notes,
+        //         phone: phoneNumber,
+        //         website: website
+        //     },
+        //     location: {
+        //         line_1: addressLine1,
+        //         line_2: location?.line_2,
+        //         city: city,
+        //         state: state,
+        //         zipcode: zipcode,
+        //         latitude: location?.latitude,
+        //         longitude: location?.longitude
+        //     },
+        //     photo: photo
+        // }).then(() => handleHideEditView());
     }
 
     const handleIconButtonClick = () => {
@@ -115,117 +140,107 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
     };
 
     const handleDisplayNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            setDisplayName(event.target.value);
+        if (uid != null) {
+            setDisplayNameField(event.target.value);
         }
     };
 
     const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            setEmail(event.target.value);
+        if (uid != null) {
+            setEmailField(event.target.value);
         }
     };
 
     const handlePhoneNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            setPhoneNumber(event.target.value);
+        if (uid != null) {
+            setPhoneNumberField(event.target.value);
         }
     };
 
-    const handleWebsiteChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            setWebsite(event.target.value);
-        }
-    };
+    // const handleWebsiteChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setWebsite(event.target.value);
+    //     }
+    // };
 
-    const handleStreetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            setAddressLine1(event.target.value);
-        }
-    };
+    // const handleStreetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setAddressLine1(event.target.value);
+    //     }
+    // };
 
-    const handleCityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            setCity(event.target.value);
-        }
-    };
+    // const handleCityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setCity(event.target.value);
+    //     }
+    // };
 
-    const handleStateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            setState(event.target.value);
-        }
-    };
+    // const handleStateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setState(event.target.value);
+    //     }
+    // };
 
-    const handleZipcodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            setZipcode(event.target.value);
-        }
-    };
+    // const handleZipcodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         setZipcode(event.target.value);
+    //     }
+    // };
 
     const handleToggleIsAdmin = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            callSetClaimForAdmin(userId, event.target.checked);
-        }
+        setIsAdmin(event.target.checked);
     };
 
     const handleToggleIsAidWorker = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            callSetClaimForAidWorker(userId, event.target.checked);
-        }
+        setIsDonor(event.target.checked);
     };
 
     const handleToggleCanReadDonations = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            callSetClaimForDonationReadAccess(userId, event.target.checked);
-        }
+        setCanReadDonations(event.target.checked);
     };
 
     const handleToggleIsDonor = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            callSetClaimForDonor(userId, event.target.checked);
-        }
-    };
-
-    const handleToggleIsVerified = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            callSetClaimForVerified(userId, event.target.checked);
-        }
+        setIsDonor(event.target.checked);
     };
 
     const handleToggleIsVolunteer = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (userId != null) {
-            callSetClaimForVolunteer(userId, event.target.checked);
-        }
+        setIsVolunteer(event.target.checked);
     };
 
-    if (contact == null || contact.user == null) {
+    // const handleToggleIsVerified = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (uid != null) {
+    //         callSetClaimForVerified(uid, event.target.checked);
+    //     }
+    // };
+
+    if (!uid) {
         return <></>;
     } else {
         return isLoading ? (
-            <Loader key={userId!} />
+            <Loader key={uid!} />
         ) : (
-            <ImageListItem key={userId!} className={styles['grid__item']}>
-                <img
-                    src={photo ?? undefined}
+            <ListItem
+                key={uid!}
+                className={styles['grid__item']}
+                secondaryAction={
+                    <IconButton sx={{ color: 'rgba(16, 16, 16, 0.54)' }} aria-label={`details about ${displayName}`} onClick={handleIconButtonClick}>
+                        <InfoIcon />
+                    </IconButton>
+                }
+            >
+                {/* <img
+                    src={photoURL ?? undefined}
                     style={{
-                        width: `${photo ? '100%' : '250px'}`,
-                        height: `${photo ? '100%' : '250px'}`,
+                        width: `${photoURL ? '100%' : '250px'}`,
+                        height: `${photoURL ? '100%' : '250px'}`,
                         objectFit: 'fill'
                     }}
-                    alt={`${photo ? `Profile photo of ${displayName}.` : `${displayName} does not have a photo.`}`}
-                />
-                <ImageListItemBar
-                    title={displayName}
-                    subtitle={email}
-                    actionIcon={
-                        <IconButton sx={{ color: 'rgba(255, 255, 255, 0.54)' }} aria-label={`details about ${displayName}`} onClick={handleIconButtonClick}>
-                            <InfoIcon />
-                        </IconButton>
-                    }
-                />
+                    alt={`${photoURL ? `Profile photo of ${displayName}.` : `${displayName} does not have a photo.`}`}
+                /> */}
+                <ListItemText primary={displayName} secondary={email} />
                 <Dialog open={editView} onClose={handleHideEditView}>
                     <DialogContent>
-                        <h3>`Edit ${displayName != null && displayName.length != 0 ? displayName : 'user'}`</h3>
+                        <h3>Edit {displayName ? `${displayName}` : 'user'}</h3>
                         <FormControl component="fieldset">
                             <FormLabel component="legend">Roles</FormLabel>
                             <FormGroup id="roles" aria-label="Roles" row>
@@ -234,8 +249,8 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
                                 <FormControlLabel label="Donor" control={<Checkbox checked={isDonor} onChange={handleToggleIsDonor} />} />
                                 <FormControlLabel label="Volunteer" control={<Checkbox checked={isVolunteer} onChange={handleToggleIsVolunteer} />} />
                             </FormGroup>
-                            <FormLabel component="legend">Verification</FormLabel>
-                            <FormControlLabel label="Verified" control={<Checkbox checked={isVerified} onChange={handleToggleIsVerified} />} />
+                            {/* <FormLabel component="legend">Verification</FormLabel>
+                            <FormControlLabel label="Verified" control={<Checkbox checked={isVerified} onChange={handleToggleIsVerified} />} /> */}
                             <FormLabel component="legend">Permission</FormLabel>
                             <FormControlLabel
                                 label="Reading Donations"
@@ -272,7 +287,7 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
                                 value={phoneNumber}
                                 variant="standard"
                             />
-                            <TextField
+                            {/* <TextField
                                 type="text"
                                 label="Website"
                                 placeholder="Input website"
@@ -322,7 +337,7 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
                                 onChange={handleZipcodeChange}
                                 value={zipcode}
                                 variant="standard"
-                            />
+                            /> */}
                         </FormControl>
                     </DialogContent>
                     <DialogActions>
@@ -330,7 +345,7 @@ export default function UserCard({ name, contact, location, photo }: UserCardPro
                         <Button onClick={handleHideEditView}>close</Button>
                     </DialogActions>
                 </Dialog>
-            </ImageListItem>
+            </ListItem>
         );
     }
 }

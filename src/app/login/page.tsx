@@ -8,6 +8,7 @@ import { Box, TextField, Button } from '@mui/material';
 //Hooks
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 //Libs
 import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '@/api/firebase';
 //Styling
@@ -23,25 +24,22 @@ export default function Login() {
     return (
         <>
             <Suspense fallback={<Loader />}>
-                <LoginForm 
-                    loginState={loginState} 
-                    setLoginState={setLoginState} 
-                    email={email} 
-                    setEmail={setEmail} 
-                    password={password} 
-                    setPassword={setPassword} 
-                    router={router} 
+                <LoginForm
+                    loginState={loginState}
+                    setLoginState={setLoginState}
+                    email={email}
+                    setEmail={setEmail}
+                    password={password}
+                    setPassword={setPassword}
+                    router={router}
                 />
             </Suspense>
         </>
     );
 }
 
-function LoginForm({ 
-    loginState, setLoginState, email, setEmail, password, setPassword, router 
-}: any) {
-    const searchParams = useSearchParams();
-    const status = searchParams.get('status');
+function LoginForm({ loginState, setLoginState, email, setEmail, password, setPassword, router }: any) {
+    const [isInvalidLogin, setIsInvalidLogin] = useState<boolean>(false);
 
     useEffect(() => {
         onAuthStateChangedListener((user) => {
@@ -56,7 +54,7 @@ function LoginForm({
             await signInAuthUserWithEmailAndPassword(email, password);
             router.push('/');
         } catch (error) {
-            router.push('/login?status=invalid_login');
+            setIsInvalidLogin(true);
         }
     };
 
@@ -79,6 +77,7 @@ function LoginForm({
                                 placeholder="Input Email"
                                 autoComplete="email"
                                 value={email}
+                                error={isInvalidLogin}
                                 required
                                 onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
                                     setEmail(event.target.value);
@@ -92,6 +91,8 @@ function LoginForm({
                                 placeholder="Input Password"
                                 autoComplete="current-password"
                                 value={password}
+                                error={isInvalidLogin}
+                                helperText={isInvalidLogin && 'The credentials provided were invalid, please try again'}
                                 required
                                 onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
                                     setPassword(event.target.value);
@@ -102,12 +103,19 @@ function LoginForm({
                             </Button>
                         </Box>
                         <hr />
-                        <span>Instructions for forgotten password.</span>
+                        <Link id="reset-password" href="./reset-password">
+                            Forgot password?
+                        </Link>
                     </>
                 )}
             </div>
-
-            {status && <ToasterNotification status={status} />}
+            <hr />
+            <h4>
+                Don't have an account?{' '}
+                <Link id="join" href="./join">
+                    Join here
+                </Link>
+            </h4>
         </>
     );
 }

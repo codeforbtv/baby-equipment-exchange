@@ -1,7 +1,7 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { UserCredential, signInWithEmailAndPassword, signOut, onAuthStateChanged, NextOrObserver, User, getAuth } from 'firebase/auth';
+import { UserCredential, signInWithEmailAndPassword, signOut, onAuthStateChanged, NextOrObserver, User, getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 import { firebaseConfig } from './config';
 import {
@@ -9,8 +9,9 @@ import {
     checkClaims,
     getImageAsSignedUrl,
     getUidByEmail,
-    isEmailInvalid,
+    isEmailInUse,
     registerNewUser,
+    listAllUsers,
     setClaimForAdmin,
     setClaimForAidWorker,
     setClaimForDonationReadAccess,
@@ -24,10 +25,12 @@ import {
     toggleClaimForAdmin,
     toggleClaimForAidWorker,
     toggleClaimForVerified,
-    toggleClaimForVolunteer
+    toggleClaimForVolunteer,
+    updateUser
 } from './firebaseAdmin';
 
-import { AccountInformation } from '@/types/post-data';
+import { AccountInformation, UserCardProps } from '@/types/post-data';
+import { UserRecord } from 'firebase-admin/auth';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -35,19 +38,18 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
-export async function callCheckClaims(userId: string, ...claimNames: string[]): Promise<any> {
+export async function callCheckClaims(...claimNames: string[]): Promise<any> {
     if (claimNames.length === 0) {
         claimNames = ['admin', 'aid-worker', 'can-read-donations', 'donor', 'verified', 'volunteer'];
     }
-    const response = await checkClaims({ userId: userId, claimNames: claimNames });
-    const data: any = response.data;
-    return data;
+    const idToken = await auth.currentUser?.getIdToken();
+    const response = await checkClaims({ idToken: idToken, claimNames: claimNames });
+    return response;
 }
 
-export async function callIsEmailInvalid(email: string): Promise<any> {
-    const response = await isEmailInvalid({ email: email });
-    const data: any = response.data;
-    return data.value;
+export async function callIsEmailInUse(email: string): Promise<boolean> {
+    const response = await isEmailInUse({ email: email });
+    return response;
 }
 
 export async function callSetClaimForNewUser(userId: string): Promise<void> {
@@ -182,6 +184,16 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject();
 }
 
+export async function getAllUsers(): Promise<UserCardProps[]> {
+    try {
+        const usersList = await listAllUsers();
+        return usersList;
+    } catch (error) {
+        console.log('Error getting all users, ', error);
+    }
+    return Promise.reject();
+}
+
 export async function callRegisterNewUser(options: any): Promise<any> {
     const response = await registerNewUser(options);
     const data: any = response.data;
@@ -190,12 +202,22 @@ export async function callRegisterNewUser(options: any): Promise<any> {
 }
 
 export async function callSetClaims(userId: string, claims: any): Promise<void> {
-    const options = { userId, claims };
-    await setClaims({ options });
+    await setClaims({ userId: userId, claims: claims });
+    //Reset token so new claims propagate
+    // auth.currentUser?.getIdToken(true);
 }
 
 export async function callSetUserAccount(userId: string, accountInformation: AccountInformation): Promise<void> {
     await setUserAccount({ userId: userId, accountInformation: accountInformation });
+}
+
+export async function callUpdateUser(uid: string, accountInformation: AccountInformation): Promise<void> {
+    try {
+        console.log('update user: ', uid, 'with: ', accountInformation);
+        await updateUser({ uid: uid, accountInformation: accountInformation });
+    } catch (error) {
+        console.log('error updating user from firebase.ts', error);
+    }
 }
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
@@ -212,4 +234,9 @@ export function signOutUser(): void {
 
 export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
     onAuthStateChanged(auth, callback);
+}
+
+export async function resetPassword(email: string): Promise<void> {
+    if (!email) Promise.reject();
+    await sendPasswordResetEmail(auth, email);
 }

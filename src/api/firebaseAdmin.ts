@@ -9,13 +9,18 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import * as admin from 'firebase-admin';
-import { App, applicationDefault } from 'firebase-admin/app';
-import { getAuth, UserRecord } from 'firebase-admin/auth';
+import { getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
+import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
+import serviceAccount from '../../serviceAccount.json';
+import { UserCardProps } from '@/types/post-data';
 
-import { firebaseConfig } from './config';
-//import '../../serviceAccount.json';
+const credentials: ServiceAccount = {
+    projectId: serviceAccount.project_id,
+    clientEmail: serviceAccount.client_email,
+    privateKey: serviceAccount.private_key
+};
 
 const region = 'us-east1';
 
@@ -42,22 +47,19 @@ export async function initAdmin() {
     }
 
     return admin.initializeApp({
-        credential: applicationDefault(),
-        ...firebaseConfig
+        credential: admin.credential.cert(credentials)
     });
 }
 
 const app = await initAdmin();
-
+const auth = getAuth(app);
 const storage = getStorage(app);
 
 export const checkClaims = async (request: any): Promise<any> => {
     try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const claimNames = request.data.claimNames;
-        return await _checkClaims(userId, claimNames);
+        const { idToken, claimNames } = request;
+        const response = await _checkClaims(idToken, claimNames);
+        return response;
     } catch (error) {
         _addEvent({ location: 'checkClaims' });
     }
@@ -113,10 +115,10 @@ export const createNewUser = functionsV1
                 })
                 .catch((error) => logger.error({ location: 'createNewUser', error: error }));
             // Claims may have already been set elsewhere.
-            const adminAuth = getAuth(app);
-            const userRecord = await adminAuth.getUser(user.uid);
+
+            const userRecord = await auth.getUser(user.uid);
             if (userRecord.customClaims == null || Object.keys(userRecord.customClaims).length == 0) {
-                await adminAuth.setCustomUserClaims(user.uid, {
+                await auth.setCustomUserClaims(user.uid, {
                     donor: true,
                     verified: false
                 });
@@ -125,6 +127,42 @@ export const createNewUser = functionsV1
             _addEvent({ location: 'createNewUser (onCall)', error: error, data: user });
         }
     });
+
+export const updateUser = async (request: any): Promise<void> => {
+    try {
+        const { uid, accountInformation } = request;
+        console.log(uid, accountInformation);
+        await auth.updateUser(uid, accountInformation);
+    } catch (error) {
+        console.log('error updating user from firebaseAdmin', error);
+    }
+};
+
+export const listAllUsers = async (): Promise<UserCardProps[]> => {
+    try {
+        const usersList = await auth.listUsers(1000);
+        const listUsersResult: UserRecord[] = usersList.users;
+        const listUsers: UserCardProps[] = listUsersResult.map((userRecord) => {
+            const userCardProps: UserCardProps = {
+                uid: userRecord.uid,
+                email: userRecord.email,
+                emailVerified: userRecord.emailVerified,
+                displayName: userRecord.displayName,
+                photoURL: userRecord.photoURL,
+                phoneNumber: userRecord.phoneNumber,
+                disabled: userRecord.disabled,
+                metadata: userRecord.metadata,
+                customClaims: userRecord.customClaims
+            };
+            //To prevent 'Only plain objects can be passed to Client Components from Server Components' error
+            return JSON.parse(JSON.stringify(userCardProps));
+        });
+        return listUsers;
+    } catch (error) {
+        console.log('error listing users', error);
+    }
+    return Promise.reject();
+};
 
 export const getImageAsSignedUrl = async (request: any): Promise<any> => {
     let fileExists = null;
@@ -181,8 +219,7 @@ export const getUidByEmail = async (request: any): Promise<string> => {
             throw new Error("'email' is not defined in options.");
         }
         const email = options.email;
-        const adminAuth = getAuth(app);
-        const uid = (await adminAuth.getUserByEmail(email)).uid;
+        const uid = (await auth.getUserByEmail(email)).uid;
         return uid;
     } catch (error) {
         _addEvent({ location: 'getUidByEmail' });
@@ -190,34 +227,34 @@ export const getUidByEmail = async (request: any): Promise<string> => {
     return Promise.reject();
 };
 
-export const isEmailInvalid = async (request: any): Promise<any> => {
+export const isEmailInUse = async (request: any) => {
     try {
-        const email = request.data.email;
-        const userRecord: UserRecord = await getAuth(app).getUserByEmail(email);
+        const email = request.email;
+        const userRecord: UserRecord = await auth.getUserByEmail(email);
         if (userRecord !== undefined) {
             logger.error({ error: `${email} was queried via this onCall method.`, data: request.data });
-            return { value: true };
+            return true;
         } else {
-            return { value: false };
+            return false;
         }
     } catch (error: any) {
         logger.error(error);
-        _addEvent({ location: 'isEmailInvalid', error: error, data: request.data });
+        _addEvent({ location: 'isEmailInUse', error: error, data: request.data });
         if (error.code === 'auth/user-not-found') {
-            return { value: false };
+            return false;
         }
         if (error.code !== 'auth/invalid-email') {
-            _addEvent({ location: 'isEmailInvalid', error: error, data: request.data });
+            _addEvent({ location: 'isEmailInUse', error: error, data: request.data });
         }
     }
-    return { value: true };
+    return true;
 };
 
 export const setClaimForNewUser = async (request: any) => {
     try {
         _verifyAuthenticated(request);
         const userId = request.data.userId;
-        await getAuth(app).setCustomUserClaims(userId, {
+        await auth.setCustomUserClaims(userId, {
             donor: true,
             verified: false
         });
@@ -226,27 +263,11 @@ export const setClaimForNewUser = async (request: any) => {
     }
 };
 
+//NOTE: Setting claims will overwrite existing claims! Must include all claims in requests.
 export const setClaims = async (request: any) => {
     try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        if (request.data == null) {
-            throw new Error('No data provided in the request.');
-        }
-        const data = request.data;
-        if (data.options == null) {
-            throw new Error('Options are not present in the request.');
-        }
-        const options = data.options;
-        if (options.userId == null) {
-            throw new Error('A userId is not supplied in the request');
-        }
-        const userId = options.userId;
-        if (options.claims == null) {
-            throw new Error('Claims are not supplied in the request.');
-        }
-        const claims = options.claims;
-        await getAuth(app).setCustomUserClaims(userId, claims);
+        const { userId, claims } = request;
+        auth.setCustomUserClaims(userId, claims);
     } catch (error) {
         _addEvent({ location: 'setClaimForNewUser', error: error });
     }
@@ -540,11 +561,10 @@ export const toggleClaimForVolunteer = async (request: any) => {
 };
 
 // Non-exported utility methods
-async function _checkClaims(userId: string, ...claimNames: string[]) {
+async function _checkClaims(idToken: string, claimNames: string[]) {
     try {
         let userClaims = {};
-        const adminAuth = getAuth(app);
-        const claims = (await adminAuth.getUser(userId)).customClaims;
+        const claims = await auth.verifyIdToken(idToken);
         if (claims === undefined || claims === null) {
             return Promise.reject();
         }
@@ -584,8 +604,7 @@ async function _addEvent(object: any) {
 
 async function _checkClaim(userId: string, claimName: string) {
     try {
-        const adminAuth = getAuth(app);
-        const claims = (await adminAuth.getUser(userId)).customClaims;
+        const claims = (await auth.getUser(userId)).customClaims;
         if (claims === undefined || claims === null) {
             return Promise.reject();
         }
@@ -599,8 +618,7 @@ async function _checkClaim(userId: string, claimName: string) {
 
 async function _toggleClaim(userId: string, claimName: string) {
     try {
-        const adminAuth = getAuth(app);
-        const claims = (await adminAuth.getUser(userId)).customClaims;
+        const claims = (await auth.getUser(userId)).customClaims;
         if (claims === undefined || claims === null) {
             return Promise.reject();
         }
@@ -618,9 +636,8 @@ async function _toggleClaim(userId: string, claimName: string) {
 
 async function _setClaim(userId: string, claimName: string, claimValue: any) {
     try {
-        const adminAuth = getAuth(app);
-        const customClaims = (await adminAuth.getUser(userId)).customClaims;
-        adminAuth.setCustomUserClaims(userId, {
+        const customClaims = (await auth.getUser(userId)).customClaims;
+        auth.setCustomUserClaims(userId, {
             [claimName]: claimValue,
             ...customClaims
         });
@@ -630,11 +647,13 @@ async function _setClaim(userId: string, claimName: string, claimValue: any) {
 }
 
 async function _verifyAdmin(request: any) {
-    const callee = await getAuth(app).getUser(request.auth.uid);
-    const adminClaimValue = callee.customClaims?.admin;
-    if (adminClaimValue == null || adminClaimValue !== true) {
-        throw new HttpsError('internal', 'Internal error');
-    }
+    // const callee = await getAuth(app).getUser(request.userId);
+    // const adminClaimValue = callee.customClaims?.admin;
+    // console.log(callee, 'claimvalue: ', adminClaimValue);
+    // if (adminClaimValue == null || adminClaimValue !== true) {
+    //     throw new HttpsError('internal', 'Internal error');
+    // }
+    auth.verifyIdToken(request.idToken).then((claims) => console.log(claims));
 }
 
 function _verifyAuthenticated(request: any) {
