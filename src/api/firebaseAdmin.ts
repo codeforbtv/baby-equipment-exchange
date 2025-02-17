@@ -238,12 +238,12 @@ export const isEmailInUse = async (request: any) => {
             return false;
         }
     } catch (error: any) {
-        logger.error(error);
-        _addEvent({ location: 'isEmailInUse', error: error, data: request.data });
         if (error.code === 'auth/user-not-found') {
             return false;
         }
+
         if (error.code !== 'auth/invalid-email') {
+            logger.error(error);
             _addEvent({ location: 'isEmailInUse', error: error, data: request.data });
         }
     }
