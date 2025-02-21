@@ -176,3 +176,10 @@ export const categories = [
         value: 'Pack N Play Bed Pad'
     }
 ];
+
+//TODO replace with Wendy's calendly event types
+export const calendlyEvents = [
+    'https://calendly.com/bryan-parmelee/drop-off-zone-2',
+    'https://calendly.com/bryan-parmelee/drop-off-zone-1',
+    'https://calendly.com/bryan-parmelee/30min'
+];
