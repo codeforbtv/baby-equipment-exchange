@@ -23,7 +23,7 @@ import { DonationBody } from '@/types/post-data';
 import { Image } from '@/models/image';
 // Libs
 import { db, getUserId, canReadDonations, callAddEvent } from './firebase';
-import { imageReferenceConverter } from './firebase-images';
+import { deleteImagesByRef, imageReferenceConverter } from './firebase-images';
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
 
@@ -196,11 +196,10 @@ async function _getDonations(...donationDetails: DonationDetail[]): Promise<Dona
 export async function getDonationById(id: string): Promise<DonationDetailNoRefs> {
     try {
         const uid = await getUserId();
-        const hasClaimOnReadingDonations: boolean = await canReadDonations();
         const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
-        const donationCollectionRef = collection(db, DONATIONS_COLLECTION);
+        const hasClaimOnReadingDonations: boolean = await canReadDonations();
+        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
         const donationDetailsCollectionRef = collection(db, DONATION_DETAILS_COLLECTION);
-        const donationRef = doc(donationCollectionRef, `${id}`).withConverter(donationConverter);
         const conjunctions = [where('donation', '==', donationRef)];
         //if user cannot read all donations, only fetch donation if it was donated by current user
         if (hasClaimOnReadingDonations !== true) {
@@ -290,5 +289,51 @@ export async function addDonation(newDonation: DonationBody) {
             keys.push(key);
         }
         callAddEvent({ location: 'addDonation', keys: keys });
+    }
+}
+
+export async function deleteDonationById(id: string) {
+    try {
+        await runTransaction(db, async (transaction) => {
+            const uid = await getUserId();
+            const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
+            const hasClaimOnReadingDonations: boolean = await canReadDonations();
+            const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
+            const donationDetailsCollectionRef = collection(db, DONATION_DETAILS_COLLECTION);
+            const conjunctions = [where('donation', '==', donationRef)];
+
+            // if user cannot read all donations, only fetch donation if it was donated by current user
+            // todo: should there be a seperate claim for deleting donations?
+            if (hasClaimOnReadingDonations !== true) {
+                conjunctions.push(where('donor', '==', userRef));
+            }
+
+            const q = query(donationDetailsCollectionRef, ...conjunctions).withConverter(donationDetailsConverter);
+
+            const donationDetailsSnapshot = await getDocs(q);
+            const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc: any) => doc.data());
+            if (donationDetails.length !== 1) {
+                throw new Error('You are unauthorized to delete this donation.');
+            }
+
+            const donationSnapshot = await getDoc(donationRef);
+            if (donationSnapshot.exists()) {
+                const donation = donationSnapshot.data();
+                const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[];
+                imagesRef.push(...(donationDetails[0].getImages() as DocumentReference<Image>[]));
+
+                await deleteImagesByRef(...imagesRef);
+            }
+
+            transaction.delete(donationRef);
+            transaction.delete(donationDetailsSnapshot.docs[0].ref);
+        });
+    }
+    catch (error: any) {
+        const keys: any[] = [];
+        for (const key in error) {
+            keys.push(key);
+        }
+        callAddEvent({ location: 'deleteDonationById', keys: keys });
     }
 }

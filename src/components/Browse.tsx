@@ -15,7 +15,7 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 // Hooks
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 // Libs
-import { getDonations } from '@/api/firebase-donations';
+import { getDonations, deleteDonationById } from '@/api/firebase-donations';
 import { callAddEvent } from '@/api/firebase';
 
 import algoliasearch from 'algoliasearch/lite';
@@ -23,6 +23,7 @@ import { InstantSearch } from 'react-instantsearch';
 // Styles
 import '../styles/globalStyles.css';
 import styles from './Browse.module.css';
+import { DonationCardProps } from '@/types/DonationCardProps';
 
 const NewDonationDialog = lazy(() => import('@/components/NewDonationDialog'));
 
@@ -50,15 +51,30 @@ const Browse: React.FC = () => {
     function toggleSearchBar() {
         setIsSearchVisible((prev: any) => !prev);
     }
+
     function toggleFilters() {
         setIsFilterVisible((prev: any) => !prev);
     }
 
     async function fetchDonations() {
         try {
+            setIsLoading(true);
             const donations = await getDonations(null);
             setDonations(donations);
             setIsLoading(false);
+        } catch (error: any) {
+            const keys: any[] = [];
+            for (const key in error) {
+                keys.push(key);
+            }
+            callAddEvent({ location: 'component/Browse', keys: keys });
+        }
+    }
+
+    async function deleteDonation(id: string) {
+        try {
+            await deleteDonationById(id);
+            fetchDonations();
         } catch (error: any) {
             const keys: any[] = [];
             for (const key in error) {
@@ -124,16 +140,17 @@ const Browse: React.FC = () => {
                         {donations
                             .sort((a, b) => b.modifiedAt.toDate().getTime() - a.modifiedAt.toDate().getTime())
                             .map((donation) => {
+                                const props: DonationCardProps = {
+                                    ...donation,
+                                    images: donation.images as string[]
+                                };
+
                                 // An active donation must have at least one photo for display.
                                 return (
                                     <DonationCard
                                         key={donation.id}
-                                        category={donation.category}
-                                        brand={donation.brand}
-                                        model={donation.model}
-                                        description={donation.description}
-                                        active={donation.active}
-                                        images={donation.images as string[]}
+                                        donation={props}
+                                        onDelete={deleteDonation}
                                     />
                                 );
                             })}
