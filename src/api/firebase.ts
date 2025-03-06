@@ -139,7 +139,7 @@ export async function callToggleClaimForVolunteer(userId: string): Promise<void>
 
 // Utilitarian
 export async function addErrorEvent(location: string, error: any): Promise<void> {
-    addEvent({ object: {location: location, error: convertToString(error)}});
+    addEvent({ location: location, error: convertToString(error) });
 }
 
 export async function callGetImageAsSignedUrl(url: string): Promise<any> {

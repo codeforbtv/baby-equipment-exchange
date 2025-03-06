@@ -58,8 +58,7 @@ const storage = getStorage(app);
 
 export const addEvent = async (request: any) => {
     try {
-        const object = request.data.object;
-        _addEvent(object);
+        _addEvent(request);
     } catch (error) {
         logger.error(error);
     }
@@ -577,14 +576,14 @@ async function _addEvent(object: any) {
         };
         await db.collection(EVENTS_COLLECTION).add(eventParams);
 
-        logger.warn("Got event!", object);
+        logger.warn(`Got event! ${JSON.stringify(object)}`);
     } catch (error) {
         logger.error(error);
     }
 }
 
 async function addErrorEvent(location: string, error: any): Promise<void> {
-    _addEvent({location: location, error: convertToString(error)});
+    _addEvent({ location: location, error: convertToString(error) });
 }
 
 async function _checkClaim(userId: string, claimName: string) {
