@@ -41,6 +41,7 @@ import {
 } from './firebaseAdmin';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
+import { convertToString } from '@/utils/utils';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -137,18 +138,17 @@ export async function callToggleClaimForVolunteer(userId: string): Promise<void>
 }
 
 // Utilitarian
-export async function callAddEvent(object: any): Promise<void> {
-    addEvent({ object: object });
+export async function addErrorEvent(location: string, error: any): Promise<void> {
+    addEvent({ object: {location: location, error: convertToString(error)}});
 }
 
 export async function callGetImageAsSignedUrl(url: string): Promise<any> {
     try {
         const response = await getImageAsSignedUrl({ url: url });
-        await addEvent({ location: 'getImageAsSignedUrl', response: response });
         const signedUrl: any = response.data;
         return signedUrl;
     } catch (error) {
-        await addEvent({ location: 'getImageAsSignedUrl', error: error });
+        await addErrorEvent('getImageAsSignedUrl', error);
     }
 }
 

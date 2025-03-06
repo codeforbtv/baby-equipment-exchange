@@ -16,7 +16,7 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 // Libs
 import { getDonations } from '@/api/firebase-donations';
-import { callAddEvent } from '@/api/firebase';
+import { addErrorEvent } from '@/api/firebase';
 
 import algoliasearch from 'algoliasearch/lite';
 import { InstantSearch } from 'react-instantsearch';
@@ -60,11 +60,7 @@ const Browse: React.FC = () => {
             setDonations(donations);
             setIsLoading(false);
         } catch (error: any) {
-            const keys: any[] = [];
-            for (const key in error) {
-                keys.push(key);
-            }
-            callAddEvent({ location: 'component/Browse', keys: keys });
+            addErrorEvent('fetchDonations', error);
         }
     }
 

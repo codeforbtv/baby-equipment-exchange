@@ -22,7 +22,7 @@ import { DonationDetail, IDonationDetail, DonationDetailNoRefs } from '@/models/
 import { DonationBody } from '@/types/post-data';
 import { Image } from '@/models/image';
 // Libs
-import { db, getUserId, canReadDonations, callAddEvent } from './firebase';
+import { db, getUserId, canReadDonations, addErrorEvent } from './firebase';
 import { imageReferenceConverter } from './firebase-images';
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
@@ -172,7 +172,7 @@ export async function getDonations(filter: null | undefined): Promise<Donation[]
         }
         return donations;
     } catch (error: any) {
-        callAddEvent({ location: 'api/firebase-donations', error: error });
+        addErrorEvent('getDonations', error);
     }
     return Promise.reject();
 }
@@ -236,7 +236,7 @@ export async function getDonationById(id: string): Promise<DonationDetailNoRefs>
             return Promise.reject();
         }
     } catch (error: any) {
-        callAddEvent({ location: 'api/firebase-donations', error: error });
+        addErrorEvent('getDonationById', error);
     }
     return Promise.reject();
 }
@@ -285,10 +285,6 @@ export async function addDonation(newDonation: DonationBody) {
             transaction.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail));
         });
     } catch (error: any) {
-        const keys: any[] = [];
-        for (const key in error) {
-            keys.push(key);
-        }
-        callAddEvent({ location: 'addDonation', keys: keys });
+        addErrorEvent('addDonation', error);
     }
 }

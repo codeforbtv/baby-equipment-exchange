@@ -5,7 +5,7 @@ import { Box, Button, Paper, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 //Libs
-import { onAuthStateChangedListener, callAddEvent, callIsEmailInUse, createUser } from '@/api/firebase';
+import { onAuthStateChangedListener, callIsEmailInUse, createUser, addErrorEvent } from '@/api/firebase';
 //Styling
 import '../../styles/globalStyles.css';
 import Loader from '@/components/Loader';
@@ -49,9 +49,9 @@ export default function NewAccount() {
         try {
             createUser(displayName, email, password)
                 .then((user) => user.user.getIdTokenResult(true).then(() => router.push('/')))
-                .catch((error) => callAddEvent({ location: 'createUser', error: error }));
+                .catch((error) => addErrorEvent('createUser', error));
         } catch (error) {
-            callAddEvent({ location: 'handleAccountCreate', error: error });
+            addErrorEvent('handleAccountCreate', error);
         }
     };
 

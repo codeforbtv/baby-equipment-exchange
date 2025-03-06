@@ -1,5 +1,5 @@
 // Libs
-import { db, getUserId } from './firebase';
+import { addErrorEvent, db, getUserId } from './firebase';
 import {
     arrayUnion,
     collection,
@@ -18,7 +18,6 @@ import {
     updateDoc
 } from 'firebase/firestore';
 
-import { callAddEvent } from './firebase';
 // Models
 import { IUser, User } from '@/models/user';
 import { IUserDetail, UserDetail } from '@/models/user-detail';
@@ -280,6 +279,6 @@ export async function addNote(note: NoteBody) {
             });
         }
     } catch (error) {
-        callAddEvent(note);
+        addErrorEvent('addNote', {error: error, note: note});
     }
 }
