@@ -62,7 +62,7 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
         <>
             <div className="page--header">
                 <h1>Login</h1>
-                <h4>[Page Summary]</h4>
+                {/* <h4>[Page Summary]</h4> */}
             </div>
             <div className="content--container">
                 {loginState === 'pending' && <Loader />}
