@@ -12,7 +12,7 @@ import { DonationCardProps } from '@/types/DonationCardProps';
 
 const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
-export default function DonationCard({ active, category, brand, description, images, model }: DonationCardProps) {
+export default function DonationCard({ active, category, brand, description, images, model, id }: DonationCardProps) {
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const image = images[0];
 
@@ -42,7 +42,7 @@ export default function DonationCard({ active, category, brand, description, ima
             />
             <Suspense fallback={<Loader />}>
                 <ExistingDonationDialog
-                    initialParameters={{ initAsOpen: showDialog, data: { active, category, brand, description, model, images } }}
+                    initialParameters={{ initAsOpen: showDialog, data: { active, category, brand, description, model, images, id } }}
                     controllers={{ closeController: closeDialog }}
                 />
             </Suspense>

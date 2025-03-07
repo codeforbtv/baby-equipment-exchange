@@ -1,5 +1,8 @@
 import { DonationCardProps } from '@/types/DonationCardProps';
 import { Button, Dialog, DialogActions, DialogContent, FormControl, FormLabel, ImageList, NativeSelect, TextField } from '@mui/material';
+import { useContext } from 'react';
+import { UserContext } from '@/contexts/UserContext';
+import { useRouter } from 'next/navigation';
 // Styles
 import styles from './Browse.module.css';
 
@@ -11,6 +14,15 @@ export default function ExistingDonationDialog({
     controllers: { [key: string]: () => void };
 }) {
     const donation: DonationCardProps = initialParameters.data as DonationCardProps;
+
+    const { isAdmin } = useContext(UserContext);
+    const router = useRouter();
+
+    const handleAccept = () => {
+        controllers.closeController;
+        router.push(`/schedule/${donation.id}`);
+    };
+
     if (!(donation instanceof Object) || !(typeof initialParameters.initAsOpen === 'boolean')) {
         return <></>;
     }
@@ -77,6 +89,12 @@ export default function ExistingDonationDialog({
                 </ImageList>
             </DialogContent>
             <DialogActions>
+                {isAdmin && (
+                    <>
+                        <Button onClick={handleAccept}>Accept</Button>
+                        <Button>Reject</Button>
+                    </>
+                )}
                 <Button onClick={controllers.closeController}>close</Button>
             </DialogActions>
         </Dialog>
