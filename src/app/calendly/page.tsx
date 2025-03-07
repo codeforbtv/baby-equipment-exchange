@@ -2,7 +2,14 @@
 
 import CalendlyEmbed from '@/components/CalendlyEmbed';
 import { calendlyEvents } from '@/data/html';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
+
+import { getSchedulingPageLink } from '@/api/calendly';
+
+const CLIENT_ID = process.env.NEXT_PUBLIC_CALEDNLY_CLIENT_ID;
+const CLIENT_SECRET = process.env.NEXT_PUBLIC_CALEDNLY_CLIENT_SECRET;
+const BP_TOKEN = process.env.BP_TOKEN;
+const API_KEY = process.env.NEXT_PUBLIC_CALENDLY_API_KEY;
 
 import '../../styles/globalStyles.css';
 
@@ -14,6 +21,10 @@ export default function Calendly() {
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
         setCalendlyUrl(event.target.value);
     };
+
+    useEffect(() => {
+        getSchedulingPageLink();
+    }, []);
 
     return (
         <>
