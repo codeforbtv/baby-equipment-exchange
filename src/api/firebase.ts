@@ -260,3 +260,13 @@ export async function resetPassword(email: string): Promise<void> {
     if (!email) Promise.reject();
     await sendPasswordResetEmail(auth, email);
 }
+
+export async function checkIsAdmin(user: User): Promise<boolean> {
+    try {
+        const result = await user.getIdTokenResult();
+        return result.claims.admin === true;
+    } catch (error) {
+        console.log(error);
+    }
+    return Promise.reject();
+}
