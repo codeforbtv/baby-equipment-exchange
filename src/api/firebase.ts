@@ -37,7 +37,8 @@ import {
     toggleClaimForAidWorker,
     toggleClaimForVerified,
     toggleClaimForVolunteer,
-    updateUser
+    updateUser,
+    getUserById
 } from './firebaseAdmin';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
@@ -192,6 +193,16 @@ export async function getUserId(): Promise<string> {
     await auth.authStateReady();
     const currentUser = auth.currentUser?.uid;
     return currentUser ?? Promise.reject();
+}
+
+export async function getUserEmailById(id: string): Promise<string> {
+    try {
+        const user = await getUserById(id);
+        if (user.email) return user.email;
+    } catch (error) {
+        console.log(error);
+    }
+    return Promise.reject();
 }
 
 export async function getAllUsers(): Promise<UserCardProps[]> {
