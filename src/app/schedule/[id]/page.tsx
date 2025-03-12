@@ -1,5 +1,5 @@
 'use client';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import { useContext, useEffect, useState, ChangeEvent } from 'react';
 import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
@@ -15,7 +15,11 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
 
-    if (!isAdmin) router.push('/');
+    //prevents useEffect from firing
+    if (!isAdmin) {
+        router.push('/');
+        return null;
+    }
 
     const [events, setEvents] = useState<EventType[]>([]);
     const [inviteUrl, setInviteUrl] = useState<string>('');
@@ -52,7 +56,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
     }, []);
 
     return (
-        <ProtectedRoute>
+        <ProtectedAdminRoute>
             <div className="page--header">
                 <h1>Accept Donation</h1>
                 <h4>Select a calendar to send a scheduling link</h4>
@@ -75,6 +79,6 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                 <Button onClick={handleSubmit}>Send scheduling Link</Button>
                 <div>{message.length > 0 && message}</div>
             </div>
-        </ProtectedRoute>
+        </ProtectedAdminRoute>
     );
 }
