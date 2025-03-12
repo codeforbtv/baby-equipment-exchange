@@ -91,8 +91,10 @@ export default function ExistingDonationDialog({
             <DialogActions>
                 {isAdmin && (
                     <>
-                        <Button onClick={handleAccept}>Accept</Button>
-                        <Button>Reject</Button>
+                        <Button variant="contained" onClick={handleAccept}>
+                            Accept
+                        </Button>
+                        <Button variant="outlined">Reject</Button>
                     </>
                 )}
                 <Button onClick={controllers.closeController}>close</Button>
