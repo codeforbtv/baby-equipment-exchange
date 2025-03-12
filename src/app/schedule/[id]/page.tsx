@@ -30,6 +30,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
         setInviteUrl(event.target.value);
     };
 
+    //TO-DO: submit should send an email with the schedulig link to the donor.
     const handleSubmit = () => {
         setMessage(`You are sending the scheduling link ${inviteUrl} to ${donorEmail}`);
     };
