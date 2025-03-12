@@ -27,7 +27,7 @@ export default function Footer() {
             <Link className={styles['menu__link']} id="about" href="/about">
                 About
             </Link>
-            <Link className={styles['menu__link']} id="contact" href="/contact">
+            <Link className={styles['menu__link']} id="contact" href="https://www.vermontconnector.org/contact" target="_blank">
                 Contact
             </Link>
             <Link

@@ -52,86 +52,9 @@ export default function About() {
         'Books',
         'Clothes'
     ];
+
     const itemTypesNotAcceptedList = itemTypesNotAccepted.map((itemType: string, index: number) => {
         return <li key={index}>{itemType}</li>;
-    });
-
-    const faqs: { question: string; answer: ReactNode }[] = [
-        {
-            question: 'How do I request items for myself?',
-            answer: (
-                <p>
-                    Requests need to come from designated agencies to streamline coordination and to ensure that resources are allocated to those most in need
-                    in the community. You can learn more about our designated agencies, <a href="#">here</a>.
-                </p>
-            )
-        },
-        {
-            question: 'How do I make a donation?',
-            answer: (
-                <p>
-                    <Link href="/contact">Contact the Exchange</Link>, if the item you wish to donate is an acceptable item.
-                </p>
-            )
-        },
-        {
-            question: 'How can my organization partner with the Exchange?',
-            answer: (
-                <p>
-                    <Link href="/contact">Contact the Exchange</Link>, if your organization is interested in partnering with the Exchange.
-                </p>
-            )
-        },
-        {
-            question: 'How do you verify safety and recall standards for items donated?',
-            answer: (
-                <>
-                    <p>
-                        Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we do
-                        not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could be
-                        subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to recall.
-                        Please reference the following web pages if you have any questions about safety/recall status of these items:
-                    </p>
-                    <ul className={styles['answer__list']}>
-                        <li>
-                            Consumer Product Safety Commission <a href="https://cspc.gov">(cpsc.gov)</a>{' '}
-                        </li>
-                        <li>
-                            Reseller&apos;s Guide to Selling Safer Products <a></a>
-                        </li>
-                        <li>
-                            SaferProducts.gov <a href="https://saferproducts.gov">(saferproducts.gov)</a>
-                        </li>
-                        <li>
-                            Recalls.gov <a href="https://recalls.gov">(recalls.gov)</a>
-                        </li>
-                        <li>
-                            Safercar.gov <a href="https://safercar.gov">(safercar.gov)</a>
-                        </li>
-                    </ul>
-                </>
-            )
-        }
-    ];
-    const faqList = faqs.map((faqitems: { question: string; answer: ReactNode }, index: number) => {
-        return (
-            <li key={index}>
-                <a
-                    className={styles['about__question']}
-                    id={'faq-item-question-' + index}
-                    onClick={(event: React.UIEvent<HTMLAnchorElement>) => {
-                        (event.currentTarget.nextElementSibling as HTMLElement).style.display === 'none'
-                            ? ((event.currentTarget.nextElementSibling as HTMLElement).style.display = 'block')
-                            : ((event.currentTarget.nextElementSibling as HTMLElement).style.display = 'none');
-                    }}
-                >
-                    {faqitems.question}
-                </a>
-                <div className={styles['about__answer']} style={{ display: 'none' }} id={'faq-item-answer-' + index}>
-                    {faqitems.answer}
-                </div>
-            </li>
-        );
     });
 
     return (
