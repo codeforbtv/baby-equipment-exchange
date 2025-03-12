@@ -6,11 +6,12 @@
     align-items: center;
     padding: 1rem;
     z-index: 10;
+    background-color: var(--primary);
 }
 
 .header__primary {
     font-family: var(--primary-font);
-    background-color: var(--bg-grey);
+    background-color: var(--primary);
     height: 2.5rem;
     display: flex;
     align-items: center;
