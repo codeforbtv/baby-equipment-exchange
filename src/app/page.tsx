@@ -30,7 +30,7 @@ export default function Home() {
         <ProtectedRoute>
             <div className="page--header">
                 <h1>Browse</h1>
-                <h4>[Page Summary]</h4>
+                {/* <h4>[Page Summary]</h4> */}
             </div>
             <Paper className="content--container" elevation={8} square={false}>
                 {content}
