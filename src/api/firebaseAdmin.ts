@@ -15,6 +15,7 @@ import { getStorage } from 'firebase-admin/storage';
 import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
 import serviceAccount from '../../serviceAccount.json';
 import { UserCardProps } from '@/types/post-data';
+import { UserInfo } from 'firebase/auth';
 
 const credentials: ServiceAccount = {
     projectId: serviceAccount.project_id,
@@ -163,6 +164,25 @@ export const listAllUsers = async (): Promise<UserCardProps[]> => {
     }
     return Promise.reject();
 };
+
+//returns client-side safe UserInfo object
+export async function getUserById(id: string): Promise<UserInfo> {
+    try {
+        const userRecord = await auth.getUser(id);
+        const user: UserInfo = {
+            displayName: userRecord.displayName || null,
+            email: userRecord.email || null,
+            phoneNumber: userRecord.phoneNumber || null,
+            photoURL: userRecord.photoURL || null,
+            providerId: userRecord.providerData[0].providerId,
+            uid: userRecord.uid
+        };
+        return user;
+    } catch (error) {
+        console.log(error);
+    }
+    return Promise.reject();
+}
 
 export const getImageAsSignedUrl = async (request: any): Promise<any> => {
     let fileExists = null;

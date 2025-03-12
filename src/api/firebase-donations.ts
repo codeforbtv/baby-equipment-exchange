@@ -22,7 +22,7 @@ import { DonationDetail, IDonationDetail, DonationDetailNoRefs } from '@/models/
 import { DonationBody } from '@/types/post-data';
 import { Image } from '@/models/image';
 // Libs
-import { db, getUserId, canReadDonations, callAddEvent } from './firebase';
+import { db, getUserId, canReadDonations, callAddEvent, getUserEmailById } from './firebase';
 import { imageReferenceConverter } from './firebase-images';
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
@@ -193,7 +193,7 @@ async function _getDonations(...donationDetails: DonationDetail[]): Promise<Dona
     return donations;
 }
 
-export async function getDonationById(id: string): Promise<DonationDetailNoRefs> {
+export async function getDonationById(id: string): Promise<DonationDetail> {
     try {
         const uid = await getUserId();
         const hasClaimOnReadingDonations: boolean = await canReadDonations();
@@ -227,10 +227,8 @@ export async function getDonationById(id: string): Promise<DonationDetailNoRefs>
         }
 
         if (donation) {
-            const donationDetail: DonationDetailNoRefs = {
-                ...donationDetails[0],
-                donation: donation
-            };
+            const donationDetail: DonationDetail = donationDetails[0];
+
             return donationDetail;
         } else {
             return Promise.reject();
@@ -291,4 +289,20 @@ export async function addDonation(newDonation: DonationBody) {
         }
         callAddEvent({ location: 'addDonation', keys: keys });
     }
+}
+
+export async function getDonorEmailByDonationId(id: string): Promise<string> {
+    try {
+        const donationDetail = await getDonationById(id);
+        const donorId = donationDetail.donor.id;
+        const donorEmail = await getUserEmailById(donorId);
+        return donorEmail;
+    } catch (error: any) {
+        const keys: any[] = [];
+        for (const key in error) {
+            keys.push(key);
+        }
+        callAddEvent({ location: 'getDonorByEmail', keys: keys });
+    }
+    return Promise.reject();
 }

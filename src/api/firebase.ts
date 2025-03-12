@@ -37,7 +37,8 @@ import {
     toggleClaimForAidWorker,
     toggleClaimForVerified,
     toggleClaimForVolunteer,
-    updateUser
+    updateUser,
+    getUserById
 } from './firebaseAdmin';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
@@ -194,6 +195,16 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject();
 }
 
+export async function getUserEmailById(id: string): Promise<string> {
+    try {
+        const user = await getUserById(id);
+        if (user.email) return user.email;
+    } catch (error) {
+        console.log(error);
+    }
+    return Promise.reject();
+}
+
 export async function getAllUsers(): Promise<UserCardProps[]> {
     try {
         const usersList = await listAllUsers();
@@ -259,4 +270,14 @@ export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
 export async function resetPassword(email: string): Promise<void> {
     if (!email) Promise.reject();
     await sendPasswordResetEmail(auth, email);
+}
+
+export async function checkIsAdmin(user: User): Promise<boolean> {
+    try {
+        const result = await user.getIdTokenResult();
+        return result.claims.admin === true;
+    } catch (error) {
+        console.log(error);
+    }
+    return Promise.reject();
 }

@@ -1,12 +1,13 @@
 'use client';
 
-import { onAuthStateChangedListener } from '@/api/firebase';
+import { onAuthStateChangedListener, checkIsAdmin } from '@/api/firebase';
 import { User } from 'firebase/auth';
 import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 
 type UserContextType = {
     currentUser: User | null;
     isLoading: boolean;
+    isAdmin: boolean;
 };
 
 type Props = {
@@ -15,26 +16,33 @@ type Props = {
 
 export const UserContext = createContext<UserContextType>({
     currentUser: null,
-    isLoading: false
+    isLoading: false,
+    isAdmin: false
 });
 
 export const UserProvider = ({ children }: Props) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const value = {
         currentUser,
-        isLoading
+        isLoading,
+        isAdmin
     };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChangedListener((user) => {
+        const unsubscribe = onAuthStateChangedListener(async (user) => {
             if (!user) {
                 setCurrentUser(null);
                 setIsLoading(false);
             }
-            setIsLoading(true);
-            setCurrentUser(user);
-            setIsLoading(false);
+            if (user) {
+                setIsLoading(true);
+                setCurrentUser(user);
+                setIsLoading(false);
+                const adminResult = await checkIsAdmin(user);
+                setIsAdmin(adminResult);
+            }
         });
         return unsubscribe;
     }, []);
