@@ -94,7 +94,7 @@ export default function ExistingDonationDialog({
                         <Button variant="contained" onClick={handleAccept}>
                             Accept
                         </Button>
-                        //TO-DO: Reject should send an automated email with sugestions for other ways to donate uneeded gear.
+                        {/* //TO-DO: Reject should send an automated email with sugestions for other ways to donate uneeded gear. */}
                         <Button variant="outlined">Reject</Button>
                     </>
                 )}
