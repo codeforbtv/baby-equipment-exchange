@@ -124,6 +124,7 @@ const Browse: React.FC = () => {
                                 return (
                                     <DonationCard
                                         key={donation.id}
+                                        id={donation.id}
                                         category={donation.category}
                                         brand={donation.brand}
                                         model={donation.model}

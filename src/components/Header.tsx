@@ -17,27 +17,10 @@ export default function Header() {
     function handleIsOpen() {
         setIsOpen(!isOpen);
     }
+
     function closeMenu() {
         setIsOpen(false);
     }
-
-    useEffect(() => {
-        const headerTitle = document.getElementById('headerTitle')!;
-        if (window.scrollY > headerTitle.offsetHeight * 2) {
-            headerTitle.style.visibility = 'hidden';
-        }
-        const handleTitle = () => {
-            if (window.scrollY > headerTitle.offsetHeight * 2) {
-                headerTitle.style.visibility = 'hidden';
-            } else {
-                headerTitle.style.visibility = 'visible';
-            }
-        };
-        window.addEventListener('scroll', handleTitle);
-        return () => {
-            window.removeEventListener('scroll', handleTitle);
-        };
-    }, []);
 
     return (
         <div className={styles['header__wrapper']}>
