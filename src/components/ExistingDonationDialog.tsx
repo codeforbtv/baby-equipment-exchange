@@ -1,5 +1,8 @@
 import { DonationCardProps } from '@/types/DonationCardProps';
 import { Button, Dialog, DialogActions, DialogContent, FormControl, FormLabel, ImageList, NativeSelect, TextField } from '@mui/material';
+import { useContext } from 'react';
+import { UserContext } from '@/contexts/UserContext';
+import { useRouter } from 'next/navigation';
 // Styles
 import styles from './Browse.module.css';
 
@@ -13,6 +16,15 @@ export default function ExistingDonationDialog({
     onDelete: () => void;
 }) {
     const donation: DonationCardProps = initialParameters.data as DonationCardProps;
+
+    const { isAdmin } = useContext(UserContext);
+    const router = useRouter();
+
+    const handleAccept = () => {
+        onClose();
+        router.push(`/schedule/${donation.id}`);
+    };
+
     if (!(donation instanceof Object) || !(typeof initialParameters.initAsOpen === 'boolean')) {
         return <></>;
     }
@@ -79,6 +91,15 @@ export default function ExistingDonationDialog({
                 </ImageList>
             </DialogContent>
             <DialogActions>
+                {isAdmin && (
+                    <>
+                        <Button variant="contained" onClick={handleAccept}>
+                            Accept
+                        </Button>
+                        {/* //TO-DO: Reject should send an automated email with sugestions for other ways to donate uneeded gear. */}
+                        <Button variant="outlined">Reject</Button>
+                    </>
+                )}
                 <Button onClick={onDelete} color='error'>delete</Button>
                 <Button onClick={onClose}>close</Button>
             </DialogActions>

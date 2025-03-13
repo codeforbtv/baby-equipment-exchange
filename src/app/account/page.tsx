@@ -68,7 +68,7 @@ export default function Account() {
         <ProtectedRoute>
             <div className="page--header">
                 <h1>Account</h1>
-                <h4>[Page Summary]</h4>
+                {/* <h4>[Page Summary]</h4> */}
             </div>
             <div className="content--container">
                 <div className={styles['account__header']}>
