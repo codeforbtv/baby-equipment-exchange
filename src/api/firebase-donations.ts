@@ -323,7 +323,8 @@ export async function deleteDonationById(id: string) {
             transaction.delete(donationRef);
             transaction.delete(donationDetailsSnapshot.docs[0].ref);
         });
-    } catch (error: any) {
+    }
+    catch (error: any) {    
         addErrorEvent('deleteDonationById', error);
     }
 }
