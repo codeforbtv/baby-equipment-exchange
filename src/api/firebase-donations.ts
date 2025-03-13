@@ -324,11 +324,7 @@ export async function deleteDonationById(id: string) {
             transaction.delete(donationDetailsSnapshot.docs[0].ref);
         });
     }
-    catch (error: any) {
-        const keys: any[] = [];
-        for (const key in error) {
-            keys.push(key);
-        }
+    catch (error: any) {    
         addErrorEvent('deleteDonationById', error);
     }
 }
