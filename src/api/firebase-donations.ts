@@ -323,12 +323,7 @@ export async function deleteDonationById(id: string) {
             transaction.delete(donationRef);
             transaction.delete(donationDetailsSnapshot.docs[0].ref);
         });
-    }
-    catch (error: any) {
-        const keys: any[] = [];
-        for (const key in error) {
-            keys.push(key);
-        }
+    } catch (error: any) {
         addErrorEvent('deleteDonationById', error);
     }
 }
@@ -339,7 +334,7 @@ export async function getDonorEmailByDonationId(id: string): Promise<string> {
         const donorId = donationDetail.donor.id;
         const donorEmail = await getUserEmailById(donorId);
         return donorEmail;
-    } catch (error: any) {      
+    } catch (error: any) {
         addErrorEvent('getDonorByEmail', error);
     }
     return Promise.reject();
