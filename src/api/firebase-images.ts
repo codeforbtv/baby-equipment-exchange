@@ -2,19 +2,24 @@
 import {
     addDoc,
     collection,
+    deleteDoc,
     doc,
     DocumentData,
     DocumentReference,
     getDoc,
+    getDocs,
+    query,
     QueryDocumentSnapshot,
     serverTimestamp,
     SnapshotOptions,
-    Timestamp
+    Timestamp,
+    where
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 // Libs
 import { db, getUserId, storage, addErrorEvent } from './firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+
 
 // Models
 import { IImage, Image, imageFactory } from '@/models/image';
@@ -113,6 +118,31 @@ export async function getImage(id: string): Promise<Image> {
     const documentRef = doc(imagesRef, id).withConverter(imageConverter);
     const snapshot = await getDoc(documentRef);
     return snapshot.data() as Image;
+}
+
+export async function deleteImagesByRef(...documentReferences: DocumentReference<Image>[]): Promise<void> {
+    for (const imageReference of documentReferences) {
+        try {
+            const imageSnapshot = await getDoc(imageReference.withConverter(imageConverter));
+            if (imageSnapshot.exists()) {
+                const imageDocument = imageSnapshot.data();
+                
+                const imageDetailsCollectionRef = collection(db, IMAGE_DETAILS_COLLECTION);
+                const conjunctions = [where('image', '==', imageReference)];
+                const q = query(imageDetailsCollectionRef, ...conjunctions);
+                const imageDetailsSnapshot = await getDocs(q);
+                if (imageDetailsSnapshot.size !== 1) {
+                    throw new Error('No associated image details.');
+                }
+                
+                await deleteObject(ref(storage, imageDocument.getDownloadURL()));
+                await deleteDoc(imageDetailsSnapshot.docs[0].ref);
+                await deleteDoc(imageReference);
+            }
+        } catch (error: any) {         
+            addErrorEvent('deleteImagesByRef', error);
+        }
+    }
 }
 
 /** Retrieve a file from storage enforcing Firebase Storage security rules.

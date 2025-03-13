@@ -8,10 +8,12 @@ import styles from './Browse.module.css';
 
 export default function ExistingDonationDialog({
     initialParameters,
-    controllers
+    onClose,
+    onDelete
 }: {
     initialParameters: { [key: string]: boolean | DonationCardProps };
-    controllers: { [key: string]: () => void };
+    onClose: () => void;
+    onDelete: () => void;
 }) {
     const donation: DonationCardProps = initialParameters.data as DonationCardProps;
 
@@ -19,7 +21,7 @@ export default function ExistingDonationDialog({
     const router = useRouter();
 
     const handleAccept = () => {
-        controllers.closeController;
+        onClose();
         router.push(`/schedule/${donation.id}`);
     };
 
@@ -27,9 +29,9 @@ export default function ExistingDonationDialog({
         return <></>;
     }
     return (
-        <Dialog open={initialParameters.initAsOpen} onClose={controllers.closeControllers}>
+        <Dialog open={initialParameters.initAsOpen} onClose={onClose}>
             <DialogContent>
-                <h3>{`${donation.model} ${donation.brand}`}</h3>
+                <h3>{`${donation.model} (${donation.brand})`}</h3>
                 <FormControl sx={{ display: 'flex', gap: 1 }} component="fieldset">
                     <FormLabel component="legend">Details</FormLabel>
                     <NativeSelect
@@ -40,7 +42,7 @@ export default function ExistingDonationDialog({
                         placeholder="Category"
                         value={donation.category ?? 'undefined'}
                         readOnly
-                    ></NativeSelect>
+                    />
                     <TextField
                         type="text"
                         label="Brand"
@@ -98,7 +100,8 @@ export default function ExistingDonationDialog({
                         <Button variant="outlined">Reject</Button>
                     </>
                 )}
-                <Button onClick={controllers.closeController}>close</Button>
+                <Button onClick={onDelete} color='error'>delete</Button>
+                <Button onClick={onClose}>close</Button>
             </DialogActions>
         </Dialog>
     );

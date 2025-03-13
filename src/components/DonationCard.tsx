@@ -12,9 +12,12 @@ import { DonationCardProps } from '@/types/DonationCardProps';
 
 const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
-export default function DonationCard({ active, category, brand, description, images, model, id }: DonationCardProps) {
+export default function DonationCard({ donation, onDelete }: { 
+    donation: DonationCardProps;
+    onDelete: (id: string) => Promise<void>;
+}) {
     const [showDialog, setShowDialog] = useState<boolean>(false);
-    const image = images[0];
+    const image = donation.images[0];
 
     const closeDialog = () => {
         setShowDialog(false);
@@ -24,26 +27,32 @@ export default function DonationCard({ active, category, brand, description, ima
         setShowDialog(true);
     };
 
+    const deleteDonation = () => {
+        onDelete(donation.id);
+        closeDialog();
+    };
+
     return (
         <ImageListItem key={image} className={styles['grid__item']}>
             <img
                 src={image}
                 style={{ width: '100%', height: '100%', objectFit: 'fill' }}
-                alt={`Brand ${brand} and model ${model} description ${description}`}
+                alt={`Brand ${donation.brand} and model ${donation.model} description ${donation.description}`}
             />
             <ImageListItemBar
-                title={brand}
-                subtitle={model}
+                title={donation.brand}
+                subtitle={donation.model}
                 actionIcon={
-                    <IconButton sx={{ color: 'rgba(255, 255, 255, 0.54)' }} aria-label={`details about ${brand} ${model}`} onClick={openDialog}>
+                    <IconButton sx={{ color: 'rgba(255, 255, 255, 0.54)' }} aria-label={`details about ${donation.brand} ${donation.model}`} onClick={openDialog}>
                         <InfoIcon />
                     </IconButton>
                 }
             />
             <Suspense fallback={<Loader />}>
                 <ExistingDonationDialog
-                    initialParameters={{ initAsOpen: showDialog, data: { active, category, brand, description, model, images, id } }}
-                    controllers={{ closeController: closeDialog }}
+                    initialParameters={{ initAsOpen: showDialog, data: donation }}
+                    onClose={closeDialog}
+                    onDelete={deleteDonation}
                 />
             </Suspense>
         </ImageListItem>
