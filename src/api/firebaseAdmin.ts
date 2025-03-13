@@ -13,17 +13,9 @@ import { getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
-import serviceAccount from '../../serviceAccount.json';
 import { UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 import { UserInfo } from 'firebase/auth';
-
-
-const credentials: ServiceAccount = {
-    projectId: serviceAccount.project_id,
-    clientEmail: serviceAccount.client_email,
-    privateKey: serviceAccount.private_key
-};
 
 const region = 'us-east1';
 
@@ -48,10 +40,19 @@ export async function initAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-
-    return admin.initializeApp({
-        credential: admin.credential.cert(credentials)
-    });
+    if (process.env.NODE_ENV === 'production') {
+        return admin.initializeApp();
+    } else {
+        const serviceAccount = await import('../../serviceAccount.json');
+        const credentials: ServiceAccount = {
+            projectId: serviceAccount.project_id,
+            clientEmail: serviceAccount.client_email,
+            privateKey: serviceAccount.private_key
+        };
+        return admin.initializeApp({
+            credential: admin.credential.cert(credentials)
+        });
+    }
 }
 
 const app = await initAdmin();
@@ -126,7 +127,7 @@ export const createNewUser = functionsV1
                 });
             }
         } catch (error) {
-            addErrorEvent('createNewUser', {error: error, data: user});
+            addErrorEvent('createNewUser', { error: error, data: user });
         }
     });
 
@@ -205,16 +206,13 @@ export const getImageAsSignedUrl = async (request: any): Promise<any> => {
         });
         return signedUrlResponse[0];
     } catch (error: any) {
-        addErrorEvent(
-            'getImageAsSignedUrl',
-            {
-                error: error,
-                fileExists: fileExists,
-                auth: request.auth,
-                data: request.data,
-                header: request.rawrequest?.rawHeaders
-            }
-        );
+        addErrorEvent('getImageAsSignedUrl', {
+            error: error,
+            fileExists: fileExists,
+            auth: request.auth,
+            data: request.data,
+            header: request.rawrequest?.rawHeaders
+        });
     }
     return Promise.reject();
 };
@@ -259,7 +257,7 @@ export const isEmailInUse = async (request: any) => {
 
         if (error.code !== 'auth/invalid-email') {
             logger.error(error);
-            addErrorEvent('isEmailInUse', {error: error, data: request.data});
+            addErrorEvent('isEmailInUse', { error: error, data: request.data });
         }
     }
     return true;
@@ -497,7 +495,7 @@ export const setUserAccount = async (request: any): Promise<any> => {
             });
         }
     } catch (error: any) {
-        addErrorEvent('setUserAccount', {error: error, accountInfo: accountInformation, userId: userId});
+        addErrorEvent('setUserAccount', { error: error, accountInfo: accountInformation, userId: userId });
     }
     return new HttpsError('internal', 'Internal error.');
 };
