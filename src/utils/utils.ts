@@ -36,3 +36,9 @@ export function stripNullUndefined(object: any) {
     }
     return object;
 }
+
+export function convertToString(object: any): string {
+    if (object === undefined) { return "undefined"; }
+    if (object === null) { return "null"; }
+    return JSON.stringify(object, Object.getOwnPropertyNames(object));
+}

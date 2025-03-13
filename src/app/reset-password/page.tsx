@@ -9,7 +9,7 @@ import { Box, TextField, Button } from '@mui/material';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 //Libs
-import { resetPassword, callAddEvent } from '@/api/firebase';
+import { resetPassword } from '@/api/firebase';
 //Styling
 import '../../styles/globalStyles.css';
 
