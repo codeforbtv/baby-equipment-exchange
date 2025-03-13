@@ -15,7 +15,9 @@ import { getStorage } from 'firebase-admin/storage';
 import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
 import serviceAccount from '../../serviceAccount.json';
 import { UserCardProps } from '@/types/post-data';
+import { convertToString } from '@/utils/utils';
 import { UserInfo } from 'firebase/auth';
+
 
 const credentials: ServiceAccount = {
     projectId: serviceAccount.project_id,
@@ -56,24 +58,23 @@ const app = await initAdmin();
 const auth = getAuth(app);
 const storage = getStorage(app);
 
+export const addEvent = async (request: any) => {
+    try {
+        _addEvent(request);
+    } catch (error) {
+        logger.error(error);
+    }
+};
+
 export const checkClaims = async (request: any): Promise<any> => {
     try {
         const { idToken, claimNames } = request;
         const response = await _checkClaims(idToken, claimNames);
         return response;
     } catch (error) {
-        _addEvent({ location: 'checkClaims' });
+        addErrorEvent('checkClaims', error);
     }
     throw new HttpsError('internal', 'Internal error');
-};
-
-export const addEvent = async (request: any) => {
-    try {
-        const object = request.data.object;
-        _addEvent(object);
-    } catch (error) {
-        logger.error(error);
-    }
 };
 
 export const createNewUser = functionsV1
@@ -125,7 +126,7 @@ export const createNewUser = functionsV1
                 });
             }
         } catch (error) {
-            _addEvent({ location: 'createNewUser (onCall)', error: error, data: user });
+            addErrorEvent('createNewUser', {error: error, data: user});
         }
     });
 
@@ -135,7 +136,7 @@ export const updateUser = async (request: any): Promise<void> => {
         console.log(uid, accountInformation);
         await auth.updateUser(uid, accountInformation);
     } catch (error) {
-        console.log('error updating user from firebaseAdmin', error);
+        addErrorEvent('updateUser', error);
     }
 };
 
@@ -160,7 +161,7 @@ export const listAllUsers = async (): Promise<UserCardProps[]> => {
         });
         return listUsers;
     } catch (error) {
-        console.log('error listing users', error);
+        addErrorEvent('listAllUsers', error);
     }
     return Promise.reject();
 };
@@ -204,22 +205,16 @@ export const getImageAsSignedUrl = async (request: any): Promise<any> => {
         });
         return signedUrlResponse[0];
     } catch (error: any) {
-        const keys = [];
-        for (const key in error) {
-            keys.push(key);
-        }
-        _addEvent({
-            location: 'getImageAsSignedUrl',
-            fileExists: fileExists,
-            keys: keys,
-            auth: request.auth,
-            data: request.data,
-            header: request.rawrequest?.rawHeaders,
-            code: error.code,
-            name: error.name,
-            details: error.details,
-            errorInfo: error.errorInfo
-        });
+        addErrorEvent(
+            'getImageAsSignedUrl',
+            {
+                error: error,
+                fileExists: fileExists,
+                auth: request.auth,
+                data: request.data,
+                header: request.rawrequest?.rawHeaders
+            }
+        );
     }
     return Promise.reject();
 };
@@ -242,7 +237,7 @@ export const getUidByEmail = async (request: any): Promise<string> => {
         const uid = (await auth.getUserByEmail(email)).uid;
         return uid;
     } catch (error) {
-        _addEvent({ location: 'getUidByEmail' });
+        addErrorEvent('getUidByEmail', error);
     }
     return Promise.reject();
 };
@@ -264,7 +259,7 @@ export const isEmailInUse = async (request: any) => {
 
         if (error.code !== 'auth/invalid-email') {
             logger.error(error);
-            _addEvent({ location: 'isEmailInUse', error: error, data: request.data });
+            addErrorEvent('isEmailInUse', {error: error, data: request.data});
         }
     }
     return true;
@@ -279,7 +274,7 @@ export const setClaimForNewUser = async (request: any) => {
             verified: false
         });
     } catch (error) {
-        _addEvent({ location: 'setClaimForNewUser' });
+        addErrorEvent('setClaimForNewUser', error);
     }
 };
 
@@ -289,7 +284,7 @@ export const setClaims = async (request: any) => {
         const { userId, claims } = request;
         auth.setCustomUserClaims(userId, claims);
     } catch (error) {
-        _addEvent({ location: 'setClaimForNewUser', error: error });
+        addErrorEvent('setClaims', error);
     }
 };
 
@@ -303,7 +298,7 @@ export const setClaimForDonationReadAccess = async (request: any) => {
         const claimName = 'can-read-donations';
         _setClaim(userId, claimName, canReadDonations);
     } catch (error) {
-        _addEvent({ location: 'setClaimForDonationReadAccess' });
+        addErrorEvent('setClaimForDonationReadAccess', error);
     }
 };
 
@@ -316,7 +311,7 @@ export const toggleCanReadDonations = async (request: any) => {
         const currentClaim = await _checkClaim(userId, claimName);
         _setClaim(userId, claimName, !currentClaim);
     } catch (error) {
-        _addEvent({ location: 'toggleCanReadDonations' });
+        addErrorEvent('toggleCanReadDonations', error);
     }
 };
 
@@ -331,7 +326,7 @@ export const setClaimForAdmin = async (request: any) => {
         const claimName = 'admin';
         _setClaim(userId, claimName, isAdmin);
     } catch (error) {
-        _addEvent({ location: 'setClaimForAdmin' });
+        addErrorEvent('setClaimForAdmin', error);
     }
 };
 
@@ -343,7 +338,7 @@ export const setClaimForAidWorker = async (request: any) => {
         const claimName = 'aid-worker';
         _setClaim(userId, claimName, isAidWorker);
     } catch (error) {
-        _addEvent({ location: 'setClaimForAidWorker' });
+        addErrorEvent('setClaimForAidWorker', error);
     }
 };
 
@@ -355,7 +350,7 @@ export const setClaimForDonor = async (request: any) => {
         const claimName = 'donor';
         _setClaim(userId, claimName, isDonor);
     } catch (error) {
-        _addEvent({ location: 'setClaimForDonor' });
+        addErrorEvent('setClaimForDonor', error);
     }
 };
 
@@ -368,7 +363,7 @@ export const setClaimForVerified = async (request: any) => {
         const claimName = 'verified';
         _setClaim(userId, claimName, isVerified);
     } catch (error) {
-        _addEvent({ location: 'setClaimForVerified' });
+        addErrorEvent('setClaimForVerified', error);
     }
 };
 
@@ -380,7 +375,7 @@ export const setClaimForVolunteer = async (request: any) => {
         const claimName = 'volunteer';
         _setClaim(userId, claimName, isVolunteer);
     } catch (error) {
-        _addEvent({ location: 'setClaimForVolunteer' });
+        addErrorEvent('setClaimForVolunteer', error);
     }
 };
 
@@ -414,7 +409,7 @@ export const registerNewUser = async (request: any): Promise<any> => {
         await adminAuth.setCustomUserClaims(userRecord.uid, claims);
         return { ok: true };
     } catch (error) {
-        _addEvent({ location: 'registerNewUser', error: error });
+        addErrorEvent('registerNewUser', error);
     }
     return { ok: false };
 };
@@ -502,23 +497,7 @@ export const setUserAccount = async (request: any): Promise<any> => {
             });
         }
     } catch (error: any) {
-        const keys = [];
-        for (const key in error) {
-            keys.push(key);
-        }
-        logger.error({
-            error: error,
-            location: 'setUserAccount',
-            keys: keys,
-            accountInformation: accountInformation,
-            userId: userId ?? 'undefined'
-        });
-        _addEvent({
-            location: 'setUserAccount',
-            keys: keys,
-            accountInformation: accountInformation,
-            userId: userId ?? 'undefined'
-        });
+        addErrorEvent('setUserAccount', {error: error, accountInfo: accountInformation, userId: userId});
     }
     return new HttpsError('internal', 'Internal error.');
 };
@@ -531,7 +510,7 @@ export const toggleClaimForAdmin = async (request: any) => {
         const claimName = 'admin';
         _toggleClaim(userId, claimName);
     } catch (error) {
-        _addEvent({ location: 'toggleClaimForAdmin' });
+        addErrorEvent('toggleClaimForAdmin', error);
     }
 };
 
@@ -542,7 +521,7 @@ export const toggleClaimForAidWorker = async (request: any) => {
         const claimName = 'aid-worker';
         _toggleClaim(userId, claimName);
     } catch (error) {
-        _addEvent({ location: 'toggleClaimForAidWorker' });
+        addErrorEvent('toggleClaimForAidWorker', error);
     }
 };
 
@@ -553,7 +532,7 @@ export const toggleClaimForDonor = async (request: any) => {
         const claimName = 'donor';
         _toggleClaim(userId, claimName);
     } catch (error) {
-        _addEvent({ location: 'toggleClaimForDonor' });
+        addErrorEvent('toggleClaimForDonor', error);
     }
 };
 
@@ -565,7 +544,7 @@ export const toggleClaimForVerified = async (request: any) => {
         const claimName = 'verified';
         _toggleClaim(userId, claimName);
     } catch (error) {
-        _addEvent({ location: 'toggleClaimForVerified' });
+        addErrorEvent('toggleClaimForVerified', error);
     }
 };
 
@@ -576,7 +555,7 @@ export const toggleClaimForVolunteer = async (request: any) => {
         const claimName = 'volunteer';
         _toggleClaim(userId, claimName);
     } catch (error) {
-        _addEvent({ location: 'toggleClaimForVolunteer' });
+        addErrorEvent('toggleClaimForVolunteer', error);
     }
 };
 
@@ -599,7 +578,7 @@ async function _checkClaims(idToken: string, claimNames: string[]) {
         }
         return userClaims;
     } catch (error) {
-        _addEvent({ location: 'checkClaim' });
+        addErrorEvent('_checkClaims', error);
     }
     return Promise.reject();
 }
@@ -617,9 +596,15 @@ async function _addEvent(object: any) {
             modifiedAt: currentTimeString
         };
         await db.collection(EVENTS_COLLECTION).add(eventParams);
+
+        logger.warn(`Got event! ${JSON.stringify(object)}`);
     } catch (error) {
         logger.error(error);
     }
+}
+
+async function addErrorEvent(location: string, error: any): Promise<void> {
+    _addEvent({ location: location, error: convertToString(error) });
 }
 
 async function _checkClaim(userId: string, claimName: string) {
@@ -631,7 +616,7 @@ async function _checkClaim(userId: string, claimName: string) {
         const claimValue = claims[claimName];
         return claimValue !== undefined && claimValue === true ? true : false;
     } catch (error) {
-        _addEvent({ location: 'checkClaim' });
+        addErrorEvent('checkClaim', error);
     }
     return Promise.reject();
 }
@@ -649,7 +634,7 @@ async function _toggleClaim(userId: string, claimName: string) {
             _setClaim(userId, claimName, !claimValue);
         }
     } catch (error) {
-        _addEvent({ location: 'toggleClaim' });
+        addErrorEvent('toggleClaim', error);
     }
     return Promise.reject();
 }
@@ -662,7 +647,7 @@ async function _setClaim(userId: string, claimName: string, claimValue: any) {
             ...customClaims
         });
     } catch (error) {
-        _addEvent({ location: 'setClaim' });
+        addErrorEvent('setClaim', error);
     }
 }
 

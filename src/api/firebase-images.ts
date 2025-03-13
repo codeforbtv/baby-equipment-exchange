@@ -17,8 +17,9 @@ import {
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 // Libs
-import { db, getUserId, storage, callAddEvent } from './firebase';
+import { db, getUserId, storage, addErrorEvent } from './firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+
 
 // Models
 import { IImage, Image, imageFactory } from '@/models/image';
@@ -107,11 +108,7 @@ export async function uploadImages(files: File[]): Promise<DocumentReference[]> 
         }
         return documentRefs;
     } catch (error: any) {
-        const keys: any[] = [];
-        for (const key in error) {
-            keys.push(keys);
-        }
-        callAddEvent({ location: 'uploadImages', keys: keys });
+        addErrorEvent('uploadImages', error);
     }
     return Promise.reject();
 }
@@ -142,19 +139,8 @@ export async function deleteImagesByRef(...documentReferences: DocumentReference
                 await deleteDoc(imageDetailsSnapshot.docs[0].ref);
                 await deleteDoc(imageReference);
             }
-        } catch (error: any) {
-            const keys: any[] = [];
-            for (const key in error) {
-                keys.push(key);
-            }
-            callAddEvent({
-                location: 'deleteImagesByRef',
-                keys: keys,
-                customData: error.customData,
-                details: error.details,
-                name: error.name,
-                code: error.code
-            });
+        } catch (error: any) {         
+            addErrorEvent('deleteImagesByRef', error);
         }
     }
 }
@@ -175,33 +161,11 @@ export async function imageReferenceConverter(...documentReferences: DocumentRef
                         if (url) images.push(url);
                     })
                     .catch((error) => {
-                        const keys: any[] = [];
-                        for (const key in error) {
-                            keys.push(key);
-                        }
-                        callAddEvent({
-                            location: 'imageReferenceConverter',
-                            keys: keys,
-                            customData: error.customData,
-                            details: error.details,
-                            name: error.name,
-                            code: error.code
-                        });
+                        addErrorEvent('imageReferenceConverter', error);
                     });
             }
         } catch (error: any) {
-            const keys: any[] = [];
-            for (const key in error) {
-                keys.push(key);
-            }
-            callAddEvent({
-                location: 'imageReferenceConverter',
-                keys: keys,
-                customData: error.customData,
-                details: error.details,
-                name: error.name,
-                code: error.code
-            });
+            addErrorEvent('imageReferenceConverter', error);
         }
     }
     return images;
