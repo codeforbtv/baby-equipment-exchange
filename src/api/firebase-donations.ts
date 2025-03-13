@@ -335,7 +335,7 @@ export async function getDonorEmailByDonationId(id: string): Promise<string> {
         const donorId = donationDetail.donor.id;
         const donorEmail = await getUserEmailById(donorId);
         return donorEmail;
-    } catch (error: any) {      
+    } catch (error: any) {
         addErrorEvent('getDonorByEmail', error);
     }
     return Promise.reject();
