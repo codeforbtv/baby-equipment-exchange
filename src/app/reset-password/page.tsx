@@ -7,7 +7,7 @@ import { Box, TextField, Button } from '@mui/material';
 
 //Hooks
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 //Libs
 import { resetPassword } from '@/api/firebase';
 //Styling
@@ -19,9 +19,6 @@ export default function ResetPassword() {
     const [email, setEmail] = useState<string>('');
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const router = useRouter();
-
-    const searchParams = useSearchParams();
-    const status = searchParams.get('status');
 
     const validateEmail = (email: string): void => {
         if (email.length === 0 || !emailRegex.test(email)) {
@@ -41,7 +38,7 @@ export default function ResetPassword() {
 
         try {
             await resetPassword(email);
-            router.push('/login?status=password_reset');
+            router.push('/login');
         } catch (error: any) {
             console.log(error);
         }
@@ -82,8 +79,6 @@ export default function ResetPassword() {
                     </Button>
                 </Box>
             </div>
-
-            {status && <ToasterNotification status={status} />}
         </>
     );
 }
