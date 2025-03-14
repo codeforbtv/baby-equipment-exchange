@@ -1,4 +1,7 @@
 env:
+    - variable: NODE_ENV
+      value: 'production'
+
     - variable: FIREBASE_CONFIG
       secret: projects/375825360663/secrets/FIREBASE_CONFIG
 
@@ -22,3 +25,6 @@ env:
 
     - variable: NEXT_PUBLIC_FIREBASE_APP_ID
       value: '1:375825360663:web:2307ccd57b31bf1d74b952'
+
+    - variable: NEXT_PUBLIC_CALENDLY_API_KEY
+      secret: projects/375825360663/secrets/NEXT_PUBLIC_CALENDLY_API_KEY
