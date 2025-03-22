@@ -291,9 +291,11 @@ export async function addDonation(newDonation: DonationBody) {
 }
 
 export async function addBulkDonation(newDonations: DonationBody[]) {
+    if (newDonations.length === 1) addDonation(newDonations[0]);
     try {
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
         const batch = writeBatch(db);
+        batch.set(bulkDonationsRef, { donations: [] });
         for (const newDonation of newDonations) {
             const donationRef = doc(collection(db, DONATIONS_COLLECTION));
             const donationDetailRef = doc(collection(db, DONATION_DETAILS_COLLECTION));
@@ -334,7 +336,7 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
             batch.set(donationRef, donationConverter.toFirestore(donation));
             batch.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail));
             batch.update(bulkDonationsRef, {
-                donations: arrayUnion(donationConverter.toFirestore(donation))
+                donations: arrayUnion(donationRef)
             });
         }
         await batch.commit();
