@@ -1,5 +1,5 @@
 //Firebase types
-import { DocumentReference, Timestamp } from 'firebase/firestore';
+import { DocumentData, DocumentReference, Timestamp } from 'firebase/firestore';
 
 export interface IDonationCache {
     [key: string]: string | number;
@@ -13,12 +13,14 @@ export interface IDonation {
         | boolean
         | string[]
         | DocumentReference[]
+        | DocumentReference
         | Timestamp
         | string
         | null
         | undefined
         | (() => string)
         | (() => string[] | DocumentReference[])
+        | (() => DocumentReference | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp);
@@ -28,6 +30,7 @@ export interface IDonation {
     model: string | null | undefined;
     description: string | null | undefined;
     status: donationStatus;
+    bulkCollection: DocumentReference | null;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -39,11 +42,13 @@ export class Donation implements IDonation {
         | boolean
         | string[]
         | DocumentReference[]
+        | DocumentReference
         | Timestamp
         | null
         | undefined
         | (() => string)
         | (() => string[] | DocumentReference[])
+        | (() => DocumentReference | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp);
@@ -53,6 +58,7 @@ export class Donation implements IDonation {
     model: string | null | undefined;
     description: string | null | undefined;
     status: donationStatus;
+    bulkCollection: DocumentReference | null;
     images: string[] | DocumentReference[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -64,6 +70,7 @@ export class Donation implements IDonation {
         this.model = args.model;
         this.description = args.description;
         this.status = args.status;
+        this.bulkCollection = args.bulkCollection;
         this.images = args.images;
         this.createdAt = args.createdAt as Timestamp;
         this.modifiedAt = args.modifiedAt as Timestamp;
@@ -91,6 +98,10 @@ export class Donation implements IDonation {
 
     getStatus(): donationStatus {
         return this.status;
+    }
+
+    getBulkCollection(): DocumentReference | null {
+        return this.bulkCollection;
     }
 
     getImages(): string[] | DocumentReference[] {

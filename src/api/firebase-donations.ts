@@ -43,6 +43,7 @@ const donationConverter = {
             model: donation.getModel(),
             description: donation.getDescription(),
             status: donation.getStatus(),
+            bulkCollection: donation.getBulkCollection(),
             images: donation.getImages(),
             createdAt: donation.getCreatedAt(),
             modifiedAt: donation.getModifiedAt()
@@ -63,6 +64,7 @@ const donationConverter = {
             model: data.model,
             description: data.description,
             status: data.status,
+            bulkCollection: data.bulkCollection,
             images: data.images,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
@@ -256,6 +258,7 @@ export async function addDonation(newDonation: DonationBody) {
                 model: newDonation.model,
                 description: newDonation.description,
                 status: 'pending review',
+                bulkCollection: null,
                 images: [], // Only approved images display here.
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp
@@ -264,6 +267,7 @@ export async function addDonation(newDonation: DonationBody) {
                 donation: donationRef,
                 availability: undefined,
                 donor: doc(db, `${USERS_COLLECTION}/${userId}`),
+                bulkCollection: null,
                 tagNumber: undefined,
                 tagNumberForItemDelivered: undefined,
                 sku: undefined,
@@ -307,6 +311,7 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
                 model: newDonation.model,
                 description: newDonation.description,
                 status: 'pending review',
+                bulkCollection: bulkDonationsRef,
                 images: [], // Only approved images display here.
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp
@@ -315,6 +320,7 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
                 donation: donationRef,
                 availability: undefined,
                 donor: doc(db, `${USERS_COLLECTION}/${userId}`),
+                bulkCollection: bulkDonationsRef,
                 tagNumber: undefined,
                 tagNumberForItemDelivered: undefined,
                 sku: undefined,
