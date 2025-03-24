@@ -6,6 +6,7 @@ export interface IDonationCache {
     id: string;
     modifiedAt: number;
 }
+export type donationStatus = 'pending review' | 'pending delivery' | 'in processing' | 'available' | 'designated for distribution' | 'distributed';
 
 export interface IDonation {
     [key: string]:
@@ -26,7 +27,7 @@ export interface IDonation {
     brand: string | null | undefined;
     model: string | null | undefined;
     description: string | null | undefined;
-    active: boolean | null | undefined;
+    status: donationStatus;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -51,7 +52,7 @@ export class Donation implements IDonation {
     brand: string | null | undefined;
     model: string | null | undefined;
     description: string | null | undefined;
-    active: boolean | null | undefined;
+    status: donationStatus;
     images: string[] | DocumentReference[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -62,7 +63,7 @@ export class Donation implements IDonation {
         this.brand = args.brand;
         this.model = args.model;
         this.description = args.description;
-        this.active = args.active;
+        this.status = args.status;
         this.images = args.images;
         this.createdAt = args.createdAt as Timestamp;
         this.modifiedAt = args.modifiedAt as Timestamp;
@@ -88,8 +89,8 @@ export class Donation implements IDonation {
         return this.description;
     }
 
-    getActive(): boolean | null | undefined {
-        return this.active;
+    getStatus(): donationStatus {
+        return this.status;
     }
 
     getImages(): string[] | DocumentReference[] {

@@ -42,7 +42,7 @@ const donationConverter = {
             brand: donation.getBrand(),
             model: donation.getModel(),
             description: donation.getDescription(),
-            active: donation.getActive(),
+            status: donation.getStatus(),
             images: donation.getImages(),
             createdAt: donation.getCreatedAt(),
             modifiedAt: donation.getModifiedAt()
@@ -62,7 +62,7 @@ const donationConverter = {
             brand: data.brand,
             model: data.model,
             description: data.description,
-            active: data.active,
+            status: data.status,
             images: data.images,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
@@ -255,7 +255,7 @@ export async function addDonation(newDonation: DonationBody) {
                 brand: newDonation.brand,
                 model: newDonation.model,
                 description: newDonation.description,
-                active: false,
+                status: 'pending review',
                 images: [], // Only approved images display here.
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp
@@ -306,7 +306,7 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
                 brand: newDonation.brand,
                 model: newDonation.model,
                 description: newDonation.description,
-                active: false,
+                status: 'pending review',
                 images: [], // Only approved images display here.
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp
