@@ -297,13 +297,13 @@ export async function addDonation(newDonation: DonationBody) {
 export async function addBulkDonation(newDonations: DonationBody[]) {
     if (newDonations.length === 1) addDonation(newDonations[0]);
     try {
+        const userId: string = await getUserId();
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
         const batch = writeBatch(db);
-        batch.set(bulkDonationsRef, { donations: [] });
+        batch.set(bulkDonationsRef, { donations: [], donor: doc(db, `${USERS_COLLECTION}/${userId}`) });
         for (const newDonation of newDonations) {
             const donationRef = doc(collection(db, DONATIONS_COLLECTION));
             const donationDetailRef = doc(collection(db, DONATION_DETAILS_COLLECTION));
-            const userId: string = await getUserId();
             const donationParams: IDonation = {
                 id: donationRef.id,
                 category: newDonation.category,
