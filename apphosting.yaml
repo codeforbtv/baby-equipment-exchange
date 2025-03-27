@@ -1,6 +1,6 @@
 env:
     - variable: NODE_ENV
-      secret: 'production'
+      value: 'production'
 
     - variable: FIREBASE_CONFIG
       secret: projects/375825360663/secrets/FIREBASE_CONFIG
