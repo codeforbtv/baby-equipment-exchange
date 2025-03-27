@@ -43,7 +43,7 @@ export async function initAdmin() {
     if (process.env.NODE_ENV === 'production') {
         return admin.initializeApp();
     } else {
-        const serviceAccount = process.env.GOOGLE_APPLICATION_CREDENTIALS && (await import(process.env.GOOGLE_APPLICATION_CREDENTIALS));
+        const serviceAccount = await import('../../serviceAccount.json');
         const credentials: ServiceAccount = {
             projectId: serviceAccount.project_id,
             clientEmail: serviceAccount.client_email,
