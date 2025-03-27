@@ -7,6 +7,7 @@ import {
     QueryDocumentSnapshot,
     SnapshotOptions,
     Timestamp,
+    arrayUnion,
     collection,
     doc,
     getDoc,
@@ -14,7 +15,8 @@ import {
     query,
     runTransaction,
     serverTimestamp,
-    where
+    where,
+    writeBatch
 } from 'firebase/firestore';
 // Models
 import { Donation, IDonation } from '@/models/donation';
@@ -30,6 +32,7 @@ import { USERS_COLLECTION } from './firebase-users';
 
 export const DONATIONS_COLLECTION = 'Donations';
 export const DONATION_DETAILS_COLLECTION = 'DonationDetails';
+export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -39,7 +42,8 @@ const donationConverter = {
             brand: donation.getBrand(),
             model: donation.getModel(),
             description: donation.getDescription(),
-            active: donation.getActive(),
+            status: donation.getStatus(),
+            bulkCollection: donation.getBulkCollection(),
             images: donation.getImages(),
             createdAt: donation.getCreatedAt(),
             modifiedAt: donation.getModifiedAt()
@@ -59,7 +63,8 @@ const donationConverter = {
             brand: data.brand,
             model: data.model,
             description: data.description,
-            active: data.active,
+            status: data.status,
+            bulkCollection: data.bulkCollection,
             images: data.images,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
@@ -252,7 +257,8 @@ export async function addDonation(newDonation: DonationBody) {
                 brand: newDonation.brand,
                 model: newDonation.model,
                 description: newDonation.description,
-                active: false,
+                status: 'pending review',
+                bulkCollection: null,
                 images: [], // Only approved images display here.
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp
@@ -261,6 +267,7 @@ export async function addDonation(newDonation: DonationBody) {
                 donation: donationRef,
                 availability: undefined,
                 donor: doc(db, `${USERS_COLLECTION}/${userId}`),
+                bulkCollection: null,
                 tagNumber: undefined,
                 tagNumberForItemDelivered: undefined,
                 sku: undefined,
@@ -284,6 +291,63 @@ export async function addDonation(newDonation: DonationBody) {
         });
     } catch (error: any) {
         addErrorEvent('addDonation', error);
+    }
+}
+
+export async function addBulkDonation(newDonations: DonationBody[]) {
+    if (newDonations.length === 1) addDonation(newDonations[0]);
+    try {
+        const userId: string = await getUserId();
+        const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
+        const batch = writeBatch(db);
+        batch.set(bulkDonationsRef, { donations: [], donor: doc(db, `${USERS_COLLECTION}/${userId}`) });
+        for (const newDonation of newDonations) {
+            const donationRef = doc(collection(db, DONATIONS_COLLECTION));
+            const donationDetailRef = doc(collection(db, DONATION_DETAILS_COLLECTION));
+            const donationParams: IDonation = {
+                id: donationRef.id,
+                category: newDonation.category,
+                brand: newDonation.brand,
+                model: newDonation.model,
+                description: newDonation.description,
+                status: 'pending review',
+                bulkCollection: bulkDonationsRef,
+                images: [], // Only approved images display here.
+                createdAt: serverTimestamp() as Timestamp,
+                modifiedAt: serverTimestamp() as Timestamp
+            };
+            const donationDetailParams: IDonationDetail = {
+                donation: donationRef,
+                availability: undefined,
+                donor: doc(db, `${USERS_COLLECTION}/${userId}`),
+                bulkCollection: bulkDonationsRef,
+                tagNumber: undefined,
+                tagNumberForItemDelivered: undefined,
+                sku: undefined,
+                recipientOrganization: undefined,
+                images: newDonation.images,
+                recipientContact: undefined,
+                recipientAddress: undefined,
+                requestor: undefined,
+                storage: undefined,
+                dateReceived: undefined,
+                dateDistributed: undefined,
+                scheduledPickupDate: undefined,
+                dateOrderFulfilled: undefined,
+                createdAt: serverTimestamp() as Timestamp,
+                modifiedAt: serverTimestamp() as Timestamp
+            };
+            const donation = new Donation(donationParams);
+            const donationDetail = new DonationDetail(donationDetailParams);
+            batch.set(donationRef, donationConverter.toFirestore(donation));
+            batch.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail));
+            batch.update(bulkDonationsRef, {
+                donations: arrayUnion(donationRef)
+            });
+        }
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('addBulkDonation', error);
     }
 }
 
@@ -323,8 +387,7 @@ export async function deleteDonationById(id: string) {
             transaction.delete(donationRef);
             transaction.delete(donationDetailsSnapshot.docs[0].ref);
         });
-    }
-    catch (error: any) {    
+    } catch (error: any) {
         addErrorEvent('deleteDonationById', error);
     }
 }

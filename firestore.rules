@@ -12,6 +12,9 @@ service cloud.firestore {
       match /DonationDetails/{document=**} {
         allow read: if request.auth != null && request.auth.token.admin == true;
       }
+      match /BulkDonations/{document=**} {
+        allow read: if request.auth != null && request.auth.token.admin == true;
+      }
       match /Images/{document=**} {
         allow read: if request.auth != null && request.auth.token.admin == true;
         }
@@ -37,7 +40,10 @@ service cloud.firestore {
         match /DonationDetails/{document=**} {
         allow create, read, update, write: if request.auth != null;
         }
-      match /Images/{document=**} {
+        match /BulkDonations/{document=**} {
+        allow create, read, update, write: if request.auth != null;
+        }
+        match /Images/{document=**} {
         allow create, read: if request.auth != null;
         }
         match /ImageDetails/{document=**} {
