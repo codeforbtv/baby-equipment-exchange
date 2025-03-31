@@ -27,4 +27,6 @@ export default function ProtectedAdminRoute({ children }: { children: React.Reac
     }
 
     if (currentUser && isAdmin) return <Suspense fallback={<Loader />}>{children}</Suspense>;
+
+    return null;
 }
