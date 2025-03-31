@@ -9,6 +9,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import * as admin from 'firebase-admin';
+import { initializeApp } from 'firebase-admin/app';
 import { getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
@@ -16,6 +17,7 @@ import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
 import { UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 import { UserInfo } from 'firebase/auth';
+import { json } from 'node:stream/consumers';
 
 const region = 'us-east1';
 
@@ -40,16 +42,15 @@ export async function initAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    if (process.env.NODE_ENV === 'production') {
-        return admin.initializeApp();
+    if (process.env.NODE_ENV == 'production') {
+        return initializeApp();
     } else {
-        const serviceAccount = await import('../../serviceAccount.json');
         const credentials: ServiceAccount = {
-            projectId: serviceAccount.project_id,
-            clientEmail: serviceAccount.client_email,
-            privateKey: serviceAccount.private_key
+            projectId: 'baby-equipment-exchange',
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY
         };
-        return admin.initializeApp({
+        return initializeApp({
             credential: admin.credential.cert(credentials)
         });
     }
