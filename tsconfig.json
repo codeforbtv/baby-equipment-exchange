@@ -22,8 +22,8 @@
         "paths": {
             "@/*": ["./src/*"]
         },
-        "types": ["node", "babel__generator", "react", "react-dom"]
+        "types": ["node", "babel__generator", "react"]
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src"],
+    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src"],
     "exclude": ["node_modules", "./functions"]
 }
