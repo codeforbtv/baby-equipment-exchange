@@ -71,7 +71,7 @@ const Browse: React.FC = () => {
         try {
             await deleteDonationById(id);
             fetchDonations();
-        } catch (error: any) {       
+        } catch (error: any) {
             addErrorEvent('component/Browse', error);
         }
     }
@@ -89,9 +89,7 @@ const Browse: React.FC = () => {
 
     if (isLoading) return <Loader />;
 
-    return donations == null ? (
-        'No donations found.'
-    ) : (
+    return (
         <>
             <div className={styles['browse__header']}>
                 <div>
@@ -101,7 +99,7 @@ const Browse: React.FC = () => {
                     </Suspense>
                 </div>
             </div>
-            {donations.length == 0 ? (
+            {donations == null || donations.length == 0 ? (
                 <p>There are no donations available to view.</p>
             ) : (
                 <>
@@ -138,13 +136,7 @@ const Browse: React.FC = () => {
                                 };
 
                                 // An active donation must have at least one photo for display.
-                                return (
-                                    <DonationCard
-                                        key={donation.id}
-                                        donation={props}
-                                        onDelete={deleteDonation}
-                                    />
-                                );
+                                return <DonationCard key={donation.id} donation={props} onDelete={deleteDonation} />;
                             })}
                     </ImageList>
                 </>
