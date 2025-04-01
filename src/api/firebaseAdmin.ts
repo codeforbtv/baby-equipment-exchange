@@ -9,15 +9,13 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import * as admin from 'firebase-admin';
-import { initializeApp } from 'firebase-admin/app';
 import { getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { applicationDefault, ServiceAccount } from 'firebase-admin/app';
+import { applicationDefault, initializeApp, ServiceAccount } from 'firebase-admin/app';
 import { UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 import { UserInfo } from 'firebase/auth';
-import { json } from 'node:stream/consumers';
 
 const region = 'us-east1';
 
@@ -43,7 +41,10 @@ export async function initAdmin() {
         return admin.app();
     }
     if (process.env.NODE_ENV == 'production') {
-        return initializeApp();
+        return initializeApp({
+            credential: applicationDefault(),
+            databaseURL: 'https://baby-equipment-exchange.firebaseio.com'
+        });
     } else {
         const credentials: ServiceAccount = {
             projectId: 'baby-equipment-exchange',
