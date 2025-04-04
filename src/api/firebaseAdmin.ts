@@ -43,11 +43,10 @@ export async function initAdmin() {
     if (process.env.NODE_ENV == 'production') {
         return initializeApp();
     } else {
-        const serviceAccount = await import('../../serviceAccount.json');
         const credentials: ServiceAccount = {
             projectId: 'baby-equipment-exchange',
-            clientEmail: serviceAccount.client_email,
-            privateKey: serviceAccount.private_key
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY
         };
         return initializeApp({
             credential: admin.credential.cert(credentials)
