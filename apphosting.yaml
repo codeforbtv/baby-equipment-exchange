@@ -5,9 +5,6 @@ env:
     - variable: FIREBASE_CONFIG
       secret: projects/375825360663/secrets/FIREBASE_CONFIG
 
-    - variable: GOOGLE_APPLICATION_CREDENTIALS
-      secret: projects/375825360663/secrets/GOOGLE_APPLICATION_CREDENTIALS
-
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
       secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
 
