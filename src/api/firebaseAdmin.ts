@@ -41,10 +41,7 @@ export async function initAdmin() {
         return admin.app();
     }
     if (process.env.NODE_ENV == 'production') {
-        return initializeApp({
-            credential: applicationDefault(),
-            databaseURL: 'https://baby-equipment-exchange.firebaseio.com'
-        });
+        return initializeApp();
     } else {
         const credentials: ServiceAccount = {
             projectId: 'baby-equipment-exchange',
