@@ -5,8 +5,10 @@ import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { getDonorEmailByDonationId } from '@/api/firebase-donations';
+import sendEmail from '@/api/sendgrid';
 
 import { EventType } from '@/types/CalendlyTypes';
+import { email } from '@/types/SendgridTypes';
 
 import '../../../styles/globalStyles.css';
 import { Button } from '@mui/material';
@@ -24,15 +26,17 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
     const [events, setEvents] = useState<EventType[]>([]);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [donorEmail, setDonorEmail] = useState<string>('');
-    const [message, setMessage] = useState<string>('');
+    const [message, setMessage] = useState<email>();
 
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
         setInviteUrl(event.target.value);
     };
 
     //TO-DO: submit should send an email with the schedulig link to the donor.
-    const handleSubmit = () => {
-        setMessage(`You are sending the scheduling link ${inviteUrl} to ${donorEmail}`);
+    const handleSubmit = async () => {
+        if (message) {
+            sendEmail(message).then(() => console.log(`email sent to ${donorEmail}`));
+        }
     };
 
     useEffect(() => {
@@ -56,6 +60,15 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
         fetchDonorEmail();
     }, []);
 
+    useEffect(() => {
+        setMessage({
+            to: donorEmail,
+            from: 'info@vermontconnector.org',
+            subject: 'Your donation(s) have been accpeted.',
+            text: `Your donation(s) to the Baby Equipment Exchange have been accepted! Click this link to schedule a dropoff time: ${inviteUrl}`
+        });
+    }, [inviteUrl, donorEmail]);
+
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
@@ -77,8 +90,9 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                         }
                     })}
                 </select>
-                <Button onClick={handleSubmit}>Send scheduling Link</Button>
-                <div>{message.length > 0 && message}</div>
+                <Button onClick={handleSubmit} disabled={!inviteUrl}>
+                    Send scheduling Link
+                </Button>
             </div>
         </ProtectedAdminRoute>
     );
