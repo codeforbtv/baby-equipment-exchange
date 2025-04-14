@@ -85,7 +85,7 @@ const Browse: React.FC = () => {
         })();
     }, []);
 
-    const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_API_KEY;
+    const algoliaApiKey = process.env.ALGOLIA_API_KEY;
 
     if (isLoading) return <Loader />;
 

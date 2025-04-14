@@ -1,4 +1,4 @@
-const API_KEY = process.env.NEXT_PUBLIC_CALENDLY_API_KEY;
+const API_KEY = process.env.CALENDLY_API_KEY;
 const organization_uri = 'https://api.calendly.com/organizations/48b74e58-cecf-4fd6-9594-63401556c5c9';
 import { EventType } from '@/types/CalendlyTypes';
 
