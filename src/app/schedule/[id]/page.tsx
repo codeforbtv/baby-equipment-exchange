@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { getDonorEmailByDonationId } from '@/api/firebase-donations';
 import sendEmail from '@/api/sendgrid';
+import { addErrorEvent } from '@/api/firebase';
 
 import { EventType } from '@/types/CalendlyTypes';
 import { email } from '@/types/SendgridTypes';
@@ -45,7 +46,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                 const eventResult = await getSchedulingPageLink();
                 setEvents(eventResult);
             } catch (error) {
-                console.log(error);
+                addErrorEvent('Fetch Calendly Scheduling Links', error);
             }
         };
         const fetchDonorEmail = async () => {
@@ -53,7 +54,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                 const userEmail = await getDonorEmailByDonationId(params.id);
                 setDonorEmail(userEmail);
             } catch (error) {
-                console.log(error);
+                addErrorEvent('Fetch donor email', error);
             }
         };
         fetchEvents();
