@@ -2,9 +2,6 @@ env:
     - variable: NODE_ENV
       value: 'production'
 
-    - variable: FIREBASE_CONFIG
-      secret: projects/375825360663/secrets/FIREBASE_CONFIG
-
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
       secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
 
