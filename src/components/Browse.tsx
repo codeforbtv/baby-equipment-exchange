@@ -71,7 +71,7 @@ const Browse: React.FC = () => {
         try {
             await deleteDonationById(id);
             fetchDonations();
-        } catch (error: any) {       
+        } catch (error: any) {
             addErrorEvent('component/Browse', error);
         }
     }
@@ -85,7 +85,7 @@ const Browse: React.FC = () => {
         })();
     }, []);
 
-    const algoliaApiKey = process.env.NEXT_PUBLIC_ALGOLIA_API_KEY;
+    const algoliaApiKey = process.env.ALGOLIA_API_KEY;
 
     if (isLoading) return <Loader />;
 
@@ -138,13 +138,7 @@ const Browse: React.FC = () => {
                                 };
 
                                 // An active donation must have at least one photo for display.
-                                return (
-                                    <DonationCard
-                                        key={donation.id}
-                                        donation={props}
-                                        onDelete={deleteDonation}
-                                    />
-                                );
+                                return <DonationCard key={donation.id} donation={props} onDelete={deleteDonation} />;
                             })}
                     </ImageList>
                 </>
