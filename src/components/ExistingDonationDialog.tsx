@@ -3,6 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, FormControl, FormLabel, I
 import { useContext } from 'react';
 import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
+
 // Styles
 import styles from './Browse.module.css';
 
@@ -23,6 +24,11 @@ export default function ExistingDonationDialog({
     const handleAccept = () => {
         onClose();
         router.push(`/schedule/${donation.id}`);
+    };
+
+    const handleReject = async () => {
+        onClose();
+        router.push(`/reject/${donation.id}`);
     };
 
     if (!(donation instanceof Object) || !(typeof initialParameters.initAsOpen === 'boolean')) {
@@ -97,10 +103,14 @@ export default function ExistingDonationDialog({
                             Accept
                         </Button>
                         {/* //TO-DO: Reject should send an automated email with sugestions for other ways to donate uneeded gear. */}
-                        <Button variant="outlined">Reject</Button>
+                        <Button variant="outlined" onClick={handleReject}>
+                            Reject
+                        </Button>
                     </>
                 )}
-                <Button onClick={onDelete} color='error'>delete</Button>
+                <Button onClick={onDelete} color="error">
+                    delete
+                </Button>
                 <Button onClick={onClose}>close</Button>
             </DialogActions>
         </Dialog>
