@@ -26,5 +26,5 @@ env:
     - variable: SENDGRID_API_KEY
       secret: projects/375825360663/secrets/SENDGRID_API_KEY
 
-      variable: ALGOLIA_API_KEY
+    - variable: ALGOLIA_API_KEY
       secret: projects/375825360663/secrets/ALGOLIA_API_KEY
