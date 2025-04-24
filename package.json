@@ -33,6 +33,7 @@
         "@fullcalendar/timegrid": "^6.1.9",
         "@mui/icons-material": "^5.14.15",
         "@mui/material": "^5.14.15",
+        "@sendgrid/mail": "^8.1.5",
         "@types/babel__generator": "^7.6.8",
         "@types/node": "20.4.1",
         "algoliasearch": "^4.24.0",

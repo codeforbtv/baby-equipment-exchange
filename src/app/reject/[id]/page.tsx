@@ -6,17 +6,16 @@ import { useRouter } from 'next/navigation';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { getDonorEmailByDonationId } from '@/api/firebase-donations';
 import sendEmail from '@/api/sendgrid';
-import accept from '@/email-templates/accept';
+import reject from '@/email-templates/reject';
 import { addErrorEvent } from '@/api/firebase';
 
-import { EventType } from '@/types/CalendlyTypes';
 import { email } from '@/types/SendgridTypes';
 
 import '../../../styles/globalStyles.css';
 
 import { Box, Button, NativeSelect, TextField } from '@mui/material';
 
-export default function ScheduleDropoff({ params }: { params: { id: string } }) {
+export default function RejectDonation({ params }: { params: { id: string } }) {
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
 
@@ -26,32 +25,18 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
         return null;
     }
 
-    const [events, setEvents] = useState<EventType[]>([]);
-    const [inviteUrl, setInviteUrl] = useState<string>('');
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [notes, sentNotes] = useState<string>('');
 
-    const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
-        setInviteUrl(event.target.value);
-    };
-
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
 
-    const handleSubmit = async () => {
-        //TODO change donation status to 'pending delivery'
-        const message: email = accept(donorEmail, inviteUrl, notes);
+    const handleReject = async () => {
+        //TODO change donation status to 'rejected' or delete donation?
+        const message: email = reject(donorEmail, notes);
         sendEmail(message).then(() => console.log(`email sent to ${donorEmail}`));
     };
 
     useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const eventResult = await getSchedulingPageLink();
-                setEvents(eventResult);
-            } catch (error) {
-                addErrorEvent('Fetch Calendly Scheduling Links', error);
-            }
-        };
         const fetchDonorEmail = async () => {
             try {
                 const userEmail = await getDonorEmailByDonationId(params.id);
@@ -60,32 +45,17 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                 addErrorEvent('Fetch donor email', error);
             }
         };
-        fetchEvents();
         fetchDonorEmail();
     }, []);
 
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                <h1>Accept Donation</h1>
-                <h4>Select a calendar to send a scheduling link</h4>
+                <h1>Reject Donation</h1>
+                <h4>Add additional notes as necessary:</h4>
             </div>
             <div className="content--container">
                 <Box display={'flex'} flexDirection={'column'} gap={4}>
-                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                        <option value="" disabled>
-                            Select an Drop Off Location
-                        </option>
-                        {events.map((event, index) => {
-                            if (event.active === true) {
-                                return (
-                                    <option key={index} value={event.scheduling_url}>
-                                        {event.name}
-                                    </option>
-                                );
-                            }
-                        })}
-                    </NativeSelect>
                     <TextField
                         type="text"
                         label="Notes"
@@ -98,9 +68,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                         placeholder="Add notes here"
                         onChange={handleInputChange}
                     ></TextField>
-                    <Button onClick={handleSubmit} disabled={!inviteUrl}>
-                        Send scheduling Link
-                    </Button>
+                    <Button onClick={handleReject}>Reject Donation</Button>
                 </Box>
             </div>
         </ProtectedAdminRoute>

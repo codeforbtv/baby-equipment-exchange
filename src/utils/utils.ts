@@ -38,7 +38,24 @@ export function stripNullUndefined(object: any) {
 }
 
 export function convertToString(object: any): string {
-    if (object === undefined) { return "undefined"; }
-    if (object === null) { return "null"; }
+    if (object === undefined) {
+        return 'undefined';
+    }
+    if (object === null) {
+        return 'null';
+    }
     return JSON.stringify(object, Object.getOwnPropertyNames(object));
+}
+
+export function sanitize(string: string) {
+    const map: { [key: string]: string } = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '/': '&#x2F;'
+    };
+    const reg = /[&<>"'/]/gi;
+    return string.replace(reg, (match) => map[match]);
 }
