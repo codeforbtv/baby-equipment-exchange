@@ -27,4 +27,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     }
 
     if (currentUser) return <Suspense fallback={<Loader />}>{children}</Suspense>;
+
+    return null;
 }
