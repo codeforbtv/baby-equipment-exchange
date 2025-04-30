@@ -18,8 +18,10 @@ import { USERS_COLLECTION } from '@/api/firebase-users';
 import { db } from '@/api/firebase';
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
 import { categories } from '@/data/html';
+import { DonationBody } from '@/types/post-data';
+import PendingDontions from '@/components/PendingDonations';
 
-type DonationFormData = {
+export type DonationFormData = {
     category: string | null;
     brand: string | null;
     model: string | null;
@@ -47,6 +49,7 @@ export default function Donate() {
     });
     const [images, setImages] = useState<File[] | null>();
     const [imageElements, setImageElements] = useState<ReactElement[]>([]);
+    const [pendingDonations, setPendingDonations] = useState<DonationFormData[]>([]);
     const { currentUser } = useUserContext();
     const router = useRouter();
 
@@ -74,6 +77,32 @@ export default function Donate() {
             return { ...prev, [e.target.name]: e.target.value };
         });
     }
+
+    function handleAddPendingDonation(e: React.SyntheticEvent) {
+        e.preventDefault();
+        const pendingDonation: DonationFormData = {
+            brand: formData.brand ?? '',
+            category: formData.category ?? '',
+            model: formData.model ?? '',
+            description: formData.description ?? '',
+            images: images
+        };
+
+        setPendingDonations((prev) => [...prev, pendingDonation]);
+        setFormData({
+            category: '',
+            brand: '',
+            model: '',
+            description: '',
+            images: null
+        });
+        setImages(null);
+        setImageElements([]);
+    }
+
+    useEffect(() => {
+        console.log(pendingDonations);
+    }, [pendingDonations]);
 
     //Use this to handle passing form data to the database on submission
     async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -118,7 +147,7 @@ export default function Donate() {
                 <>
                     <div className="page--header">
                         <h1>Donate</h1>
-                        <p>
+                        {/* <p>
                             Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we
                             do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could
                             be subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to
@@ -139,9 +168,10 @@ export default function Donate() {
                             <li>
                                 Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
                             </li>
-                        </ul>
+                        </ul> */}
                     </div>
                     <div className="content--container">
+                        {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} />}
                         <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
                             <Box className={styles['form__section--left']}>
                                 <Box display={'flex'} flexDirection={'column'} gap={1}>
@@ -203,7 +233,7 @@ export default function Donate() {
                                                     type="file"
                                                     id="images"
                                                     name="images"
-                                                    accept="image/png, image/jpeg"
+                                                    accept="image/*"
                                                     capture="environment"
                                                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => appendImagesToState(images, setImages, event)}
                                                     multiple
@@ -217,6 +247,9 @@ export default function Donate() {
                                 </InputContainer>
                             </Box>
                             <Box className={styles['form__section--bottom']}>
+                                <Button variant="contained" type="button" onClick={handleAddPendingDonation}>
+                                    Add donation
+                                </Button>
                                 <Button variant="contained" type={'submit'} endIcon={<UploadOutlinedIcon />}>
                                     Submit
                                 </Button>
