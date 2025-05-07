@@ -40,7 +40,7 @@ export async function initAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    if (process.env.NODE_ENV == 'production') {
+    if (process.env.NODE_ENV == 'production' || process.env.NODE_ENV == 'test') {
         return initializeApp();
     } else {
         const credentials: ServiceAccount = {
