@@ -6,7 +6,7 @@ import { Box, Button, NativeSelect, TextField } from '@mui/material';
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import ToasterNotification from '@/components/ToasterNotification';
 import Loader from '@/components/Loader';
-import { useState, useEffect, ReactElement } from 'react';
+import { useState, useEffect, ReactElement, SyntheticEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import { uploadImages } from '@/api/firebase-images';
@@ -100,6 +100,10 @@ export default function Donate() {
         setImageElements([]);
     }
 
+    function removePendingDonation(index: number) {
+        setPendingDonations(pendingDonations.filter((donation, i) => index !== i));
+    }
+
     useEffect(() => {
         console.log(pendingDonations);
     }, [pendingDonations]);
@@ -171,7 +175,7 @@ export default function Donate() {
                         </ul> */}
                     </div>
                     <div className="content--container">
-                        {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} />}
+                        {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
                         <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
                             <Box className={styles['form__section--left']}>
                                 <Box display={'flex'} flexDirection={'column'} gap={1}>

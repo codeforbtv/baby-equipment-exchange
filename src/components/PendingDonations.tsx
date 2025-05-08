@@ -6,12 +6,13 @@ import { removeImageFromState } from '@/controllers/images';
 
 type pendingDonationProps = {
     pendingDonations: DonationFormData[];
+    removeHandler: (index: number) => void;
 };
 
 export default function PendingDontions(props: pendingDonationProps) {
     return (
         <div>
-            <p>PendingDonations</p>
+            <p>Pending Donations</p>
             <div>
                 {props.pendingDonations.map((donation, i) => {
                     if (donation.images)
@@ -24,6 +25,9 @@ export default function PendingDontions(props: pendingDonationProps) {
                                     <li>{donation.description}</li>
                                     <li>{donation.model}</li>
                                 </ul>
+                                <button type="button" onClick={() => props.removeHandler(i)}>
+                                    X
+                                </button>
                             </>
                         );
                 })}
