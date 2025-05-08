@@ -5,6 +5,15 @@ env:
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
       secret: projects/265793921799/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
 
+    - variable: CALENDLY_API_KEY
+      secret: projects/265793921799/secrets/CALENDLY_API_KEY
+
+    - variable: SENDGRID_API_KEY
+      secret: projects/265793921799/secrets/SENDGRID_API_KEY
+
+    - variable: ALGOLIA_API_KEY
+      secret: projects/265793921799/secrets/ALGOLIA_API_KEY
+
     - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
       value: 'baby-equipment-exchange-test.firebaseapp.com'
 
