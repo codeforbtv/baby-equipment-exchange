@@ -1,4 +1,4 @@
-# env:
+env:
     - variable: NODE_ENV
       value: 'production'
 
