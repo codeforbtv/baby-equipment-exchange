@@ -10,12 +10,12 @@ import { useState, useEffect, ReactElement, SyntheticEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import { uploadImages } from '@/api/firebase-images';
-import { addDonation } from '@/api/firebase-donations';
+import { addBulkDonation, addDonation } from '@/api/firebase-donations';
 import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
 import { DocumentReference, doc } from 'firebase/firestore';
 import { USERS_COLLECTION } from '@/api/firebase-users';
-import { db } from '@/api/firebase';
+import { addErrorEvent, db } from '@/api/firebase';
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
 import { categories } from '@/data/html';
 import { DonationBody } from '@/types/post-data';
@@ -104,43 +104,58 @@ export default function Donate() {
         setPendingDonations(pendingDonations.filter((donation, i) => index !== i));
     }
 
-    useEffect(() => {
-        console.log(pendingDonations);
-    }, [pendingDonations]);
+    async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
+        if (currentUser == null) {
+            throw new Error('Unable to access the user account.');
+        }
+
+        const userId = currentUser.uid;
+        const userRef = doc(db, `${USERS_COLLECTION}/${userId}`);
+        let bulkDonations: DonationBody[] = [];
+        try {
+            for (const donation of pendingDonations) {
+                let imageRefs: DocumentReference[] = [];
+                if (donation.images) {
+                    imageRefs = await uploadImages(donation.images);
+                }
+                const newDonation = {
+                    user: userRef,
+                    brand: donation.brand ?? '',
+                    category: donation.category ?? '',
+                    model: donation.model ?? '',
+                    description: donation.description ?? '',
+                    images: imageRefs
+                };
+                bulkDonations.push(newDonation);
+            }
+            return bulkDonations;
+        } catch (error) {
+            addErrorEvent('convertPendingDonations', error);
+        }
+        return Promise.reject();
+    }
 
     //Use this to handle passing form data to the database on submission
     async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         try {
-            setSubmitState('submitting');
-            let imageRefs: DocumentReference[] = [];
-
-            if (currentUser == null) {
-                throw new Error('Unable to access the user account.');
-            }
-
-            const userId = currentUser.uid;
-            const userRef = doc(db, `${USERS_COLLECTION}/${userId}`);
-
-            //upload images if included
-            if (images) {
-                imageRefs = await uploadImages(images);
-            }
-
-            const newDonation = {
-                user: userRef,
+            //Add current form data to pending Donations
+            const pendingDonation: DonationFormData = {
                 brand: formData.brand ?? '',
                 category: formData.category ?? '',
                 model: formData.model ?? '',
                 description: formData.description ?? '',
-                images: imageRefs
+                images: images
             };
 
-            await addDonation(newDonation);
+            setSubmitState('submitting');
+            const donationsToUpload: DonationBody[] = await convertPendingDonations([...pendingDonations, pendingDonation]);
+            await addBulkDonation(donationsToUpload);
             setSubmitState('idle');
             router.push('/');
         } catch (error) {
             setSubmitState('error');
+            addErrorEvent('Bulk donation', error);
         }
     }
 
