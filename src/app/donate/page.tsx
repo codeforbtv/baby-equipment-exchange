@@ -243,12 +243,13 @@ export default function Donate() {
                                 </Box>
                             </Box>
                             <Box className={styles['form__section--right']}>
-                                <InputContainer for="images" label="Upload images" footnote="[Footnote]">
+                                <InputContainer for="images" label="Upload images">
                                     <div className={styles['image-uploader__container']}>
                                         <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
                                         <div className={styles['image-uploader__input']}>
                                             <label id="labelForImages" htmlFor="images">
                                                 <input
+                                                    required
                                                     type="file"
                                                     id="images"
                                                     name="images"

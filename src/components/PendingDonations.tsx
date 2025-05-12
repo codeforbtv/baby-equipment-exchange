@@ -3,7 +3,7 @@
 import { DonationFormData } from '@/app/donate/page';
 import ImageThumbnail from './ImageThumbnail';
 import { removeImageFromState } from '@/controllers/images';
-import { Key } from '@mui/icons-material';
+import { Card } from '@mui/material';
 
 type pendingDonationProps = {
     pendingDonations: DonationFormData[];
@@ -18,8 +18,8 @@ export default function PendingDontions(props: pendingDonationProps) {
                 {props.pendingDonations.map((donation, i) => {
                     if (donation.images)
                         return (
-                            <div key={i}>
-                                <ImageThumbnail removeFunction={() => {}} file={donation.images[0]} width={'32%'} margin={'.66%'} />
+                            <Card key={i}>
+                                <ImageThumbnail removeFunction={() => {}} file={donation.images[0]} width={'20%'} margin={'.66%'} />
                                 <ul>
                                     <li>{donation.brand}</li>
                                     <li>{donation.category}</li>
@@ -29,7 +29,7 @@ export default function PendingDontions(props: pendingDonationProps) {
                                 <button type="button" onClick={() => props.removeHandler(i)}>
                                     X
                                 </button>
-                            </div>
+                            </Card>
                         );
                 })}
             </div>

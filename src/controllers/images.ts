@@ -1,3 +1,5 @@
+import { SetStateAction, Dispatch } from 'react';
+
 type Images = File[] | null | undefined;
 
 export function appendImagesToState(images: Images, setImages: (images: File[]) => void, event: React.ChangeEvent<HTMLInputElement>) {
@@ -12,7 +14,7 @@ export function appendImagesToState(images: Images, setImages: (images: File[]) 
             //only add new files
             if (images != null) {
                 for (const fileInList of images) {
-                    if (file.webkitRelativePath === fileInList.webkitRelativePath) {
+                    if (file.name === fileInList.name) {
                         continue newFiles;
                     }
                 }
@@ -23,16 +25,17 @@ export function appendImagesToState(images: Images, setImages: (images: File[]) 
     setImages([...(images ?? []), ...imageList.files]);
 }
 
-export function removeImageFromState(images: Images, setImages: (images: File[]) => void, fileToRemove: File) {
+export function removeImageFromState(images: Images, setImages: Dispatch<SetStateAction<File[] | null | undefined>>, fileToRemove: File) {
     if (images) {
+        let updatedImages;
         for (let index = 0; index < images.length; index++) {
-            if (images[index].webkitRelativePath === fileToRemove.webkitRelativePath) {
+            if (images[index].name === fileToRemove.name) {
                 //if the relative path of the file at index `index`
                 //matches the relative path of `fileToRemove`
                 //remove one element at `index` from images
-                images.splice(index, 1);
+                updatedImages = images.toSpliced(index, 1);
             }
         }
-        setImages(images);
+        setImages(updatedImages);
     }
 }
