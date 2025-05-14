@@ -16,7 +16,7 @@ export default function ImageThumbnail(props: ImageThumbnailProps) {
             return;
         }
     }
-
+    //only diaplay 'X' if a removal function is passed as props
     const removeButton =
         props.removeFunction != undefined ? (
             <button type="button" className={styles['thumbnail__delete']} onClick={clickHandler}>
