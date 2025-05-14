@@ -19,7 +19,7 @@ export default function PendingDontions(props: pendingDonationProps) {
                     if (donation.images)
                         return (
                             <Card key={i}>
-                                <ImageThumbnail removeFunction={() => {}} file={donation.images[0]} width={'20%'} margin={'.66%'} />
+                                <ImageThumbnail file={donation.images[0]} width={'20%'} margin={'.66%'} />
                                 <ul>
                                     <li>{donation.brand}</li>
                                     <li>{donation.category}</li>
