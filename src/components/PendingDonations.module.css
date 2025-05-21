@@ -1,0 +1,31 @@
+.pendingDonation--container {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.pendingDonation--card {
+    max-width: 600px;
+    padding: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.text--group {
+    min-width: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.left--column {
+    text-align: left;
+}
+
+.right--column {
+    text-align: left;
+}

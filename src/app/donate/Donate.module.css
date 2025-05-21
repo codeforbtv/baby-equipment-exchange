@@ -47,6 +47,15 @@
     border: 1px solid black;
 }
 
+.btn--group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 0px auto;
+    padding: 1rem;
+    gap: 12px;
+}
+
 /* Tablets */
 @media screen and (min-width: 480px) {
     .form {
@@ -71,6 +80,9 @@
 
     .form__section--bottom {
         grid-area: bottom;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
 }
 
