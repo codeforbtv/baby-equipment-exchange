@@ -1,5 +1,9 @@
 'use client';
 
+//components
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUserContext } from '@/contexts/UserContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PendingDontions from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
@@ -7,18 +11,17 @@ import { Button } from '@mui/material';
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
-import { useState, ReactElement } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUserContext } from '@/contexts/UserContext';
-import { uploadImages } from '@/api/firebase-images';
+//libs
 import { addBulkDonation, addDonation } from '@/api/firebase-donations';
-import '../../styles/globalStyles.css';
-import styles from './Donate.module.css';
 import { DocumentReference, doc } from 'firebase/firestore';
 import { USERS_COLLECTION } from '@/api/firebase-users';
 import { addErrorEvent, db } from '@/api/firebase';
-
 import { DonationBody } from '@/types/post-data';
+import { uploadImages } from '@/api/firebase-images';
+
+//styles
+import '../../styles/globalStyles.css';
+import styles from './Donate.module.css';
 
 export type DonationFormData = {
     category: string | null;

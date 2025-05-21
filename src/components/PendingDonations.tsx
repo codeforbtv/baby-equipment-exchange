@@ -1,10 +1,10 @@
 'use client';
 
-import { DonationFormData } from '@/app/donate/page';
 import ImageThumbnail from './ImageThumbnail';
 import { Card, Button, Box, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+import { DonationFormData } from '@/app/donate/page';
 import styles from './PendingDonations.module.css';
 
 type pendingDonationProps = {
