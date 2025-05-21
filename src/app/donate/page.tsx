@@ -11,7 +11,7 @@ import { useState, ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import { uploadImages } from '@/api/firebase-images';
-import { addBulkDonation } from '@/api/firebase-donations';
+import { addBulkDonation, addDonation } from '@/api/firebase-donations';
 import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
 import { DocumentReference, doc } from 'firebase/firestore';
@@ -85,7 +85,8 @@ export default function Donate() {
         try {
             setSubmitState('submitting');
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
-            await addBulkDonation(donationsToUpload);
+            donationsToUpload.length > 1 ? await addBulkDonation(donationsToUpload) : await addDonation(donationsToUpload[0]);
+            setPendingDonations([]);
             setSubmitState('idle');
             router.push('/');
         } catch (error) {
@@ -140,91 +141,6 @@ export default function Donate() {
                                 {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
                             </Button>
                         )}
-
-                        {/* <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
-                            <Box className={styles['form__section--left']}>
-                                <Box display={'flex'} flexDirection={'column'} gap={1}>
-                                    <NativeSelect
-                                        variant="outlined"
-                                        style={{ padding: '.25rem .5rem' }}
-                                        name="category"
-                                        id="category"
-                                        placeholder="Category"
-                                        onChange={handleInputChange}
-                                        value={formData.category ? formData.category : ''}
-                                        required
-                                    >
-                                        <option value="">Select Category</option>
-                                        {categories.map((category) => {
-                                            return (
-                                                <option key={category.value} value={category.value}>
-                                                    {category.innerText}
-                                                </option>
-                                            );
-                                        })}
-                                    </NativeSelect>
-                                    <TextField
-                                        type="text"
-                                        label="Brand"
-                                        name="brand"
-                                        id="brand"
-                                        placeholder=" Brand"
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-                                        value={formData.brand ? formData.brand : ''}
-                                    ></TextField>
-                                    <TextField
-                                        type="text"
-                                        label="Model"
-                                        name="model"
-                                        id="model"
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-                                        value={formData.model ? formData.model : ''}
-                                    ></TextField>
-                                    <TextField
-                                        multiline={true}
-                                        name="description"
-                                        label="Description"
-                                        rows={12}
-                                        placeholder="Provide details about the item"
-                                        id="description"
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-                                        value={formData.description ? formData.description : ''}
-                                    />
-                                </Box>
-                            </Box>
-                            <Box className={styles['form__section--right']}>
-                                <InputContainer for="images" label="Upload images (required)">
-                                    <div className={styles['image-uploader__container']}>
-                                        <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
-                                        <div className={styles['image-uploader__input']}>
-                                            <label id="labelForImages" htmlFor="images">
-                                                <input
-                                                    required
-                                                    type="file"
-                                                    id="images"
-                                                    name="images"
-                                                    accept="image/*"
-                                                    capture="environment"
-                                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => appendImagesToState(images, setImages, event)}
-                                                    multiple
-                                                />
-                                                <Button variant="contained" component="span">
-                                                    Add Files
-                                                </Button>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </InputContainer>
-                            </Box>
-                            <Box className={styles['form__section--bottom']}>
-                                <Button variant="outlined" fullWidth={false} size="medium" type="button" onClick={handleAddPendingDonation}>
-                                    Add another item
-                                </Button>
-                                <Button variant="contained" size="medium" type={'submit'} endIcon={<UploadOutlinedIcon />}>
-                                    {pendingDonations.length > 0 ? 'Submit Donations' : 'Submit Donation'}
-                                </Button>
-                            </Box>
-                        </Box> */}
                     </div>
                 </>
             )}
