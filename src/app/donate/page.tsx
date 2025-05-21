@@ -1,25 +1,24 @@
 'use client';
-import InputContainer from '@/components/InputContainer';
-import ImageThumbnail from '@/components/ImageThumbnail';
+
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { Box, Button, NativeSelect, TextField } from '@mui/material';
+import PendingDontions from '@/components/PendingDonations';
+import DonationForm from '@/components/DonationForm';
+import { Button } from '@mui/material';
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
-import ToasterNotification from '@/components/ToasterNotification';
+import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
-import { useState, useEffect, ReactElement, SyntheticEvent } from 'react';
+import { useState, ReactElement } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import { uploadImages } from '@/api/firebase-images';
-import { addBulkDonation, addDonation } from '@/api/firebase-donations';
+import { addBulkDonation } from '@/api/firebase-donations';
 import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
 import { DocumentReference, doc } from 'firebase/firestore';
 import { USERS_COLLECTION } from '@/api/firebase-users';
 import { addErrorEvent, db } from '@/api/firebase';
-import { appendImagesToState, removeImageFromState } from '@/controllers/images';
-import { categories } from '@/data/html';
+
 import { DonationBody } from '@/types/post-data';
-import PendingDontions from '@/components/PendingDonations';
 
 export type DonationFormData = {
     category: string | null;
@@ -40,65 +39,10 @@ const dummyDonationData: DonationFormData = {
 
 export default function Donate() {
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
-    const [formData, setFormData] = useState<DonationFormData>({
-        category: '',
-        brand: '',
-        model: '',
-        description: '',
-        images: null
-    });
-    const [images, setImages] = useState<File[] | null>();
-    const [imageElements, setImageElements] = useState<ReactElement[]>([]);
     const [pendingDonations, setPendingDonations] = useState<DonationFormData[]>([]);
+    const [showForm, setShowForm] = useState<boolean>(false);
     const { currentUser } = useUserContext();
     const router = useRouter();
-
-    useEffect(() => {
-        const tempImages = [];
-        if (images) {
-            for (let i = 0; i < images.length; i++) {
-                const imagePreview = (
-                    <ImageThumbnail
-                        key={i}
-                        removeFunction={(fileToRemove: File) => removeImageFromState(images, setImages, fileToRemove)}
-                        file={images[i]}
-                        width={'32%'}
-                        margin={'.66%'}
-                    />
-                );
-                tempImages.push(imagePreview);
-            }
-            setImageElements(tempImages);
-        }
-    }, [images]);
-
-    function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLTextAreaElement>) {
-        setFormData((prev) => {
-            return { ...prev, [e.target.name]: e.target.value };
-        });
-    }
-
-    function handleAddPendingDonation(e: React.SyntheticEvent) {
-        e.preventDefault();
-        const pendingDonation: DonationFormData = {
-            brand: formData.brand ?? '',
-            category: formData.category ?? '',
-            model: formData.model ?? '',
-            description: formData.description ?? '',
-            images: images
-        };
-
-        setPendingDonations((prev) => [...prev, pendingDonation]);
-        setFormData({
-            category: '',
-            brand: '',
-            model: '',
-            description: '',
-            images: null
-        });
-        setImages(null);
-        setImageElements([]);
-    }
 
     function removePendingDonation(index: number) {
         setPendingDonations(pendingDonations.filter((donation, i) => index !== i));
@@ -136,20 +80,11 @@ export default function Donate() {
     }
 
     //Use this to handle passing form data to the database on submission
-    async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function handleFormSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
         try {
-            //Add current form data to pending Donations
-            const pendingDonation: DonationFormData = {
-                brand: formData.brand ?? '',
-                category: formData.category ?? '',
-                model: formData.model ?? '',
-                description: formData.description ?? '',
-                images: images
-            };
-
             setSubmitState('submitting');
-            const donationsToUpload: DonationBody[] = await convertPendingDonations([...pendingDonations, pendingDonation]);
+            const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
             await addBulkDonation(donationsToUpload);
             setSubmitState('idle');
             router.push('/');
@@ -166,7 +101,7 @@ export default function Donate() {
                 <>
                     <div className="page--header">
                         <h1>Donate</h1>
-                        {/* <p>
+                        <p>
                             Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we
                             do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could
                             be subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to
@@ -187,11 +122,26 @@ export default function Donate() {
                             <li>
                                 Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
                             </li>
-                        </ul> */}
-                    </div>
-                    <div className="content--container">
+                        </ul>
+                        <hr />
                         {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
-                        <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
+                    </div>
+                    <div className={styles['btn--group']}>
+                        {!showForm && (
+                            <Button type="button" variant="outlined" startIcon={<AddIcon />} onClick={() => setShowForm(true)}>
+                                {pendingDonations.length > 0 ? 'Add another item' : 'Add item'}
+                            </Button>
+                        )}
+
+                        {showForm && <DonationForm setPendingDonations={setPendingDonations} setShowForm={setShowForm} />}
+
+                        {!showForm && pendingDonations.length > 0 && (
+                            <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
+                                {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
+                            </Button>
+                        )}
+
+                        {/* <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
                             <Box className={styles['form__section--left']}>
                                 <Box display={'flex'} flexDirection={'column'} gap={1}>
                                     <NativeSelect
@@ -243,7 +193,7 @@ export default function Donate() {
                                 </Box>
                             </Box>
                             <Box className={styles['form__section--right']}>
-                                <InputContainer for="images" label="Upload images">
+                                <InputContainer for="images" label="Upload images (required)">
                                     <div className={styles['image-uploader__container']}>
                                         <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
                                         <div className={styles['image-uploader__input']}>
@@ -267,18 +217,17 @@ export default function Donate() {
                                 </InputContainer>
                             </Box>
                             <Box className={styles['form__section--bottom']}>
-                                <Button variant="contained" type="button" onClick={handleAddPendingDonation}>
-                                    Add donation
+                                <Button variant="outlined" fullWidth={false} size="medium" type="button" onClick={handleAddPendingDonation}>
+                                    Add another item
                                 </Button>
-                                <Button variant="contained" type={'submit'} endIcon={<UploadOutlinedIcon />}>
-                                    Submit
+                                <Button variant="contained" size="medium" type={'submit'} endIcon={<UploadOutlinedIcon />}>
+                                    {pendingDonations.length > 0 ? 'Submit Donations' : 'Submit Donation'}
                                 </Button>
                             </Box>
-                        </Box>
+                        </Box> */}
                     </div>
                 </>
             )}
-            {submitState === 'error' && <ToasterNotification status="Submission failed" />}
         </ProtectedRoute>
     );
 }

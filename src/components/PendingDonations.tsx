@@ -2,8 +2,10 @@
 
 import { DonationFormData } from '@/app/donate/page';
 import ImageThumbnail from './ImageThumbnail';
-import { removeImageFromState } from '@/controllers/images';
-import { Card } from '@mui/material';
+import { Card, Button, Box, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+import styles from './PendingDonations.module.css';
 
 type pendingDonationProps = {
     pendingDonations: DonationFormData[];
@@ -12,27 +14,29 @@ type pendingDonationProps = {
 
 export default function PendingDontions(props: pendingDonationProps) {
     return (
-        <div>
-            <p>Pending Donations</p>
-            <div>
+        <Box>
+            <Typography variant="h3">Items to be donated:</Typography>
+            <Box className={styles['pendingDonation--container']}>
                 {props.pendingDonations.map((donation, i) => {
                     if (donation.images)
                         return (
-                            <Card key={i}>
-                                <ImageThumbnail file={donation.images[0]} width={'20%'} margin={'.66%'} />
-                                <ul>
-                                    <li>{donation.brand}</li>
-                                    <li>{donation.category}</li>
-                                    <li>{donation.description}</li>
-                                    <li>{donation.model}</li>
-                                </ul>
-                                <button type="button" onClick={() => props.removeHandler(i)}>
-                                    X
-                                </button>
+                            <Card key={i} elevation={5} className={styles['pendingDonation--card']}>
+                                <ImageThumbnail file={donation.images[0]} width={'10%'} margin={'.66%'} />
+                                <div className={styles['text--group']}>
+                                    <Typography variant="h4" className={styles['left--column']}>
+                                        {donation.model}
+                                    </Typography>
+                                    <Typography variant="h4" className={styles['right--column']}>
+                                        {donation.brand}
+                                    </Typography>
+                                </div>
+                                <Button variant="outlined" type="button" onClick={() => props.removeHandler(i)}>
+                                    <DeleteIcon />
+                                </Button>
                             </Card>
                         );
                 })}
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 }

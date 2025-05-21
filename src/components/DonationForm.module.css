@@ -47,12 +47,10 @@
     border: 1px solid black;
 }
 
-.btn--group {
-    width: 100%;
+.form__section--bottom {
+    grid-area: bottom;
     display: flex;
     flex-direction: column;
-    margin: 0px auto;
-    padding: 1rem;
     gap: 12px;
 }
 
@@ -76,13 +74,6 @@
 
     .form__section--right {
         grid-area: right;
-    }
-
-    .form__section--bottom {
-        grid-area: bottom;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
     }
 }
 
