@@ -26,6 +26,12 @@
     margin-top: 1rem;
 }
 
+.image-uploader__input,
+.form-btn {
+    display: flex;
+    justify-content: space-between;
+}
+
 .image-uploader__input input {
     display: none;
 }

@@ -5,6 +5,7 @@ import ImageThumbnail from './ImageThumbnail';
 import InputContainer from '@/components/InputContainer';
 import { Box, Button, NativeSelect, TextField } from '@mui/material';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
 import { categories } from '@/data/html';
@@ -167,12 +168,26 @@ export default function DonationForm(props: DonationFormProps) {
                                         id="images"
                                         name="images"
                                         accept="image/*"
+                                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => appendImagesToState(images, setImages, event)}
+                                        multiple
+                                    />
+                                    <Button variant="contained" component="span" className={styles['form-btn']} endIcon={<AddPhotoAlternateIcon />}>
+                                        Add Image
+                                    </Button>
+                                </label>
+                                <label id="labelForImages" htmlFor="images">
+                                    <input
+                                        required
+                                        type="file"
+                                        id="images"
+                                        name="images"
+                                        accept="image/*"
                                         capture="environment"
                                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => appendImagesToState(images, setImages, event)}
                                         multiple
                                     />
-                                    <Button variant="contained" component="span" endIcon={<AddPhotoAlternateIcon />}>
-                                        Add Image
+                                    <Button variant="contained" component="span" className={styles['form-btn']} startIcon={<PhotoCameraIcon />}>
+                                        Take Photo
                                     </Button>
                                 </label>
                             </div>
