@@ -27,6 +27,8 @@ export interface IDonation {
         | (() => Timestamp | null | undefined)
         | (() => number | undefined);
     id: string;
+    donorEmail: string;
+    donorName: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
@@ -62,6 +64,8 @@ export class Donation implements IDonation {
         | (() => Timestamp | null | undefined)
         | (() => number | undefined);
     id: string;
+    donorEmail: string;
+    donorName: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
@@ -79,6 +83,8 @@ export class Donation implements IDonation {
 
     constructor(args: IDonation) {
         this.id = args.id;
+        this.donorEmail = args.donorEmail;
+        this.donorName = args.donorName;
         this.category = args.category;
         this.brand = args.brand;
         this.model = args.model;
@@ -97,6 +103,14 @@ export class Donation implements IDonation {
 
     getId(): string {
         return this.id;
+    }
+
+    getDonorEmail(): string {
+        return this.donorEmail;
+    }
+
+    getDonorName(): string {
+        return this.donorName;
     }
 
     getCategory(): string | null | undefined {

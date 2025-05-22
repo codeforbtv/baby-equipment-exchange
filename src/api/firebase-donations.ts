@@ -20,7 +20,7 @@ import {
 } from 'firebase/firestore';
 // Models
 import { Donation, IDonation } from '@/models/donation';
-import { DonationDetail, IDonationDetail, DonationDetailNoRefs } from '@/models/donation-detail';
+import { DonationDetail, IDonationDetail } from '@/models/donation-detail';
 import { DonationBody } from '@/types/post-data';
 import { Image } from '@/models/image';
 // Libs
@@ -38,15 +38,22 @@ const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
         const donationData: IDonation = {
             id: donation.getId(),
+            donorEmail: donation.getDonorEmail(),
+            donorName: donation.getDonorName(),
             category: donation.getCategory(),
             brand: donation.getBrand(),
             model: donation.getModel(),
             description: donation.getDescription(),
+            tagNumber: donation.getTagNumber(),
+            notes: donation.getNotes(),
             status: donation.getStatus(),
             bulkCollection: donation.getBulkCollection(),
             images: donation.getImages(),
             createdAt: donation.getCreatedAt(),
-            modifiedAt: donation.getModifiedAt()
+            modifiedAt: donation.getModifiedAt(),
+            dateReceived: donation.getDateReceived(),
+            dateDistributed: donation.getDateDistributed(),
+            requestor: donation.getRequestor()
         };
         for (const key in donationData) {
             if (donationData[key] === undefined || donationData[key] === null) {
@@ -59,15 +66,22 @@ const donationConverter = {
         const data = snapshot.data(options);
         const donationData: IDonation = {
             id: data.id,
+            donorEmail: data.donorEmail,
+            donorName: data.donorName,
             category: data.category,
             brand: data.brand,
             model: data.model,
             description: data.description,
+            tagNumber: data.tagNumber,
+            notes: data.notes,
             status: data.status,
             bulkCollection: data.bulkCollection,
             images: data.images,
             createdAt: data.createdAt,
-            modifiedAt: data.modifiedAt
+            modifiedAt: data.modifiedAt,
+            dateReceived: data.dateReceived,
+            dateDistributed: data.dateDistributed,
+            requestor: data.requestor
         };
         return new Donation(donationData);
     }
@@ -249,45 +263,28 @@ export async function addDonation(newDonation: DonationBody) {
         await runTransaction(db, async (transaction) => {
             // Generate document references with firebase-generated IDs
             const donationRef = doc(collection(db, DONATIONS_COLLECTION));
-            const donationDetailRef = doc(collection(db, DONATION_DETAILS_COLLECTION));
             const userId: string = await getUserId();
             const donationParams: IDonation = {
                 id: donationRef.id,
+                donorEmail: newDonation.donorEmail,
+                donorName: newDonation.donorName,
                 category: newDonation.category,
                 brand: newDonation.brand,
                 model: newDonation.model,
                 description: newDonation.description,
+                tagNumber: null,
+                notes: null,
                 status: 'pending review',
                 bulkCollection: null,
                 images: [], // Only approved images display here.
                 createdAt: serverTimestamp() as Timestamp,
-                modifiedAt: serverTimestamp() as Timestamp
-            };
-            const donationDetailParams: IDonationDetail = {
-                donation: donationRef,
-                availability: undefined,
-                donor: doc(db, `${USERS_COLLECTION}/${userId}`),
-                bulkCollection: null,
-                tagNumber: undefined,
-                tagNumberForItemDelivered: undefined,
-                sku: undefined,
-                recipientOrganization: undefined,
-                images: newDonation.images,
-                recipientContact: undefined,
-                recipientAddress: undefined,
-                requestor: undefined,
-                storage: undefined,
-                dateReceived: undefined,
-                dateDistributed: undefined,
-                scheduledPickupDate: undefined,
-                dateOrderFulfilled: undefined,
-                createdAt: serverTimestamp() as Timestamp,
-                modifiedAt: serverTimestamp() as Timestamp
+                modifiedAt: serverTimestamp() as Timestamp,
+                dateReceived: null,
+                dateDistributed: null,
+                requestor: null
             };
             const donation = new Donation(donationParams);
-            const donationDetail = new DonationDetail(donationDetailParams);
             transaction.set(donationRef, donationConverter.toFirestore(donation));
-            transaction.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail));
         });
     } catch (error: any) {
         addErrorEvent('addDonation', error);
@@ -303,47 +300,31 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
         const userId: string = await getUserId();
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
         const batch = writeBatch(db);
-        batch.set(bulkDonationsRef, { donations: [], donor: doc(db, `${USERS_COLLECTION}/${userId}`) });
+        batch.set(bulkDonationsRef, { donations: [], donorEmail: newDonations[0].donorEmail, donorName: newDonations[0].donorName });
         for (const newDonation of newDonations) {
             const donationRef = doc(collection(db, DONATIONS_COLLECTION));
             const donationDetailRef = doc(collection(db, DONATION_DETAILS_COLLECTION));
             const donationParams: IDonation = {
                 id: donationRef.id,
+                donorEmail: newDonation.donorEmail,
+                donorName: newDonation.donorName,
                 category: newDonation.category,
                 brand: newDonation.brand,
                 model: newDonation.model,
                 description: newDonation.description,
+                tagNumber: null,
+                notes: null,
                 status: 'pending review',
                 bulkCollection: bulkDonationsRef,
                 images: [], // Only approved images display here.
                 createdAt: serverTimestamp() as Timestamp,
-                modifiedAt: serverTimestamp() as Timestamp
-            };
-            const donationDetailParams: IDonationDetail = {
-                donation: donationRef,
-                availability: undefined,
-                donor: doc(db, `${USERS_COLLECTION}/${userId}`),
-                bulkCollection: bulkDonationsRef,
-                tagNumber: undefined,
-                tagNumberForItemDelivered: undefined,
-                sku: undefined,
-                recipientOrganization: undefined,
-                images: newDonation.images,
-                recipientContact: undefined,
-                recipientAddress: undefined,
-                requestor: undefined,
-                storage: undefined,
-                dateReceived: undefined,
-                dateDistributed: undefined,
-                scheduledPickupDate: undefined,
-                dateOrderFulfilled: undefined,
-                createdAt: serverTimestamp() as Timestamp,
-                modifiedAt: serverTimestamp() as Timestamp
+                modifiedAt: serverTimestamp() as Timestamp,
+                dateReceived: null,
+                dateDistributed: null,
+                requestor: null
             };
             const donation = new Donation(donationParams);
-            const donationDetail = new DonationDetail(donationDetailParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
-            batch.set(donationDetailRef, donationDetailsConverter.toFirestore(donationDetail));
             batch.update(bulkDonationsRef, {
                 donations: arrayUnion(donationRef)
             });

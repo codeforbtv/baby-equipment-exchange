@@ -24,6 +24,8 @@ export type AccountInformation = {
 };
 export type DonationBody = {
     user: DocumentReference;
+    donorEmail: string;
+    donorName: string;
     category: string;
     brand: string;
     model: string;
