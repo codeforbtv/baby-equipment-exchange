@@ -1,5 +1,5 @@
 //Firebase types
-import { DocumentData, DocumentReference, Timestamp } from 'firebase/firestore';
+import { DocumentReference, Timestamp } from 'firebase/firestore';
 
 export interface IDonationCache {
     [key: string]: string | number;
@@ -23,17 +23,24 @@ export interface IDonation {
         | (() => DocumentReference | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
-        | (() => Timestamp);
+        | (() => Timestamp)
+        | (() => Timestamp | null | undefined)
+        | (() => number | undefined);
     id: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
     description: string | null | undefined;
+    tagNumber: string | null | undefined;
+    notes: string | null | undefined;
     status: donationStatus;
     bulkCollection: DocumentReference | null;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
+    dateReceived: Timestamp | null | undefined;
+    dateDistributed: Timestamp | null | undefined;
+    requestor: DocumentReference | null;
 }
 
 export class Donation implements IDonation {
@@ -51,17 +58,24 @@ export class Donation implements IDonation {
         | (() => DocumentReference | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
-        | (() => Timestamp);
+        | (() => Timestamp)
+        | (() => Timestamp | null | undefined)
+        | (() => number | undefined);
     id: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
     description: string | null | undefined;
+    tagNumber: string | null | undefined;
+    notes: string | null | undefined;
     status: donationStatus;
     bulkCollection: DocumentReference | null;
-    images: string[] | DocumentReference[];
+    images: DocumentReference[] | string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
+    dateReceived: Timestamp | null | undefined;
+    dateDistributed: Timestamp | null | undefined;
+    requestor: DocumentReference | null;
 
     constructor(args: IDonation) {
         this.id = args.id;
@@ -69,11 +83,16 @@ export class Donation implements IDonation {
         this.brand = args.brand;
         this.model = args.model;
         this.description = args.description;
+        this.tagNumber = args.tagNumber;
+        this.notes = args.notes;
         this.status = args.status;
         this.bulkCollection = args.bulkCollection;
         this.images = args.images;
         this.createdAt = args.createdAt as Timestamp;
         this.modifiedAt = args.modifiedAt as Timestamp;
+        this.dateReceived = args.dateReceived as Timestamp;
+        this.dateDistributed = args.dateDistributed as Timestamp;
+        this.requestor = args.requestor;
     }
 
     getId(): string {
@@ -96,6 +115,14 @@ export class Donation implements IDonation {
         return this.description;
     }
 
+    getTagNumber(): string | null | undefined {
+        return this.tagNumber;
+    }
+
+    getNotes(): string | null | undefined {
+        return this.notes;
+    }
+
     getStatus(): donationStatus {
         return this.status;
     }
@@ -114,5 +141,27 @@ export class Donation implements IDonation {
 
     getModifiedAt(): Timestamp {
         return this.modifiedAt;
+    }
+
+    getDateReceived(): Timestamp | null | undefined {
+        return this.dateReceived;
+    }
+
+    getDateDistributed(): Timestamp | null | undefined {
+        return this.dateDistributed;
+    }
+
+    getRequestor(): DocumentReference | null {
+        return this.requestor;
+    }
+
+    getDaysInStorage(): number | undefined {
+        if (this.dateReceived === undefined) {
+            return undefined;
+        }
+        const dateReceived = this.dateReceived!;
+        const currentTime = Date.now();
+        const daysInStorage = Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
+        return daysInStorage;
     }
 }
