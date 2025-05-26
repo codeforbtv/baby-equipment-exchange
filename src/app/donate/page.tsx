@@ -7,7 +7,7 @@ import { useUserContext } from '@/contexts/UserContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PendingDontions from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
-import { Button } from '@mui/material';
+import { Button, Box, TextField } from '@mui/material';
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
@@ -40,24 +40,45 @@ const dummyDonationData: DonationFormData = {
     images: null
 };
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Donate() {
+    const [donorName, setDonorName] = useState<string>('');
+    const [donorEmail, setDonorEmail] = useState<string>('');
+    const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
     const [pendingDonations, setPendingDonations] = useState<DonationFormData[]>([]);
     const [showForm, setShowForm] = useState<boolean>(false);
     const { currentUser } = useUserContext();
     const router = useRouter();
 
+    function validateEmail(email: string): void {
+        if (email.length === 0 || !emailRegex.test(email)) {
+            setIsInvalidEmail(true);
+        } else {
+            setIsInvalidEmail(false);
+        }
+    }
+
+    function handleEmailInput(event: React.ChangeEvent<HTMLInputElement>): void {
+        setDonorEmail(event.target.value);
+        validateEmail(donorEmail);
+    }
+
+    function handleShowForm(event: React.SyntheticEvent) {
+        if (donorEmail.length === 0 || isInvalidEmail || donorName.length === 0) {
+            alert('Name and email are required to add donations.');
+            return;
+        } else {
+            setShowForm(true);
+        }
+    }
+
     function removePendingDonation(index: number) {
         setPendingDonations(pendingDonations.filter((donation, i) => index !== i));
     }
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
-        if (currentUser == null) {
-            throw new Error('Unable to access the user account.');
-        }
-
-        const userId = currentUser.uid;
-        const userRef = doc(db, `${USERS_COLLECTION}/${userId}`);
         let bulkDonations: DonationBody[] = [];
         try {
             for (const donation of pendingDonations) {
@@ -66,7 +87,8 @@ export default function Donate() {
                     imageRefs = await uploadImages(donation.images);
                 }
                 const newDonation = {
-                    user: userRef,
+                    donorName: donorName,
+                    donorEmail: donorEmail,
                     brand: donation.brand ?? '',
                     category: donation.category ?? '',
                     model: donation.model ?? '',
@@ -128,11 +150,39 @@ export default function Donate() {
                             </li>
                         </ul>
                         <hr />
+                        <Box className={styles['donorForm']} component="form" gap={3} display={'flex'} flexDirection={'column'} name="">
+                            <TextField
+                                type="text"
+                                label="Name"
+                                name="donorName"
+                                id="donorName"
+                                placeholder="Your name"
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setDonorName(event.target.value);
+                                }}
+                                value={donorName}
+                                required
+                            />
+                            <TextField
+                                type="text"
+                                label="Email"
+                                name="email"
+                                id="email"
+                                placeholder="Your email"
+                                autoComplete="email"
+                                value={donorEmail}
+                                error={isInvalidEmail}
+                                helperText={isInvalidEmail && 'Please enter a valid email addres'}
+                                required
+                                onChange={handleEmailInput}
+                                onBlur={() => validateEmail(donorEmail)}
+                            />
+                        </Box>
                         {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
                     </div>
                     <div className={styles['btn--group']}>
                         {!showForm && (
-                            <Button type="button" variant="outlined" startIcon={<AddIcon />} onClick={() => setShowForm(true)}>
+                            <Button type="button" variant="outlined" startIcon={<AddIcon />} onClick={handleShowForm}>
                                 {pendingDonations.length > 0 ? 'Add another item' : 'Add item'}
                             </Button>
                         )}

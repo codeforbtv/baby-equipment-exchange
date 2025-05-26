@@ -23,7 +23,6 @@ export type AccountInformation = {
     phoneNunber?: string;
 };
 export type DonationBody = {
-    user: DocumentReference;
     donorEmail: string;
     donorName: string;
     category: string;
