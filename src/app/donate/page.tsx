@@ -13,7 +13,7 @@ import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
 //libs
 import { addBulkDonation, addDonation } from '@/api/firebase-donations';
-import { DocumentReference, doc } from 'firebase/firestore';
+import { DocumentReference, arrayUnion, doc } from 'firebase/firestore';
 import { USERS_COLLECTION } from '@/api/firebase-users';
 import { addErrorEvent, db } from '@/api/firebase';
 import { DonationBody } from '@/types/post-data';
@@ -82,10 +82,11 @@ export default function Donate() {
         let bulkDonations: DonationBody[] = [];
         try {
             for (const donation of pendingDonations) {
-                let imageRefs: DocumentReference[] = [];
+                let imageURLs: string[] = [];
                 if (donation.images) {
-                    imageRefs = await uploadImages(donation.images);
+                    imageURLs = await uploadImages(donation.images);
                 }
+                console.log(imageURLs);
                 const newDonation = {
                     donorName: donorName,
                     donorEmail: donorEmail,
@@ -93,7 +94,7 @@ export default function Donate() {
                     category: donation.category ?? '',
                     model: donation.model ?? '',
                     description: donation.description ?? '',
-                    images: imageRefs
+                    images: imageURLs
                 };
                 bulkDonations.push(newDonation);
             }

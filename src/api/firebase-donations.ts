@@ -157,42 +157,57 @@ const donationDetailsConverter = {
  * @filter An object that defines what kind(s) of donation items to return.
  * @return A Promise of a list of Donations, else a rejected promise.
  */
-export async function getDonations(filter: null | undefined): Promise<Donation[]> {
+// export async function getDonations(filter: null | undefined): Promise<Donation[]> {
+//     try {
+//         const uid = await getUserId();
+//         const hasClaimOnReadingDonations: boolean = await canReadDonations();
+//         const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
+//         // Claim: can-read-donations
+//         // If a user has a claim on reading donations,
+//         // consider all available documents within the collection.
+//         const collectionRef = collection(db, DONATION_DETAILS_COLLECTION);
+//         const conjunctions = [];
+//         if (hasClaimOnReadingDonations !== true) {
+//             // If an authenticated client, denoted by userRef,
+//             // does not have a claim on reading donations,
+//             // limit the result set to the donations a user account has submitted.
+//             // (A note on consecution) any clause where `donor` is not equal to userRef,
+//             // violates this method's defined behavior.
+//             conjunctions.push(where('donor', '==', userRef));
+//         }
+//         const q = query(collectionRef, ...conjunctions).withConverter(donationDetailsConverter);
+//         const donationDetailsSnapshot = await getDocs(q);
+//         const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc: any) => doc.data());
+//         const donations: Donation[] = [];
+//         for (const donationDetail of donationDetails) {
+//             const donationRef = donationDetail.getDonation().withConverter(donationConverter);
+//             const donationSnapshot = await getDoc(donationRef);
+//             if (donationSnapshot.exists()) {
+//                 const donation = donationSnapshot.data();
+//                 const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[];
+//                 imagesRef.push(...(donationDetail.getImages() as DocumentReference<Image>[]));
+//                 donation.images = await imageReferenceConverter(...imagesRef);
+//                 donations.push(donation);
+//             }
+//         }
+//         return donations;
+//     } catch (error: any) {
+//         addErrorEvent('getDonations', error);
+//     }
+//     return Promise.reject();
+// }
+
+export async function getDonations(): Promise<Donation[]> {
     try {
-        const uid = await getUserId();
-        const hasClaimOnReadingDonations: boolean = await canReadDonations();
-        const userRef = doc(db, `${USERS_COLLECTION}/${uid}`);
-        // Claim: can-read-donations
-        // If a user has a claim on reading donations,
-        // consider all available documents within the collection.
-        const collectionRef = collection(db, DONATION_DETAILS_COLLECTION);
-        const conjunctions = [];
-        if (hasClaimOnReadingDonations !== true) {
-            // If an authenticated client, denoted by userRef,
-            // does not have a claim on reading donations,
-            // limit the result set to the donations a user account has submitted.
-            // (A note on consecution) any clause where `donor` is not equal to userRef,
-            // violates this method's defined behavior.
-            conjunctions.push(where('donor', '==', userRef));
-        }
-        const q = query(collectionRef, ...conjunctions).withConverter(donationDetailsConverter);
-        const donationDetailsSnapshot = await getDocs(q);
-        const donationDetails: DonationDetail[] = donationDetailsSnapshot.docs.map((doc: any) => doc.data());
-        const donations: Donation[] = [];
-        for (const donationDetail of donationDetails) {
-            const donationRef = donationDetail.getDonation().withConverter(donationConverter);
-            const donationSnapshot = await getDoc(donationRef);
-            if (donationSnapshot.exists()) {
-                const donation = donationSnapshot.data();
-                const imagesRef: DocumentReference<Image>[] = donation.getImages() as DocumentReference<Image>[];
-                imagesRef.push(...(donationDetail.getImages() as DocumentReference<Image>[]));
-                donation.images = await imageReferenceConverter(...imagesRef);
-                donations.push(donation);
-            }
-        }
+        let donations: Donation[] = [];
+        const querySnapshot = await getDocs(collection(db, DONATIONS_COLLECTION).withConverter(donationConverter));
+        querySnapshot.forEach((snapshot) => {
+            donations.push(snapshot.data());
+        });
+        console.log(donations);
         return donations;
-    } catch (error: any) {
-        addErrorEvent('getDonations', error);
+    } catch (error) {
+        addErrorEvent('Get donations', error);
     }
     return Promise.reject();
 }
@@ -276,7 +291,7 @@ export async function addDonation(newDonation: DonationBody) {
                 notes: null,
                 status: 'pending review',
                 bulkCollection: null,
-                images: [], // Only approved images display here.
+                images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp,
                 dateReceived: null,
@@ -303,7 +318,6 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
         batch.set(bulkDonationsRef, { donations: [], donorEmail: newDonations[0].donorEmail, donorName: newDonations[0].donorName });
         for (const newDonation of newDonations) {
             const donationRef = doc(collection(db, DONATIONS_COLLECTION));
-            const donationDetailRef = doc(collection(db, DONATION_DETAILS_COLLECTION));
             const donationParams: IDonation = {
                 id: donationRef.id,
                 donorEmail: newDonation.donorEmail,
@@ -316,7 +330,7 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
                 notes: null,
                 status: 'pending review',
                 bulkCollection: bulkDonationsRef,
-                images: [], // Only approved images display here.
+                images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp,
                 dateReceived: null,

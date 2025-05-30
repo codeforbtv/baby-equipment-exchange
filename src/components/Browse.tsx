@@ -59,7 +59,7 @@ const Browse: React.FC = () => {
     async function fetchDonations() {
         try {
             setIsLoading(true);
-            const donations = await getDonations(null);
+            const donations = await getDonations();
             setDonations(donations);
             setIsLoading(false);
         } catch (error: any) {
@@ -128,7 +128,12 @@ const Browse: React.FC = () => {
                     <>{isFilterVisible && <Filter />}</>
                     <ImageList className={styles['browse__grid']}>
                         {donations
-                            .sort((a, b) => b.modifiedAt.toDate().getTime() - a.modifiedAt.toDate().getTime())
+                            .sort((a, b) => {
+                                if (a.modifiedAt && b.modifiedAt) {
+                                    return b.modifiedAt.toDate().getTime() - a.modifiedAt.toDate().getTime();
+                                }
+                                return 0;
+                            })
                             .map((donation) => {
                                 const props: DonationCardProps = {
                                     ...donation,

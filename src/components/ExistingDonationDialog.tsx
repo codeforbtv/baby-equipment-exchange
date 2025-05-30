@@ -84,16 +84,17 @@ export default function ExistingDonationDialog({
                     />
                 </FormControl>
                 <ImageList className={styles['browse__grid']}>
-                    {donation.images.map((image) => {
-                        return (
-                            <img
-                                key={image}
-                                src={image}
-                                style={{ width: '100%', height: '100%', objectFit: 'fill' }}
-                                alt={`${donation.description ?? 'No description'}`}
-                            />
-                        );
-                    })}
+                    {donation.images &&
+                        donation.images.map((image) => {
+                            return (
+                                <img
+                                    key={image}
+                                    src={image}
+                                    style={{ width: '100%', height: '100%', objectFit: 'fill' }}
+                                    alt={`${donation.description ?? 'No description'}`}
+                                />
+                            );
+                        })}
                 </ImageList>
             </DialogContent>
             <DialogActions>

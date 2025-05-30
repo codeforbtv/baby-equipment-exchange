@@ -29,7 +29,7 @@ export type DonationBody = {
     brand: string;
     model: string;
     description: string;
-    images: DocumentReference[];
+    images: string[];
 };
 
 export type UserBody = {
