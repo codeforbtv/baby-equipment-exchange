@@ -3,7 +3,7 @@ env:
       value: 'test'
 
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-      secret: projects/265793921799/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
+      secret: projects/265793921799/secrets/NEXT_PUBLIC_FIREBASE_API_KEY/versions/2
 
     - variable: CALENDLY_API_KEY
       secret: projects/265793921799/secrets/CALENDLY_API_KEY
