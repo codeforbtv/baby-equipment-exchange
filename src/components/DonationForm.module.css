@@ -26,6 +26,12 @@
     margin-top: 1rem;
 }
 
+.image-uploader__input,
+.form-btn {
+    display: flex;
+    justify-content: space-between;
+}
+
 .image-uploader__input input {
     display: none;
 }
@@ -45,6 +51,13 @@
     aspect-ratio: 1;
     object-fit: cover;
     border: 1px solid black;
+}
+
+.form__section--bottom {
+    grid-area: bottom;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 /* Tablets */
@@ -67,10 +80,6 @@
 
     .form__section--right {
         grid-area: right;
-    }
-
-    .form__section--bottom {
-        grid-area: bottom;
     }
 }
 

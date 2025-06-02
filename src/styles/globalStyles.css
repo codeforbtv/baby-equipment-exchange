@@ -157,6 +157,10 @@
     border-color: '#E0E3E7';
 }
 
+.MuiButton-sizeMedium {
+    max-width: 300px;
+}
+
 .TextField {
     width: 100%;
 }

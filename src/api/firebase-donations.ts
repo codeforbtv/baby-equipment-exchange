@@ -295,7 +295,10 @@ export async function addDonation(newDonation: DonationBody) {
 }
 
 export async function addBulkDonation(newDonations: DonationBody[]) {
-    if (newDonations.length === 1) addDonation(newDonations[0]);
+    if (newDonations.length === 1) {
+        await addDonation(newDonations[0]);
+        return;
+    }
     try {
         const userId: string = await getUserId();
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));

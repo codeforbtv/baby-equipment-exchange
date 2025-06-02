@@ -1,25 +1,29 @@
 'use client';
-import InputContainer from '@/components/InputContainer';
-import ImageThumbnail from '@/components/ImageThumbnail';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import { Box, Button, NativeSelect, TextField } from '@mui/material';
-import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
-import ToasterNotification from '@/components/ToasterNotification';
-import Loader from '@/components/Loader';
-import { useState, useEffect, ReactElement } from 'react';
+
+//components
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
-import { uploadImages } from '@/api/firebase-images';
-import { addDonation } from '@/api/firebase-donations';
-import '../../styles/globalStyles.css';
-import styles from './Donate.module.css';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import PendingDontions from '@/components/PendingDonations';
+import DonationForm from '@/components/DonationForm';
+import { Button } from '@mui/material';
+import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
+import AddIcon from '@mui/icons-material/Add';
+import Loader from '@/components/Loader';
+//libs
+import { addBulkDonation, addDonation } from '@/api/firebase-donations';
 import { DocumentReference, doc } from 'firebase/firestore';
 import { USERS_COLLECTION } from '@/api/firebase-users';
-import { db } from '@/api/firebase';
-import { appendImagesToState, removeImageFromState } from '@/controllers/images';
-import { categories } from '@/data/html';
+import { addErrorEvent, db } from '@/api/firebase';
+import { DonationBody } from '@/types/post-data';
+import { uploadImages } from '@/api/firebase-images';
 
-type DonationFormData = {
+//styles
+import '../../styles/globalStyles.css';
+import styles from './Donate.module.css';
+
+export type DonationFormData = {
     category: string | null;
     brand: string | null;
     model: string | null;
@@ -38,76 +42,59 @@ const dummyDonationData: DonationFormData = {
 
 export default function Donate() {
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
-    const [formData, setFormData] = useState<DonationFormData>({
-        category: '',
-        brand: '',
-        model: '',
-        description: '',
-        images: null
-    });
-    const [images, setImages] = useState<File[] | null>();
-    const [imageElements, setImageElements] = useState<ReactElement[]>([]);
+    const [pendingDonations, setPendingDonations] = useState<DonationFormData[]>([]);
+    const [showForm, setShowForm] = useState<boolean>(false);
     const { currentUser } = useUserContext();
     const router = useRouter();
 
-    useEffect(() => {
-        const tempImages = [];
-        if (images) {
-            for (let i = 0; i < images.length; i++) {
-                const imagePreview = (
-                    <ImageThumbnail
-                        key={i}
-                        removeFunction={(fileToRemove: File) => removeImageFromState(images, setImages, fileToRemove)}
-                        file={images[i]}
-                        width={'32%'}
-                        margin={'.66%'}
-                    />
-                );
-                tempImages.push(imagePreview);
-            }
-            setImageElements(tempImages);
-        }
-    }, [images]);
+    function removePendingDonation(index: number) {
+        setPendingDonations(pendingDonations.filter((donation, i) => index !== i));
+    }
 
-    function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLTextAreaElement>) {
-        setFormData((prev) => {
-            return { ...prev, [e.target.name]: e.target.value };
-        });
+    async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
+        if (currentUser == null) {
+            throw new Error('Unable to access the user account.');
+        }
+
+        const userId = currentUser.uid;
+        const userRef = doc(db, `${USERS_COLLECTION}/${userId}`);
+        let bulkDonations: DonationBody[] = [];
+        try {
+            for (const donation of pendingDonations) {
+                let imageRefs: DocumentReference[] = [];
+                if (donation.images) {
+                    imageRefs = await uploadImages(donation.images);
+                }
+                const newDonation = {
+                    user: userRef,
+                    brand: donation.brand ?? '',
+                    category: donation.category ?? '',
+                    model: donation.model ?? '',
+                    description: donation.description ?? '',
+                    images: imageRefs
+                };
+                bulkDonations.push(newDonation);
+            }
+            return bulkDonations;
+        } catch (error) {
+            addErrorEvent('convertPendingDonations', error);
+        }
+        return Promise.reject();
     }
 
     //Use this to handle passing form data to the database on submission
-    async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+    async function handleFormSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
         try {
             setSubmitState('submitting');
-            let imageRefs: DocumentReference[] = [];
-
-            if (currentUser == null) {
-                throw new Error('Unable to access the user account.');
-            }
-
-            const userId = currentUser.uid;
-            const userRef = doc(db, `${USERS_COLLECTION}/${userId}`);
-
-            //upload images if included
-            if (images) {
-                imageRefs = await uploadImages(images);
-            }
-
-            const newDonation = {
-                user: userRef,
-                brand: formData.brand ?? '',
-                category: formData.category ?? '',
-                model: formData.model ?? '',
-                description: formData.description ?? '',
-                images: imageRefs
-            };
-
-            await addDonation(newDonation);
+            const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
+            donationsToUpload.length > 1 ? await addBulkDonation(donationsToUpload) : await addDonation(donationsToUpload[0]);
+            setPendingDonations([]);
             setSubmitState('idle');
             router.push('/');
         } catch (error) {
             setSubmitState('error');
+            addErrorEvent('Bulk donation', error);
         }
     }
 
@@ -140,92 +127,26 @@ export default function Donate() {
                                 Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
                             </li>
                         </ul>
+                        <hr />
+                        {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
                     </div>
-                    <div className="content--container">
-                        <Box component="form" onSubmit={handleFormSubmit} method="POST" className={styles['form']}>
-                            <Box className={styles['form__section--left']}>
-                                <Box display={'flex'} flexDirection={'column'} gap={1}>
-                                    <NativeSelect
-                                        variant="outlined"
-                                        style={{ padding: '.25rem .5rem' }}
-                                        name="category"
-                                        id="category"
-                                        placeholder="Category"
-                                        onChange={handleInputChange}
-                                        value={formData.category ? formData.category : ''}
-                                        required
-                                    >
-                                        <option value="">Select Category</option>
-                                        {categories.map((category) => {
-                                            return (
-                                                <option key={category.value} value={category.value}>
-                                                    {category.innerText}
-                                                </option>
-                                            );
-                                        })}
-                                    </NativeSelect>
-                                    <TextField
-                                        type="text"
-                                        label="Brand"
-                                        name="brand"
-                                        id="brand"
-                                        placeholder=" Brand"
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-                                        value={formData.brand ? formData.brand : ''}
-                                    ></TextField>
-                                    <TextField
-                                        type="text"
-                                        label="Model"
-                                        name="model"
-                                        id="model"
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-                                        value={formData.model ? formData.model : ''}
-                                    ></TextField>
-                                    <TextField
-                                        multiline={true}
-                                        name="description"
-                                        label="Description"
-                                        rows={12}
-                                        placeholder="Provide details about the item"
-                                        id="description"
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-                                        value={formData.description ? formData.description : ''}
-                                    />
-                                </Box>
-                            </Box>
-                            <Box className={styles['form__section--right']}>
-                                <InputContainer for="images" label="Upload images" footnote="[Footnote]">
-                                    <div className={styles['image-uploader__container']}>
-                                        <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
-                                        <div className={styles['image-uploader__input']}>
-                                            <label id="labelForImages" htmlFor="images">
-                                                <input
-                                                    type="file"
-                                                    id="images"
-                                                    name="images"
-                                                    accept="image/png, image/jpeg"
-                                                    capture="environment"
-                                                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => appendImagesToState(images, setImages, event)}
-                                                    multiple
-                                                />
-                                                <Button variant="contained" component="span">
-                                                    Add Files
-                                                </Button>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </InputContainer>
-                            </Box>
-                            <Box className={styles['form__section--bottom']}>
-                                <Button variant="contained" type={'submit'} endIcon={<UploadOutlinedIcon />}>
-                                    Submit
-                                </Button>
-                            </Box>
-                        </Box>
+                    <div className={styles['btn--group']}>
+                        {!showForm && (
+                            <Button type="button" variant="outlined" startIcon={<AddIcon />} onClick={() => setShowForm(true)}>
+                                {pendingDonations.length > 0 ? 'Add another item' : 'Add item'}
+                            </Button>
+                        )}
+
+                        {showForm && <DonationForm setPendingDonations={setPendingDonations} setShowForm={setShowForm} />}
+
+                        {!showForm && pendingDonations.length > 0 && (
+                            <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
+                                {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
+                            </Button>
+                        )}
                     </div>
                 </>
             )}
-            {submitState === 'error' && <ToasterNotification status="Submission failed" />}
         </ProtectedRoute>
     );
 }
