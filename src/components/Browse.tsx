@@ -15,7 +15,7 @@ import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 // Hooks
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 // Libs
-import { getDonations, deleteDonationById } from '@/api/firebase-donations';
+import { getAllDonations, deleteDonationById } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 
 import algoliasearch from 'algoliasearch/lite';
@@ -59,7 +59,7 @@ const Browse: React.FC = () => {
     async function fetchDonations() {
         try {
             setIsLoading(true);
-            const donations = await getDonations();
+            const donations = await getAllDonations();
             setDonations(donations);
             setIsLoading(false);
         } catch (error: any) {

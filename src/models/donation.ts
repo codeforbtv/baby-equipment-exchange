@@ -179,3 +179,21 @@ export class Donation implements IDonation {
         return daysInStorage;
     }
 }
+
+export interface InventoryItem {
+    id: string;
+    category: string | null | undefined;
+    brand: string | null | undefined;
+    model: string | null | undefined;
+    description: string | null | undefined;
+    tagNumber: string | null | undefined;
+    notes: string | null | undefined;
+    status: donationStatus;
+    bulkCollection: DocumentReference | null;
+    images: DocumentReference[] | string[];
+    createdAt: Timestamp;
+    modifiedAt: Timestamp;
+    dateReceived: Timestamp | null | undefined;
+    dateDistributed: Timestamp | null | undefined;
+    requestor: DocumentReference | null;
+}
