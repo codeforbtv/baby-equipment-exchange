@@ -1,30 +1,30 @@
 env:
     - variable: NODE_ENV
-      value: 'production'
+      value: 'test'
 
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-      secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
+      secret: projects/265793921799/secrets/NEXT_PUBLIC_FIREBASE_API_KEY/versions/2
 
     - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-      value: 'baby-equipment-exchange.firebaseapp.com'
+      value: 'baby-equipment-exchange-test.firebaseapp.com'
 
     - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-      value: 'baby-equipment-exchange'
+      value: 'baby-equipment-exchange-test'
 
     - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
       value: 'baby-equipment-exchange.appspot.com'
 
     - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-      value: '375825360663'
+      value: '265793921799'
 
     - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-      value: '1:375825360663:web:2307ccd57b31bf1d74b952'
+      value: '1:265793921799:web:2e4b4d91dacf37502a5ba2'
 
     - variable: CALENDLY_API_KEY
-      secret: projects/375825360663/secrets/CALENDLY_API_KEY
+      secret: projects/265793921799/secrets/CALENDLY_API_KEY
 
     - variable: SENDGRID_API_KEY
-      secret: projects/375825360663/secrets/SENDGRID_API_KEY
+      secret: projects/265793921799/secrets/SENDGRID_API_KEY
 
     - variable: ALGOLIA_API_KEY
-      secret: projects/375825360663/secrets/ALGOLIA_API_KEY
+      secret: projects/265793921799/secrets/ALGOLIA_API_KEY
