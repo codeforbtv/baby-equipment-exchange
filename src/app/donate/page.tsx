@@ -45,7 +45,9 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function Donate() {
     const [donorName, setDonorName] = useState<string>('');
     const [donorEmail, setDonorEmail] = useState<string>('');
+    const [confirmEmail, setConfirmEmail] = useState<string>('');
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
+    const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
     const [pendingDonations, setPendingDonations] = useState<DonationFormData[]>([]);
     const [showForm, setShowForm] = useState<boolean>(false);
@@ -65,10 +67,21 @@ export default function Donate() {
         validateEmail(donorEmail);
     }
 
+    function handleConfirmEmail(event: React.ChangeEvent<HTMLInputElement>): void {
+        setConfirmEmail(event.target.value);
+        if (confirmEmail.length !== 0 && event.target.value !== donorEmail) {
+            setEmailsDoNotMatch(true);
+        } else {
+            setEmailsDoNotMatch(false);
+        }
+    }
+
     function handleShowForm(event: React.SyntheticEvent) {
         if (donorEmail.length === 0 || isInvalidEmail || donorName.length === 0) {
             alert('Name and email are required to add donations.');
             return;
+        } else if (emailsDoNotMatch) {
+            alert('Please confirm your email address before adding donation.');
         } else {
             setShowForm(true);
         }
@@ -177,6 +190,19 @@ export default function Donate() {
                                 required
                                 onChange={handleEmailInput}
                                 onBlur={() => validateEmail(donorEmail)}
+                            />
+                            <TextField
+                                type="text"
+                                label="Confirm Email"
+                                name="confirmEmail"
+                                id="confirmEmail"
+                                placeholder="Confirm Email"
+                                value={confirmEmail}
+                                error={emailsDoNotMatch}
+                                helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
+                                required
+                                onChange={handleConfirmEmail}
+                                onBlur={() => handleConfirmEmail}
                             />
                         </Box>
                         {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
