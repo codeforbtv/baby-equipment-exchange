@@ -1,14 +1,8 @@
-//Firebase types
 import { DocumentReference, Timestamp } from 'firebase/firestore';
 
-export interface IDonationCache {
-    [key: string]: string | number;
-    id: string;
-    modifiedAt: number;
-}
-export type donationStatus = 'pending review' | 'pending delivery' | 'in processing' | 'available' | 'designated for distribution' | 'distributed';
+import { donationStatus } from './donation';
 
-export interface IDonation {
+export interface IInventoryItem {
     [key: string]:
         | boolean
         | string[]
@@ -27,8 +21,6 @@ export interface IDonation {
         | (() => Timestamp | null | undefined)
         | (() => number | undefined);
     id: string;
-    donorEmail: string;
-    donorName: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
@@ -45,7 +37,7 @@ export interface IDonation {
     requestor: DocumentReference | null;
 }
 
-export class Donation implements IDonation {
+export class InventoryItem implements IInventoryItem {
     [key: string]:
         | string
         | boolean
@@ -64,8 +56,6 @@ export class Donation implements IDonation {
         | (() => Timestamp | null | undefined)
         | (() => number | undefined);
     id: string;
-    donorEmail: string;
-    donorName: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
@@ -81,10 +71,9 @@ export class Donation implements IDonation {
     dateDistributed: Timestamp | null | undefined;
     requestor: DocumentReference | null;
 
-    constructor(args: IDonation) {
+    constructor(args: IInventoryItem) {
         this.id = args.id;
-        this.donorEmail = args.donorEmail;
-        this.donorName = args.donorName;
+
         this.category = args.category;
         this.brand = args.brand;
         this.model = args.model;
@@ -103,14 +92,6 @@ export class Donation implements IDonation {
 
     getId(): string {
         return this.id;
-    }
-
-    getDonorEmail(): string {
-        return this.donorEmail;
-    }
-
-    getDonorName(): string {
-        return this.donorName;
     }
 
     getCategory(): string | null | undefined {
@@ -178,22 +159,4 @@ export class Donation implements IDonation {
         const daysInStorage = Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
         return daysInStorage;
     }
-}
-
-export interface InventoryItem {
-    id: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
-    description: string | null | undefined;
-    tagNumber: string | null | undefined;
-    notes: string | null | undefined;
-    status: donationStatus;
-    bulkCollection: DocumentReference | null;
-    images: DocumentReference[] | string[];
-    createdAt: Timestamp;
-    modifiedAt: Timestamp;
-    dateReceived: Timestamp | null | undefined;
-    dateDistributed: Timestamp | null | undefined;
-    requestor: DocumentReference | null;
 }
