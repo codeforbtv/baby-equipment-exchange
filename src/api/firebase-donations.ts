@@ -18,7 +18,8 @@ import {
     writeBatch
 } from 'firebase/firestore';
 // Models
-import { Donation, IDonation, InventoryItem } from '@/models/donation';
+import { Donation, IDonation } from '@/models/donation';
+import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
 import { DonationBody } from '@/types/post-data';
 
 // Libs
@@ -83,6 +84,55 @@ const donationConverter = {
     }
 };
 
+const inventoryConverter = {
+    toFirestore(inventory: InventoryItem): DocumentData {
+        const inventoryData: IInventoryItem = {
+            id: inventory.getId(),
+            category: inventory.getCategory(),
+            brand: inventory.getBrand(),
+            model: inventory.getModel(),
+            description: inventory.getDescription(),
+            tagNumber: inventory.getTagNumber(),
+            notes: inventory.getNotes(),
+            status: inventory.getStatus(),
+            bulkCollection: inventory.getBulkCollection(),
+            images: inventory.getImages(),
+            createdAt: inventory.getCreatedAt(),
+            modifiedAt: inventory.getModifiedAt(),
+            dateReceived: inventory.getDateReceived(),
+            dateDistributed: inventory.getDateDistributed(),
+            requestor: inventory.getRequestor()
+        };
+        for (const key in inventoryData) {
+            if (inventoryData[key] === undefined || inventoryData[key] === null) {
+                delete inventoryData[key];
+            }
+        }
+        return inventoryData;
+    },
+    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): InventoryItem {
+        const data = snapshot.data(options);
+        const inventoryData: IInventoryItem = {
+            id: data.id,
+            category: data.category,
+            brand: data.brand,
+            model: data.model,
+            description: data.description,
+            tagNumber: data.tagNumber,
+            notes: data.notes,
+            status: data.status,
+            bulkCollection: data.bulkCollection,
+            images: data.images,
+            createdAt: data.createdAt,
+            modifiedAt: data.modifiedAt,
+            dateReceived: data.dateReceived,
+            dateDistributed: data.dateDistributed,
+            requestor: data.requestor
+        };
+        return new InventoryItem(inventoryData);
+    }
+};
+
 export async function getAllDonations(): Promise<Donation[]> {
     try {
         let donations: Donation[] = [];
@@ -102,7 +152,7 @@ export async function getInventory(): Promise<InventoryItem[]> {
         let inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const contraints: QueryConstraint[] = [where('status', '==', 'available')];
-        const q = query(collectionRef, ...contraints).withConverter(donationConverter);
+        const q = query(collectionRef, ...contraints).withConverter(inventoryConverter);
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((snapshot) => {
             inventory.push(snapshot.data());

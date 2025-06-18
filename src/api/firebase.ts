@@ -52,7 +52,7 @@ export const auth = getAuth(app);
 
 export async function callCheckClaims(...claimNames: string[]): Promise<any> {
     if (claimNames.length === 0) {
-        claimNames = ['admin', 'aid-worker', 'can-read-donations', 'donor', 'verified', 'volunteer'];
+        claimNames = ['admin', 'aid-worker'];
     }
     const idToken = await auth.currentUser?.getIdToken();
     const response = await checkClaims({ idToken: idToken, claimNames: claimNames });
@@ -234,10 +234,9 @@ export async function callSetUserAccount(userId: string, accountInformation: Acc
 
 export async function callUpdateUser(uid: string, accountInformation: AccountInformation): Promise<void> {
     try {
-        console.log('update user: ', uid, 'with: ', accountInformation);
         await updateUser({ uid: uid, accountInformation: accountInformation });
     } catch (error) {
-        console.log('error updating user from firebase.ts', error);
+        addErrorEvent('error updating user from firebase.ts', error);
     }
 }
 
@@ -277,7 +276,17 @@ export async function checkIsAdmin(user: User): Promise<boolean> {
         const result = await user.getIdTokenResult();
         return result.claims.admin === true;
     } catch (error) {
-        console.log(error);
+        addErrorEvent('Check is admin', error);
+    }
+    return Promise.reject();
+}
+
+export async function checkIsAidWorker(user: User): Promise<boolean> {
+    try {
+        const result = await user.getIdTokenResult();
+        return result.claims['aid-worker'] === true;
+    } catch (error) {
+        addErrorEvent('Check is aid worker', error);
     }
     return Promise.reject();
 }

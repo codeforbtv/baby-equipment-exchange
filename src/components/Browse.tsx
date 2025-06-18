@@ -1,6 +1,6 @@
 'use client';
 // Models
-import { Donation } from '@/models/donation';
+import { Donation, InventoryItem } from '@/models/donation';
 // Components
 import DonationCard from './DonationCard';
 import Filter from './Filter';
@@ -13,9 +13,10 @@ import { Button, ImageList } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 // Hooks
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState, useContext } from 'react';
+import { UserContext } from '@/contexts/UserContext';
 // Libs
-import { getAllDonations, deleteDonationById } from '@/api/firebase-donations';
+import { getAllDonations, deleteDonationById, getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 
 import algoliasearch from 'algoliasearch/lite';
@@ -29,11 +30,14 @@ const NewDonationDialog = lazy(() => import('@/components/NewDonationDialog'));
 
 const Browse: React.FC = () => {
     const [donations, setDonations] = useState<Donation[] | null>();
+    const [inventory, setInventory] = useState<InventoryItem[] | null>();
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [showHits, setShowHits] = useState<boolean>(false);
     const [isDialogActive, setIsDialogActive] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+
+    const currentUser = useContext(UserContext);
 
     function openDialog() {
         setIsDialogActive(true);
@@ -57,32 +61,49 @@ const Browse: React.FC = () => {
     }
 
     async function fetchDonations() {
-        try {
-            setIsLoading(true);
-            const donations = await getAllDonations();
-            setDonations(donations);
+        if (currentUser.isAdmin) {
+            try {
+                setIsLoading(true);
+                const donations = await getAllDonations();
+                setDonations(donations);
+                setIsLoading(false);
+            } catch (error: any) {
+                addErrorEvent('fetchDonations', error);
+            }
+        } else if (currentUser.isAidWorker) {
+            try {
+                setIsLoading(true);
+                const inventory = await getInventory();
+                setInventory(inventory);
+                setIsLoading(false);
+            } catch (error) {
+                addErrorEvent('Fetch inventory', error);
+            }
+        } else {
             setIsLoading(false);
-        } catch (error: any) {
-            addErrorEvent('fetchDonations', error);
+            return;
         }
     }
 
     async function deleteDonation(id: string) {
-        try {
-            await deleteDonationById(id);
-            fetchDonations();
-        } catch (error: any) {
-            addErrorEvent('component/Browse', error);
+        if (currentUser.isAdmin) {
+            try {
+                await deleteDonationById(id);
+                fetchDonations();
+            } catch (error: any) {
+                addErrorEvent('component/Browse', error);
+            }
+        } else {
+            return;
         }
     }
 
     /**
      * On component render sets the donations state to the active donations retreived from Firebase.
      */
+
     useEffect(() => {
-        (async () => {
-            fetchDonations();
-        })();
+        fetchDonations();
     }, []);
 
     const algoliaApiKey = process.env.ALGOLIA_API_KEY;
@@ -99,6 +120,7 @@ const Browse: React.FC = () => {
                     </Suspense>
                 </div>
             </div>
+            {inventory != undefined && inventory.length > 0 && console.log(inventory)}
             {donations == null || donations.length == 0 ? (
                 <p>There are no donations available to view.</p>
             ) : (
