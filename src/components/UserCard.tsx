@@ -108,27 +108,6 @@ export default function UserCard(props: UserCardProps) {
         await callUpdateUser(uid, accountInformation);
         await callSetClaims(uid, claims);
         handleHideEditView();
-        // callSetUserAccount(userId!, {
-        //     name: displayName,
-        //     contact: {
-        //         name: displayName,
-        //         user: user,
-        //         email: email,
-        //         notes: contact?.notes,
-        //         phone: phoneNumber,
-        //         website: website
-        //     },
-        //     location: {
-        //         line_1: addressLine1,
-        //         line_2: location?.line_2,
-        //         city: city,
-        //         state: state,
-        //         zipcode: zipcode,
-        //         latitude: location?.latitude,
-        //         longitude: location?.longitude
-        //     },
-        //     photo: photo
-        // }).then(() => handleHideEditView());
     }
 
     const handleIconButtonClick = () => {
@@ -192,7 +171,7 @@ export default function UserCard(props: UserCardProps) {
     };
 
     const handleToggleIsAidWorker = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setIsDonor(event.target.checked);
+        setIsAidWorker(event.target.checked);
     };
 
     const handleToggleCanReadDonations = (event: React.ChangeEvent<HTMLInputElement>) => {

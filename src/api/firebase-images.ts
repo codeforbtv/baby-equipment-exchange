@@ -1,6 +1,5 @@
 // Modules
 import {
-    addDoc,
     collection,
     deleteDoc,
     doc,
@@ -10,9 +9,7 @@ import {
     getDocs,
     query,
     QueryDocumentSnapshot,
-    serverTimestamp,
     SnapshotOptions,
-    Timestamp,
     where
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,12 +17,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { db, getUserId, storage, addErrorEvent } from './firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
-
 // Models
 import { IImage, Image, imageFactory } from '@/models/image';
-import { IImageDetail, ImageDetail } from '@/models/image-detail';
-// Imported contants
-import { USERS_COLLECTION } from './firebase-users';
 
 const IMAGES_COLLECTION = 'Images';
 const IMAGE_DETAILS_COLLECTION = 'ImageDetails';
@@ -33,6 +26,7 @@ const IMAGE_DETAILS_COLLECTION = 'ImageDetails';
 const imageConverter = {
     toFirestore(image: Image): DocumentData {
         const imageData: IImage = {
+            uploadedBy: image.getUploadedBy(),
             downloadURL: image.getDownloadURL(),
             createdAt: image.getCreatedAt(),
             modifiedAt: image.getModifiedAt()
@@ -49,6 +43,7 @@ const imageConverter = {
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Image {
         const data = snapshot.data(options)!;
         const imageData: IImage = {
+            uploadedBy: data.uploadedBy,
             downloadURL: data.downloadURL,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
@@ -57,25 +52,24 @@ const imageConverter = {
     }
 };
 
-export async function uploadImages(files: File[]): Promise<DocumentReference[]> {
+export async function uploadImages(files: File[]): Promise<string[]> {
     try {
-        const documentRefs: DocumentReference[] = [];
+        const imageURLs: string[] = [];
         const userId = await getUserId();
 
         for (const file of files) {
             const currentTime = Date.now();
             // eslint-disable-next-line no-useless-escape
-            const extension = '.' + /[^\.]*$/.exec(file.name)![0]; // Suppress the no-useless-escape rule from being called on a regular expression.
+            const extension = /[^\.]*$/.exec(file.name)![0]; // Suppress the no-useless-escape rule from being called on a regular expression.
             const fileSize = file.size;
-            const fileType = file.type;
-            const storageFilename = `${uuidv4()}-${currentTime}${extension}`;
+            const storageFilename = `${uuidv4()}-${currentTime}.${extension}`;
 
             // todo: Validate file size
             // todo: Validate type
 
             //ensure image has correct contentType
             const metaData = {
-                contentType: fileType
+                contentType: `image/${extension}`
             };
 
             const fileData: ArrayBuffer = await file.arrayBuffer();
@@ -83,30 +77,10 @@ export async function uploadImages(files: File[]): Promise<DocumentReference[]> 
 
             // Upload image(s) to Cloud Storage
             await uploadBytes(storageRef, fileData, metaData);
-            const downloadURL = `gs://baby-equipment-exchange.appspot.com/${storageFilename}`;
-            //Create new Image document
-            const imageCollection = collection(db, IMAGES_COLLECTION);
-            const { ...imageData } = imageFactory(downloadURL);
-
-            const imageRef = await addDoc(imageCollection, imageData);
-
-            //Create new Image Details document
-            const imageDetailsCollection = collection(db, IMAGE_DETAILS_COLLECTION);
-            const imageDetailsData: IImageDetail = {
-                image: imageRef,
-                uploadedBy: doc(db, `${USERS_COLLECTION}/${userId}`),
-                uri: downloadURL,
-                filename: storageFilename,
-                createdAt: serverTimestamp() as Timestamp,
-                modifiedAt: serverTimestamp() as Timestamp
-            };
-            const { ...imageDetail } = new ImageDetail(imageDetailsData);
-            await addDoc(imageDetailsCollection, imageDetail);
-
-            // Return the newly created id values of Images collection documents.
-            documentRefs.push(imageRef);
+            const downloadURL = await getDownloadURL(storageRef);
+            imageURLs.push(downloadURL);
         }
-        return documentRefs;
+        return imageURLs;
     } catch (error: any) {
         addErrorEvent('uploadImages', error);
     }
@@ -126,7 +100,7 @@ export async function deleteImagesByRef(...documentReferences: DocumentReference
             const imageSnapshot = await getDoc(imageReference.withConverter(imageConverter));
             if (imageSnapshot.exists()) {
                 const imageDocument = imageSnapshot.data();
-                
+
                 const imageDetailsCollectionRef = collection(db, IMAGE_DETAILS_COLLECTION);
                 const conjunctions = [where('image', '==', imageReference)];
                 const q = query(imageDetailsCollectionRef, ...conjunctions);
@@ -134,12 +108,12 @@ export async function deleteImagesByRef(...documentReferences: DocumentReference
                 if (imageDetailsSnapshot.size !== 1) {
                     throw new Error('No associated image details.');
                 }
-                
+
                 await deleteObject(ref(storage, imageDocument.getDownloadURL()));
                 await deleteDoc(imageDetailsSnapshot.docs[0].ref);
                 await deleteDoc(imageReference);
             }
-        } catch (error: any) {         
+        } catch (error: any) {
             addErrorEvent('deleteImagesByRef', error);
         }
     }
