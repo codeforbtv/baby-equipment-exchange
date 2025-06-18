@@ -13,9 +13,7 @@ import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
 //libs
 import { addBulkDonation, addDonation } from '@/api/firebase-donations';
-import { DocumentReference, arrayUnion, doc } from 'firebase/firestore';
-import { USERS_COLLECTION } from '@/api/firebase-users';
-import { addErrorEvent, db } from '@/api/firebase';
+import { addErrorEvent } from '@/api/firebase';
 import { DonationBody } from '@/types/post-data';
 import { uploadImages } from '@/api/firebase-images';
 
@@ -99,7 +97,6 @@ export default function Donate() {
                 if (donation.images) {
                     imageURLs = await uploadImages(donation.images);
                 }
-                console.log(imageURLs);
                 const newDonation = {
                     donorName: donorName,
                     donorEmail: donorEmail,

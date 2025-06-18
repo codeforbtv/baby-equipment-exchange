@@ -1,6 +1,5 @@
 // Modules
 import {
-    addDoc,
     collection,
     deleteDoc,
     doc,
@@ -10,9 +9,7 @@ import {
     getDocs,
     query,
     QueryDocumentSnapshot,
-    serverTimestamp,
     SnapshotOptions,
-    Timestamp,
     where
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,9 +19,6 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 
 // Models
 import { IImage, Image, imageFactory } from '@/models/image';
-import { IImageDetail, ImageDetail } from '@/models/image-detail';
-// Imported contants
-import { USERS_COLLECTION } from './firebase-users';
 
 const IMAGES_COLLECTION = 'Images';
 const IMAGE_DETAILS_COLLECTION = 'ImageDetails';
