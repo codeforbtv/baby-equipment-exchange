@@ -4,7 +4,7 @@ import { useContext, useEffect, useState, ChangeEvent } from 'react';
 import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 import { getSchedulingPageLink } from '@/api/calendly';
-import { getDonorEmailByDonationId } from '@/api/firebase-donations';
+import { getDonationById } from '@/api/firebase-donations';
 import sendEmail from '@/api/sendgrid';
 import accept from '@/email-templates/accept';
 import { addErrorEvent } from '@/api/firebase';
@@ -54,8 +54,8 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
         };
         const fetchDonorEmail = async () => {
             try {
-                const userEmail = await getDonorEmailByDonationId(params.id);
-                setDonorEmail(userEmail);
+                const donation = await getDonationById(params.id);
+                setDonorEmail(donation.donorEmail);
             } catch (error) {
                 addErrorEvent('Fetch donor email', error);
             }
