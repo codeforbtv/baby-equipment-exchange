@@ -1,7 +1,7 @@
 'use client';
 
 //components
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -13,7 +13,7 @@ import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
 //libs
 import { addBulkDonation, addDonation } from '@/api/firebase-donations';
-import { addErrorEvent } from '@/api/firebase';
+import { addErrorEvent, loginAnonymousUser } from '@/api/firebase';
 import { DonationBody } from '@/types/post-data';
 import { uploadImages } from '@/api/firebase-images';
 
@@ -51,6 +51,10 @@ export default function Donate() {
     const [showForm, setShowForm] = useState<boolean>(false);
     const { currentUser } = useUserContext();
     const router = useRouter();
+
+    useEffect(() => {
+        console.log(currentUser);
+    }, [currentUser]);
 
     function validateEmail(email: string): void {
         if (email.length === 0 || !emailRegex.test(email)) {
@@ -91,7 +95,12 @@ export default function Donate() {
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
         let bulkDonations: DonationBody[] = [];
+        let anonymousUser;
         try {
+            //create anonymous user if not loged in
+            if (!currentUser) {
+                anonymousUser = await loginAnonymousUser();
+            }
             for (const donation of pendingDonations) {
                 let imageURLs: string[] = [];
                 if (donation.images) {
@@ -100,6 +109,7 @@ export default function Donate() {
                 const newDonation = {
                     donorName: donorName,
                     donorEmail: donorEmail,
+                    donorId: currentUser ? currentUser.uid : anonymousUser ? anonymousUser.uid : '',
                     brand: donation.brand ?? '',
                     category: donation.category ?? '',
                     model: donation.model ?? '',
@@ -132,7 +142,7 @@ export default function Donate() {
     }
 
     return (
-        <ProtectedRoute>
+        <>
             {submitState === 'submitting' && <Loader />}
             {(submitState === 'idle' || submitState === 'error') && (
                 <>
@@ -221,6 +231,6 @@ export default function Donate() {
                     </div>
                 </>
             )}
-        </ProtectedRoute>
+        </>
     );
 }

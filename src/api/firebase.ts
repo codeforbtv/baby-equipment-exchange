@@ -11,7 +11,8 @@ import {
     getAuth,
     sendPasswordResetEmail,
     createUserWithEmailAndPassword,
-    updateProfile
+    updateProfile,
+    signInAnonymously
 } from 'firebase/auth';
 
 import { firebaseConfig } from './config';
@@ -287,6 +288,16 @@ export async function checkIsAidWorker(user: User): Promise<boolean> {
         return result.claims['aid-worker'] === true;
     } catch (error) {
         addErrorEvent('Check is aid worker', error);
+    }
+    return Promise.reject();
+}
+
+export async function loginAnonymousUser(): Promise<User | null> {
+    try {
+        const userCredential = await signInAnonymously(auth);
+        return userCredential.user;
+    } catch (error) {
+        addErrorEvent('Login anonymously', error);
     }
     return Promise.reject();
 }
