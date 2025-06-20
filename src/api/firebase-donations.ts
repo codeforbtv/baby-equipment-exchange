@@ -12,7 +12,6 @@ import {
     getDoc,
     getDocs,
     query,
-    runTransaction,
     serverTimestamp,
     where,
     writeBatch
@@ -23,7 +22,7 @@ import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
 import { DonationBody } from '@/types/post-data';
 
 // Libs
-import { db, getUserId, addErrorEvent, storage } from './firebase';
+import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
 
 // Imported constants
@@ -181,47 +180,8 @@ export async function getDonationById(id: string): Promise<Donation> {
     return Promise.reject();
 }
 
-export async function addDonation(newDonation: DonationBody) {
-    try {
-        await runTransaction(db, async (transaction) => {
-            // Generate document references with firebase-generated IDs
-            const donationRef = doc(collection(db, DONATIONS_COLLECTION));
-            const userId: string = await getUserId();
-            const donationParams: IDonation = {
-                id: donationRef.id,
-                donorEmail: newDonation.donorEmail,
-                donorName: newDonation.donorName,
-                donorId: newDonation.donorId,
-                category: newDonation.category,
-                brand: newDonation.brand,
-                model: newDonation.model,
-                description: newDonation.description,
-                tagNumber: null,
-                notes: null,
-                status: 'pending review',
-                bulkCollection: null,
-                images: newDonation.images,
-                createdAt: serverTimestamp() as Timestamp,
-                modifiedAt: serverTimestamp() as Timestamp,
-                dateReceived: null,
-                dateDistributed: null,
-                requestor: null
-            };
-            const donation = new Donation(donationParams);
-            transaction.set(donationRef, donationConverter.toFirestore(donation));
-        });
-    } catch (error: any) {
-        addErrorEvent('addDonation', error);
-    }
-}
-
 export async function addBulkDonation(newDonations: DonationBody[]) {
-    if (newDonations.length === 1) {
-        await addDonation(newDonations[0]);
-        return;
-    }
     try {
-        const userId: string = await getUserId();
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
         const batch = writeBatch(db);
         batch.set(bulkDonationsRef, { donations: [], donorEmail: newDonations[0].donorEmail, donorName: newDonations[0].donorName });

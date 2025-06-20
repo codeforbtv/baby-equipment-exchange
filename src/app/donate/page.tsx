@@ -4,7 +4,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import PendingDontions from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
 import { Button, Box, TextField } from '@mui/material';
@@ -12,7 +11,7 @@ import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
 //libs
-import { addBulkDonation, addDonation } from '@/api/firebase-donations';
+import { addBulkDonation } from '@/api/firebase-donations';
 import { addErrorEvent, loginAnonymousUser } from '@/api/firebase';
 import { DonationBody } from '@/types/post-data';
 import { uploadImages } from '@/api/firebase-images';
@@ -131,7 +130,7 @@ export default function Donate() {
         try {
             setSubmitState('submitting');
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
-            donationsToUpload.length > 1 ? await addBulkDonation(donationsToUpload) : await addDonation(donationsToUpload[0]);
+            await addBulkDonation(donationsToUpload);
             setPendingDonations([]);
             setSubmitState('idle');
             router.push('/');
