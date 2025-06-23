@@ -1,6 +1,7 @@
 'use client';
 // Models
-import { Donation, InventoryItem } from '@/models/donation';
+import { Donation } from '@/models/donation';
+import { InventoryItem } from '@/models/inventoryItem';
 // Components
 import DonationCard from './DonationCard';
 import Filter from './Filter';

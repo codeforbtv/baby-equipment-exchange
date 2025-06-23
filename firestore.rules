@@ -7,53 +7,34 @@ service cloud.firestore {
         allow read: if request.auth != null && request.auth.token.admin == true;
       }
       match /Donations/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
+        allow read, write: if request.auth != null && request.auth.token.admin == true;
+      }   
+      match /BulkDonations/{document=**} {
+        allow read, write: if request.auth != null && request.auth.token.admin == true;
       }
-      match /DonationDetails/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
+      // Aid worker role
+       match /Donations/{document=**} {
+        allow read: if request.auth != null && request.auth.token['aid-worker'] == true;
+      }   
+      match /Donations/{document=**} {
+        allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt', 'dateDistributed']))
       }
       match /BulkDonations/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
+        allow read: if request.auth != null && request.auth.token['aid-worker'] == true;
       }
-      match /Images/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-        }
-        match /ImageDetails/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-        }
-      match /Organizations/{document=**} {
-        allow create, read, update, write: if request.auth != null && request.auth.token.admin == true;
-        }
-      match /Storage/{document=**} {
-        allow create, read, update, write: if request.auth != null && request.auth.token.admin == true;
-        }
-      match /Users/{document=**} {
-        allow read: if request.auth != null && request.auth.token.admin == true;
-      }
-      match /UserDetails/{document=**} {
-        allow read, update: if request.auth != null  && request.auth.token.admin == true;
-        }
+     
       // Standard user role
+         match /Donations/{document=**} {
+        allow create: if request.auth != null;
+        } 
         match /Donations/{document=**} {
-        allow create, read, update, write: if request.auth != null;
-        }
-        match /DonationDetails/{document=**} {
-        allow create, read, update, write: if request.auth != null;
+        allow read: if request.auth != null && request.auth.uid == resource.data.donorId;
+        }  
+        match /BulkDonations/{document=**} {
+        allow create: if request.auth != null 
         }
         match /BulkDonations/{document=**} {
-        allow create, read, update, write: if request.auth != null;
-        }
-        match /Images/{document=**} {
-        allow create, read: if request.auth != null;
-        }
-        match /ImageDetails/{document=**} {
-        allow create, read: if request.auth != null;
-        }
-        match /Users/{userId} {
-        allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
-        }
-        match /UserDetails/{userId} {
-        allow create, read, update, write: if request.auth != null && request.auth.uid == userId;
-        }
+        allow read: if request.auth != null && request.auth.uid == resource.data.donorId;
+        }        
   }
 }
