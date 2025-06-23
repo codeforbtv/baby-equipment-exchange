@@ -184,7 +184,12 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
     try {
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
         const batch = writeBatch(db);
-        batch.set(bulkDonationsRef, { donations: [], donorEmail: newDonations[0].donorEmail, donorName: newDonations[0].donorName });
+        batch.set(bulkDonationsRef, {
+            donations: [],
+            donorEmail: newDonations[0].donorEmail,
+            donorName: newDonations[0].donorName,
+            donorId: newDonations[0].donorId
+        });
         for (const newDonation of newDonations) {
             const donationRef = doc(collection(db, DONATIONS_COLLECTION));
             const donationParams: IDonation = {
