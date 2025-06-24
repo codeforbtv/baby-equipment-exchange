@@ -23,12 +23,13 @@ export type AccountInformation = {
     phoneNunber?: string;
 };
 export type DonationBody = {
-    user: DocumentReference;
+    donorEmail: string;
+    donorName: string;
     category: string;
     brand: string;
     model: string;
     description: string;
-    images: DocumentReference[];
+    images: string[];
 };
 
 export type UserBody = {

@@ -4,7 +4,7 @@ import { useContext, useEffect, useState, ChangeEvent } from 'react';
 import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 import { getSchedulingPageLink } from '@/api/calendly';
-import { getDonorEmailByDonationId } from '@/api/firebase-donations';
+import { getDonationById } from '@/api/firebase-donations';
 import sendEmail from '@/api/sendgrid';
 import reject from '@/email-templates/reject';
 import { addErrorEvent } from '@/api/firebase';
@@ -13,7 +13,7 @@ import { email } from '@/types/SendgridTypes';
 
 import '../../../styles/globalStyles.css';
 
-import { Box, Button, NativeSelect, TextField } from '@mui/material';
+import { Box, Button, TextField } from '@mui/material';
 
 export default function RejectDonation({ params }: { params: { id: string } }) {
     const { isAdmin } = useContext(UserContext);
@@ -39,8 +39,8 @@ export default function RejectDonation({ params }: { params: { id: string } }) {
     useEffect(() => {
         const fetchDonorEmail = async () => {
             try {
-                const userEmail = await getDonorEmailByDonationId(params.id);
-                setDonorEmail(userEmail);
+                const donation = await getDonationById(params.id);
+                setDonorEmail(donation.donorEmail);
             } catch (error) {
                 addErrorEvent('Fetch donor email', error);
             }

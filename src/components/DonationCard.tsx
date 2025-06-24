@@ -12,12 +12,9 @@ import { DonationCardProps } from '@/types/DonationCardProps';
 
 const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
-export default function DonationCard({ donation, onDelete }: { 
-    donation: DonationCardProps;
-    onDelete: (id: string) => Promise<void>;
-}) {
+export default function DonationCard({ donation, onDelete }: { donation: DonationCardProps; onDelete: (id: string) => Promise<void> }) {
     const [showDialog, setShowDialog] = useState<boolean>(false);
-    const image = donation.images[0];
+    const image = donation.images ? donation.images[0] : '';
 
     const closeDialog = () => {
         setShowDialog(false);
@@ -43,17 +40,17 @@ export default function DonationCard({ donation, onDelete }: {
                 title={donation.brand}
                 subtitle={donation.model}
                 actionIcon={
-                    <IconButton sx={{ color: 'rgba(255, 255, 255, 0.54)' }} aria-label={`details about ${donation.brand} ${donation.model}`} onClick={openDialog}>
+                    <IconButton
+                        sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                        aria-label={`details about ${donation.brand} ${donation.model}`}
+                        onClick={openDialog}
+                    >
                         <InfoIcon />
                     </IconButton>
                 }
             />
             <Suspense fallback={<Loader />}>
-                <ExistingDonationDialog
-                    initialParameters={{ initAsOpen: showDialog, data: donation }}
-                    onClose={closeDialog}
-                    onDelete={deleteDonation}
-                />
+                <ExistingDonationDialog initialParameters={{ initAsOpen: showDialog, data: donation }} onClose={closeDialog} onDelete={deleteDonation} />
             </Suspense>
         </ImageListItem>
     );

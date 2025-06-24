@@ -175,21 +175,6 @@ export default function DonationForm(props: DonationFormProps) {
                                         Add Image
                                     </Button>
                                 </label>
-                                <label id="labelForImages" htmlFor="images">
-                                    <input
-                                        required
-                                        type="file"
-                                        id="images"
-                                        name="images"
-                                        accept="image/*"
-                                        capture="environment"
-                                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => appendImagesToState(images, setImages, event)}
-                                        multiple
-                                    />
-                                    <Button variant="contained" component="span" className={styles['form-btn']} startIcon={<PhotoCameraIcon />}>
-                                        Take Photo
-                                    </Button>
-                                </label>
                             </div>
                         </div>
                     </InputContainer>

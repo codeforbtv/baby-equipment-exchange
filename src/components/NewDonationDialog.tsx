@@ -1,5 +1,8 @@
+'use client';
+
 // Hooks
 import React, { ReactElement, useEffect, useState } from 'react';
+import Link from 'next/link';
 // Containers
 import { Box, Button, Dialog, DialogActions, DialogContent, FormControl, FormLabel, NativeSelect, TextField } from '@mui/material';
 import InputContainer from './InputContainer';
@@ -13,7 +16,7 @@ import ImageThumbnail from './ImageThumbnail';
 import { addDonation } from '@/api/firebase-donations';
 import { uploadImages } from '@/api/firebase-images';
 import { USERS_COLLECTION } from '@/api/firebase-users';
-import { DocumentReference, doc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { db } from '@/api/firebase';
 import { useUserContext } from '@/contexts/UserContext';
 
@@ -27,6 +30,8 @@ export default function NewDonationDialog({
     const [category, setCategory] = useState<string>('');
     const [brand, setBrand] = useState<string>('');
     const [model, setModel] = useState<string>('');
+    const [donorEmail, setDonorEmail] = useState<string>('');
+    const [donorName, setDonorName] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [imageElements, setImageElements] = useState<ReactElement[]>([]);
     const [images, setImages] = useState<File[] | null>();
@@ -54,7 +59,7 @@ export default function NewDonationDialog({
     //Use this to handle passing form data to the database on submission
     async function handleFormSubmit() {
         try {
-            let imageRefs: DocumentReference[] = [];
+            let imageRefs: string[] = [];
 
             if (currentUser == null) {
                 throw new Error('Unable to access the user account.');
@@ -74,6 +79,8 @@ export default function NewDonationDialog({
                 category,
                 model,
                 description,
+                donorEmail,
+                donorName,
                 images: imageRefs
             };
 
@@ -110,6 +117,9 @@ export default function NewDonationDialog({
         <Dialog open={initialParameters.initAsOpen} onClose={controllers.closeController}>
             <DialogContent>
                 <h3>New Donation</h3>
+                <p style={{ color: 'red' }}>
+                    THIS PAGE IS DEPRECATED. YOU CAN SUBMIT A DONATION <Link href="/donate">HERE</Link>
+                </p>
                 <p>
                     Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we do not
                     accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could be subject to
