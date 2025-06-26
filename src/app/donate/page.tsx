@@ -3,7 +3,6 @@
 //components
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUserContext } from '@/contexts/UserContext';
 import PendingDontions from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
 import { Button, Box, TextField } from '@mui/material';
@@ -19,6 +18,9 @@ import { uploadImages } from '@/api/firebase-images';
 //styles
 import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
+
+//Hooks
+import { useUserContext } from '@/contexts/UserContext';
 
 export type DonationFormData = {
     category: string | null;
