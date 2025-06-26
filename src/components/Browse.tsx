@@ -27,7 +27,7 @@ import '../styles/globalStyles.css';
 import styles from './Browse.module.css';
 import { DonationCardProps } from '@/types/DonationCardProps';
 
-const NewDonationDialog = lazy(() => import('@/components/NewDonationDialog'));
+// const NewDonationDialog = lazy(() => import('@/components/NewDonationDialog'));
 
 const Browse: React.FC = () => {
     const [donations, setDonations] = useState<Donation[] | null>();
@@ -113,14 +113,14 @@ const Browse: React.FC = () => {
 
     return (
         <>
-            <div className={styles['browse__header']}>
+            {/* <div className={styles['browse__header']}>
                 <div>
                     <Button onClick={handleNewDonation}>New Donation</Button>
                     <Suspense fallback={<Loader />}>
                         <NewDonationDialog initialParameters={{ initAsOpen: isDialogActive }} controllers={{ closeController: closeDialog }} />
                     </Suspense>
                 </div>
-            </div>
+            </div> */}
             {inventory != undefined && inventory.length > 0 && console.log(inventory)}
             {donations == null || donations.length == 0 ? (
                 <p>There are no donations available to view.</p>

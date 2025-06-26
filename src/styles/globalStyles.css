@@ -91,11 +91,16 @@
 }
 
 .page--header {
+    margin-top: 3rem;
     width: 100%;
     padding: 1rem;
 }
 
 .page--header > p {
+    font-family: var(--font-garamond);
+}
+
+.page--header > a {
     font-family: var(--font-garamond);
 }
 
