@@ -1,5 +1,18 @@
-import { DonationCardProps } from '@/types/DonationTypes';
-import { Button, Dialog, DialogActions, DialogContent, FormControl, FormLabel, ImageList, NativeSelect, TextField } from '@mui/material';
+import { DonationCardProps, donationStatus } from '@/types/DonationTypes';
+import { updateDonationStatus } from '@/api/firebase-donations';
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    FormControl,
+    FormLabel,
+    ImageList,
+    MenuItem,
+    NativeSelect,
+    SelectChangeEvent,
+    TextField
+} from '@mui/material';
 import { useContext } from 'react';
 import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
@@ -20,6 +33,15 @@ export default function ExistingDonationDialog({
 
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
+
+    const donationStatusToName: {[key in donationStatus]: string} = {
+        'pending review': "Pending Review",
+        'pending delivery': "Pending Delivery",
+        'in processing': "In Processing",
+        'available': "Available" ,
+        'designated for distribution': "Designated for Distribution",
+        'distributed': "Distributed",
+    };
 
     const handleAccept = () => {
         onClose();
@@ -82,6 +104,25 @@ export default function ExistingDonationDialog({
                             readOnly: true
                         }}
                     />
+                    <TextField
+                        name="status"
+                        label="Status"
+                        select
+                        defaultValue={donation.status ?? 'pending review'}
+                        SelectProps={{
+                            readOnly: !isAdmin,
+                            onChange: async (event: SelectChangeEvent<unknown>) => {
+                                if(!isAdmin) { return; }
+                                const newStatus = event.target.value as donationStatus;
+                                const resultStatus: donationStatus = await updateDonationStatus(donation.id, newStatus);
+                                donation.status = resultStatus;
+                            }
+                        }}
+                    >
+                        {
+                            Object.keys(donationStatusToName).map((status) => <MenuItem key={status} value={status}> {donationStatusToName[status as donationStatus]} </MenuItem>)
+                        }
+                    </TextField>
                 </FormControl>
                 <ImageList className={styles['browse__grid']}>
                     {donation.images &&
