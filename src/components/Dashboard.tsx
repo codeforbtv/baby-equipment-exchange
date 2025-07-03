@@ -4,6 +4,7 @@ import Browse from './Browse';
 import UserManagement from './UserManagement';
 import Loader from './Loader';
 import { isAdmin } from '@/api/firebase';
+import { useUserContext } from '@/contexts/UserContext';
 
 export default function Dashboard() {
     const [currentTab, setCurrentTab] = useState<number>(0);
@@ -13,12 +14,11 @@ export default function Dashboard() {
         setCurrentTab(target);
     };
 
+    const { isAdmin } = useUserContext();
+
     useEffect(() => {
-        (async () => {
-            const isUserAdmin: boolean = await isAdmin();
-            setDisplayUserManagement(isUserAdmin);
-            setIsLoading(false);
-        })();
+        setDisplayUserManagement(isAdmin);
+        setIsLoading(false);
     }, []);
 
     return isLoading ? (

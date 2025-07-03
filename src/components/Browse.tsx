@@ -113,14 +113,9 @@ const Browse: React.FC = () => {
 
     return (
         <>
-            {/* <div className={styles['browse__header']}>
-                <div>
-                    <Button onClick={handleNewDonation}>New Donation</Button>
-                    <Suspense fallback={<Loader />}>
-                        <NewDonationDialog initialParameters={{ initAsOpen: isDialogActive }} controllers={{ closeController: closeDialog }} />
-                    </Suspense>
-                </div>
-            </div> */}
+            <div className="page--header">
+                <h1>Browse</h1>
+            </div>
             {inventory != undefined && inventory.length > 0 && console.log(inventory)}
             {donations == null || donations.length == 0 ? (
                 <p>There are no donations available to view.</p>

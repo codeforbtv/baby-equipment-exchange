@@ -19,6 +19,7 @@ import { uploadImages } from '@/api/firebase-images';
 //styles
 import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
+import homeStyles from '../HomeStyles.module.css';
 
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
@@ -158,8 +159,10 @@ export default function Donate() {
             {submitState === 'submitting' && <Loader />}
             {(submitState === 'idle' || submitState === 'error') && (
                 <>
-                    <div className="page--header">
-                        <Typography variant="h2">Welcome to the Baby Equipment Exchange!</Typography>
+                    <div className={homeStyles['home--header']}>
+                        <h2>Welcome to the Baby Equipment Exchange!</h2>
+                    </div>
+                    <div className="content--container">
                         <Typography variant="body1">
                             A 100% volunteer led initiative to provide durable equipment to families in need through partner referrals and community donations.
                         </Typography>
@@ -171,51 +174,51 @@ export default function Donate() {
                         <Typography variant="body1">
                             Are you an existing partner? Please <Link href="/login">log in</Link> or <Link href="/join">create an account</Link>.
                         </Typography>
-
-                        <hr />
-                        <Box className={styles['donorForm']} component="form" gap={3} display={'flex'} flexDirection={'column'} name="">
-                            <TextField
-                                type="text"
-                                label="Name"
-                                name="donorName"
-                                id="donorName"
-                                placeholder="Your name"
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                    setDonorName(event.target.value);
-                                }}
-                                value={donorName}
-                                required
-                            />
-                            <TextField
-                                type="text"
-                                label="Email"
-                                name="email"
-                                id="email"
-                                placeholder="Your email"
-                                autoComplete="email"
-                                value={donorEmail}
-                                error={isInvalidEmail}
-                                helperText={isInvalidEmail && 'Please enter a valid email addres'}
-                                required
-                                onChange={handleEmailInput}
-                                onBlur={() => validateEmail(donorEmail)}
-                            />
-                            <TextField
-                                type="text"
-                                label="Confirm Email"
-                                name="confirmEmail"
-                                id="confirmEmail"
-                                placeholder="Confirm Email"
-                                value={confirmEmail}
-                                error={emailsDoNotMatch}
-                                helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
-                                required
-                                onChange={handleConfirmEmail}
-                                onBlur={() => handleConfirmEmail}
-                            />
-                        </Box>
-                        {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
                     </div>
+                    <hr />
+                    <Box className={styles['donorForm']} component="form" gap={3} display={'flex'} flexDirection={'column'} name="">
+                        <TextField
+                            type="text"
+                            label="Name"
+                            name="donorName"
+                            id="donorName"
+                            placeholder="Your name"
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                setDonorName(event.target.value);
+                            }}
+                            value={donorName}
+                            required
+                        />
+                        <TextField
+                            type="text"
+                            label="Email"
+                            name="email"
+                            id="email"
+                            placeholder="Your email"
+                            autoComplete="email"
+                            value={donorEmail}
+                            error={isInvalidEmail}
+                            helperText={isInvalidEmail && 'Please enter a valid email addres'}
+                            required
+                            onChange={handleEmailInput}
+                            onBlur={() => validateEmail(donorEmail)}
+                        />
+                        <TextField
+                            type="text"
+                            label="Confirm Email"
+                            name="confirmEmail"
+                            id="confirmEmail"
+                            placeholder="Confirm Email"
+                            value={confirmEmail}
+                            error={emailsDoNotMatch}
+                            helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
+                            required
+                            onChange={handleConfirmEmail}
+                            onBlur={() => handleConfirmEmail}
+                        />
+                    </Box>
+                    {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
+
                     <div className={styles['btn--group']}>
                         {!showForm && (
                             <Button type="button" variant="outlined" startIcon={<AddIcon />} onClick={handleShowForm}>
@@ -231,29 +234,32 @@ export default function Donate() {
                             </Button>
                         )}
                     </div>
-                    <Typography variant="body2">
-                        Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we do
-                        not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could be
-                        subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to recall.
-                    </Typography>
-                    <Typography variant="body2">
-                        Please reference the following web pages if you have any questions about safety/recall status of these items:
-                    </Typography>
-                    <ul className="page--list">
-                        <li>
-                            Consumer Product Safety Commission (<a href="https://www.cpsc.gov/">cpsc.gov</a>)
-                        </li>
-                        <li>Reseller&apos;s Guide to Selling Safer Products</li>
-                        <li>
-                            SaferProducts.gov (<a href="https://www.saferproducts.gov">saferproducts.gov</a>)
-                        </li>
-                        <li>
-                            Recalls.gov (<a href="https://www.recalls.gov/">recalls.gov</a>)
-                        </li>
-                        <li>
-                            Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
-                        </li>
-                    </ul>
+                    <div className="content--container">
+                        <Typography variant="body2">
+                            Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we
+                            do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could
+                            be subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to
+                            recall.
+                        </Typography>
+                        <Typography variant="body2">
+                            Please reference the following web pages if you have any questions about safety/recall status of these items:
+                        </Typography>
+                        <ul className="page--list">
+                            <li>
+                                Consumer Product Safety Commission (<a href="https://www.cpsc.gov/">cpsc.gov</a>)
+                            </li>
+                            <li>Reseller&apos;s Guide to Selling Safer Products</li>
+                            <li>
+                                SaferProducts.gov (<a href="https://www.saferproducts.gov">saferproducts.gov</a>)
+                            </li>
+                            <li>
+                                Recalls.gov (<a href="https://www.recalls.gov/">recalls.gov</a>)
+                            </li>
+                            <li>
+                                Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
+                            </li>
+                        </ul>
+                    </div>
                 </>
             )}
         </>
