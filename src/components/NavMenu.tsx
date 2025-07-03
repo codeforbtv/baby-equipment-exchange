@@ -5,13 +5,13 @@ import Link from 'next/link';
 
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 
 //Libs
 import { signOutUser } from '@/api/firebase';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Drawer from '@mui/material/Drawer';
-import ListItemText from '@mui/material/ListItemText';
 
 //styles
 import styles from './NavMenu.module.css';
@@ -24,6 +24,14 @@ interface Props {
 
 export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
     const { currentUser } = useUserContext();
+    const { clearPendingDonations } = usePendingDonationsContext();
+
+    const handleSignOut = () => {
+        clearPendingDonations();
+        localStorage.clear();
+        signOutUser();
+        window.location.reload();
+    };
 
     return (
         <>
@@ -57,10 +65,10 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                     <Link
                         className={styles['menu__link']}
                         id="signout"
-                        href={currentUser ? '/login?status=signed_out' : '/login'}
+                        href={currentUser ? '/' : '/login'}
                         onClick={() => {
                             closeMenu();
-                            if (currentUser) signOutUser();
+                            if (currentUser) handleSignOut();
                         }}
                     >
                         {currentUser ? <span>Sign Out</span> : <span>Login</span>}

@@ -1,40 +1,55 @@
-rules_version = '2';
+rules_version = '3';
 
 service cloud.firestore {
   match /databases/{database}/documents {
       // Administrator role
+
+
+      // Allow admin to read events (errors)
       match /Events/{document=**} {
         allow read: if request.auth != null && request.auth.token.admin == true;
       }
+
+      // Admin can create, edit or delete any donation
       match /Donations/{document=**} {
         allow read, write: if request.auth != null && request.auth.token.admin == true;
-      }   
+      }
+
+      // Admin can create, edit or delete bulk donation collections   
       match /BulkDonations/{document=**} {
         allow read, write: if request.auth != null && request.auth.token.admin == true;
       }
+
+
       // Aid worker role
-       match /Donations/{document=**} {
-        allow read: if request.auth != null && request.auth.token['aid-worker'] == true;
-      }   
+
+      // aid worker can only view inventory (donation status = 'available')
       match /Donations/{document=**} {
-        allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt', 'dateDistributed']))
-      }
-      match /BulkDonations/{document=**} {
-        allow read: if request.auth != null && request.auth.token['aid-worker'] == true;
-      }
+        allow read: if request.auth != null && request.auth.token['aid-worker'] == true && request.resource.data.staus == 'available';
+      } 
+
+      // aid worker can only update 'requestor' and 'modifiedAt' fields of avilable donations
+      match /Donations/{document=**} {
+        allow update: if request.auth != null && request.auth.token['aid-worker'] && request.resource.data.staus == 'available' && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt']))
+      }  
      
       // Standard user role
-         match /Donations/{document=**} {
+
+      //standard (anonymous) users can create donations/bulk donation collections
+      match /Donations/{document=**} {
         allow create: if request.auth != null;
-        } 
-        match /Donations/{document=**} {
-        allow read: if request.auth != null && request.auth.uid == resource.data.donorId;
-        }  
-        match /BulkDonations/{document=**} {
+      } 
+      match /BulkDonations/{document=**} {
         allow create: if request.auth != null 
-        }
-        match /BulkDonations/{document=**} {
+      }
+
+      //standard (anonymous) users can only view donations/collection they've submitted. 
+      match /Donations/{document=**} {
         allow read: if request.auth != null && request.auth.uid == resource.data.donorId;
-        }        
+      }  
+      
+      match /BulkDonations/{document=**} {
+        allow read: if request.auth != null && request.auth.uid == resource.data.donorId;
+      }        
   }
 }

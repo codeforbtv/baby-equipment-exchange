@@ -1,5 +1,6 @@
 'use client';
 import { useUserContext } from '@/contexts/UserContext';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 
 //Styles
 import Link from 'next/link';
@@ -9,6 +10,15 @@ import { signOutUser } from '@/api/firebase';
 
 export default function Footer() {
     const { currentUser } = useUserContext();
+    const { clearPendingDonations } = usePendingDonationsContext();
+
+    const handleSignOut = () => {
+        clearPendingDonations();
+        localStorage.clear();
+        signOutUser();
+        window.location.reload();
+    };
+
     return (
         <footer className={styles['footer-wrapper']}>
             <Link className={styles['menu__link']} id="home" href="/">
@@ -33,9 +43,9 @@ export default function Footer() {
             <Link
                 className={styles['menu__link']}
                 id="signout"
-                href={currentUser ? '/login?status=signed_out' : '/login'}
+                href={currentUser ? '/' : '/login'}
                 onClick={() => {
-                    if (currentUser) signOutUser();
+                    if (currentUser) handleSignOut();
                 }}
             >
                 {currentUser ? 'Sign Out' : 'Login'}

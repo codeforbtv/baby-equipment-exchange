@@ -22,6 +22,7 @@ import styles from './Donate.module.css';
 
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 
 export type DonationFormData = {
     category: string | null;
@@ -49,14 +50,24 @@ export default function Donate() {
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
-    const [pendingDonations, setPendingDonations] = useState<DonationFormData[]>([]);
     const [showForm, setShowForm] = useState<boolean>(false);
     const { currentUser } = useUserContext();
+    const { pendingDonations, removePendingDonation, clearPendingDonations, getPendingDonationsFromLocalStorage } = usePendingDonationsContext();
     const router = useRouter();
 
     useEffect(() => {
-        console.log(currentUser);
-    }, [currentUser]);
+        getDonorFromLocalStorage();
+    }, []);
+
+    function getDonorFromLocalStorage() {
+        const donorNameFromLocalStorage = localStorage.getItem('donorName');
+        if (donorNameFromLocalStorage) setDonorName(donorNameFromLocalStorage);
+        const donorEmailFromLocalStorage = localStorage.getItem('donorEmail');
+        if (donorEmailFromLocalStorage) {
+            setDonorEmail(donorEmailFromLocalStorage);
+            setConfirmEmail(donorEmailFromLocalStorage);
+        }
+    }
 
     function validateEmail(email: string): void {
         if (email.length === 0 || !emailRegex.test(email)) {
@@ -87,12 +98,10 @@ export default function Donate() {
         } else if (emailsDoNotMatch) {
             alert('Please confirm your email address before adding donation.');
         } else {
+            localStorage.setItem('donorName', donorName);
+            localStorage.setItem('donorEmail', donorEmail);
             setShowForm(true);
         }
-    }
-
-    function removePendingDonation(index: number) {
-        setPendingDonations(pendingDonations.filter((donation, i) => index !== i));
     }
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
@@ -134,7 +143,8 @@ export default function Donate() {
             setSubmitState('submitting');
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
             await addBulkDonation(donationsToUpload);
-            setPendingDonations([]);
+            clearPendingDonations();
+            localStorage.clear();
             setSubmitState('idle');
             router.push('/');
         } catch (error) {
@@ -213,7 +223,7 @@ export default function Donate() {
                             </Button>
                         )}
 
-                        {showForm && <DonationForm setPendingDonations={setPendingDonations} setShowForm={setShowForm} />}
+                        {showForm && <DonationForm setShowForm={setShowForm} />}
 
                         {!showForm && pendingDonations.length > 0 && (
                             <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
