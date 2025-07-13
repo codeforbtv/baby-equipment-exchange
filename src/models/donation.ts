@@ -6,7 +6,7 @@ export interface IDonationCache {
     id: string;
     modifiedAt: number;
 }
-export type donationStatus = 'pending review' | 'pending delivery' | 'in processing' | 'available' | 'designated for distribution' | 'distributed';
+export type donationStatus = 'in processing' | 'pending delivery' | 'available' | 'requested' | 'reserved' | 'distributed';
 
 export interface IDonation {
     [key: string]:

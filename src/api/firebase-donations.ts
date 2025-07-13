@@ -203,7 +203,7 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
                 description: newDonation.description,
                 tagNumber: null,
                 notes: null,
-                status: 'pending review',
+                status: 'in processing',
                 bulkCollection: bulkDonationsRef,
                 images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,
