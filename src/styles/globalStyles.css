@@ -99,6 +99,10 @@
     font-family: var(--font-garamond);
 }
 
+.page--header > a {
+    font-family: var(--font-garamond);
+}
+
 .page--list > li {
     font-family: var(--font-garamond);
 }

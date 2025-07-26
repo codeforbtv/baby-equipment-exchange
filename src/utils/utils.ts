@@ -1,8 +1,5 @@
-export function base64ToBlob(base64: string, contentType: string): Blob {
-    const byteArray: Uint8Array = new Uint8Array(Array.from(atob(base64)).map((elem) => elem.charCodeAt(0)));
-    const blob = new Blob([byteArray], { type: contentType });
-    return blob;
-}
+import { addErrorEvent } from '@/api/firebase';
+import { base64ImageObj } from '@/components/DonationForm';
 
 export async function blobToArrayBuffer(blob: Blob): Promise<{ arrayBuffer: ArrayBuffer; type: string }> {
     try {
@@ -11,6 +8,38 @@ export async function blobToArrayBuffer(blob: Blob): Promise<{ arrayBuffer: Arra
         return { arrayBuffer, type };
     } catch (error: any) {
         // eslint-disable-line no-empty
+    }
+    return Promise.reject();
+}
+
+export function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+    });
+}
+
+export async function base64ObjToFile(base64: base64ImageObj): Promise<File> {
+    try {
+        const arr = base64.base64Image.split(',');
+        const match = arr[0].match(/:(.*?);/);
+        const mime = match ? match[1] : '';
+        const blob = atob(arr[arr.length - 1]);
+        let len = blob.length;
+        const u8arr = new Uint8Array(len);
+        while (len--) {
+            u8arr[len] = blob.charCodeAt(len);
+        }
+        const options = {
+            type: mime,
+            lastModified: new Date().getTime()
+        };
+        const file = new File([u8arr], base64.base64ImageName, options);
+        return file;
+    } catch (error) {
+        addErrorEvent('Convert base64 to File', error);
     }
     return Promise.reject();
 }

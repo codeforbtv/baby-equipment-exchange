@@ -30,7 +30,7 @@ export default function DonationCard({ donation, onDelete }: { donation: Donatio
     };
 
     return (
-        <ImageListItem key={image} className={styles['grid__item']}>
+        <ImageListItem key={donation.id} className={styles['grid__item']}>
             <img
                 src={image}
                 style={{ width: '100%', height: '100%', objectFit: 'fill' }}
