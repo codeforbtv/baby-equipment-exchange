@@ -13,6 +13,7 @@ import {
     getDocs,
     query,
     serverTimestamp,
+    updateDoc,
     where,
     writeBatch
 } from 'firebase/firestore';
@@ -241,5 +242,20 @@ export async function deleteDonationById(id: string): Promise<void> {
         await deleteDoc(donationRef);
     } catch (error) {
         addErrorEvent('Delete donation by id', error);
+    }
+}
+
+export async function requestInventoryItems(inventoryItemIds: string[]): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        for (const inventoryItemId of inventoryItemIds) {
+            const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
+            await updateDoc(inventoryItemRef, {
+                status: 'requested'
+            });
+            await batch.commit();
+        }
+    } catch (error) {
+        addErrorEvent('Request inventory items', error);
     }
 }
