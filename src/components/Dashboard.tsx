@@ -28,7 +28,8 @@ export default function Dashboard() {
     return isLoading ? (
         <Loader />
     ) : (
-        <>
+        //Tweak styling
+        <div style={{ marginTop: '4rem' }}>
             <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
                 <Tab label="Donations" />
                 {displayUserManagement && <Tab label="Users" />}
@@ -41,6 +42,6 @@ export default function Dashboard() {
                     <UserManagement />
                 </div>
             )}
-        </>
+        </div>
     );
 }
