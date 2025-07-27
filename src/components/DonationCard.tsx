@@ -8,7 +8,7 @@ import InfoIcon from '@mui/icons-material/Info';
 // Styles
 import styles from './Card.module.css';
 // Types
-import { DonationCardProps } from '@/types/DonationCardProps';
+import { DonationCardProps } from '@/types/DonationTypes';
 
 const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
@@ -30,7 +30,7 @@ export default function DonationCard({ donation, onDelete }: { donation: Donatio
     };
 
     return (
-        <ImageListItem key={image} className={styles['grid__item']}>
+        <ImageListItem key={donation.id} className={styles['grid__item']}>
             <img
                 src={image}
                 style={{ width: '100%', height: '100%', objectFit: 'fill' }}

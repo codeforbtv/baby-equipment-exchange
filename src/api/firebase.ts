@@ -11,7 +11,8 @@ import {
     getAuth,
     sendPasswordResetEmail,
     createUserWithEmailAndPassword,
-    updateProfile
+    updateProfile,
+    signInAnonymously
 } from 'firebase/auth';
 
 import { firebaseConfig } from './config';
@@ -200,7 +201,7 @@ export async function getUserEmailById(id: string): Promise<string> {
         const user = await getUserById(id);
         if (user.email) return user.email;
     } catch (error) {
-        console.log(error);
+        addErrorEvent('Get user email by ID', error);
     }
     return Promise.reject();
 }
@@ -210,7 +211,7 @@ export async function getAllUsers(): Promise<UserCardProps[]> {
         const usersList = await listAllUsers();
         return usersList;
     } catch (error) {
-        console.log('Error getting all users, ', error);
+        addErrorEvent('Error getting all users, ', error);
     }
     return Promise.reject();
 }
@@ -287,6 +288,16 @@ export async function checkIsAidWorker(user: User): Promise<boolean> {
         return result.claims['aid-worker'] === true;
     } catch (error) {
         addErrorEvent('Check is aid worker', error);
+    }
+    return Promise.reject();
+}
+
+export async function loginAnonymousUser(): Promise<User | null> {
+    try {
+        const userCredential = await signInAnonymously(auth);
+        return userCredential.user;
+    } catch (error) {
+        addErrorEvent('Login anonymously', error);
     }
     return Promise.reject();
 }

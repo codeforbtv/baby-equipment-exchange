@@ -5,26 +5,17 @@ import ImageThumbnail from './ImageThumbnail';
 import InputContainer from '@/components/InputContainer';
 import { Box, Button, NativeSelect, TextField } from '@mui/material';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
 import { categories } from '@/data/html';
 
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+
 import styles from './DonationForm.module.css';
 import '../styles/globalStyles.css';
 
-export type DonationFormData = {
-    category: string | null;
-    brand: string | null;
-    model: string | null;
-    description: string | null;
-    images: File[] | null | undefined;
-};
-
-type DonationFormProps = {
-    setPendingDonations: (value: SetStateAction<DonationFormData[]>) => void;
-    setShowForm: Dispatch<SetStateAction<boolean>>;
-};
+//Types
+import { DonationFormData, DonationFormProps } from '@/types/DonationTypes';
 
 export default function DonationForm(props: DonationFormProps) {
     const [formData, setFormData] = useState<DonationFormData>({
@@ -36,6 +27,8 @@ export default function DonationForm(props: DonationFormProps) {
     });
     const [images, setImages] = useState<File[] | null>();
     const [imageElements, setImageElements] = useState<ReactElement[]>([]);
+
+    const { addPendingDonation } = usePendingDonationsContext();
 
     useEffect(() => {
         const tempImages = [];
@@ -76,7 +69,7 @@ export default function DonationForm(props: DonationFormProps) {
             description: formData.description ?? '',
             images: images
         };
-        props.setPendingDonations((prev) => [...prev, pendingDonation]);
+        addPendingDonation(pendingDonation);
         setFormData({
             category: '',
             brand: '',

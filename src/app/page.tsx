@@ -1,40 +1,22 @@
 'use client';
+
 //Components
 import Dashboard from '@/components/Dashboard';
-import { Paper } from '@mui/material';
-//Libs
-import React, { useContext } from 'react';
+import Donate from './donate/page';
+import Inventory from '@/components/Inventory';
 
-//Styles
-import styles from './HomeStyles.module.css';
-import '../styles/globalStyles.css';
-import { Button } from '@mui/material';
-import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 //Hooks
-import { UserContext } from '@/contexts/UserContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import { useUserContext } from '@/contexts/UserContext';
 
 export default function Home() {
-    const { currentUser } = useContext(UserContext);
+    const currentUser = useUserContext();
+    const { isAdmin, isAidWorker } = currentUser;
 
-    const loginElement = (
-        <div className={styles['login__heading-prompt']}>
-            <h2>You must be logged in to view donations</h2>
-            <Button href="/login" variant="contained" endIcon={<VpnKeyOutlinedIcon />}>
-                Log in
-            </Button>
-        </div>
-    );
-    const content = currentUser ? <Dashboard /> : loginElement;
-    return (
-        <ProtectedRoute>
-            <div className="page--header">
-                <h1>Browse</h1>
-                {/* <h4>[Page Summary]</h4> */}
-            </div>
-            <Paper className="content--container" elevation={8} square={false}>
-                {content}
-            </Paper>
-        </ProtectedRoute>
-    );
+    if (isAdmin) {
+        return <Dashboard />;
+    } else if (isAidWorker) {
+        return <Inventory />;
+    } else {
+        return <Donate />;
+    }
 }

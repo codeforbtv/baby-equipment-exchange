@@ -1,12 +1,12 @@
 //Firebase types
 import { DocumentReference, Timestamp } from 'firebase/firestore';
+import { donationStatus } from '@/types/DonationTypes';
 
 export interface IDonationCache {
     [key: string]: string | number;
     id: string;
     modifiedAt: number;
 }
-export type donationStatus = 'pending review' | 'pending delivery' | 'in processing' | 'available' | 'designated for distribution' | 'distributed';
 
 export interface IDonation {
     [key: string]:
@@ -29,6 +29,7 @@ export interface IDonation {
     id: string;
     donorEmail: string;
     donorName: string;
+    donorId: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
@@ -66,6 +67,7 @@ export class Donation implements IDonation {
     id: string;
     donorEmail: string;
     donorName: string;
+    donorId: string;
     category: string | null | undefined;
     brand: string | null | undefined;
     model: string | null | undefined;
@@ -85,6 +87,7 @@ export class Donation implements IDonation {
         this.id = args.id;
         this.donorEmail = args.donorEmail;
         this.donorName = args.donorName;
+        this.donorId = args.donorId;
         this.category = args.category;
         this.brand = args.brand;
         this.model = args.model;
@@ -111,6 +114,10 @@ export class Donation implements IDonation {
 
     getDonorName(): string {
         return this.donorName;
+    }
+
+    getDonorId(): string {
+        return this.donorId;
     }
 
     getCategory(): string | null | undefined {
@@ -178,22 +185,4 @@ export class Donation implements IDonation {
         const daysInStorage = Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
         return daysInStorage;
     }
-}
-
-export interface InventoryItem {
-    id: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
-    description: string | null | undefined;
-    tagNumber: string | null | undefined;
-    notes: string | null | undefined;
-    status: donationStatus;
-    bulkCollection: DocumentReference | null;
-    images: DocumentReference[] | string[];
-    createdAt: Timestamp;
-    modifiedAt: Timestamp;
-    dateReceived: Timestamp | null | undefined;
-    dateDistributed: Timestamp | null | undefined;
-    requestor: DocumentReference | null;
 }
