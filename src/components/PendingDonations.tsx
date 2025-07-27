@@ -1,11 +1,15 @@
 'use client';
 
+//Components
 import ImageThumbnail from './ImageThumbnail';
 import { Card, Button, Box, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import { DonationFormData } from '@/app/donate/page';
+//Styles
 import styles from './PendingDonations.module.css';
+
+//Types
+import { DonationFormData } from '@/types/DonationTypes';
 
 type pendingDonationProps = {
     pendingDonations: DonationFormData[];
