@@ -1,9 +1,13 @@
+'use client';
+
+//Components
 import { Tab, Tabs } from '@mui/material';
-import React, { useEffect, useState } from 'react';
 import Browse from './Browse';
 import UserManagement from './UserManagement';
 import Loader from './Loader';
-import { isAdmin } from '@/api/firebase';
+
+//Hooks
+import React, { useEffect, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 
 export default function Dashboard() {

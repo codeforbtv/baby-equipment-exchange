@@ -25,13 +25,8 @@ import homeStyles from '../HomeStyles.module.css';
 import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 
-export type DonationFormData = {
-    category: string | null;
-    brand: string | null;
-    model: string | null;
-    description: string | null;
-    images: File[] | null | undefined;
-};
+//Types
+import { DonationFormData } from '@/types/DonationTypes';
 
 //This will be initially set from the database if editing an existing donation
 const dummyDonationData: DonationFormData = {

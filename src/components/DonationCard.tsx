@@ -8,7 +8,7 @@ import InfoIcon from '@mui/icons-material/Info';
 // Styles
 import styles from './Card.module.css';
 // Types
-import { DonationCardProps } from '@/types/DonationCardProps';
+import { DonationCardProps } from '@/types/DonationTypes';
 
 const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
