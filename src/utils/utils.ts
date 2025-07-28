@@ -1,5 +1,5 @@
 import { addErrorEvent } from '@/api/firebase';
-import { base64ImageObj } from '@/components/DonationForm';
+import { base64ImageObj } from '@/types/DonationTypes';
 
 export async function blobToArrayBuffer(blob: Blob): Promise<{ arrayBuffer: ArrayBuffer; type: string }> {
     try {
