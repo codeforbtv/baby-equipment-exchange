@@ -1,4 +1,4 @@
-import { DonationCardProps } from '@/types/DonationCardProps';
+import { DonationCardProps } from '@/types/DonationTypes';
 import { Button, Dialog, DialogActions, DialogContent, FormControl, FormLabel, ImageList, NativeSelect, TextField } from '@mui/material';
 import { useContext } from 'react';
 import { UserContext } from '@/contexts/UserContext';

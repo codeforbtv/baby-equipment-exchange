@@ -1,12 +1,12 @@
 //Firebase types
 import { DocumentReference, Timestamp } from 'firebase/firestore';
+import { donationStatus } from '@/types/DonationTypes';
 
 export interface IDonationCache {
     [key: string]: string | number;
     id: string;
     modifiedAt: number;
 }
-export type donationStatus = 'in processing' | 'pending delivery' | 'available' | 'requested' | 'reserved' | 'distributed';
 
 export interface IDonation {
     [key: string]:

@@ -1,20 +1,6 @@
-import { InventoryItem } from '@/models/inventoryItem';
 import { ImageListItem, ImageListItemBar, IconButton } from '@mui/material';
 
-import { donationStatus } from '@/models/donation';
-import { Timestamp, DocumentReference } from 'firebase/firestore';
-
-export type InventoryItemCardProps = {
-    id: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
-    description: string | null | undefined;
-    status: donationStatus;
-    images: Array<string>;
-    modifiedAt: Timestamp;
-    requestor: DocumentReference | null;
-};
+import { InventoryItemCardProps } from '@/types/DonationTypes';
 
 const InventoryItemCard = (inventoryItem: InventoryItemCardProps) => {
     const image = inventoryItem.images ? inventoryItem.images[0] : '';

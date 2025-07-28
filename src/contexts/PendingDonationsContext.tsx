@@ -1,10 +1,14 @@
 'use client';
 
+//Hooks
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-
-import { base64ImageObj, DonationFormData } from '@/components/DonationForm';
-import { base64ObjToFile, fileToBase64 } from '@/utils/utils';
 import { addErrorEvent } from '@/api/firebase';
+
+//Utils
+import { base64ObjToFile, fileToBase64 } from '@/utils/utils';
+
+//Types
+import { DonationFormData, base64ImageObj } from '@/types/DonationTypes';
 
 type PendingDonationsContextType = {
     pendingDonations: DonationFormData[];

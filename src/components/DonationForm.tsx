@@ -14,24 +14,8 @@ import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 import styles from './DonationForm.module.css';
 import '../styles/globalStyles.css';
 
-export type base64ImageObj = {
-    base64Image: string;
-    base64ImageName: string;
-    base64ImageType: string;
-};
-
-export type DonationFormData = {
-    category: string | null;
-    brand: string | null;
-    model: string | null;
-    description: string | null;
-    images: File[] | null | undefined;
-    base64Images?: base64ImageObj[];
-};
-
-type DonationFormProps = {
-    setShowForm: Dispatch<SetStateAction<boolean>>;
-};
+//Types
+import { DonationFormData, DonationFormProps } from '@/types/DonationTypes';
 
 export default function DonationForm(props: DonationFormProps) {
     const [formData, setFormData] = useState<DonationFormData>({

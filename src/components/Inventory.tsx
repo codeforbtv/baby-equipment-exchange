@@ -11,7 +11,7 @@ import Loader from './Loader';
 import '../styles/globalStyles.css';
 import styles from './Inventory.module.css';
 import { InventoryItem } from '@/models/inventoryItem';
-import { InventoryItemCardProps } from './InventoryItem';
+import { InventoryItemCardProps } from '@/types/DonationTypes';
 
 const Inventory = () => {
     const [isLoading, setIsLoading] = useState(false);

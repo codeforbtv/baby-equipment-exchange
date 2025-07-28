@@ -1,6 +1,6 @@
 import { DocumentReference, Timestamp } from 'firebase/firestore';
 
-import { donationStatus } from './donation';
+import { donationStatus } from '@/types/DonationTypes';
 
 export interface IInventoryItem {
     [key: string]:

@@ -25,7 +25,7 @@ import { InstantSearch } from 'react-instantsearch';
 // Styles
 import '../styles/globalStyles.css';
 import styles from './Browse.module.css';
-import { DonationCardProps } from '@/types/DonationCardProps';
+import { DonationCardProps } from '@/types/DonationTypes';
 
 // const NewDonationDialog = lazy(() => import('@/components/NewDonationDialog'));
 
