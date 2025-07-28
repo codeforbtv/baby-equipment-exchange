@@ -1,8 +1,7 @@
 'use client';
 
 //Hooks
-import { createContext, ReactNode, useContext, useState } from 'react';
-import { addErrorEvent } from '@/api/firebase';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 type RequestedInventoryContextType = {
     requestedInventory: string[];
@@ -39,12 +38,34 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
         setRequestedInventory([]);
     };
 
+    const addRequestedInventoryToLocalStorage = (requestedInventory: string[]) => {
+        localStorage.setItem('requestedInventory', JSON.stringify(requestedInventory));
+    };
+
+    const getRequestedInventoryFromLocalStorage = () => {
+        const requestedInventoryFromLocalStorage = localStorage.getItem('requestedInventory');
+        if (requestedInventoryFromLocalStorage) {
+            const existingRequestedInventory = JSON.parse(requestedInventoryFromLocalStorage);
+            setRequestedInventory(existingRequestedInventory);
+        }
+    };
+
     const value = {
         requestedInventory,
         addRequestedInventoryItem,
         removeRequestedInventoryItem,
         clearRequestedInventory
     };
+
+    useEffect(() => {
+        getRequestedInventoryFromLocalStorage();
+    }, []);
+
+    useEffect(() => {
+        if (requestedInventory !== defaultRequestedInventory) {
+            addRequestedInventoryToLocalStorage(requestedInventory);
+        }
+    }, [requestedInventory]);
 
     return <RequestedInventoryContext.Provider value={value}>{children}</RequestedInventoryContext.Provider>;
 };
