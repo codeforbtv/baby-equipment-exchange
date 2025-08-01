@@ -7,6 +7,7 @@ import { montserrat, garamond } from '../styles/fonts';
 //Providers
 import { UserProvider } from '@/contexts/UserContext';
 import { PendingDonationsProvider } from '@/contexts/PendingDonationsContext';
+import { RequestedInventoryProvider } from '@/contexts/RequestedInventoryContext';
 import ThemeProviderWrapper from '@/components/ThemeProviderWrapper';
 //Styles
 import '../styles/globalStyles.css';
@@ -18,9 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ThemeProviderWrapper>
                     <PendingDonationsProvider>
                         <UserProvider>
-                            <Header />
-                            <div className="page--wrapper">{children}</div>
-                            <Footer />
+                            <RequestedInventoryProvider>
+                                <Header />
+                                <div className="page--wrapper">{children}</div>
+                                <Footer />
+                            </RequestedInventoryProvider>
                         </UserProvider>
                     </PendingDonationsProvider>
                 </ThemeProviderWrapper>

@@ -5,6 +5,7 @@ import { ImageListItem, ImageListItemBar, IconButton } from '@mui/material';
 
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 
 //Hooks
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -18,7 +19,7 @@ import styles from './Card.module.css';
 const InventoryItemCard = (inventoryItem: InventoryItemCardProps) => {
     const image = inventoryItem.images ? inventoryItem.images[0] : '';
 
-    const { addRequestedInventoryItem } = useRequestedInventoryContext();
+    const { id, brand, model, requestHandler } = inventoryItem;
 
     return (
         <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>
@@ -32,8 +33,13 @@ const InventoryItemCard = (inventoryItem: InventoryItemCardProps) => {
                 title={inventoryItem.brand}
                 subtitle={inventoryItem.category}
                 actionIcon={
-                    <IconButton sx={{ color: 'rgb(255, 255, 255)' }} aria-label={`details about ${inventoryItem.brand} ${inventoryItem.model}`} size="large">
-                        <InfoIcon />
+                    <IconButton
+                        sx={{ color: 'rgb(255, 255, 255)' }}
+                        aria-label={`details about ${inventoryItem.brand} ${inventoryItem.model}`}
+                        size="large"
+                        onClick={() => requestHandler(id)}
+                    >
+                        <AddShoppingCartIcon />
                     </IconButton>
                 }
             ></ImageListItemBar>

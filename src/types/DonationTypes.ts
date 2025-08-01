@@ -43,4 +43,5 @@ export type InventoryItemCardProps = {
     images: Array<string>;
     modifiedAt: Timestamp;
     requestor: DocumentReference | null;
+    requestHandler: (id: string) => void;
 };
