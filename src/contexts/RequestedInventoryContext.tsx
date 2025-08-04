@@ -11,6 +11,7 @@ type RequestedInventoryContextType = {
     addRequestedInventoryItem: (inventoryItem: InventoryItem) => void;
     removeRequestedInventoryItem: (index: number) => void;
     clearRequestedInventory: () => void;
+    isLoading: boolean;
 };
 
 type Props = {
@@ -23,11 +24,13 @@ export const RequestedInventoryContext = createContext<RequestedInventoryContext
     requestedInventory: [],
     addRequestedInventoryItem: (inventoryItem: InventoryItem) => {},
     removeRequestedInventoryItem: () => {},
-    clearRequestedInventory: () => {}
+    clearRequestedInventory: () => {},
+    isLoading: false
 });
 
 export const RequestedInventoryProvider = ({ children }: Props) => {
     const [requestedInventory, setRequestedInventory] = useState<InventoryItem[]>(defaultRequestedInventory);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const addRequestedInventoryItem = (inventoryItem: InventoryItem) => {
         setRequestedInventory((prev) => [...prev, inventoryItem]);
@@ -42,7 +45,7 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
     };
 
     //We only need IDs to request inventory items
-    const addRequestedInventoryToLocalStorage = (requestedInventory: InventoryItem[]) => {
+    const addRequestedInventoryToLocalStorage = async (requestedInventory: InventoryItem[]): Promise<void> => {
         const requestedInventoryIds = requestedInventory.map((inventoryItem) => inventoryItem.id);
         localStorage.setItem('requestedInventory', JSON.stringify(requestedInventoryIds));
     };
@@ -61,11 +64,14 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
         requestedInventory,
         addRequestedInventoryItem,
         removeRequestedInventoryItem,
-        clearRequestedInventory
+        clearRequestedInventory,
+        isLoading
     };
 
     useEffect(() => {
+        setIsLoading(true);
         getRequestedInventoryFromLocalStorage();
+        setIsLoading(false);
     }, []);
 
     useEffect(() => {
