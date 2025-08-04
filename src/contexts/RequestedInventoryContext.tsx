@@ -3,9 +3,12 @@
 //Hooks
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
+import { InventoryItem } from '@/models/inventoryItem';
+import { getInventoryByIds } from '@/api/firebase-donations';
+
 type RequestedInventoryContextType = {
-    requestedInventory: string[];
-    addRequestedInventoryItem: (inventoryItemId: string) => void;
+    requestedInventory: InventoryItem[];
+    addRequestedInventoryItem: (inventoryItem: InventoryItem) => void;
     removeRequestedInventoryItem: (index: number) => void;
     clearRequestedInventory: () => void;
 };
@@ -14,20 +17,20 @@ type Props = {
     children: ReactNode;
 };
 
-const defaultRequestedInventory: string[] = [];
+const defaultRequestedInventory: InventoryItem[] = [];
 
 export const RequestedInventoryContext = createContext<RequestedInventoryContextType>({
     requestedInventory: [],
-    addRequestedInventoryItem: (inventoryItemId: string) => {},
+    addRequestedInventoryItem: (inventoryItem: InventoryItem) => {},
     removeRequestedInventoryItem: () => {},
     clearRequestedInventory: () => {}
 });
 
 export const RequestedInventoryProvider = ({ children }: Props) => {
-    const [requestedInventory, setRequestedInventory] = useState<string[]>(defaultRequestedInventory);
+    const [requestedInventory, setRequestedInventory] = useState<InventoryItem[]>(defaultRequestedInventory);
 
-    const addRequestedInventoryItem = (inventoryItemId: string) => {
-        setRequestedInventory((prev) => [...prev, inventoryItemId]);
+    const addRequestedInventoryItem = (inventoryItem: InventoryItem) => {
+        setRequestedInventory((prev) => [...prev, inventoryItem]);
     };
 
     const removeRequestedInventoryItem = (index: number) => {
@@ -38,14 +41,18 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
         setRequestedInventory([]);
     };
 
-    const addRequestedInventoryToLocalStorage = (requestedInventory: string[]) => {
-        localStorage.setItem('requestedInventory', JSON.stringify(requestedInventory));
+    //We only need IDs to request inventory items
+    const addRequestedInventoryToLocalStorage = (requestedInventory: InventoryItem[]) => {
+        const requestedInventoryIds = requestedInventory.map((inventoryItem) => inventoryItem.id);
+        localStorage.setItem('requestedInventory', JSON.stringify(requestedInventoryIds));
     };
 
-    const getRequestedInventoryFromLocalStorage = () => {
-        const requestedInventoryFromLocalStorage = localStorage.getItem('requestedInventory');
-        if (requestedInventoryFromLocalStorage) {
-            const existingRequestedInventory = JSON.parse(requestedInventoryFromLocalStorage);
+    //Fetched request inventory Items from stored IDs
+    const getRequestedInventoryFromLocalStorage = async () => {
+        const requestedInventoryIdsFromLocalStorage = localStorage.getItem('requestedInventory');
+        if (requestedInventoryIdsFromLocalStorage) {
+            const existingRequestedInventoryIds: string[] = JSON.parse(requestedInventoryIdsFromLocalStorage);
+            const existingRequestedInventory = await getInventoryByIds(existingRequestedInventoryIds);
             setRequestedInventory(existingRequestedInventory);
         }
     };

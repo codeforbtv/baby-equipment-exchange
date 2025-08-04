@@ -15,11 +15,14 @@ import { InventoryItemCardProps } from '@/types/DonationTypes';
 
 //Style
 import styles from './Card.module.css';
+import { InventoryItem } from '@/models/inventoryItem';
 
-const InventoryItemCard = (inventoryItem: InventoryItemCardProps) => {
-    const image = inventoryItem.images ? inventoryItem.images[0] : '';
+const InventoryItemCard = (props: InventoryItemCardProps) => {
+    const { inventoryItem, requestHandler } = props;
 
-    const { id, brand, model, requestHandler } = inventoryItem;
+    //Images were previously document references. Ensure they are now all strings. TO-DO remove all doc refs from images
+    const images = inventoryItem.images as string[];
+    const image = images ? images[0] : '';
 
     return (
         <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>
@@ -37,7 +40,7 @@ const InventoryItemCard = (inventoryItem: InventoryItemCardProps) => {
                         sx={{ color: 'rgb(255, 255, 255)' }}
                         aria-label={`details about ${inventoryItem.brand} ${inventoryItem.model}`}
                         size="large"
-                        onClick={() => requestHandler(id)}
+                        onClick={() => requestHandler(inventoryItem)}
                     >
                         <AddShoppingCartIcon />
                     </IconButton>

@@ -15,8 +15,10 @@ import {
     serverTimestamp,
     updateDoc,
     where,
-    writeBatch
+    writeBatch,
+    documentId
 } from 'firebase/firestore';
+
 // Models
 import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
@@ -162,6 +164,23 @@ export async function getInventory(): Promise<InventoryItem[]> {
         return inventory;
     } catch (error) {
         addErrorEvent('Get inventory', error);
+    }
+    return Promise.reject();
+}
+
+export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
+    try {
+        let inventory: InventoryItem[] = [];
+        const collectionRef = collection(db, DONATIONS_COLLECTION);
+        const constraints: QueryConstraint[] = [where(documentId(), 'in', inventoryIds)];
+        const q = query(collectionRef, ...constraints).withConverter(inventoryConverter);
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((snapshot) => {
+            inventory.push(snapshot.data());
+        });
+        return inventory;
+    } catch (error) {
+        addErrorEvent('Get inventory by Ids', error);
     }
     return Promise.reject();
 }
