@@ -1,25 +1,39 @@
 'use client';
 
+//Libs
+import { requestInventoryItems } from '@/api/firebase-donations';
+import { addErrorEvent } from '@/api/firebase';
+
 //Components
 import { Card, Button, Box, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Loader from '@/components/Loader';
 
 //Hooks
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
-import { useEffect } from 'react';
+import { useUserContext } from '@/contexts/UserContext';
+import { useRouter } from 'next/navigation';
 
 //Styles
 import '../HomeStyles.module.css';
 import styles from './InventoryCart.module.css';
 import Image from 'next/image';
-import Loader from '@/components/Loader';
 
 const InventoryCart = () => {
     const { requestedInventory, removeRequestedInventoryItem, isLoading } = useRequestedInventoryContext();
 
-    useEffect(() => {
-        console.log(requestedInventory);
-    }, [requestedInventory]);
+    const router = useRouter();
+    const { currentUser } = useUserContext();
+
+    //TO-DO Get user doc ref from currentUser.uid, clear context & localstorage after submit
+    const handleRequestItems = async (event: React.MouseEvent<HTMLElement>): Promise<void> => {
+        if (!requestedInventory || requestedInventory.length == 0) return;
+        try {
+            const inventoryItemIDs = requestedInventory.map((item) => item.id);
+        } catch (error) {
+            addErrorEvent('Handle request items', error);
+        }
+    };
 
     if (isLoading) return <Loader />;
 
@@ -62,6 +76,14 @@ const InventoryCart = () => {
                             })}
                         </Box>
                     </Box>
+                )}
+                <Button variant="outlined" onClick={() => router.push('/')}>
+                    Continue browsing
+                </Button>
+                {requestedInventory.length > 0 && (
+                    <Button variant="contained" onClick={handleRequestItems}>
+                        Request Items
+                    </Button>
                 )}
             </div>
         </>

@@ -16,7 +16,8 @@ import {
     updateDoc,
     where,
     writeBatch,
-    documentId
+    documentId,
+    DocumentReference
 } from 'firebase/firestore';
 
 // Models
@@ -27,6 +28,7 @@ import { DonationBody } from '@/types/post-data';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
+import { User } from 'firebase/auth';
 
 // Imported constants
 
@@ -264,13 +266,14 @@ export async function deleteDonationById(id: string): Promise<void> {
     }
 }
 
-export async function requestInventoryItems(inventoryItemIds: string[]): Promise<void> {
+export async function requestInventoryItems(inventoryItemIds: string[], user: DocumentReference): Promise<void> {
     try {
         const batch = writeBatch(db);
         for (const inventoryItemId of inventoryItemIds) {
             const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
             await updateDoc(inventoryItemRef, {
-                status: 'requested'
+                status: 'requested',
+                requestor: user
             });
             await batch.commit();
         }
