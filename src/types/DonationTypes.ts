@@ -1,6 +1,7 @@
 import { SetStateAction, Dispatch } from 'react';
 
 import { Timestamp, DocumentReference } from 'firebase/firestore';
+import { InventoryItem } from '@/models/inventoryItem';
 
 export type donationStatus = 'in processing' | 'pending delivery' | 'available' | 'requested' | 'reserved' | 'distributed';
 
@@ -34,13 +35,6 @@ export type DonationFormProps = {
 };
 
 export type InventoryItemCardProps = {
-    id: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
-    description: string | null | undefined;
-    status: donationStatus;
-    images: Array<string>;
-    modifiedAt: Timestamp;
-    requestor: DocumentReference | null;
+    inventoryItem: InventoryItem;
+    requestHandler: (inventoryItem: InventoryItem) => void;
 };
