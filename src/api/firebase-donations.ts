@@ -15,8 +15,11 @@ import {
     serverTimestamp,
     updateDoc,
     where,
-    writeBatch
+    writeBatch,
+    documentId,
+    DocumentReference
 } from 'firebase/firestore';
+
 // Models
 import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
@@ -25,6 +28,7 @@ import { DonationBody } from '@/types/post-data';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
+import { User } from 'firebase/auth';
 
 // Imported constants
 
@@ -166,6 +170,23 @@ export async function getInventory(): Promise<InventoryItem[]> {
     return Promise.reject();
 }
 
+export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
+    try {
+        let inventory: InventoryItem[] = [];
+        const collectionRef = collection(db, DONATIONS_COLLECTION);
+        const constraints: QueryConstraint[] = [where(documentId(), 'in', inventoryIds)];
+        const q = query(collectionRef, ...constraints).withConverter(inventoryConverter);
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((snapshot) => {
+            inventory.push(snapshot.data());
+        });
+        return inventory;
+    } catch (error) {
+        addErrorEvent('Get inventory by Ids', error);
+    }
+    return Promise.reject();
+}
+
 export async function getDonationById(id: string): Promise<Donation> {
     try {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
@@ -245,13 +266,14 @@ export async function deleteDonationById(id: string): Promise<void> {
     }
 }
 
-export async function requestInventoryItems(inventoryItemIds: string[]): Promise<void> {
+export async function requestInventoryItems(inventoryItemIds: string[], user: DocumentReference): Promise<void> {
     try {
         const batch = writeBatch(db);
         for (const inventoryItemId of inventoryItemIds) {
             const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
             await updateDoc(inventoryItemRef, {
-                status: 'requested'
+                status: 'requested',
+                requestor: user
             });
             await batch.commit();
         }

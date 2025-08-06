@@ -40,7 +40,7 @@ export const PendingDonationsProvider = ({ children }: Props) => {
     };
 
     const removePendingDonation = (index: number) => {
-        setPendingDonations(pendingDonations.filter((donation, i) => index !== i));
+        setPendingDonations(pendingDonations.filter((_, i) => index !== i));
     };
     const clearPendingDonations = () => {
         setPendingDonations([]);

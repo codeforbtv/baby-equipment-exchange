@@ -15,8 +15,18 @@ const config = process.env.FIREBASE_CONFIG ?? 'firebase-config.json';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     env: {
-        NEXT_PUBLIC_FIREBASE_CONFIG: config 
+        NEXT_PUBLIC_FIREBASE_CONFIG: config
     },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'firebasestorage.googleapis.com',
+                port: '',
+                pathname: '/v0/b/baby-equipment-exchange.appspot.com/**'
+            }
+        ]
+    }
 };
 
 module.exports = nextConfig;
