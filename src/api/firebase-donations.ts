@@ -21,7 +21,7 @@ import {
 } from 'firebase/firestore';
 
 // Models
-import { Donation, IDonation } from '@/models/donation';
+import { Donation, IDonation, donationStatus } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
 import { DonationBody } from '@/types/post-data';
 
@@ -243,6 +243,17 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
         await batch.commit();
     } catch (error) {
         addErrorEvent('addBulkDonation', error);
+    }
+}
+
+export async function updateDonationStatus(id: string, status: donationStatus): Promise<donationStatus> {
+    try {
+        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
+        await updateDoc(donationRef, {status: status});
+        return status;
+    } catch (error) {
+        addErrorEvent('updateDonationStatus', error);
+        throw error;
     }
 }
 
