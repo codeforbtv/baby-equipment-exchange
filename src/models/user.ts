@@ -1,6 +1,5 @@
 // Firebase types
 import { DocumentReference, FieldValue, Timestamp } from 'firebase/firestore';
-import { User } from 'firebase/auth';
 
 export interface IUser {
     [key: string]:
@@ -12,18 +11,14 @@ export interface IUser {
         | Timestamp
         | null
         | undefined
-        | User
         | (() => string)
-        | (() => string[])
-        | (() => DocumentReference[])
+        | (() => string[] | null | undefined)
+        | (() => DocumentReference[] | null | undefined)
         | (() => DocumentReference | null | undefined)
-        | (() => FieldValue)
-        | (() => User);
-
-    user: User;
-    requestedItems: DocumentReference[];
-    notes: string[];
-    createdAt: Timestamp;
+        | (() => FieldValue);
+    uid: string;
+    requestedItems: DocumentReference[] | null | undefined;
+    notes: string[] | null | undefined;
     modifiedAt: Timestamp;
 }
 
@@ -37,41 +32,34 @@ export class UserCollection implements IUser {
         | Timestamp
         | null
         | undefined
-        | User
         | (() => string)
-        | (() => string[])
-        | (() => DocumentReference[])
+        | (() => string[] | null | undefined)
+        | (() => DocumentReference[] | null | undefined)
         | (() => DocumentReference | null | undefined)
-        | (() => FieldValue)
-        | (() => User);
-    user: User;
-    requestedItems: DocumentReference[];
-    notes: string[];
-    createdAt: Timestamp;
+        | (() => FieldValue);
+    uid: string;
+    requestedItems: DocumentReference[] | null | undefined;
+    notes: string[] | null | undefined;
     modifiedAt: Timestamp;
 
     constructor(args: IUser) {
+        this.uid = args.uid;
         this.user = args.user;
         this.requestedItems = args.requestedItems;
         this.notes = args.notes;
-        this.createdAt = args.createdAt;
         this.modifiedAt = args.modifiedAt;
     }
 
-    getUser(): User {
-        return this.user;
+    getUid(): string {
+        return this.uid;
     }
 
-    getRequestedItems(): DocumentReference[] {
+    getRequestedItems(): DocumentReference[] | null | undefined {
         return this.requestedItems;
     }
 
-    getNotes(): string[] {
+    getNotes(): string[] | null | undefined {
         return this.notes;
-    }
-
-    getCreatedAt(): Timestamp {
-        return this.createdAt;
     }
 
     getModifiedAt(): Timestamp {
