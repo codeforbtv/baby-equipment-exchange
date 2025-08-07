@@ -1,63 +1,73 @@
 // Firebase types
 import { DocumentReference, FieldValue, Timestamp } from 'firebase/firestore';
+import { User } from 'firebase/auth';
 
 export interface IUser {
     [key: string]:
         | string
+        | string[]
         | DocumentReference
         | DocumentReference[]
         | FieldValue
         | Timestamp
         | null
         | undefined
+        | User
         | (() => string)
+        | (() => string[])
         | (() => DocumentReference[])
         | (() => DocumentReference | null | undefined)
-        | (() => FieldValue);
+        | (() => FieldValue)
+        | (() => User);
 
-    name: string;
-    pendingDonations: DocumentReference[];
-    photo: DocumentReference | null | undefined;
+    user: User;
+    requestedItems: DocumentReference[];
+    notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 }
 
-export class User implements IUser {
+export class UserCollection implements IUser {
     [key: string]:
         | string
+        | string[]
         | DocumentReference
         | DocumentReference[]
+        | FieldValue
         | Timestamp
         | null
         | undefined
+        | User
         | (() => string)
+        | (() => string[])
         | (() => DocumentReference[])
         | (() => DocumentReference | null | undefined)
-        | (() => Timestamp);
-    name: string;
-    pendingDonations: DocumentReference[];
-    photo: DocumentReference | null | undefined;
+        | (() => FieldValue)
+        | (() => User);
+    user: User;
+    requestedItems: DocumentReference[];
+    notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 
     constructor(args: IUser) {
-        this.name = args.name;
-        this.pendingDonations = args.pendingDonations;
-        this.photo = args.photo;
+        this.user = args.user;
+        this.requestedItems = args.requestedItems;
+        this.notes = args.notes;
         this.createdAt = args.createdAt;
         this.modifiedAt = args.modifiedAt;
     }
 
-    getName(): string {
-        return this.name;
+    getUser(): User {
+        return this.user;
     }
 
-    getPendingDonations(): DocumentReference[] {
-        return this.pendingDonations;
+    getRequestedItems(): DocumentReference[] {
+        return this.requestedItems;
     }
 
-    getPhoto(): DocumentReference | null | undefined {
-        return this.photo;
+    getNotes(): string[] {
+        return this.notes;
     }
 
     getCreatedAt(): Timestamp {
