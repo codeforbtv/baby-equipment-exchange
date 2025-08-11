@@ -16,6 +16,7 @@ import { applicationDefault, initializeApp, ServiceAccount } from 'firebase-admi
 import { UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 import { UserInfo } from 'firebase/auth';
+import { IUser, UserCollection } from '@/models/user';
 
 const region = 'us-east1';
 
@@ -57,6 +58,7 @@ export async function initAdmin() {
 const app = await initAdmin();
 const auth = getAuth(app);
 const storage = getStorage(app);
+const db = getFirestore(app);
 
 export const addEvent = async (request: any) => {
     try {
@@ -77,12 +79,12 @@ export const checkClaims = async (request: any): Promise<any> => {
     throw new HttpsError('internal', 'Internal error');
 };
 
+//Cloud function to create User in Users collection anytime a new User is created in app.
 export const createNewUser = functionsV1
     .region(region)
     .auth.user()
     .onCreate(async (user: UserRecord) => {
         try {
-            const db = getFirestore(app);
             await db
                 .runTransaction(async (transaction) => {
                     const userRef = db.collection(USERS_COLLECTION).doc(user.uid);
@@ -92,39 +94,16 @@ export const createNewUser = functionsV1
                         return;
                     }
 
-                    const userParams = {
-                        name: user.displayName ?? '',
-                        pendingDonations: [],
-                        createdAt: FieldValue.serverTimestamp(),
+                    const userParams: IUser = {
+                        uid: user.uid,
+                        requestedItems: [],
+                        notes: [],
+                        organization: null,
                         modifiedAt: FieldValue.serverTimestamp()
                     };
-
-                    const userDetailParams = {
-                        user: userRef,
-                        emails: [user.email],
-                        phones: [],
-                        addresses: [],
-                        websites: [],
-                        createdAt: FieldValue.serverTimestamp(),
-                        modifiedAt: FieldValue.serverTimestamp(),
-                        email: user.email
-                    };
-
-                    const userDetailRef = db.collection(USER_DETAILS_COLLECTION).doc(user.uid);
-
                     transaction.create(userRef, userParams);
-                    transaction.create(userDetailRef, userDetailParams);
                 })
                 .catch((error) => logger.error({ location: 'createNewUser', error: error }));
-            // Claims may have already been set elsewhere.
-
-            const userRecord = await auth.getUser(user.uid);
-            if (userRecord.customClaims == null || Object.keys(userRecord.customClaims).length == 0) {
-                await auth.setCustomUserClaims(user.uid, {
-                    donor: true,
-                    verified: false
-                });
-            }
         } catch (error) {
             addErrorEvent('createNewUser', { error: error, data: user });
         }
@@ -133,7 +112,6 @@ export const createNewUser = functionsV1
 export const updateUser = async (request: any): Promise<void> => {
     try {
         const { uid, accountInformation } = request;
-        console.log(uid, accountInformation);
         await auth.updateUser(uid, accountInformation);
     } catch (error) {
         addErrorEvent('updateUser', error);

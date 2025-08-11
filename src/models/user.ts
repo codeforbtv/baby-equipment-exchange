@@ -13,13 +13,14 @@ export interface IUser {
         | undefined
         | (() => string)
         | (() => string[] | null | undefined)
-        | (() => DocumentReference[] | null | undefined)
         | (() => DocumentReference | null | undefined)
-        | (() => FieldValue);
+        | (() => DocumentReference[] | null | undefined)
+        | (() => Timestamp | FieldValue);
     uid: string;
     requestedItems: DocumentReference[] | null | undefined;
     notes: string[] | null | undefined;
-    modifiedAt: Timestamp;
+    organization: DocumentReference | null | undefined;
+    modifiedAt: Timestamp | FieldValue;
 }
 
 export class UserCollection implements IUser {
@@ -34,19 +35,21 @@ export class UserCollection implements IUser {
         | undefined
         | (() => string)
         | (() => string[] | null | undefined)
-        | (() => DocumentReference[] | null | undefined)
         | (() => DocumentReference | null | undefined)
-        | (() => FieldValue);
+        | (() => DocumentReference[] | null | undefined)
+        | (() => Timestamp | FieldValue);
     uid: string;
     requestedItems: DocumentReference[] | null | undefined;
     notes: string[] | null | undefined;
-    modifiedAt: Timestamp;
+    organization: DocumentReference | null | undefined;
+    modifiedAt: Timestamp | FieldValue;
 
     constructor(args: IUser) {
         this.uid = args.uid;
         this.user = args.user;
         this.requestedItems = args.requestedItems;
         this.notes = args.notes;
+        this.organization = args.organization;
         this.modifiedAt = args.modifiedAt;
     }
 
@@ -62,7 +65,11 @@ export class UserCollection implements IUser {
         return this.notes;
     }
 
-    getModifiedAt(): Timestamp {
+    getOrganization(): DocumentReference | null | undefined {
+        return this.organization;
+    }
+
+    getModifiedAt(): Timestamp | FieldValue {
         return this.modifiedAt;
     }
 }

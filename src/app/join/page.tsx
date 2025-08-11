@@ -1,11 +1,12 @@
 'use client';
 //Components
 import { Box, Button, Paper, TextField } from '@mui/material';
+import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
 //Hooks
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 //Libs
-import { onAuthStateChangedListener, callIsEmailInUse, createUser, addErrorEvent } from '@/api/firebase';
+import { onAuthStateChangedListener, callIsEmailInUse, createUser, addErrorEvent, signOutUser } from '@/api/firebase';
 //Styling
 import '../../styles/globalStyles.css';
 import Loader from '@/components/Loader';
@@ -13,7 +14,7 @@ import Loader from '@/components/Loader';
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewAccount() {
-    const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('pending');
+    const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('loggedOut');
     const [displayName, setDisplayName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
@@ -21,6 +22,8 @@ export default function NewAccount() {
     const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState<boolean>(false);
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [phoneNumber, setPhoneNumber] = useState<string>('');
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
 
     const router = useRouter();
 
@@ -37,19 +40,18 @@ export default function NewAccount() {
         validateEmail(email);
     };
 
-    useEffect(() => {
-        onAuthStateChangedListener((user) => {
-            if (user) router.push('/');
-            else setLoginState('loggedOut');
-        });
-    }, []);
+    // useEffect(() => {
+    //     onAuthStateChangedListener((user) => {
+    //         if (user) router.push('/');
+    //         else setLoginState('loggedOut');
+    //     });
+    // }, []);
 
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         try {
-            createUser(displayName, email, password)
-                .then((user) => user.user.getIdTokenResult(true).then(() => router.push('/')))
-                .catch((error) => addErrorEvent('createUser', error));
+            await createUser(displayName, email, password);
+            setOpenDialog(true);
         } catch (error) {
             addErrorEvent('handleAccountCreate', error);
         }
@@ -81,16 +83,28 @@ export default function NewAccount() {
         }
     };
 
+    const handleClose = () => {
+        signOutUser();
+        setOpenDialog(false);
+        router.push('/');
+    };
+
+    useEffect(() => {
+        console.log('open dialog: ', openDialog);
+    }, [openDialog]);
+
     return (
         <>
             <div className="page--header">
                 <h1>Join</h1>
             </div>
+
             <Paper className="content--container" elevation={8} square={false}>
                 {loginState === 'pending' && <Loader />}
                 {loginState === 'loggedOut' && (
                     <>
                         <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate}>
+                            <UserConfirmationDialogue open={openDialog} onClose={handleClose} displayName={displayName} />
                             <TextField
                                 type="text"
                                 label="Display Name"
