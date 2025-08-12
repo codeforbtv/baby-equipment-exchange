@@ -1,6 +1,7 @@
 {
   "projects": {
-    "c4btv": "baby-equipment-exchange"
+    "c4btv": "baby-equipment-exchange",
+    "default": "baby-equipment-exchange"
   },
   "targets": {},
   "etags": {}

@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
 import { onAuthStateChangedListener, callIsEmailInUse, createUser, addErrorEvent, signOutUser } from '@/api/firebase';
+import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
 import Loader from '@/components/Loader';
@@ -50,7 +51,7 @@ export default function NewAccount() {
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         try {
-            await createUser(displayName, email, password);
+            await createUser(displayName, email, password, phoneNumber);
             setOpenDialog(true);
         } catch (error) {
             addErrorEvent('handleAccountCreate', error);
@@ -83,15 +84,15 @@ export default function NewAccount() {
         }
     };
 
+    const handlePhoneNumberInput: OnValueChange = (values): void => {
+        setPhoneNumber(values.formattedValue);
+    };
+
     const handleClose = () => {
         signOutUser();
         setOpenDialog(false);
         router.push('/');
     };
-
-    useEffect(() => {
-        console.log('open dialog: ', openDialog);
-    }, [openDialog]);
 
     return (
         <>
@@ -153,6 +154,18 @@ export default function NewAccount() {
                                 helperText={passwordsDoNotMatch ? 'Passwords do not match.' : undefined}
                                 required
                                 onChange={handleConfirmPassword}
+                            />
+                            <PatternFormat
+                                id="phone-number"
+                                format="+1 (###) ###-####"
+                                mask="_"
+                                allowEmptyFormatting
+                                value={phoneNumber}
+                                onValueChange={handlePhoneNumberInput}
+                                type="tel"
+                                displayType="input"
+                                customInput={TextField}
+                                placeholder="+1 (___) ___-____"
                             />
                             <Button variant="contained" type={'submit'} disabled={isEmailInUse || passwordsDoNotMatch}>
                                 Join

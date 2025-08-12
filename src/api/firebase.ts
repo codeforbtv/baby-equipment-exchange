@@ -12,6 +12,7 @@ import {
     sendPasswordResetEmail,
     createUserWithEmailAndPassword,
     updateProfile,
+    updatePhoneNumber,
     signInAnonymously
 } from 'firebase/auth';
 
@@ -19,6 +20,7 @@ import { firebaseConfig } from './config';
 import {
     addEvent,
     checkClaims,
+    createNewUser,
     getImageAsSignedUrl,
     getUidByEmail,
     isEmailInUse,
@@ -41,6 +43,8 @@ import {
     updateUser,
     getUserById
 } from './firebaseAdmin';
+
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
@@ -241,12 +245,18 @@ export async function callUpdateUser(uid: string, accountInformation: AccountInf
     }
 }
 
-export async function createUser(displayName: string, email: string, password: string): Promise<void> {
-    createUserWithEmailAndPassword(auth, email, password)
-        .then((newUser) => updateProfile(newUser.user, { displayName: displayName }))
-        .catch((error) => addErrorEvent('Create User', error));
-    //Immediately signout new users. All new users are 'disabled' and cannot login until apporved by admin
-    // signOut(auth);
+export async function createUser(displayName: string, email: string, password: string, phoneNumber: string): Promise<void> {
+    try {
+        await createNewUser({
+            email: email,
+            password: password,
+            displayName: displayName,
+            phoneNumber: phoneNumber
+        });
+        console.log('Cloud function ran successfully');
+    } catch (error) {
+        addErrorEvent('Create user', error);
+    }
 }
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
