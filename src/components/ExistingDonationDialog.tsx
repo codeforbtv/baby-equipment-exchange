@@ -13,7 +13,7 @@ import {
     SelectChangeEvent,
     TextField
 } from '@mui/material';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 
@@ -30,16 +30,17 @@ export default function ExistingDonationDialog({
     onDelete: () => void;
 }) {
     const donation: DonationCardProps = initialParameters.data as DonationCardProps;
+    const [donationStatus, setDonationStatus] = useState<donationStatus>(donation.status ?? 'in processing');
 
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
 
     const donationStatusToName: {[key in donationStatus]: string} = {
-        'pending review': "Pending Review",
-        'pending delivery': "Pending Delivery",
         'in processing': "In Processing",
+        'pending delivery': "Pending Delivery",
         'available': "Available" ,
-        'designated for distribution': "Designated for Distribution",
+        'requested': "Requested",
+        'reserved': "Reserved",
         'distributed': "Distributed",
     };
 
@@ -108,14 +109,14 @@ export default function ExistingDonationDialog({
                         name="status"
                         label="Status"
                         select
-                        defaultValue={donation.status ?? 'pending review'}
+                        value={donationStatus}
                         SelectProps={{
                             readOnly: !isAdmin,
                             onChange: async (event: SelectChangeEvent<unknown>) => {
                                 if(!isAdmin) { return; }
                                 const newStatus = event.target.value as donationStatus;
                                 const resultStatus: donationStatus = await updateDonationStatus(donation.id, newStatus);
-                                donation.status = resultStatus;
+                                setDonationStatus(resultStatus);
                             }
                         }}
                     >
