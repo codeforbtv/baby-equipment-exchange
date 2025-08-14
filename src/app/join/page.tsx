@@ -11,12 +11,14 @@ import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
 import Loader from '@/components/Loader';
+import { newUserAccountInfo } from '@/types/UserTypes';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewAccount() {
     const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('loggedOut');
     const [displayName, setDisplayName] = useState<string>('');
+    const [organization, setOrganization] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
@@ -50,8 +52,15 @@ export default function NewAccount() {
 
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
+        const accountInfo: newUserAccountInfo = {
+            displayName: displayName,
+            email: email,
+            password: password,
+            phoneNumber: phoneNumber,
+            organization: organization
+        };
         try {
-            await createUser(displayName, email, password, phoneNumber);
+            await createUser(accountInfo);
             setOpenDialog(true);
         } catch (error) {
             addErrorEvent('handleAccountCreate', error);
@@ -131,6 +140,18 @@ export default function NewAccount() {
                                 required
                                 onChange={handleEmailInput}
                                 onBlur={handleBlur}
+                            />
+                            <TextField
+                                type="text"
+                                label="Organization"
+                                name="organization"
+                                id="organization"
+                                placeholder="Provide an organization"
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setOrganization(event.target.value);
+                                }}
+                                value={organization}
+                                required
                             />
                             <TextField
                                 type="password"

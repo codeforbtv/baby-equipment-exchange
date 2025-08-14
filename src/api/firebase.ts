@@ -47,6 +47,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
+import { newUserAccountInfo } from '@/types/UserTypes';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 const functions = getFunctions(app);
@@ -246,14 +247,9 @@ export async function callUpdateUser(uid: string, accountInformation: AccountInf
     }
 }
 
-export async function createUser(displayName: string, email: string, password: string, phoneNumber: string): Promise<void> {
+export async function createUser(accountInfo: newUserAccountInfo): Promise<void> {
     try {
-        const result = await createNewUser({
-            email: email,
-            password: password,
-            displayName: displayName,
-            phoneNumber: phoneNumber
-        });
+        const result = await createNewUser(accountInfo);
         console.log('Cloud function ran successfully', result.data);
     } catch (error) {
         addErrorEvent('Create user', error);

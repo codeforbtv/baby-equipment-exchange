@@ -14,15 +14,14 @@ const db = admin.firestore();
 
 export const createnewuser = onCall(async (request: CallableRequest): Promise<UserRecord> => {
     try {
-        const { email, password, displayName, phoneNumber } = request.data;
+        const accountInfo = request.data;
+        const { email, password, displayName, phoneNumber, organization } = accountInfo;
 
-        if (!email || email.length === 0) throw new HttpsError('invalid-argument', 'A valid email address is required.');
-
-        if (!password || password.length === 0) throw new HttpsError('invalid-argument', 'Password is required.');
-
-        if (!displayName || displayName.length === 0) throw new HttpsError('invalid-argument', 'Display name is required.');
-
-        if (!phoneNumber || phoneNumber.length === 0) throw new HttpsError('invalid-argument', 'Phone number is required.');
+        if (!email || email.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'A valid email address is required.'));
+        if (!password || password.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Password is required.'));
+        if (!displayName || displayName.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Display name is required.'));
+        if (!phoneNumber || phoneNumber.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Phone number is required.'));
+        if (!organization || organization.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Organization is required.'));
 
         const userRecord: UserRecord = await auth.createUser({
             email: email,
@@ -37,7 +36,7 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
             displayName: userRecord.displayName,
             phoneNumber: phoneNumber,
             requestedItems: [],
-            notes: [],
+            notes: [`User-provided organization: ${organization}`],
             modifiedAt: FieldValue.serverTimestamp()
         };
 
