@@ -20,7 +20,6 @@ import { firebaseConfig } from './config';
 import {
     addEvent,
     checkClaims,
-    createNewUser,
     getImageAsSignedUrl,
     getUidByEmail,
     isEmailInUse,
@@ -44,12 +43,14 @@ import {
     getUserById
 } from './firebaseAdmin';
 
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
+const functions = getFunctions(app);
+const createNewUser = httpsCallable(functions, 'createnewuser');
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -247,13 +248,13 @@ export async function callUpdateUser(uid: string, accountInformation: AccountInf
 
 export async function createUser(displayName: string, email: string, password: string, phoneNumber: string): Promise<void> {
     try {
-        await createNewUser({
+        const result = await createNewUser({
             email: email,
             password: password,
             displayName: displayName,
             phoneNumber: phoneNumber
         });
-        console.log('Cloud function ran successfully');
+        console.log('Cloud function ran successfully', result.data);
     } catch (error) {
         addErrorEvent('Create user', error);
     }

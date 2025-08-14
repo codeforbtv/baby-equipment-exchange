@@ -1,29 +1,28 @@
 // Libs
-import { onCall, CallableRequest } from 'firebase-functions/v2/https';
+import { onCall, CallableRequest, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 import * as admin from 'firebase-admin';
 
 import { UserRecord } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
 
-const EVENTS_COLLECTION = 'Event';
 const USERS_COLLECTION = 'Users';
-
-type Event = {
-    type: string;
-    note: string;
-    createdBy: string;
-    createdAt: string;
-    modifiedAt: string;
-};
 
 admin.initializeApp();
 const auth = admin.auth();
 const db = admin.firestore();
 
-export const createNewUser = onCall(async (request: CallableRequest): Promise<void> => {
+export const createnewuser = onCall(async (request: CallableRequest): Promise<UserRecord> => {
     try {
         const { email, password, displayName, phoneNumber } = request.data;
+
+        if (!email || email.length === 0) throw new HttpsError('invalid-argument', 'A valid email address is required.');
+
+        if (!password || password.length === 0) throw new HttpsError('invalid-argument', 'Password is required.');
+
+        if (!displayName || displayName.length === 0) throw new HttpsError('invalid-argument', 'Display name is required.');
+
+        if (!phoneNumber || phoneNumber.length === 0) throw new HttpsError('invalid-argument', 'Phone number is required.');
 
         const userRecord: UserRecord = await auth.createUser({
             email: email,
@@ -32,53 +31,59 @@ export const createNewUser = onCall(async (request: CallableRequest): Promise<vo
             disabled: true
         });
 
+        const userParams = {
+            uid: userRecord.uid,
+            email: userRecord.email,
+            displayName: userRecord.displayName,
+            phoneNumber: phoneNumber,
+            requestedItems: [],
+            notes: [],
+            modifiedAt: FieldValue.serverTimestamp()
+        };
+
         const docRef = db.collection(USERS_COLLECTION).doc(userRecord.uid);
         const doc = await docRef.get();
+
+        //If User exists in firestore, merge data
         if (doc.exists) {
             logger.error('User already exists in database', doc.data());
-            return;
+            docRef.set(userParams, { merge: true });
         } else {
-            const userParams = {
-                uid: userRecord.uid,
-                email: userRecord.email,
-                displayName: userRecord.displayName,
-                phoneNumber: phoneNumber,
-                requestedItems: [],
-                notes: [],
-                modifiedAt: FieldValue.serverTimestamp()
-            };
+            //Create new User in firestore
             docRef.set(userParams);
         }
+        return userRecord;
     } catch (error) {
         logger.error('Error creating new user', error);
     }
+    return Promise.reject(new HttpsError('unknown', 'An error occurred while trying to create a new user.'));
 });
 
-async function _addEvent(object: any) {
-    try {
-        const currentTime = new Date();
-        const currentTimeString = currentTime.toDateString();
-        const eventParams: Event = {
-            type: '',
-            note: JSON.stringify(object),
-            createdBy: 'system',
-            createdAt: currentTimeString,
-            modifiedAt: currentTimeString
-        };
-        await db.collection(EVENTS_COLLECTION).add(eventParams);
-    } catch (error) {
-        logger.error(error);
-    }
-}
+// async function _addEvent(object: any) {
+//     try {
+//         const currentTime = new Date();
+//         const currentTimeString = currentTime.toDateString();
+//         const eventParams: Event = {
+//             type: '',
+//             note: JSON.stringify(object),
+//             createdBy: 'system',
+//             createdAt: currentTimeString,
+//             modifiedAt: currentTimeString
+//         };
+//         await db.collection(EVENTS_COLLECTION).add(eventParams);
+//     } catch (error) {
+//         logger.error(error);
+//     }
+// }
 
-export const addEvent = onCall(async (request: any) => {
-    try {
-        const object = request.data.object;
-        _addEvent(object);
-    } catch (error) {
-        logger.error(error);
-    }
-});
+// export const addEvent = onCall(async (request: any) => {
+//     try {
+//         const object = request.data.object;
+//         _addEvent(object);
+//     } catch (error) {
+//         logger.error(error);
+//     }
+// });
 
 // export const checkClaims = onCall(async (request: any) => {
 //     try {
