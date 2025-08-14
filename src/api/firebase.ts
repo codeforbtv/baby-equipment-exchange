@@ -48,6 +48,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 import { newUserAccountInfo } from '@/types/UserTypes';
+import { UserRecord } from 'firebase-admin/auth';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 const functions = getFunctions(app);
@@ -247,13 +248,14 @@ export async function callUpdateUser(uid: string, accountInformation: AccountInf
     }
 }
 
-export async function createUser(accountInfo: newUserAccountInfo): Promise<void> {
+export async function createUser(accountInfo: newUserAccountInfo): Promise<UserRecord> {
     try {
         const result = await createNewUser(accountInfo);
-        console.log('Cloud function ran successfully', result.data);
+        return result.data as UserRecord;
     } catch (error) {
         addErrorEvent('Create user', error);
     }
+    return Promise.reject();
 }
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {

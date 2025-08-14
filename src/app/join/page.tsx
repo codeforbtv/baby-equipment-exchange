@@ -3,10 +3,10 @@
 import { Box, Button, Paper, TextField } from '@mui/material';
 import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
 //Hooks
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
-import { onAuthStateChangedListener, callIsEmailInUse, createUser, addErrorEvent, signOutUser } from '@/api/firebase';
+import { callIsEmailInUse, createUser, addErrorEvent } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
@@ -16,7 +16,7 @@ import { newUserAccountInfo } from '@/types/UserTypes';
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewAccount() {
-    const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('loggedOut');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [organization, setOrganization] = useState<string>('');
     const [email, setEmail] = useState<string>('');
@@ -27,6 +27,7 @@ export default function NewAccount() {
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [confirmedUserName, setConfirmedUserName] = useState<string>('');
 
     const router = useRouter();
 
@@ -43,15 +44,9 @@ export default function NewAccount() {
         validateEmail(email);
     };
 
-    // useEffect(() => {
-    //     onAuthStateChangedListener((user) => {
-    //         if (user) router.push('/');
-    //         else setLoginState('loggedOut');
-    //     });
-    // }, []);
-
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
+        setIsLoading(true);
         const accountInfo: newUserAccountInfo = {
             displayName: displayName,
             email: email,
@@ -60,9 +55,12 @@ export default function NewAccount() {
             organization: organization
         };
         try {
-            await createUser(accountInfo);
+            const newUser = await createUser(accountInfo);
+            newUser.displayName && setConfirmedUserName(newUser.displayName);
+            setIsLoading(false);
             setOpenDialog(true);
         } catch (error) {
+            setIsLoading(false);
             addErrorEvent('handleAccountCreate', error);
         }
     };
@@ -98,7 +96,6 @@ export default function NewAccount() {
     };
 
     const handleClose = () => {
-        signOutUser();
         setOpenDialog(false);
         router.push('/');
     };
@@ -110,11 +107,12 @@ export default function NewAccount() {
             </div>
 
             <Paper className="content--container" elevation={8} square={false}>
-                {loginState === 'pending' && <Loader />}
-                {loginState === 'loggedOut' && (
+                {isLoading ? (
+                    <Loader />
+                ) : (
                     <>
                         <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate}>
-                            <UserConfirmationDialogue open={openDialog} onClose={handleClose} displayName={displayName} />
+                            <UserConfirmationDialogue open={openDialog} onClose={handleClose} displayName={confirmedUserName} />
                             <TextField
                                 type="text"
                                 label="Display Name"
