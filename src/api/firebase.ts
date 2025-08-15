@@ -44,7 +44,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
-import { newUserAccountInfo } from '@/types/UserTypes';
+import { AuthUserRecord, newUserAccountInfo } from '@/types/UserTypes';
 import { UserRecord } from 'firebase-admin/auth';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
@@ -210,7 +210,7 @@ export async function getUserEmailById(id: string): Promise<string> {
     return Promise.reject();
 }
 
-export async function getAllUsers(): Promise<UserCardProps[]> {
+export async function getAllUsers(): Promise<AuthUserRecord[]> {
     try {
         const usersList = await listAllUsers();
         return usersList;
