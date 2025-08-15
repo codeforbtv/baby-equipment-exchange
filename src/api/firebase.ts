@@ -10,9 +10,6 @@ import {
     User,
     getAuth,
     sendPasswordResetEmail,
-    createUserWithEmailAndPassword,
-    updateProfile,
-    updatePhoneNumber,
     signInAnonymously
 } from 'firebase/auth';
 
