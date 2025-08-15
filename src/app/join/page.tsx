@@ -1,26 +1,33 @@
 'use client';
 //Components
 import { Box, Button, Paper, TextField } from '@mui/material';
+import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
 //Hooks
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 //Libs
-import { onAuthStateChangedListener, callIsEmailInUse, createUser, addErrorEvent } from '@/api/firebase';
+import { callIsEmailInUse, createUser, addErrorEvent } from '@/api/firebase';
+import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
 import Loader from '@/components/Loader';
+import { newUserAccountInfo } from '@/types/UserTypes';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewAccount() {
-    const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('pending');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [displayName, setDisplayName] = useState<string>('');
+    const [organization, setOrganization] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState<boolean>(false);
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [phoneNumber, setPhoneNumber] = useState<string>('');
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [confirmedUserName, setConfirmedUserName] = useState<string>('');
 
     const router = useRouter();
 
@@ -37,20 +44,23 @@ export default function NewAccount() {
         validateEmail(email);
     };
 
-    useEffect(() => {
-        onAuthStateChangedListener((user) => {
-            if (user) router.push('/');
-            else setLoginState('loggedOut');
-        });
-    }, []);
-
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
+        setIsLoading(true);
+        const accountInfo: newUserAccountInfo = {
+            displayName: displayName,
+            email: email,
+            password: password,
+            phoneNumber: phoneNumber,
+            organization: organization
+        };
         try {
-            createUser(displayName, email, password)
-                .then((user) => user.user.getIdTokenResult(true).then(() => router.push('/')))
-                .catch((error) => addErrorEvent('createUser', error));
+            const newUser = await createUser(accountInfo);
+            newUser.displayName && setConfirmedUserName(newUser.displayName);
+            setIsLoading(false);
+            setOpenDialog(true);
         } catch (error) {
+            setIsLoading(false);
             addErrorEvent('handleAccountCreate', error);
         }
     };
@@ -81,16 +91,28 @@ export default function NewAccount() {
         }
     };
 
+    const handlePhoneNumberInput: OnValueChange = (values): void => {
+        setPhoneNumber(values.formattedValue);
+    };
+
+    const handleClose = () => {
+        setOpenDialog(false);
+        router.push('/');
+    };
+
     return (
         <>
             <div className="page--header">
                 <h1>Join</h1>
             </div>
+
             <Paper className="content--container" elevation={8} square={false}>
-                {loginState === 'pending' && <Loader />}
-                {loginState === 'loggedOut' && (
+                {isLoading ? (
+                    <Loader />
+                ) : (
                     <>
                         <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate}>
+                            <UserConfirmationDialogue open={openDialog} onClose={handleClose} displayName={confirmedUserName} />
                             <TextField
                                 type="text"
                                 label="Display Name"
@@ -118,6 +140,18 @@ export default function NewAccount() {
                                 onBlur={handleBlur}
                             />
                             <TextField
+                                type="text"
+                                label="Organization"
+                                name="organization"
+                                id="organization"
+                                placeholder="Provide an organization"
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setOrganization(event.target.value);
+                                }}
+                                value={organization}
+                                required
+                            />
+                            <TextField
                                 type="password"
                                 label="Password"
                                 name="password"
@@ -139,6 +173,18 @@ export default function NewAccount() {
                                 helperText={passwordsDoNotMatch ? 'Passwords do not match.' : undefined}
                                 required
                                 onChange={handleConfirmPassword}
+                            />
+                            <PatternFormat
+                                id="phone-number"
+                                format="+1 (###) ###-####"
+                                mask="_"
+                                allowEmptyFormatting
+                                value={phoneNumber}
+                                onValueChange={handlePhoneNumberInput}
+                                type="tel"
+                                displayType="input"
+                                customInput={TextField}
+                                placeholder="+1 (___) ___-____"
                             />
                             <Button variant="contained" type={'submit'} disabled={isEmailInUse || passwordsDoNotMatch}>
                                 Join

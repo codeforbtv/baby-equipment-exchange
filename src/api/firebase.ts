@@ -10,8 +10,6 @@ import {
     User,
     getAuth,
     sendPasswordResetEmail,
-    createUserWithEmailAndPassword,
-    updateProfile,
     signInAnonymously
 } from 'firebase/auth';
 
@@ -42,10 +40,16 @@ import {
     getUserById
 } from './firebaseAdmin';
 
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
 import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
+import { newUserAccountInfo } from '@/types/UserTypes';
+import { UserRecord } from 'firebase-admin/auth';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
+const functions = getFunctions(app);
+const createNewUser = httpsCallable(functions, 'createnewuser');
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -241,12 +245,12 @@ export async function callUpdateUser(uid: string, accountInformation: AccountInf
     }
 }
 
-export async function createUser(displayName: string, email: string, password: string): Promise<UserCredential> {
+export async function createUser(accountInfo: newUserAccountInfo): Promise<UserRecord> {
     try {
-        const newUser = await createUserWithEmailAndPassword(auth, email, password);
-        updateProfile(newUser.user, { displayName: displayName }).then(() => newUser);
+        const result = await createNewUser(accountInfo);
+        return result.data as UserRecord;
     } catch (error) {
-        console.log(error);
+        addErrorEvent('Create user', error);
     }
     return Promise.reject();
 }

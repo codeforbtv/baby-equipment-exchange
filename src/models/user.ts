@@ -4,6 +4,7 @@ import { DocumentReference, FieldValue, Timestamp } from 'firebase/firestore';
 export interface IUser {
     [key: string]:
         | string
+        | string[]
         | DocumentReference
         | DocumentReference[]
         | FieldValue
@@ -11,60 +12,64 @@ export interface IUser {
         | null
         | undefined
         | (() => string)
-        | (() => DocumentReference[])
+        | (() => string[] | null | undefined)
         | (() => DocumentReference | null | undefined)
-        | (() => FieldValue);
-
-    name: string;
-    pendingDonations: DocumentReference[];
-    photo: DocumentReference | null | undefined;
-    createdAt: Timestamp;
-    modifiedAt: Timestamp;
+        | (() => DocumentReference[] | null | undefined)
+        | (() => Timestamp | FieldValue);
+    uid: string;
+    requestedItems: DocumentReference[] | null | undefined;
+    notes: string[] | null | undefined;
+    organization: DocumentReference | null | undefined;
+    modifiedAt: Timestamp | FieldValue;
 }
 
-export class User implements IUser {
+export class UserCollection implements IUser {
     [key: string]:
         | string
+        | string[]
         | DocumentReference
         | DocumentReference[]
+        | FieldValue
         | Timestamp
         | null
         | undefined
         | (() => string)
-        | (() => DocumentReference[])
+        | (() => string[] | null | undefined)
         | (() => DocumentReference | null | undefined)
-        | (() => Timestamp);
-    name: string;
-    pendingDonations: DocumentReference[];
-    photo: DocumentReference | null | undefined;
-    createdAt: Timestamp;
-    modifiedAt: Timestamp;
+        | (() => DocumentReference[] | null | undefined)
+        | (() => Timestamp | FieldValue);
+    uid: string;
+    requestedItems: DocumentReference[] | null | undefined;
+    notes: string[] | null | undefined;
+    organization: DocumentReference | null | undefined;
+    modifiedAt: Timestamp | FieldValue;
 
     constructor(args: IUser) {
-        this.name = args.name;
-        this.pendingDonations = args.pendingDonations;
-        this.photo = args.photo;
-        this.createdAt = args.createdAt;
+        this.uid = args.uid;
+        this.user = args.user;
+        this.requestedItems = args.requestedItems;
+        this.notes = args.notes;
+        this.organization = args.organization;
         this.modifiedAt = args.modifiedAt;
     }
 
-    getName(): string {
-        return this.name;
+    getUid(): string {
+        return this.uid;
     }
 
-    getPendingDonations(): DocumentReference[] {
-        return this.pendingDonations;
+    getRequestedItems(): DocumentReference[] | null | undefined {
+        return this.requestedItems;
     }
 
-    getPhoto(): DocumentReference | null | undefined {
-        return this.photo;
+    getNotes(): string[] | null | undefined {
+        return this.notes;
     }
 
-    getCreatedAt(): Timestamp {
-        return this.createdAt;
+    getOrganization(): DocumentReference | null | undefined {
+        return this.organization;
     }
 
-    getModifiedAt(): Timestamp {
+    getModifiedAt(): Timestamp | FieldValue {
         return this.modifiedAt;
     }
 }
