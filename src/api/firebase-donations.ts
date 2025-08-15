@@ -23,6 +23,7 @@ import {
 // Models
 import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
+import { donationStatus } from '@/types/DonationTypes';
 import { DonationBody } from '@/types/post-data';
 
 // Libs
@@ -243,6 +244,20 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
         await batch.commit();
     } catch (error) {
         addErrorEvent('addBulkDonation', error);
+    }
+}
+
+export async function updateDonationStatus(id: string, status: donationStatus): Promise<donationStatus> {
+    try {
+        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
+        await updateDoc(donationRef, {
+            status: status,
+            modifiedAt: serverTimestamp(),
+        });
+        return status;
+    } catch (error) {
+        addErrorEvent('updateDonationStatus', error);
+        throw error;
     }
 }
 
