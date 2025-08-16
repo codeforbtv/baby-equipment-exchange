@@ -46,6 +46,7 @@ import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 import { AuthUserRecord, newUserAccountInfo } from '@/types/UserTypes';
 import { UserRecord } from 'firebase-admin/auth';
+import { IUser } from '@/models/user';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 const functions = getFunctions(app);
@@ -206,16 +207,6 @@ export async function getUserEmailById(id: string): Promise<string> {
         if (user.email) return user.email;
     } catch (error) {
         addErrorEvent('Get user email by ID', error);
-    }
-    return Promise.reject();
-}
-
-export async function getAllUsers(): Promise<AuthUserRecord[]> {
-    try {
-        const usersList = await listAllUsers();
-        return usersList;
-    } catch (error) {
-        addErrorEvent('Error getting all users, ', error);
     }
     return Promise.reject();
 }

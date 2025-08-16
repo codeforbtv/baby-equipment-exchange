@@ -13,7 +13,8 @@ import { UserCardProps } from '@/types/post-data';
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Libs
-import { addErrorEvent, getAllUsers } from '../api/firebase';
+import { addErrorEvent } from '../api/firebase';
+import { getAllUsers } from '@/api/firebase-users';
 // Styles
 import styles from './Browse.module.css';
 import NewUserDialog from './NewUserDialog';

@@ -18,9 +18,12 @@ import {
     updateDoc
 } from 'firebase/firestore';
 
+//API
+import { listAllUsers } from './firebaseAdmin';
+
 // Models
-import { IUser, User } from '@/models/user';
-import { IUserDetail, UserDetail } from '@/models/user-detail';
+import { AuthUserRecord } from '@/types/UserTypes';
+import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
 // Types
 import { AccountInformation, UserBody, NoteBody } from '@/types/post-data';
@@ -28,15 +31,14 @@ import { AccountInformation, UserBody, NoteBody } from '@/types/post-data';
 import { stripNullUndefined } from '@/utils/utils';
 
 export const USERS_COLLECTION = 'Users';
-export const USER_DETAILS_COLLECTION = 'UserDetails';
 
 export const userConverter = {
-    toFirestore(user: User): DocumentData {
+    toFirestore(user: UserCollection): DocumentData {
         const userData: IUser = {
-            name: user.getName(),
-            pendingDonations: user.getPendingDonations(),
-            photo: user.getPhoto(),
-            createdAt: user.getCreatedAt(),
+            uid: user.getUid(),
+            requestedItems: user.getRequestedItems(),
+            notes: user.getNotes(),
+            organization: user.getOrganization(),
             modifiedAt: user.getModifiedAt()
         };
 
@@ -45,91 +47,45 @@ export const userConverter = {
                 delete userData[key];
             }
         }
-
         return userData;
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {
         const data = snapshot.data(options)!;
         const userData: IUser = {
-            name: data.name,
-            pendingDonations: data.pendingDonations,
-            photo: data.photo,
-            createdAt: data.createdAt,
+            uid: data.uid,
+            requestedItems: data.requestedItems,
+            notes: data.notes,
+            organization: data.organization,
             modifiedAt: data.modifiedAt
         };
-        return new User(userData);
+        return new UserCollection(userData);
     }
 };
 
-const userDetailConverter = {
-    toFirestore(userDetail: UserDetail): DocumentData {
-        const userDetailData: IUserDetail = {
-            user: userDetail.getUser(),
-            emails: userDetail.getEmails(),
-            phones: userDetail.getPhones(),
-            addresses: userDetail.getAddresses(),
-            websites: userDetail.getWebsites(),
-            notes: userDetail.getNotes(),
-            createdAt: userDetail.getCreatedAt(),
-            modifiedAt: userDetail.getModifiedAt(),
-            address: userDetail.getPrimaryAddress(),
-            email: userDetail.getPrimaryEmail(),
-            phone: userDetail.getPrimaryPhone(),
-            website: userDetail.getPrimaryWebsite()
-        };
+export async function getAllUsers(): Promise<AuthUserRecord[]> {
+    try {
+        const usersList = await listAllUsers();
+        return usersList;
+    } catch (error) {
+        addErrorEvent('Error getting all users, ', error);
+    }
+    return Promise.reject();
+}
 
-        for (const key in userDetailData) {
-            if (userDetailData[key] === undefined || userDetailData[key] === null) {
-                delete userDetailData[key];
-            }
+export async function getDbUser(uid: string): Promise<IUser> {
+    try {
+        const userRef = doc(db, `${USERS_COLLECTION}/${uid}`).withConverter(userConverter);
+        const snapshot = await getDoc(userRef);
+        if (snapshot.exists()) {
+            return snapshot.data();
+        } else {
+            Promise.reject('User not found');
         }
-
-        return userDetailData;
-    },
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): UserDetail {
-        const data = snapshot.data(options)!;
-        const userDetailData: IUserDetail = {
-            user: data.user,
-            emails: data.emails,
-            phones: data.phones,
-            addresses: data.addresses,
-            websites: data.websites,
-            notes: data.notes,
-            createdAt: data.createdAt,
-            modifiedAt: data.modifiedAt,
-            address: data.address,
-            email: data.email,
-            phone: data.phone,
-            website: data.website
-        };
-        return new UserDetail(userDetailData);
+    } catch (error) {
+        addErrorEvent('Error getting db User', error);
     }
-};
-
-// export async function getUserAccount(): Promise<AccountInformation> {
-//     try {
-//         const userId: string = await getUserId();
-//         return _getUserAccount(userId);
-//     } catch (error) {
-//         // eslint-disable-line no-empty
-//     }
-//     return Promise.reject();
-// }
-
-// export async function getAllUserAccounts() {
-//     const q = query(collection(db, USERS_COLLECTION));
-//     const snapshot = await getDocs(q);
-//     const userIds: string[] = snapshot.docs.map((doc) => doc.id);
-//     const userAccounts: AccountInformation[] = [];
-//     for (const id of userIds) {
-//         try {
-//             userAccounts.push(await _getUserAccount(id));
-//         } catch (error) {
-//             // eslint-disable-line no-empty
-//         }
-//     }
-//     return userAccounts;
-// }
+    return Promise.reject();
+}
 
 // async function _getUserAccount(userId: string): Promise<AccountInformation> {
 //     const userRef = doc(db, `${USERS_COLLECTION}/${userId}`).withConverter(userConverter);
@@ -271,13 +227,6 @@ export async function addNote(note: NoteBody) {
             modifiedAt: currentTimeString
         };
         const event = new Event(eventParams);
-
-        if (note.destinationCollection === USERS_COLLECTION) {
-            const userDetailsRef = doc(db, USER_DETAILS_COLLECTION, note.destinationId).withConverter(userDetailConverter);
-            await updateDoc(userDetailsRef, {
-                notes: arrayUnion(event)
-            });
-        }
     } catch (error) {
         addErrorEvent('addNote', { error: error, note: note });
     }

@@ -46,7 +46,6 @@ export class UserCollection implements IUser {
 
     constructor(args: IUser) {
         this.uid = args.uid;
-        this.user = args.user;
         this.requestedItems = args.requestedItems;
         this.notes = args.notes;
         this.organization = args.organization;

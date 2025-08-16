@@ -1,5 +1,6 @@
 //API
-import { callSetClaims, callUpdateUser } from '@/api/firebase';
+import { addErrorEvent, callSetClaims, callUpdateUser } from '@/api/firebase';
+import { getDbUser } from '@/api/firebase-users';
 //Components
 import {
     Button,
@@ -26,6 +27,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import styles from './Card.module.css';
 
 import { AuthUserRecord } from '@/types/UserTypes';
+import { IUser } from '@/models/user';
 
 export default function UserCard(props: AuthUserRecord) {
     const { uid, email, displayName, customClaims, disabled } = props;
@@ -35,9 +37,19 @@ export default function UserCard(props: AuthUserRecord) {
     const [editView, showEditView] = useState<boolean>(false);
     const [displayNameField, setDisplayNameField] = useState<string | undefined>(displayName);
     const [emailField, setEmailField] = useState<string | undefined>(email);
-    // const [phoneNumberField, setPhoneNumberField] = useState<string | undefined>(phoneNumber);
+    const [dbUser, setDbUser] = useState<IUser | null>();
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isAidWorker, setIsAidWorker] = useState<boolean>(false);
+
+    const fetchDbUser = async (uid: string): Promise<IUser> => {
+        try {
+            const dbUser = await getDbUser(uid);
+            setDbUser(dbUser);
+        } catch (error) {
+            addErrorEvent('Error fetching db user', error);
+        }
+        return Promise.reject();
+    };
 
     useEffect(() => {
         if (uid) setIsLoading(false);
@@ -46,8 +58,14 @@ export default function UserCard(props: AuthUserRecord) {
     useEffect(() => {
         if (editView) {
             setIsDialogLoading(true);
+            fetchDbUser(uid);
+            setIsDialogLoading(false);
         }
     }, [editView]);
+
+    useEffect(() => {
+        console.log(dbUser);
+    }, [dbUser]);
 
     async function handleFormSubmit() {
         const claims = {
