@@ -11,12 +11,15 @@ export interface IUser {
         | Timestamp
         | null
         | undefined
+        | boolean
+        | { [key: string]: any }
         | (() => string)
         | (() => string[] | null | undefined)
         | (() => DocumentReference | null | undefined)
         | (() => DocumentReference[] | null | undefined)
-        | (() => Timestamp | FieldValue);
-    uid: string;
+        | (() => Timestamp | FieldValue)
+        | (() => boolean);
+    readonly uid: string;
     requestedItems: DocumentReference[] | null | undefined;
     notes: string[] | null | undefined;
     organization: DocumentReference | null | undefined;
@@ -33,12 +36,15 @@ export class UserCollection implements IUser {
         | Timestamp
         | null
         | undefined
+        | boolean
+        | { [key: string]: any }
         | (() => string)
         | (() => string[] | null | undefined)
         | (() => DocumentReference | null | undefined)
         | (() => DocumentReference[] | null | undefined)
-        | (() => Timestamp | FieldValue);
-    uid: string;
+        | (() => Timestamp | FieldValue)
+        | (() => boolean);
+    readonly uid: string;
     requestedItems: DocumentReference[] | null | undefined;
     notes: string[] | null | undefined;
     organization: DocumentReference | null | undefined;

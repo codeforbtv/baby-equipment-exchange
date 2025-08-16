@@ -144,18 +144,18 @@ export const listAllUsers = async (): Promise<AuthUserRecord[]> => {
 };
 
 //returns client-side safe UserInfo object
-export async function getUserById(id: string): Promise<UserInfo> {
+export async function getAuthUserById(uid: string): Promise<AuthUserRecord> {
     try {
-        const userRecord = await auth.getUser(id);
-        const user: UserInfo = {
-            displayName: userRecord.displayName || null,
-            email: userRecord.email || null,
-            phoneNumber: userRecord.phoneNumber || null,
-            photoURL: userRecord.photoURL || null,
-            providerId: userRecord.providerData[0].providerId,
-            uid: userRecord.uid
+        const user = await auth.getUser(uid);
+        const authUser = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            disabled: user.disabled,
+            metadata: user.metadata,
+            customClaims: user.customClaims
         };
-        return user;
+        return JSON.parse(JSON.stringify(authUser));
     } catch (error) {
         console.log(error);
     }

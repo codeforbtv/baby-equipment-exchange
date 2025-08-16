@@ -1,4 +1,5 @@
 import { UserMetadata } from 'firebase-admin/auth';
+import { IUser } from '@/models/user';
 
 export type newUserAccountInfo = {
     displayName: string;
@@ -8,7 +9,7 @@ export type newUserAccountInfo = {
     organization: string;
 };
 
-export type AuthUserRecord = {
+export interface AuthUserRecord {
     readonly uid: string;
     readonly email?: string;
     displayName?: string;
@@ -17,4 +18,6 @@ export type AuthUserRecord = {
     readonly customClaims?: {
         [key: string]: any;
     };
-};
+}
+
+export interface UserDetails extends AuthUserRecord, IUser {}

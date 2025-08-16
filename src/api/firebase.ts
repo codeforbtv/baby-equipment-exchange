@@ -37,7 +37,7 @@ import {
     toggleClaimForVerified,
     toggleClaimForVolunteer,
     updateUser,
-    getUserById
+    getAuthUserById
 } from './firebaseAdmin';
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -203,7 +203,7 @@ export async function getUserId(): Promise<string> {
 
 export async function getUserEmailById(id: string): Promise<string> {
     try {
-        const user = await getUserById(id);
+        const user = await getAuthUserById(id);
         if (user.email) return user.email;
     } catch (error) {
         addErrorEvent('Get user email by ID', error);

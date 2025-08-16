@@ -19,10 +19,10 @@ import {
 } from 'firebase/firestore';
 
 //API
-import { listAllUsers } from './firebaseAdmin';
+import { getAuthUserById, listAllUsers } from './firebaseAdmin';
 
 // Models
-import { AuthUserRecord } from '@/types/UserTypes';
+import { AuthUserRecord, UserDetails } from '@/types/UserTypes';
 import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
 // Types
@@ -83,6 +83,30 @@ export async function getDbUser(uid: string): Promise<IUser> {
         }
     } catch (error) {
         addErrorEvent('Error getting db User', error);
+    }
+    return Promise.reject();
+}
+
+//returns Auth User and db User details combined
+export async function getUserDetails(uid: string): Promise<UserDetails> {
+    try {
+        const authUser = await getAuthUserById(uid);
+        const dbUser = await getDbUser(uid);
+        const userDetails: UserDetails = {
+            uid: authUser.uid,
+            email: authUser.email,
+            displayName: authUser.displayName,
+            disabled: authUser.disabled,
+            metadata: authUser.metadata,
+            customClaims: authUser.customClaims,
+            requestedItems: dbUser.requestedItems,
+            notes: dbUser.notes,
+            organization: dbUser.organization,
+            modifiedAt: dbUser.modifiedAt
+        };
+        return userDetails;
+    } catch (error) {
+        addErrorEvent('Get User Details', error);
     }
     return Promise.reject();
 }

@@ -28,6 +28,7 @@ import styles from './Card.module.css';
 
 import { AuthUserRecord } from '@/types/UserTypes';
 import { IUser } from '@/models/user';
+import { useRouter } from 'next/navigation';
 
 export default function UserCard(props: AuthUserRecord) {
     const { uid, email, displayName, customClaims, disabled } = props;
@@ -40,6 +41,8 @@ export default function UserCard(props: AuthUserRecord) {
     const [dbUser, setDbUser] = useState<IUser | null>();
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [isAidWorker, setIsAidWorker] = useState<boolean>(false);
+
+    const router = useRouter();
 
     const fetchDbUser = async (uid: string): Promise<IUser> => {
         try {
@@ -83,7 +86,7 @@ export default function UserCard(props: AuthUserRecord) {
     }
 
     const handleIconButtonClick = () => {
-        showEditView(true);
+        router.push(`/users/${uid}`);
     };
 
     const handleHideEditView = () => {
