@@ -36,6 +36,7 @@ export const userConverter = {
     toFirestore(user: UserCollection): DocumentData {
         const userData: IUser = {
             uid: user.getUid(),
+            phoneNumber: user.getPhoneNumber(),
             requestedItems: user.getRequestedItems(),
             notes: user.getNotes(),
             organization: user.getOrganization(),
@@ -53,6 +54,7 @@ export const userConverter = {
         const data = snapshot.data(options)!;
         const userData: IUser = {
             uid: data.uid,
+            phoneNumber: data.phoneNumber,
             requestedItems: data.requestedItems,
             notes: data.notes,
             organization: data.organization,
@@ -90,8 +92,7 @@ export async function getDbUser(uid: string): Promise<IUser> {
 //returns Auth User and db User details combined
 export async function getUserDetails(uid: string): Promise<UserDetails> {
     try {
-        const authUser = await getAuthUserById(uid);
-        const dbUser = await getDbUser(uid);
+        const [authUser, dbUser] = await Promise.all([getAuthUserById(uid), getDbUser(uid)]);
         const userDetails: UserDetails = {
             uid: authUser.uid,
             email: authUser.email,
@@ -99,6 +100,7 @@ export async function getUserDetails(uid: string): Promise<UserDetails> {
             disabled: authUser.disabled,
             metadata: authUser.metadata,
             customClaims: authUser.customClaims,
+            phoneNumber: dbUser.phoneNumber,
             requestedItems: dbUser.requestedItems,
             notes: dbUser.notes,
             organization: dbUser.organization,

@@ -20,6 +20,7 @@ export interface IUser {
         | (() => Timestamp | FieldValue)
         | (() => boolean);
     readonly uid: string;
+    phoneNumber: string;
     requestedItems: DocumentReference[] | null | undefined;
     notes: string[] | null | undefined;
     organization: DocumentReference | null | undefined;
@@ -45,6 +46,7 @@ export class UserCollection implements IUser {
         | (() => Timestamp | FieldValue)
         | (() => boolean);
     readonly uid: string;
+    phoneNumber: string;
     requestedItems: DocumentReference[] | null | undefined;
     notes: string[] | null | undefined;
     organization: DocumentReference | null | undefined;
@@ -52,6 +54,7 @@ export class UserCollection implements IUser {
 
     constructor(args: IUser) {
         this.uid = args.uid;
+        this.phoneNumber = args.phoneNumber;
         this.requestedItems = args.requestedItems;
         this.notes = args.notes;
         this.organization = args.organization;
@@ -60,6 +63,10 @@ export class UserCollection implements IUser {
 
     getUid(): string {
         return this.uid;
+    }
+
+    getPhoneNumber(): string {
+        return this.phoneNumber;
     }
 
     getRequestedItems(): DocumentReference[] | null | undefined {
