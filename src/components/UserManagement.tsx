@@ -13,13 +13,16 @@ import { UserCardProps } from '@/types/post-data';
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Libs
-import { getAllUsers } from '../api/firebase';
+import { addErrorEvent } from '../api/firebase';
+import { getAllUsers } from '@/api/firebase-users';
 // Styles
 import styles from './Browse.module.css';
 import NewUserDialog from './NewUserDialog';
+import { UserRecord } from 'firebase-admin/auth';
+import { AuthUserRecord } from '@/types/UserTypes';
 
 export default function UserManagement() {
-    const [users, setUsers] = useState<UserCardProps[]>([]);
+    const [users, setUsers] = useState<AuthUserRecord[]>([]);
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
     const [isNewUserDialogVisible, setIsNewUserDialogVisible] = useState<boolean>(false);
@@ -41,16 +44,18 @@ export default function UserManagement() {
         setIsFilterVisible((prev: any) => !prev);
     }
 
+    const fetchAllUsers = async (): Promise<void> => {
+        try {
+            const allUsers: AuthUserRecord[] = await getAllUsers();
+            setUsers(allUsers);
+            setIsLoading(false);
+        } catch (error) {
+            addErrorEvent('Fetch all user', error);
+        }
+    };
+
     useEffect(() => {
-        (async () => {
-            try {
-                const allUsers: UserCardProps[] = await getAllUsers();
-                setUsers(allUsers);
-                setIsLoading(false);
-            } catch (error) {
-                //eslint-disable-line no-empty
-            }
-        })();
+        fetchAllUsers();
     }, []);
 
     return isLoading ? (
@@ -75,7 +80,7 @@ export default function UserManagement() {
                 {isFilterVisible && <Filter />}
                 <NewUserDialog initialParameters={{ initAsOpen: isNewUserDialogVisible }} controllers={{ closeController: closeNewUserDialog }} />
                 <List className={styles['browse__grid']}>
-                    {users.map((userRecord: UserCardProps) => {
+                    {users.map((userRecord: AuthUserRecord) => {
                         const uid = userRecord.uid;
                         if (uid != null) {
                             return <UserCard key={userRecord.uid} {...userRecord} />;

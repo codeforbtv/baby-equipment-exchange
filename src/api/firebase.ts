@@ -37,19 +37,21 @@ import {
     toggleClaimForVerified,
     toggleClaimForVolunteer,
     updateUser,
-    getUserById
+    getAuthUserById
 } from './firebaseAdmin';
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
 import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
-import { newUserAccountInfo } from '@/types/UserTypes';
+import { AuthUserRecord, newUserAccountInfo } from '@/types/UserTypes';
 import { UserRecord } from 'firebase-admin/auth';
+import { IUser } from '@/models/user';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 const functions = getFunctions(app);
 const createNewUser = httpsCallable(functions, 'createnewuser');
+const enableUser = httpsCallable(functions, 'enableuser');
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -202,20 +204,10 @@ export async function getUserId(): Promise<string> {
 
 export async function getUserEmailById(id: string): Promise<string> {
     try {
-        const user = await getUserById(id);
+        const user = await getAuthUserById(id);
         if (user.email) return user.email;
     } catch (error) {
         addErrorEvent('Get user email by ID', error);
-    }
-    return Promise.reject();
-}
-
-export async function getAllUsers(): Promise<UserCardProps[]> {
-    try {
-        const usersList = await listAllUsers();
-        return usersList;
-    } catch (error) {
-        addErrorEvent('Error getting all users, ', error);
     }
     return Promise.reject();
 }
@@ -251,6 +243,16 @@ export async function createUser(accountInfo: newUserAccountInfo): Promise<UserR
         return result.data as UserRecord;
     } catch (error) {
         addErrorEvent('Create user', error);
+    }
+    return Promise.reject();
+}
+
+export async function callEnableUser(userId: string): Promise<UserRecord> {
+    try {
+        const enabledUser = await enableUser({ userId: userId });
+        return enabledUser.data as UserRecord;
+    } catch (error) {
+        addErrorEvent('Could not enable user', error);
     }
     return Promise.reject();
 }
