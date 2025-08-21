@@ -2,9 +2,9 @@
 import { DocumentData, collection, getDocs, query, QueryDocumentSnapshot, SnapshotOptions, doc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 // Models
 import { IOrganization, Organization } from '@/models/organization';
-import { OrganizationBody } from '@/types/post-data';
+import { OrganizationBody } from '@/types/OrganizationTypes';
 // Libs
-import { db } from './firebase';
+import { addErrorEvent, db } from './firebase';
 
 export const ORGANIZATIONS_COLLECTION = 'Organizations';
 
@@ -12,15 +12,9 @@ export const organizationConverter = {
     toFirestore(organization: Organization): DocumentData {
         const organizationData: IOrganization = {
             name: organization.getName(),
-            diaperBank: organization.isDiaperBank(),
-            babyProductExchange: organization.isBabyProductExchange(),
-            lowIncome: organization.isLowIncome(),
-            criminalJusticeInvolved: organization.isCriminalJusticeInvolved(),
-            adoptionAndFosterFamilies: organization.isAdoptionAndFosterFamilies(),
-            refugeeAndImmigration: organization.isRefugeeAndImmigration(),
-            substanceAbuseDisorders: organization.isSubstanceAbuseDisorders(),
             address: organization.getAddress(),
-            pointOfContact: organization.getPointOfContact(),
+            phoneNumber: organization.getPhoneNumber(),
+            tags: organization.getTags(),
             notes: organization.getNotes(),
             createdAt: organization.getCreatedAt(),
             modifiedAt: organization.getModifiedAt()
@@ -36,15 +30,9 @@ export const organizationConverter = {
         const data = snapshot.data(options);
         const organizationData: IOrganization = {
             name: data.name,
-            diaperBank: data.diaperBank,
-            babyProductExchange: data.babyProductExchange,
-            lowIncome: data.lowIncome,
-            criminalJusticeInvolved: data.criminalJusticeInvolved,
-            adoptionAndFosterFamilies: data.adoptionAndFosterFamilies,
-            refugeeAndImmigration: data.refugeeAndImmigration,
-            substanceAbuseDisorders: data.substanceAbuseDisorders,
             address: data.address,
-            pointOfContact: data.pointOfContact,
+            phoneNumber: data.phoneNumber,
+            tags: data.tags,
             notes: data.notes,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
@@ -53,26 +41,23 @@ export const organizationConverter = {
     }
 };
 
-export async function addOrganization(newOrganization: OrganizationBody) {
+export async function addOrganization(newOrganization: OrganizationBody): Promise<void> {
     const organizationParams: IOrganization = {
         name: newOrganization.name,
-        diaperBank: newOrganization.diaperBank,
-        babyProductExchange: newOrganization.babyProductExchange,
-        lowIncome: newOrganization.lowIncome,
-        criminalJusticeInvolved: newOrganization.criminalJusticeInvolved,
-        adoptionAndFosterFamilies: newOrganization.adoptionAndFosterFamilies,
-        refugeeAndImmigration: newOrganization.adoptionAndFosterFamilies,
-        substanceAbuseDisorders: newOrganization.substanceAbuseDisorders,
         address: newOrganization.address,
-        pointOfContact: newOrganization.pointOfContact,
+        phoneNumber: newOrganization.phoneNumber,
+        tags: newOrganization.tags,
         notes: newOrganization.notes,
         createdAt: serverTimestamp() as Timestamp,
         modifiedAt: serverTimestamp() as Timestamp
     };
-
     const organization = new Organization(organizationParams);
-    const organizationRef = doc(db, ORGANIZATIONS_COLLECTION);
-    await setDoc(organizationRef, organization);
+    try {
+        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION);
+        await setDoc(organizationRef, organization);
+    } catch (error) {
+        addErrorEvent('Add organization', error);
+    }
 }
 
 export async function getOrganizations(): Promise<Organization[]> {

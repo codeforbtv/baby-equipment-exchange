@@ -40,20 +40,6 @@ export type UserBody = {
     photo: DocumentReference | string | undefined | null; // The Images document id of the user's profile photo.
 };
 
-export type OrganizationBody = {
-    name: string;
-    diaperBank: boolean;
-    babyProductExchange: boolean;
-    lowIncome: boolean;
-    criminalJusticeInvolved: boolean;
-    adoptionAndFosterFamilies: boolean;
-    refugeeAndImmigration: boolean;
-    substanceAbuseDisorders: boolean;
-    address: IAddress;
-    pointOfContact: IContact;
-    notes: string;
-};
-
 export type StorageBody = {
     active: boolean;
     name: string;

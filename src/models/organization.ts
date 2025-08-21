@@ -13,7 +13,7 @@ export interface organizationTags {
     'early-childhood-education': 'Early Childhood Education';
 }
 
-export type organizationTagTypes = keyof organizationTags;
+export type OrganizationTagTypes = keyof organizationTags;
 
 export interface IOrganization {
     [key: string]:
@@ -22,7 +22,7 @@ export interface IOrganization {
         | IAddress
         | undefined
         | Timestamp
-        | (() => organizationTagTypes[])
+        | (() => OrganizationTagTypes[])
         | (() => string[])
         | (() => IAddress | undefined)
         | (() => string | undefined)
@@ -30,7 +30,7 @@ export interface IOrganization {
     name: string;
     address?: IAddress;
     phoneNumber?: string;
-    tags: organizationTagTypes[];
+    tags: OrganizationTagTypes[];
     notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -43,7 +43,7 @@ export class Organization implements IOrganization {
         | IAddress
         | undefined
         | Timestamp
-        | (() => organizationTagTypes[])
+        | (() => OrganizationTagTypes[])
         | (() => IAddress | undefined)
         | (() => string[])
         | (() => string | undefined)
@@ -51,7 +51,7 @@ export class Organization implements IOrganization {
     name: string;
     address?: IAddress;
     phoneNumber?: string;
-    tags: organizationTagTypes[];
+    tags: OrganizationTagTypes[];
     notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
