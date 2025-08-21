@@ -9,7 +9,6 @@ import { getUserDetails } from '@/api/firebase-users';
 
 //Components
 import Loader from '@/components/Loader';
-
 import {
     FormControl,
     FormLabel,
@@ -31,6 +30,7 @@ import type { UserDetails } from '@/types/UserTypes';
 
 //styles
 import '../../HomeStyles.module.css';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 
 export default function UserDetailsPage({ params }: { params: { id: string } }) {
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -81,36 +81,38 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
     }, [userDetails]);
 
     return (
-        <div className="page--header">
-            <h1>User Details</h1>
-            {isLoading && <Loader />}
-            {!isLoading && userDetails === null && <p>User not found</p>}
-            {!isLoading && userDetails !== null && (
-                <div className="content--container">
-                    <h3>{userDetails.displayName}</h3>
-                    <h4>{userDetails.email}</h4>
-                    <p>{userDetails.phoneNumber}</p>
-                    {userDetails.disabled && (
-                        <Button variant="contained" type="button" onClick={() => handleEnableUser(userDetails.uid)}>
-                            Enable User
-                        </Button>
-                    )}
-                    <Divider></Divider>
-                    <Typography variant="overline">Organization:</Typography>
-                    <Typography variant="h4"></Typography>
-                    <Typography variant="overline">Notes:</Typography>
-                    <List>{userDetails.notes && userDetails.notes.map((note, i) => <ListItem key={i}>{note}</ListItem>)}</List>
-                </div>
-            )}
-            <Dialog open={open} onClose={handleClose} aria-labelledby="dialog-title" aria-describedby="dialog-description">
-                <DialogTitle>User Updated</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>{`User ${userDetails?.displayName} has been updated successfully.`}</DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose}>OK</Button>
-                </DialogActions>
-            </Dialog>
-        </div>
+        <ProtectedAdminRoute>
+            <div className="page--header">
+                <h1>User Details</h1>
+                {isLoading && <Loader />}
+                {!isLoading && userDetails === null && <p>User not found</p>}
+                {!isLoading && userDetails !== null && (
+                    <div className="content--container">
+                        <h3>{userDetails.displayName}</h3>
+                        <h4>{userDetails.email}</h4>
+                        <p>{userDetails.phoneNumber}</p>
+                        {userDetails.disabled && (
+                            <Button variant="contained" type="button" onClick={() => handleEnableUser(userDetails.uid)}>
+                                Enable User
+                            </Button>
+                        )}
+                        <Divider></Divider>
+                        <Typography variant="overline">Organization:</Typography>
+                        <Typography variant="h4"></Typography>
+                        <Typography variant="overline">Notes:</Typography>
+                        <List>{userDetails.notes && userDetails.notes.map((note, i) => <ListItem key={i}>{note}</ListItem>)}</List>
+                    </div>
+                )}
+                <Dialog open={open} onClose={handleClose} aria-labelledby="dialog-title" aria-describedby="dialog-description">
+                    <DialogTitle>User Updated</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>{`User ${userDetails?.displayName} has been updated successfully.`}</DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>OK</Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
+        </ProtectedAdminRoute>
     );
 }
