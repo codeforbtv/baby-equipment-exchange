@@ -58,26 +58,26 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
     return Promise.reject(new HttpsError('unknown', 'An error occurred while trying to create a new user.'));
 });
 
-export const approveuser = onCall(async (request): Promise<UserRecord> => {
+export const enableuser = onCall(async (request): Promise<UserRecord> => {
     if (!request.auth) {
-        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to approve user account.'));
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to enable user account.'));
     }
     if (request.auth && !request.auth.token.admin) {
-        return Promise.reject(new HttpsError('permission-denied', 'Only admins can appvoe user accounts.'));
+        return Promise.reject(new HttpsError('permission-denied', 'Only admins can enable user accounts.'));
     } else if (request.auth && request.auth.token.admin) {
         const userId = request.data.userId;
         if (!userId) {
-            return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to approve a user account.'));
+            return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to enable a user account.'));
         } else {
             try {
-                const approvedUser = await auth.updateUser(userId, { disabled: false });
-                return approvedUser;
+                const enabledUser = await auth.updateUser(userId, { disabled: false });
+                return enabledUser;
             } catch (error) {
                 return Promise.reject(new HttpsError('invalid-argument', 'Unable to update user account.'));
             }
         }
     }
-    return Promise.reject(new HttpsError('permission-denied', 'Unable to approve user account.'));
+    return Promise.reject(new HttpsError('permission-denied', 'Unable to enable user account.'));
 });
 
 // async function _addEvent(object: any) {
