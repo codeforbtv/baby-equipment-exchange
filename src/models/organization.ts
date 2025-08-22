@@ -2,16 +2,17 @@
 import { Timestamp } from 'firebase/firestore';
 //Plain JavaScript objects
 import { IAddress } from '@/models/address';
-import { IContact } from '@/models/contact';
 
-export interface organizationTags {
-    'social-services': 'Social Services';
-    'mutual-aid': 'Mutual Aid';
-    'sustainabilty-resue': 'Sustainabilty Reuse';
-    'pediatric-maternal-health': 'Pediatric/Maternal Health';
-    'homelessness-unhoused': 'Homelessness/Unhoused';
-    'early-childhood-education': 'Early Childhood Education';
-}
+export const orgTags = {
+    'social-services': 'Social Services',
+    'mutual-aid': 'Mutual Aid',
+    'sustainabilty-reuse': 'Sustainabilty Reuse',
+    'pediatric-maternal-health': 'Pediatric/Maternal Health',
+    'homelessness-unhoused': 'Homelessness/Unhoused',
+    'early-childhood-education': 'Early Childhood Education'
+};
+
+type organizationTags = typeof orgTags;
 
 export type OrganizationTagTypes = keyof organizationTags;
 
