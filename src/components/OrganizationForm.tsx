@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox } from '@mui/material';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 
-import { orgTags, OrganizationTagTypes } from '@/models/organization';
+import { orgTags, OrganizationTagTypes, OrganizationKeyTypes, organizationTags } from '@/models/organization';
 import { IAddress } from '@/models/address';
-import { CheckBox } from '@mui/icons-material';
 
 import '../styles/globalStyles.css';
 
@@ -19,7 +18,7 @@ const defaultAddress: IAddress = {
     zipcode: null
 };
 
-const tagNames: string[] = Object.values(orgTags);
+const tagNames: OrganizationKeyTypes[] = Object.keys(orgTags) as OrganizationKeyTypes[];
 
 export default function OrganizationForm() {
     const [name, setName] = useState<string>('');
@@ -45,6 +44,9 @@ export default function OrganizationForm() {
 
     const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
+            setTags((prev) => [...prev, event.target.value]);
+        } else {
+            setTags(tags.filter((tag) => tag !== event.target.value));
         }
     };
 
@@ -118,8 +120,18 @@ export default function OrganizationForm() {
                 <FormControl component="fieldset" sx={{ display: 'flex' }}>
                     <FormLabel component="legend">Organizaton type</FormLabel>
                     <FormGroup sx={{ display: 'flex', border: 'solid 1px red', flexDirection: 'row' }}>
-                        {tagNames.map((tag) => (
-                            <FormControlLabel control={<Checkbox name={`${tag}`} />} label={`${tag}`} />
+                        {tagNames.map((tag: OrganizationTagTypes) => (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        name={`${tag}`}
+                                        onChange={handleCheck}
+                                        value={orgTags[tag as keyof organizationTags]}
+                                        inputProps={{ 'aria-label': `${tag}` }}
+                                    />
+                                }
+                                label={`${tag}`}
+                            />
                         ))}
                     </FormGroup>
                 </FormControl>

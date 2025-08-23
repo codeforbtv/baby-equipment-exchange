@@ -4,17 +4,17 @@ import { Timestamp } from 'firebase/firestore';
 import { IAddress } from '@/models/address';
 
 export const orgTags = {
-    'social-services': 'Social Services',
-    'mutual-aid': 'Mutual Aid',
-    'sustainabilty-reuse': 'Sustainabilty Reuse',
-    'pediatric-maternal-health': 'Pediatric/Maternal Health',
-    'homelessness-unhoused': 'Homelessness/Unhoused',
-    'early-childhood-education': 'Early Childhood Education'
+    'Social Services': 'social-services',
+    'Mutual Aid': 'mutual-aid',
+    'Sustainabilty Reuse': 'sustainabilty-reuse',
+    'Pediatric/Maternal Health': 'pediatric-maternal-health',
+    'Homelessness/Unhoused': 'homelessness-unhoused',
+    'Early Childhood Education': 'early-childhood-education'
 };
 
-type organizationTags = typeof orgTags;
-
-export type OrganizationTagTypes = keyof organizationTags;
+export type organizationTags = typeof orgTags;
+export type OrganizationKeyTypes = keyof organizationTags;
+export type OrganizationTagTypes = organizationTags[keyof organizationTags];
 
 export interface IOrganization {
     [key: string]:
