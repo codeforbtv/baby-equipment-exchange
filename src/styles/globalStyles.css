@@ -127,10 +127,10 @@
     color: var(--text-visited);
 }
 
-.formContainer {
+.form--container {
     flex-grow: 1;
     padding: '10px';
-    max-width: '700px';
+    max-width: 600px;
     margin: '30px auto';
 }
 

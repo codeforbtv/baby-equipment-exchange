@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 
-import { Box, FormControlLabel, FormGroup, TextField } from '@mui/material';
+import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox } from '@mui/material';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 
 import { orgTags, OrganizationTagTypes } from '@/models/organization';
 import { IAddress } from '@/models/address';
 import { CheckBox } from '@mui/icons-material';
+
+import '../styles/globalStyles.css';
 
 const defaultAddress: IAddress = {
     line_1: null,
@@ -16,6 +18,8 @@ const defaultAddress: IAddress = {
     state: null,
     zipcode: null
 };
+
+const tagNames: string[] = Object.values(orgTags);
 
 export default function OrganizationForm() {
     const [name, setName] = useState<string>('');
@@ -39,9 +43,14 @@ export default function OrganizationForm() {
         setPhoneNumber(values.formattedValue);
     };
 
+    const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.checked) {
+        }
+    };
+
     return (
         <div className="content--container">
-            <Box component="form">
+            <Box component="form" display={'flex'} flexDirection={'column'} gap={4} className="form--container">
                 <TextField
                     type="text"
                     label="Name"
@@ -52,8 +61,8 @@ export default function OrganizationForm() {
                     value={name}
                     required
                 ></TextField>
-                <Box component="fieldset">
-                    <legend>Address (Optional)</legend>
+                <FormControl component="fieldset">
+                    <FormLabel component="legend">Adresss (Optional)</FormLabel>
                     <TextField
                         type="text"
                         label="Address"
@@ -91,11 +100,12 @@ export default function OrganizationForm() {
                         onChange={handleAdressInput}
                         value={address.zipcode}
                     ></TextField>
-                </Box>
+                </FormControl>
                 <PatternFormat
                     id="phone-number"
                     format="+1 (###) ###-####"
                     mask="_"
+                    name="phone-number"
                     label="Phone number (Optional)"
                     allowEmptyFormatting
                     value={phoneNumber}
@@ -105,6 +115,14 @@ export default function OrganizationForm() {
                     customInput={TextField}
                     placeholder="+1 (___) ___-____"
                 />
+                <FormControl component="fieldset" sx={{ display: 'flex' }}>
+                    <FormLabel component="legend">Organizaton type</FormLabel>
+                    <FormGroup sx={{ display: 'flex', border: 'solid 1px red', flexDirection: 'row' }}>
+                        {tagNames.map((tag) => (
+                            <FormControlLabel control={<Checkbox name={`${tag}`} />} label={`${tag}`} />
+                        ))}
+                    </FormGroup>
+                </FormControl>
             </Box>
         </div>
     );

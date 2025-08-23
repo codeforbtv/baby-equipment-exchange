@@ -27,6 +27,7 @@ import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 
 //Types
 import { DonationFormData } from '@/types/DonationTypes';
+import OrganizationForm from '@/components/OrganizationForm';
 
 //This will be initially set from the database if editing an existing donation
 const dummyDonationData: DonationFormData = {
@@ -158,6 +159,7 @@ export default function Donate() {
                         <h2>Welcome to the Baby Equipment Exchange!</h2>
                     </div>
                     <div className="content--container">
+                        <OrganizationForm />
                         <Typography variant="body1">
                             A 100% volunteer led initiative to provide durable equipment to families in need through partner referrals and community donations.
                         </Typography>
