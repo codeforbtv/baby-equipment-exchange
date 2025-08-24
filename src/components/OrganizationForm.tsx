@@ -1,31 +1,32 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox } from '@mui/material';
+import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox, Button, FormHelperText } from '@mui/material';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 
-import { orgTags, OrganizationTagTypes, OrganizationKeyTypes, organizationTags } from '@/models/organization';
+import { orgTags, OrganizationTagKeys, OrganizationTagValues, organizationTags } from '@/models/organization';
 import { IAddress } from '@/models/address';
 
 import '../styles/globalStyles.css';
+import { addErrorEvent } from '@/api/firebase';
 
 const defaultAddress: IAddress = {
-    line_1: null,
-    line_2: null,
-    city: null,
-    state: null,
-    zipcode: null
+    line_1: '',
+    line_2: '',
+    city: '',
+    state: '',
+    zipcode: ''
 };
 
-const tagNames: OrganizationKeyTypes[] = Object.keys(orgTags) as OrganizationKeyTypes[];
+const tagNames: OrganizationTagKeys[] = Object.keys(orgTags) as OrganizationTagKeys[];
 
 export default function OrganizationForm() {
     const [name, setName] = useState<string>('');
     const [address, setAddress] = useState<IAddress>(defaultAddress);
     const [phoneNumber, setPhoneNumber] = useState<string>('');
-    const [tags, setTags] = useState<OrganizationTagTypes[]>([]);
-    const [notes, setNotes] = useState<string[]>([]);
+    const [tags, setTags] = useState<OrganizationTagValues[]>(['mutual-aid']);
+    const [error, setError] = useState<boolean>(false);
 
     const handleAdressInput = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -43,16 +44,34 @@ export default function OrganizationForm() {
     };
 
     const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.checked) {
-            setTags((prev) => [...prev, event.target.value]);
-        } else {
-            setTags(tags.filter((tag) => tag !== event.target.value));
+        const { checked, value } = event.target;
+        const updatedTags = checked ? [...tags, value] : tags.filter((tag) => tag !== value);
+        setTags(updatedTags);
+        setError(updatedTags.length === 0);
+    };
+
+    const handleSubmit = async (event: React.FormEvent): Promise<void> => {
+        event.preventDefault();
+        const orgToSubmit = {
+            name: name,
+            address: address,
+            phoneNumber: phoneNumber,
+            tag: tags
+        };
+        try {
+            console.log(orgToSubmit);
+            setName('');
+            setAddress(defaultAddress);
+            setPhoneNumber('');
+            setTags([]);
+        } catch (error) {
+            addErrorEvent('Submit Organization', error);
         }
     };
 
     return (
         <div className="content--container">
-            <Box component="form" display={'flex'} flexDirection={'column'} gap={4} className="form--container">
+            <Box component="form" display={'flex'} flexDirection={'column'} gap={4} className="form--container" onSubmit={handleSubmit}>
                 <TextField
                     type="text"
                     label="Name"
@@ -117,16 +136,18 @@ export default function OrganizationForm() {
                     customInput={TextField}
                     placeholder="+1 (___) ___-____"
                 />
-                <FormControl component="fieldset" sx={{ display: 'flex' }}>
-                    <FormLabel component="legend">Organizaton type</FormLabel>
-                    <FormGroup sx={{ display: 'flex', border: 'solid 1px red', flexDirection: 'row' }}>
-                        {tagNames.map((tag: OrganizationTagTypes) => (
+                <FormControl component="fieldset" sx={{ display: 'flex' }} error={error}>
+                    <FormLabel component="legend">Organizaton type (Select all that apply)</FormLabel>
+                    <FormGroup sx={{ display: 'flex', flexDirection: 'row' }}>
+                        {tagNames.map((tag: OrganizationTagKeys) => (
                             <FormControlLabel
+                                key={tag}
                                 control={
                                     <Checkbox
                                         name={`${tag}`}
                                         onChange={handleCheck}
                                         value={orgTags[tag as keyof organizationTags]}
+                                        checked={tags.includes(orgTags[tag as keyof organizationTags])}
                                         inputProps={{ 'aria-label': `${tag}` }}
                                     />
                                 }
@@ -134,7 +155,9 @@ export default function OrganizationForm() {
                             />
                         ))}
                     </FormGroup>
+                    {error && <FormHelperText>At least one organization type must be selected.</FormHelperText>}
                 </FormControl>
+                <Button type="submit">Create Organization</Button>
             </Box>
         </div>
     );

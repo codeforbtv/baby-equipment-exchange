@@ -13,8 +13,8 @@ export const orgTags = {
 };
 
 export type organizationTags = typeof orgTags;
-export type OrganizationKeyTypes = keyof organizationTags;
-export type OrganizationTagTypes = organizationTags[keyof organizationTags];
+export type OrganizationTagKeys = keyof organizationTags;
+export type OrganizationTagValues = organizationTags[keyof organizationTags];
 
 export interface IOrganization {
     [key: string]:
@@ -23,7 +23,7 @@ export interface IOrganization {
         | IAddress
         | undefined
         | Timestamp
-        | (() => OrganizationTagTypes[])
+        | (() => OrganizationTagValues[])
         | (() => string[])
         | (() => IAddress | undefined)
         | (() => string | undefined)
@@ -31,7 +31,7 @@ export interface IOrganization {
     name: string;
     address?: IAddress;
     phoneNumber?: string;
-    tags: OrganizationTagTypes[];
+    tags: OrganizationTagValues[];
     notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -44,7 +44,7 @@ export class Organization implements IOrganization {
         | IAddress
         | undefined
         | Timestamp
-        | (() => OrganizationTagTypes[])
+        | (() => OrganizationTagValues[])
         | (() => IAddress | undefined)
         | (() => string[])
         | (() => string | undefined)
@@ -52,7 +52,7 @@ export class Organization implements IOrganization {
     name: string;
     address?: IAddress;
     phoneNumber?: string;
-    tags: OrganizationTagTypes[];
+    tags: OrganizationTagValues[];
     notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
