@@ -1,15 +1,37 @@
 'use client';
 
+//Hooks
 import { useState } from 'react';
+import { useUserContext } from '@/contexts/UserContext';
 
-import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox, Button, FormHelperText } from '@mui/material';
+//Components
+import {
+    Box,
+    FormControl,
+    FormControlLabel,
+    FormGroup,
+    FormLabel,
+    TextField,
+    Checkbox,
+    Button,
+    FormHelperText,
+    Dialog,
+    DialogTitle,
+    DialogActions
+} from '@mui/material';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 
+//API
+import { addErrorEvent } from '@/api/firebase';
+import { addOrganization } from '@/api/firebase-organizations';
+
+//Types
 import { orgTags, OrganizationTagKeys, OrganizationTagValues, organizationTags } from '@/models/organization';
 import { IAddress } from '@/models/address';
 
+//Styles
 import '../styles/globalStyles.css';
-import { addErrorEvent } from '@/api/firebase';
+import { OrganizationBody } from '@/types/OrganizationTypes';
 
 const defaultAddress: IAddress = {
     line_1: '',
@@ -27,6 +49,10 @@ export default function OrganizationForm() {
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [tags, setTags] = useState<OrganizationTagValues[]>(['mutual-aid']);
     const [error, setError] = useState<boolean>(false);
+    const [open, setOpen] = useState<boolean>(false);
+    const [dialogText, setDialogText] = useState<string>('');
+
+    const { isAdmin } = useUserContext();
 
     const handleAdressInput = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -52,14 +78,22 @@ export default function OrganizationForm() {
 
     const handleSubmit = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
-        const orgToSubmit = {
+        if (!isAdmin) {
+            setDialogText('You must be an adminstrator to create a new organization.');
+            setOpen(true);
+            return;
+        }
+        const orgToSubmit: OrganizationBody = {
             name: name,
             address: address,
             phoneNumber: phoneNumber,
-            tag: tags
+            tags: tags,
+            notes: []
         };
         try {
-            console.log(orgToSubmit);
+            await addOrganization(orgToSubmit);
+            setDialogText('Organization created successfully');
+            setOpen(true);
             setName('');
             setAddress(defaultAddress);
             setPhoneNumber('');
@@ -67,6 +101,11 @@ export default function OrganizationForm() {
         } catch (error) {
             addErrorEvent('Submit Organization', error);
         }
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        setDialogText('');
     };
 
     return (
@@ -82,7 +121,7 @@ export default function OrganizationForm() {
                     value={name}
                     required
                 ></TextField>
-                <FormControl component="fieldset">
+                <FormControl component="fieldset" sx={{ display: 'flex', gap: 2 }}>
                     <FormLabel component="legend">Adresss (Optional)</FormLabel>
                     <TextField
                         type="text"
@@ -134,7 +173,6 @@ export default function OrganizationForm() {
                     type="tel"
                     displayType="input"
                     customInput={TextField}
-                    placeholder="+1 (___) ___-____"
                 />
                 <FormControl component="fieldset" sx={{ display: 'flex' }} error={error}>
                     <FormLabel component="legend">Organizaton type (Select all that apply)</FormLabel>
@@ -157,8 +195,18 @@ export default function OrganizationForm() {
                     </FormGroup>
                     {error && <FormHelperText>At least one organization type must be selected.</FormHelperText>}
                 </FormControl>
-                <Button type="submit">Create Organization</Button>
+                <Button type="submit" variant="contained" disabled={error}>
+                    Create Organization
+                </Button>
             </Box>
+            <Dialog open={open} onClose={handleClose} aria-labelledby="dialog-title">
+                <DialogTitle id="dialog-title">{dialogText}</DialogTitle>
+                <DialogActions>
+                    <Button variant="contained" onClick={handleClose}>
+                        OK
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

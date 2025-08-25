@@ -53,8 +53,8 @@ export async function addOrganization(newOrganization: OrganizationBody): Promis
     };
     const organization = new Organization(organizationParams);
     try {
-        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION);
-        await setDoc(organizationRef, organization);
+        const organizationRef = doc(collection(db, ORGANIZATIONS_COLLECTION));
+        await setDoc(organizationRef, organizationConverter.toFirestore(organization));
     } catch (error) {
         addErrorEvent('Add organization', error);
     }
