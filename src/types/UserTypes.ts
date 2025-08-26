@@ -6,7 +6,7 @@ export type newUserAccountInfo = {
     email: string;
     password: string;
     phoneNumber: string;
-    organization: string;
+    organization: string | null;
 };
 
 export interface AuthUserRecord {

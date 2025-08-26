@@ -1,12 +1,12 @@
 'use client';
 //Components
-import { Box, Button, Paper, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, Paper, TextField } from '@mui/material';
 import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
 //Hooks
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
-import { callIsEmailInUse, createUser, addErrorEvent } from '@/api/firebase';
+import { callIsEmailInUse, createUser, addErrorEvent, callGetOrganizationNames } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
@@ -18,7 +18,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function NewAccount() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [displayName, setDisplayName] = useState<string>('');
-    const [organization, setOrganization] = useState<string>('');
+    const [organization, setOrganization] = useState<string | null>(null);
     const [email, setEmail] = useState<string>('');
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
@@ -28,8 +28,19 @@ export default function NewAccount() {
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [confirmedUserName, setConfirmedUserName] = useState<string>('');
+    const [orgNames, setOrgNames] = useState<string[]>([]);
 
     const router = useRouter();
+
+    const getOrgNames = async (): Promise<void> => {
+        try {
+            const organizationNames = await callGetOrganizationNames();
+            setOrgNames(organizationNames);
+        } catch (error) {
+            addErrorEvent('Could not fetch org names', error);
+        }
+        return Promise.reject();
+    };
 
     const validateEmail = (email: string): void => {
         if (email.length === 0 || !emailRegex.test(email)) {
@@ -100,6 +111,10 @@ export default function NewAccount() {
         router.push('/');
     };
 
+    useEffect(() => {
+        getOrgNames();
+    }, []);
+
     return (
         <>
             <div className="page--header">
@@ -111,7 +126,7 @@ export default function NewAccount() {
                     <Loader />
                 ) : (
                     <>
-                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate}>
+                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate} className="form--container">
                             <UserConfirmationDialogue open={openDialog} onClose={handleClose} displayName={confirmedUserName} />
                             <TextField
                                 type="text"
@@ -139,17 +154,14 @@ export default function NewAccount() {
                                 onChange={handleEmailInput}
                                 onBlur={handleBlur}
                             />
-                            <TextField
-                                type="text"
-                                label="Organization"
-                                name="organization"
-                                id="organization"
-                                placeholder="Provide an organization"
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                    setOrganization(event.target.value);
-                                }}
+                            <Autocomplete
+                                sx={{ maxWidth: '580px' }}
+                                freeSolo={true}
                                 value={organization}
-                                required
+                                onChange={(event: any, newValue: string | null) => setOrganization(newValue)}
+                                id="organzation-select"
+                                options={orgNames}
+                                renderInput={(params) => <TextField {...params} label="Organization (select or enter a name)" />}
                             />
                             <TextField
                                 type="password"
@@ -184,7 +196,6 @@ export default function NewAccount() {
                                 type="tel"
                                 displayType="input"
                                 customInput={TextField}
-                                placeholder="+1 (___) ___-____"
                             />
                             <Button variant="contained" type={'submit'} disabled={isEmailInUse || passwordsDoNotMatch}>
                                 Join
