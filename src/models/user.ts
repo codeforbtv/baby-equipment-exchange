@@ -23,7 +23,7 @@ export interface IUser {
     phoneNumber: string;
     requestedItems: DocumentReference[] | null | undefined;
     notes: string[] | null | undefined;
-    organization: DocumentReference | null | undefined;
+    organization: string;
     modifiedAt: Timestamp | FieldValue;
 }
 
@@ -49,7 +49,7 @@ export class UserCollection implements IUser {
     phoneNumber: string;
     requestedItems: DocumentReference[] | null | undefined;
     notes: string[] | null | undefined;
-    organization: DocumentReference | null | undefined;
+    organization: string;
     modifiedAt: Timestamp | FieldValue;
 
     constructor(args: IUser) {
@@ -77,7 +77,7 @@ export class UserCollection implements IUser {
         return this.notes;
     }
 
-    getOrganization(): DocumentReference | null | undefined {
+    getOrganization(): string {
         return this.organization;
     }
 

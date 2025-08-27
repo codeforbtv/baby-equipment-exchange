@@ -3,10 +3,13 @@ import { onCall, CallableRequest, HttpsError } from 'firebase-functions/v2/https
 import * as logger from 'firebase-functions/logger';
 import * as admin from 'firebase-admin';
 
+//Types
 import { UserRecord } from 'firebase-admin/auth';
 import { FieldValue } from 'firebase-admin/firestore';
 
+//Collections
 const USERS_COLLECTION = 'Users';
+const ORGANIZATIONS_COLLECTION = 'Organizations';
 
 admin.initializeApp();
 const auth = admin.auth();
@@ -33,10 +36,11 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
         const userParams = {
             uid: userRecord.uid,
             email: userRecord.email,
+            organization: organization,
             displayName: userRecord.displayName,
             phoneNumber: phoneNumber,
             requestedItems: [],
-            notes: [`User-provided organization: ${organization}`],
+            notes: [],
             modifiedAt: FieldValue.serverTimestamp()
         };
 
@@ -78,6 +82,17 @@ export const enableuser = onCall(async (request): Promise<UserRecord> => {
         }
     }
     return Promise.reject(new HttpsError('permission-denied', 'Unable to enable user account.'));
+});
+
+export const getorganizationnames = onCall(async (request): Promise<string[]> => {
+    try {
+        const orgNames: string[] = [];
+        const snapshot = await db.collection(ORGANIZATIONS_COLLECTION).select('name').get();
+        snapshot.forEach((snap) => orgNames.push(snap.data().name));
+        return orgNames;
+    } catch (error) {
+        return Promise.reject(new HttpsError('unavailable', 'Unable to fetch organization names'));
+    }
 });
 
 // async function _addEvent(object: any) {

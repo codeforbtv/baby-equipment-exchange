@@ -1,5 +1,17 @@
 // Modules
-import { DocumentData, collection, getDocs, query, QueryDocumentSnapshot, SnapshotOptions, doc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import {
+    DocumentData,
+    collection,
+    getDocs,
+    query,
+    QueryDocumentSnapshot,
+    SnapshotOptions,
+    doc,
+    setDoc,
+    serverTimestamp,
+    Timestamp,
+    getDoc
+} from 'firebase/firestore';
 // Models
 import { IOrganization, Organization } from '@/models/organization';
 import { OrganizationBody } from '@/types/OrganizationTypes';
@@ -64,4 +76,15 @@ export async function getOrganizations(): Promise<Organization[]> {
     const q = query(collection(db, ORGANIZATIONS_COLLECTION)).withConverter(organizationConverter);
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => doc.data());
+}
+
+export async function checkIfOrganizationExists(name: string): Promise<boolean> {
+    try {
+        const orgRef = doc(db, ORGANIZATIONS_COLLECTION, name);
+        const orgSnapshot = await getDoc(orgRef);
+        return orgSnapshot.exists();
+    } catch (error) {
+        addErrorEvent('Error checking if organization exists', error);
+    }
+    return Promise.reject();
 }

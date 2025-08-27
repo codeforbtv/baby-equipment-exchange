@@ -1,10 +1,10 @@
 import { IAddress } from '@/models/address';
-import { OrganizationTagTypes } from '@/models/organization';
+import { OrganizationTagValues } from '@/models/organization';
 
 export type OrganizationBody = {
     name: string;
     address?: IAddress;
     phoneNumber?: string;
-    tags: OrganizationTagTypes[];
+    tags: OrganizationTagValues[];
     notes: string[];
 };

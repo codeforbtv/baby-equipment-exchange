@@ -52,6 +52,7 @@ export const app: FirebaseApp = initializeApp(firebaseConfig);
 const functions = getFunctions(app);
 const createNewUser = httpsCallable(functions, 'createnewuser');
 const enableUser = httpsCallable(functions, 'enableuser');
+const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -253,6 +254,16 @@ export async function callEnableUser(userId: string): Promise<UserRecord> {
         return enabledUser.data as UserRecord;
     } catch (error) {
         addErrorEvent('Could not enable user', error);
+    }
+    return Promise.reject();
+}
+
+export async function callGetOrganizationNames(): Promise<string[]> {
+    try {
+        const orgNames = await getOrganizationNames();
+        return orgNames.data as string[];
+    } catch (error) {
+        addErrorEvent('Could not fetch organization names', error);
     }
     return Promise.reject();
 }
