@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 //APIs
 import { addErrorEvent, callEnableUser } from '@/api/firebase';
 import { getUserDetails } from '@/api/firebase-users';
+import { checkIfOrganizationExists } from '@/api/firebase-organizations';
 
 //Components
 import Loader from '@/components/Loader';
@@ -36,6 +37,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
     const [open, setIsOpen] = useState(false);
+    const [doesOrgExist, setDoesOrgExist] = useState<boolean>(false);
 
     const handleClose = () => {
         setIsOpen(false);
@@ -63,8 +65,10 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
 
     async function fetchUserDetails(id: string): Promise<void> {
         try {
-            const userDetails: UserDetails = await getUserDetails(id);
-            setUserDetails(userDetails);
+            const userDetailsResult: UserDetails = await getUserDetails(id);
+            setUserDetails(userDetailsResult);
+            const orgExists = await checkIfOrganizationExists(userDetailsResult.organization);
+            setDoesOrgExist(orgExists);
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
@@ -98,6 +102,12 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                         )}
                         <Divider></Divider>
                         <Typography variant="overline">Organization:</Typography>
+                        <Typography>{userDetails.organization}</Typography>
+                        {!doesOrgExist && (
+                            <Typography style={{ color: 'red' }}>
+                                This organization does not match any existing organizations. Please select a different organization or create a new one.
+                            </Typography>
+                        )}
                         <Typography variant="h4"></Typography>
                         <Typography variant="overline">Notes:</Typography>
                         <List>{userDetails.notes && userDetails.notes.map((note, i) => <ListItem key={i}>{note}</ListItem>)}</List>

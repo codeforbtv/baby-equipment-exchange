@@ -39,7 +39,6 @@ export default function NewAccount() {
         } catch (error) {
             addErrorEvent('Could not fetch org names', error);
         }
-        return Promise.reject();
     };
 
     const validateEmail = (email: string): void => {
