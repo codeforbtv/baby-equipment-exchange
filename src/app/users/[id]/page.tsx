@@ -68,6 +68,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
             const userDetailsResult: UserDetails = await getUserDetails(id);
             setUserDetails(userDetailsResult);
             const orgExists = await checkIfOrganizationExists(userDetailsResult.organization);
+            console.log(orgExists);
             setDoesOrgExist(orgExists);
             setIsLoading(false);
         } catch (error) {
@@ -79,10 +80,6 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
     useEffect(() => {
         fetchUserDetails(params.id);
     }, []);
-
-    useEffect(() => {
-        console.log(userDetails);
-    }, [userDetails]);
 
     return (
         <ProtectedAdminRoute>

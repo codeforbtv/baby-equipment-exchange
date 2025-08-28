@@ -18,7 +18,6 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function NewAccount() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [displayName, setDisplayName] = useState<string>('');
-    const [organization, setOrganization] = useState<string | null>(null);
     const [email, setEmail] = useState<string>('');
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
@@ -28,7 +27,15 @@ export default function NewAccount() {
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [confirmedUserName, setConfirmedUserName] = useState<string>('');
+
+    //List of Org names from Server
     const [orgNames, setOrgNames] = useState<string[]>([]);
+
+    //Org Value from existing list
+    const [orgValue, setOrgValue] = useState<string | null>(null);
+
+    //Org value if user entered text
+    const [orgInputValue, setOrgInputValue] = useState<string>('');
 
     const router = useRouter();
 
@@ -41,22 +48,13 @@ export default function NewAccount() {
         }
     };
 
-    const validateEmail = (email: string): void => {
-        if (email.length === 0 || !emailRegex.test(email)) {
-            setIsInvalidEmail(true);
-        } else {
-            setIsInvalidEmail(false);
-        }
-    };
-
-    const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-        setEmail(event.target.value);
-        validateEmail(email);
-    };
-
     const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
+
+        //Use org from list if selected, otherwise use user input value
+        const organization = orgValue ? orgValue : orgInputValue;
+
         const accountInfo: newUserAccountInfo = {
             displayName: displayName,
             email: email,
@@ -73,6 +71,19 @@ export default function NewAccount() {
             setIsLoading(false);
             addErrorEvent('handleAccountCreate', error);
         }
+    };
+
+    const validateEmail = (email: string): void => {
+        if (email.length === 0 || !emailRegex.test(email)) {
+            setIsInvalidEmail(true);
+        } else {
+            setIsInvalidEmail(false);
+        }
+    };
+
+    const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+        setEmail(event.target.value);
+        validateEmail(email);
     };
 
     const handlePassword = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -156,8 +167,10 @@ export default function NewAccount() {
                             <Autocomplete
                                 sx={{ maxWidth: '580px' }}
                                 freeSolo={true}
-                                value={organization}
-                                onChange={(event: any, newValue: string | null) => setOrganization(newValue)}
+                                value={orgValue}
+                                onChange={(event: any, newValue: string | null) => setOrgValue(newValue)}
+                                inputValue={orgInputValue}
+                                onInputChange={(event, newInputValue) => setOrgInputValue(newInputValue)}
                                 id="organzation-select"
                                 options={orgNames}
                                 renderInput={(params) => <TextField {...params} label="Organization (select or enter a name)" />}
