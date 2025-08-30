@@ -142,10 +142,6 @@ export default function NewAccount() {
         getOrgNames();
     }, []);
 
-    useEffect(() => {
-        console.log(orgNamesAndIds);
-    }, [orgNamesAndIds]);
-
     return (
         <>
             <div className="page--header">
