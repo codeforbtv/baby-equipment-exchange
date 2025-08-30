@@ -12,8 +12,8 @@ export type newUserAccountInfo = {
 
 export interface AuthUserRecord {
     readonly uid: string;
-    readonly email?: string;
-    displayName?: string;
+    readonly email: string;
+    displayName: string;
     disabled: boolean;
     metadata: UserMetadata;
     readonly customClaims?: {

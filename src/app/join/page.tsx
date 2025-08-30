@@ -2,15 +2,16 @@
 //Components
 import { Autocomplete, Box, Button, Paper, TextField } from '@mui/material';
 import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
+import Loader from '@/components/Loader';
 //Hooks
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-//Libs
+//Spi
 import { callIsEmailInUse, createUser, addErrorEvent, callGetOrganizationNames } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
-import Loader from '@/components/Loader';
+//Types
 import { newUserAccountInfo } from '@/types/UserTypes';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -10,6 +10,7 @@ import { checkIfOrganizationExists } from '@/api/firebase-organizations';
 
 //Components
 import Loader from '@/components/Loader';
+import EditUser from '@/components/EditUser';
 import {
     FormControl,
     FormLabel,
@@ -37,6 +38,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
     const [open, setIsOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState<boolean>(false);
     // const [doesOrgExist, setDoesOrgExist] = useState<boolean>(false);
 
     const handleClose = () => {
@@ -81,10 +83,10 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                <h1>User Details</h1>
+                {isEditMode ? <h1>Edit User</h1> : <h1>User Details</h1>}
                 {isLoading && <Loader />}
-                {!isLoading && userDetails === null && <p>User not found</p>}
-                {!isLoading && userDetails !== null && (
+                {!isLoading && !userDetails && <p>User not found</p>}
+                {!isLoading && userDetails && !isEditMode && (
                     <div className="content--container">
                         <h3>{userDetails.displayName}</h3>
                         <h4>{userDetails.email}</h4>
@@ -94,6 +96,9 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                                 Enable User
                             </Button>
                         )}
+                        <Button variant="contained" onClick={() => setIsEditMode(true)}>
+                            Edit User
+                        </Button>
                         <Divider></Divider>
                         <Typography variant="overline">Organization:</Typography>
                         <Typography>{userDetails.organization?.name}</Typography>
@@ -107,6 +112,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                         <List>{userDetails.notes && userDetails.notes.map((note, i) => <ListItem key={i}>{note}</ListItem>)}</List>
                     </div>
                 )}
+                {!isLoading && userDetails && isEditMode && <EditUser {...userDetails} />}
                 <Dialog open={open} onClose={handleClose} aria-labelledby="dialog-title" aria-describedby="dialog-description">
                     <DialogTitle>User Updated</DialogTitle>
                     <DialogContent>
