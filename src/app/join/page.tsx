@@ -28,8 +28,12 @@ export default function NewAccount() {
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [confirmedUserName, setConfirmedUserName] = useState<string>('');
 
-    //List of Org names from Server
-    const [orgNames, setOrgNames] = useState<string[]>([]);
+    //List of Org names, ids from Server
+    const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
+        [key: string]: string;
+    }>({});
+
+    const orgNames = Object.keys(orgNamesAndIds);
 
     //Org Value from existing list
     const [orgValue, setOrgValue] = useState<string | null>(null);
@@ -42,7 +46,7 @@ export default function NewAccount() {
     const getOrgNames = async (): Promise<void> => {
         try {
             const organizationNames = await callGetOrganizationNames();
-            setOrgNames(organizationNames);
+            setOrgNamesAndIds(organizationNames);
         } catch (error) {
             addErrorEvent('Could not fetch org names', error);
         }
@@ -52,15 +56,28 @@ export default function NewAccount() {
         event.preventDefault();
         setIsLoading(true);
 
-        //Use org from list if selected, otherwise use user input value
-        const organization = orgValue ? orgValue : orgInputValue;
+        //if user selects existing org, submit org name and id. If not, enter the user suplied org name in the notes field.
+
+        let organization;
+        let notes: string[] = [];
+
+        if (orgValue) {
+            organization = {
+                id: orgNamesAndIds[orgValue],
+                name: orgValue
+            };
+        } else {
+            organization = null;
+            notes = [`User provided organization: ${orgInputValue}`];
+        }
 
         const accountInfo: newUserAccountInfo = {
             displayName: displayName,
             email: email,
             password: password,
             phoneNumber: phoneNumber,
-            organization: organization
+            organization: organization,
+            notes: notes
         };
         try {
             const newUser = await createUser(accountInfo);
@@ -124,6 +141,10 @@ export default function NewAccount() {
     useEffect(() => {
         getOrgNames();
     }, []);
+
+    useEffect(() => {
+        console.log(orgNamesAndIds);
+    }, [orgNamesAndIds]);
 
     return (
         <>

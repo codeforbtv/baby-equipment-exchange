@@ -47,6 +47,7 @@ import { convertToString } from '@/utils/utils';
 import { AuthUserRecord, newUserAccountInfo } from '@/types/UserTypes';
 import { UserRecord } from 'firebase-admin/auth';
 import { IUser } from '@/models/user';
+import { OrganizationNames } from '@/types/OrganizationTypes';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 const functions = getFunctions(app);
@@ -258,10 +259,14 @@ export async function callEnableUser(userId: string): Promise<UserRecord> {
     return Promise.reject();
 }
 
-export async function callGetOrganizationNames(): Promise<string[]> {
+export async function callGetOrganizationNames(): Promise<{
+    [key: string]: string;
+}> {
     try {
         const orgNames = await getOrganizationNames();
-        return orgNames.data as string[];
+        return orgNames.data as {
+            [key: string]: string;
+        };
     } catch (error) {
         addErrorEvent('Could not fetch organization names', error);
     }

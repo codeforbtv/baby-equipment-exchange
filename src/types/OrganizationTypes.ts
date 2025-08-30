@@ -8,3 +8,8 @@ export type OrganizationBody = {
     tags: OrganizationTagValues[];
     notes: string[];
 };
+
+export type OrganizationNames = {
+    id: string;
+    name: string;
+};
