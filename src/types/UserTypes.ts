@@ -6,7 +6,8 @@ export type newUserAccountInfo = {
     email: string;
     password: string;
     phoneNumber: string;
-    organization: string | null;
+    organization: { id: string; name: string } | null;
+    notes: string[];
 };
 
 export interface AuthUserRecord {

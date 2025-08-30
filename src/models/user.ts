@@ -4,9 +4,7 @@ import { DocumentReference, FieldValue, Timestamp } from 'firebase/firestore';
 export interface IUser {
     [key: string]:
         | string
-        | string[]
-        | DocumentReference
-        | DocumentReference[]
+        | { id: string; name: string }[]
         | FieldValue
         | Timestamp
         | null
@@ -14,23 +12,23 @@ export interface IUser {
         | boolean
         | { [key: string]: any }
         | (() => string)
-        | (() => string[] | null | undefined)
+        | (() => { id: string; name: string }[] | null | undefined)
         | (() => DocumentReference | null | undefined)
         | (() => DocumentReference[] | null | undefined)
         | (() => Timestamp | FieldValue)
         | (() => boolean);
     readonly uid: string;
     phoneNumber: string;
-    requestedItems: DocumentReference[] | null | undefined;
+    requestedItems: { id: string; name: string }[] | null | undefined;
     notes: string[] | null | undefined;
-    organization: string;
+    organization: { id: string; name: string } | null;
     modifiedAt: Timestamp | FieldValue;
 }
 
 export class UserCollection implements IUser {
     [key: string]:
         | string
-        | string[]
+        | { id: string; name: string }[]
         | DocumentReference
         | DocumentReference[]
         | FieldValue
@@ -40,16 +38,14 @@ export class UserCollection implements IUser {
         | boolean
         | { [key: string]: any }
         | (() => string)
-        | (() => string[] | null | undefined)
-        | (() => DocumentReference | null | undefined)
-        | (() => DocumentReference[] | null | undefined)
+        | (() => { id: string; name: string }[] | null | undefined)
         | (() => Timestamp | FieldValue)
         | (() => boolean);
     readonly uid: string;
     phoneNumber: string;
-    requestedItems: DocumentReference[] | null | undefined;
+    requestedItems: { id: string; name: string }[] | null | undefined;
     notes: string[] | null | undefined;
-    organization: string;
+    organization: { id: string; name: string } | null;
     modifiedAt: Timestamp | FieldValue;
 
     constructor(args: IUser) {
@@ -69,7 +65,7 @@ export class UserCollection implements IUser {
         return this.phoneNumber;
     }
 
-    getRequestedItems(): DocumentReference[] | null | undefined {
+    getRequestedItems(): { id: string; name: string }[] | null | undefined {
         return this.requestedItems;
     }
 
@@ -77,7 +73,7 @@ export class UserCollection implements IUser {
         return this.notes;
     }
 
-    getOrganization(): string {
+    getOrganization(): { id: string; name: string } | null {
         return this.organization;
     }
 

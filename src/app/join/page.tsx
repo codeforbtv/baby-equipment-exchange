@@ -18,7 +18,6 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function NewAccount() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [displayName, setDisplayName] = useState<string>('');
-    const [organization, setOrganization] = useState<string | null>(null);
     const [email, setEmail] = useState<string>('');
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
@@ -28,16 +27,66 @@ export default function NewAccount() {
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [confirmedUserName, setConfirmedUserName] = useState<string>('');
-    const [orgNames, setOrgNames] = useState<string[]>([]);
+
+    //List of Org names, ids from Server
+    const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
+        [key: string]: string;
+    }>({});
+
+    const orgNames = Object.keys(orgNamesAndIds);
+
+    //Org Value from existing list
+    const [orgValue, setOrgValue] = useState<string | null>(null);
+
+    //Org value if user entered text
+    const [orgInputValue, setOrgInputValue] = useState<string>('');
 
     const router = useRouter();
 
     const getOrgNames = async (): Promise<void> => {
         try {
             const organizationNames = await callGetOrganizationNames();
-            setOrgNames(organizationNames);
+            setOrgNamesAndIds(organizationNames);
         } catch (error) {
             addErrorEvent('Could not fetch org names', error);
+        }
+    };
+
+    const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        event.preventDefault();
+        setIsLoading(true);
+
+        //if user selects existing org, submit org name and id. If not, enter the user suplied org name in the notes field.
+
+        let organization;
+        let notes: string[] = [];
+
+        if (orgValue) {
+            organization = {
+                id: orgNamesAndIds[orgValue],
+                name: orgValue
+            };
+        } else {
+            organization = null;
+            notes = [`User provided organization: ${orgInputValue}`];
+        }
+
+        const accountInfo: newUserAccountInfo = {
+            displayName: displayName,
+            email: email,
+            password: password,
+            phoneNumber: phoneNumber,
+            organization: organization,
+            notes: notes
+        };
+        try {
+            const newUser = await createUser(accountInfo);
+            newUser.displayName && setConfirmedUserName(newUser.displayName);
+            setIsLoading(false);
+            setOpenDialog(true);
+        } catch (error) {
+            setIsLoading(false);
+            addErrorEvent('handleAccountCreate', error);
         }
     };
 
@@ -52,27 +101,6 @@ export default function NewAccount() {
     const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
         setEmail(event.target.value);
         validateEmail(email);
-    };
-
-    const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
-        event.preventDefault();
-        setIsLoading(true);
-        const accountInfo: newUserAccountInfo = {
-            displayName: displayName,
-            email: email,
-            password: password,
-            phoneNumber: phoneNumber,
-            organization: organization
-        };
-        try {
-            const newUser = await createUser(accountInfo);
-            newUser.displayName && setConfirmedUserName(newUser.displayName);
-            setIsLoading(false);
-            setOpenDialog(true);
-        } catch (error) {
-            setIsLoading(false);
-            addErrorEvent('handleAccountCreate', error);
-        }
     };
 
     const handlePassword = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -113,6 +141,10 @@ export default function NewAccount() {
     useEffect(() => {
         getOrgNames();
     }, []);
+
+    useEffect(() => {
+        console.log(orgNamesAndIds);
+    }, [orgNamesAndIds]);
 
     return (
         <>
@@ -156,8 +188,10 @@ export default function NewAccount() {
                             <Autocomplete
                                 sx={{ maxWidth: '580px' }}
                                 freeSolo={true}
-                                value={organization}
-                                onChange={(event: any, newValue: string | null) => setOrganization(newValue)}
+                                value={orgValue}
+                                onChange={(event: any, newValue: string | null) => setOrgValue(newValue)}
+                                inputValue={orgInputValue}
+                                onInputChange={(event, newInputValue) => setOrgInputValue(newInputValue)}
                                 id="organzation-select"
                                 options={orgNames}
                                 renderInput={(params) => <TextField {...params} label="Organization (select or enter a name)" />}

@@ -18,13 +18,12 @@ const db = admin.firestore();
 export const createnewuser = onCall(async (request: CallableRequest): Promise<UserRecord> => {
     try {
         const accountInfo = request.data;
-        const { email, password, displayName, phoneNumber, organization } = accountInfo;
+        const { email, password, displayName, phoneNumber, organization, notes } = accountInfo;
 
         if (!email || email.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'A valid email address is required.'));
         if (!password || password.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Password is required.'));
         if (!displayName || displayName.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Display name is required.'));
         if (!phoneNumber || phoneNumber.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Phone number is required.'));
-        if (!organization || organization.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Organization is required.'));
 
         const userRecord: UserRecord = await auth.createUser({
             email: email,
@@ -40,7 +39,7 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
             displayName: userRecord.displayName,
             phoneNumber: phoneNumber,
             requestedItems: [],
-            notes: [],
+            notes: notes,
             modifiedAt: FieldValue.serverTimestamp()
         };
 
@@ -84,16 +83,27 @@ export const enableuser = onCall(async (request): Promise<UserRecord> => {
     return Promise.reject(new HttpsError('permission-denied', 'Unable to enable user account.'));
 });
 
-export const getorganizationnames = onCall(async (request): Promise<string[]> => {
-    try {
-        const orgNames: string[] = [];
-        const snapshot = await db.collection(ORGANIZATIONS_COLLECTION).select('name').get();
-        snapshot.forEach((snap) => orgNames.push(snap.data().name));
-        return orgNames;
-    } catch (error) {
-        return Promise.reject(new HttpsError('unavailable', 'Unable to fetch organization names'));
+export const getorganizationnames = onCall(
+    async (
+        request
+    ): Promise<{
+        [key: string]: string;
+    }> => {
+        try {
+            const orgNames: {
+                [key: string]: string;
+            } = {};
+            const snapshot = await db.collection(ORGANIZATIONS_COLLECTION).get();
+            snapshot.forEach((snap) => {
+                const { name } = snap.data();
+                orgNames[name] = snap.id;
+            });
+            return orgNames;
+        } catch (error) {
+            return Promise.reject(new HttpsError('unavailable', 'Unable to fetch organization names'));
+        }
     }
-});
+);
 
 // async function _addEvent(object: any) {
 //     try {
