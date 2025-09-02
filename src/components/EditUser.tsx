@@ -15,10 +15,10 @@ import '@/styles/globalStyles.css';
 //Types
 import { UserDetails } from '@/types/UserTypes';
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const EditUser = (props: UserDetails) => {
     const { email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props;
-
-    console.log(props);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newDisplayName, setNewDisplayName] = useState<string>(displayName);
@@ -52,6 +52,27 @@ const EditUser = (props: UserDetails) => {
         }
     };
 
+    const validateEmail = (email: string): void => {
+        if (email.length === 0 || !emailRegex.test(email)) {
+            setIsInvalidEmail(true);
+        } else {
+            setIsInvalidEmail(false);
+        }
+    };
+
+    const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+        setNewEmail(event.target.value);
+        validateEmail(newEmail);
+    };
+
+    const handleBlur = async (): Promise<void> => {
+        validateEmail(newEmail);
+        if (!isInvalidEmail) {
+            const emailInUse = await callIsEmailInUse(newEmail);
+            setIsEmailInUse(emailInUse);
+        }
+    };
+
     const handlePhoneNumberInput: OnValueChange = (values): void => {
         setNewPhoneNumber(values.formattedValue);
     };
@@ -66,7 +87,31 @@ const EditUser = (props: UserDetails) => {
                 {isLoading ? (
                     <Loader />
                 ) : (
-                    <Box component="form" className="form--container">
+                    <Box component="form" gap={3} display={'flex'} flexDirection={'column'} className="form--container">
+                        <TextField
+                            type="text"
+                            label="Display Name"
+                            name="displayName"
+                            id="displayName"
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                setNewDisplayName(event.target.value);
+                            }}
+                            value={newDisplayName}
+                            required
+                        />
+                        <TextField
+                            type="text"
+                            label="Email"
+                            name="email"
+                            id="email"
+                            autoComplete="email"
+                            value={newEmail}
+                            error={isEmailInUse || isInvalidEmail}
+                            helperText={(isInvalidEmail && 'Please enter a valid email addres') || (isEmailInUse && 'This email is already in use')}
+                            required
+                            onChange={handleEmailInput}
+                            onBlur={handleBlur}
+                        />
                         {orgNamesAndIds ? (
                             <Autocomplete
                                 disablePortal
