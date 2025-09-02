@@ -18,6 +18,8 @@ import { UserDetails } from '@/types/UserTypes';
 const EditUser = (props: UserDetails) => {
     const { email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props;
 
+    console.log(props);
+
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newDisplayName, setNewDisplayName] = useState<string>(displayName);
     const [newEmail, setNewEmail] = useState<string>(email);

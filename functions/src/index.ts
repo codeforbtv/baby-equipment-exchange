@@ -73,6 +73,8 @@ export const enableuser = onCall(async (request): Promise<UserRecord> => {
             return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to enable a user account.'));
         } else {
             try {
+                //Enabled users are aid-workers by default
+                await auth.setCustomUserClaims(userId, { 'aid-worker': true });
                 const enabledUser = await auth.updateUser(userId, { disabled: false });
                 return enabledUser;
             } catch (error) {
