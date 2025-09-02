@@ -3,8 +3,10 @@
 //Hooks
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+
 //API
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse } from '@/api/firebase';
+import { PatternFormat, OnValueChange } from 'react-number-format';
 //Componenets
 import { Paper, Box, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem, Autocomplete, TextField } from '@mui/material';
 import Loader from '@/components/Loader';
@@ -48,6 +50,10 @@ const EditUser = (props: UserDetails) => {
         }
     };
 
+    const handlePhoneNumberInput: OnValueChange = (values): void => {
+        setNewPhoneNumber(values.formattedValue);
+    };
+
     useEffect(() => {
         getOrgNames();
     }, []);
@@ -72,6 +78,17 @@ const EditUser = (props: UserDetails) => {
                         ) : (
                             <p>Could not load list of organizations</p>
                         )}
+                        <PatternFormat
+                            id="phone-number"
+                            format="+1 (###) ###-####"
+                            mask="_"
+                            allowEmptyFormatting
+                            value={newPhoneNumber}
+                            onValueChange={handlePhoneNumberInput}
+                            type="tel"
+                            displayType="input"
+                            customInput={TextField}
+                        />
                     </Box>
                 )}
             </Paper>
