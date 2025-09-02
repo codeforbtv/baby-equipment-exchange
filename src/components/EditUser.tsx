@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 //API
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse } from '@/api/firebase';
 //Componenets
-import { Paper, Box, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem } from '@mui/material';
+import { Paper, Box, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem, Autocomplete, TextField } from '@mui/material';
 import Loader from '@/components/Loader';
 //Styles
 import '@/styles/globalStyles.css';
@@ -19,7 +19,7 @@ const EditUser = (props: UserDetails) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newDisplayName, setNewDisplayName] = useState<string>(displayName);
     const [newEmail, setNewEmail] = useState<string>(email);
-    const [selectedOrg, setSelectedOrg] = useState<string>('');
+
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [newPhoneNumber, setNewPhoneNumber] = useState<string>(phoneNumber);
@@ -28,7 +28,13 @@ const EditUser = (props: UserDetails) => {
     //List of Org names, ids from Server
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
         [key: string]: string;
-    } | null>(null);
+    }>({});
+
+    const orgNames = Object.keys(orgNamesAndIds);
+
+    const initialOrg: string | null = organization ? organization.name : null;
+
+    const [selectedOrg, setSelectedOrg] = useState<string | null>(initialOrg);
 
     const getOrgNames = async (): Promise<void> => {
         try {
@@ -42,23 +48,9 @@ const EditUser = (props: UserDetails) => {
         }
     };
 
-    const handleOrgSelect = (event: SelectChangeEvent) => {
-        setSelectedOrg(event.target.value);
-    };
-
     useEffect(() => {
         getOrgNames();
     }, []);
-
-    useEffect(() => {
-        if (organization) {
-            setSelectedOrg(organization.name);
-        }
-    }, [organization]);
-
-    useEffect(() => {
-        console.log(selectedOrg);
-    }, [selectedOrg]);
 
     return (
         <>
@@ -68,25 +60,15 @@ const EditUser = (props: UserDetails) => {
                 ) : (
                     <Box component="form" className="form--container">
                         {orgNamesAndIds ? (
-                            <FormControl fullWidth>
-                                <InputLabel id="organization-select-label">
-                                    Organization
-                                    <Select
-                                        sx={{ width: 'fit-content' }}
-                                        labelId="organization-select-label"
-                                        id="organization-select"
-                                        value={selectedOrg}
-                                        label="Organization"
-                                        onChange={handleOrgSelect}
-                                    >
-                                        {Object.keys(orgNamesAndIds).map((orgName) => (
-                                            <MenuItem key={orgName} value={orgName}>
-                                                {orgName}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </InputLabel>
-                            </FormControl>
+                            <Autocomplete
+                                disablePortal
+                                sx={{ maxWidth: '580px' }}
+                                value={selectedOrg}
+                                onChange={(event: any, newValue: string | null) => setSelectedOrg(newValue)}
+                                id="organzation-select"
+                                options={orgNames}
+                                renderInput={(params) => <TextField {...params} label="Organization" />}
+                            />
                         ) : (
                             <p>Could not load list of organizations</p>
                         )}
