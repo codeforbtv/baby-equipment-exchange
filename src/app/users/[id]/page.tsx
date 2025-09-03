@@ -112,7 +112,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                         <List>{userDetails.notes && userDetails.notes.map((note, i) => <ListItem key={i}>{note}</ListItem>)}</List>
                     </div>
                 )}
-                {!isLoading && userDetails && isEditMode && <EditUser {...userDetails} />}
+                {!isLoading && userDetails && isEditMode && <EditUser userDetails={userDetails} setIsEditMode={setIsEditMode} />}
                 <Dialog open={open} onClose={handleClose} aria-labelledby="dialog-title" aria-describedby="dialog-description">
                     <DialogTitle>User Updated</DialogTitle>
                     <DialogContent>

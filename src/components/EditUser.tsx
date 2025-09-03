@@ -1,14 +1,14 @@
 'use client';
 
 //Hooks
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
 
 //API
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Componenets
-import { Paper, Box, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem, Autocomplete, TextField } from '@mui/material';
+import { Paper, Box, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem, Autocomplete, TextField, Button } from '@mui/material';
 import Loader from '@/components/Loader';
 //Styles
 import '@/styles/globalStyles.css';
@@ -17,8 +17,14 @@ import { UserDetails } from '@/types/UserTypes';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const EditUser = (props: UserDetails) => {
-    const { email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props;
+type EditUserProps = {
+    userDetails: UserDetails;
+    setIsEditMode: Dispatch<SetStateAction<boolean>>;
+};
+
+const EditUser = (props: EditUserProps) => {
+    const { email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props.userDetails;
+    const setIsEditMode = props.setIsEditMode;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newDisplayName, setNewDisplayName] = useState<string>(displayName);
@@ -137,6 +143,9 @@ const EditUser = (props: UserDetails) => {
                             displayType="input"
                             customInput={TextField}
                         />
+                        <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
+                            Cancel
+                        </Button>
                     </Box>
                 )}
             </Paper>
