@@ -19,9 +19,7 @@ import {
     checkClaims,
     getImageAsSignedUrl,
     getUidByEmail,
-    isEmailInUse,
     registerNewUser,
-    listAllUsers,
     setClaimForAdmin,
     setClaimForAidWorker,
     setClaimForDonationReadAccess,
@@ -45,15 +43,19 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AccountInformation, UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 import { AuthUserRecord, newUserAccountInfo } from '@/types/UserTypes';
-import { UserRecord } from 'firebase-admin/auth';
+import { Auth, UserRecord } from 'firebase-admin/auth';
 import { IUser } from '@/models/user';
 import { OrganizationNames } from '@/types/OrganizationTypes';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
+
+//Cloud functions
 const functions = getFunctions(app);
 const createNewUser = httpsCallable(functions, 'createnewuser');
 const enableUser = httpsCallable(functions, 'enableuser');
 const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');
+const isEMailInUse = httpsCallable(functions, 'isemailinuse');
+const listAllUsers = httpsCallable(functions, 'listallusers');
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -69,12 +71,34 @@ export async function callCheckClaims(...claimNames: string[]): Promise<any> {
 }
 
 export async function callIsEmailInUse(email: string): Promise<boolean> {
-    const response = await isEmailInUse({ email: email });
-    return response;
+    const response = await isEMailInUse({ email: email });
+    return response.data as boolean;
 }
 
 export async function callSetClaimForNewUser(userId: string): Promise<void> {
     setClaimForNewUser({ userId: userId });
+}
+
+export async function callListAllUsers(): Promise<AuthUserRecord[]> {
+    try {
+        const listUsersResult = await listAllUsers();
+        const listUsers = listUsersResult.data as UserRecord[];
+        const authUsers = listUsers.map((user) => {
+            const authUser = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                disabled: user.disabled,
+                metadata: user.metadata,
+                customClaims: user.customClaims
+            };
+            return authUser;
+        });
+        return JSON.parse(JSON.stringify(authUsers));
+    } catch (error) {
+        addErrorEvent('Call list all users', error);
+    }
+    return Promise.reject();
 }
 
 // Action based claims.

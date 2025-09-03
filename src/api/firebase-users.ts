@@ -19,7 +19,7 @@ import {
 } from 'firebase/firestore';
 
 //API
-import { getAuthUserById, listAllUsers } from './firebaseAdmin';
+import { getAuthUserById } from './firebaseAdmin';
 
 // Models
 import { AuthUserRecord, UserDetails } from '@/types/UserTypes';
@@ -63,16 +63,6 @@ export const userConverter = {
         return new UserCollection(userData);
     }
 };
-
-export async function getAllUsers(): Promise<AuthUserRecord[]> {
-    try {
-        const usersList = await listAllUsers();
-        return usersList;
-    } catch (error) {
-        addErrorEvent('Error getting all users, ', error);
-    }
-    return Promise.reject();
-}
 
 export async function getDbUser(uid: string): Promise<IUser> {
     try {
