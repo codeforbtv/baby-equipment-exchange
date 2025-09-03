@@ -67,7 +67,8 @@ const EditUser = (props: UserDetails) => {
 
     const handleBlur = async (): Promise<void> => {
         validateEmail(newEmail);
-        if (!isInvalidEmail) {
+        //Only check if email is valid if different from inital email value
+        if (!isInvalidEmail && newEmail !== email) {
             const emailInUse = await callIsEmailInUse(newEmail);
             setIsEmailInUse(emailInUse);
         }
