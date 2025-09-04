@@ -45,12 +45,12 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                 <div className={styles['nav__menu']}>
                     <Link className={styles['menu__link']} id="home" href="/" onClick={closeMenu}>
                         <span>Home</span>
-                    </Link>
+                    </Link>          
+                    <Link className={styles['menu__link']} id="donate" href="/donate" onClick={closeMenu}>
+                        <span>Donate</span>
+                    </Link>                    
                     {currentUser && (
                         <>
-                            <Link className={styles['menu__link']} id="donate" href="/donate" onClick={closeMenu}>
-                                <span>Donate</span>
-                            </Link>
                             <Link className={styles['menu__link']} id="account" href="/account" onClick={closeMenu}>
                                 <span>Account</span>
                             </Link>
