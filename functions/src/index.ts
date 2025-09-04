@@ -123,6 +123,21 @@ export const listallusers = onCall(async (request): Promise<UserRecord[]> => {
     return Promise.reject(new HttpsError('unknown', 'An error occurred while trying to list all users.'));
 });
 
+export const setUserCustomClaims = onCall(async (request): Promise<void> => {
+    if (!request.auth) {
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to list all users.'));
+    }
+    if (request.auth && !request.auth.token.admin) {
+        return Promise.reject(new HttpsError('permission-denied', 'Only admins can update custom claims for users.'));
+    }
+    try {
+        const { userId, claims } = request.data;
+        auth.setCustomUserClaims(userId, claims);
+    } catch (error) {
+        logger.error('Error updating custom claims', error);
+    }
+});
+
 //Orgs-related
 export const getorganizationnames = onCall(
     async (

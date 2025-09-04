@@ -2,7 +2,6 @@
 
 //Hooks
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import { useRouter } from 'next/navigation';
 
 //API
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse } from '@/api/firebase';
@@ -111,6 +110,20 @@ const EditUser = (props: EditUserProps) => {
         setRole((event.target as HTMLInputElement).value);
     };
 
+    const handleSubmitUpdatedUser = async (event: React.FormEvent) => {
+        event.preventDefault();
+        //if any fields stored in the firebase auth user have changed, update auth user.
+        if (email !== newEmail || displayName !== newDisplayName) {
+        }
+
+        //If user role has changed it requires a separate API call
+        if (role !== initialRole) {
+        }
+        //If any fields in User collection in DB, update db user
+        if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg) {
+        }
+    };
+
     useEffect(() => {
         getOrgNames();
     }, []);
@@ -121,7 +134,7 @@ const EditUser = (props: EditUserProps) => {
                 {isLoading ? (
                     <Loader />
                 ) : (
-                    <Box component="form" gap={3} display={'flex'} flexDirection={'column'} className="form--container">
+                    <Box component="form" gap={3} display={'flex'} flexDirection={'column'} className="form--container" onSubmit={}>
                         <TextField
                             type="text"
                             label="Display Name"
@@ -177,6 +190,9 @@ const EditUser = (props: EditUserProps) => {
                                 <FormControlLabel value="aid-worker" control={<Radio />} label="Aid Worker" />
                             </RadioGroup>
                         </FormControl>
+                        <Button variant="contained" type="submit">
+                            Update User
+                        </Button>
                         <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
                             Cancel
                         </Button>
