@@ -8,12 +8,28 @@ import { useRouter } from 'next/navigation';
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Componenets
-import { Paper, Box, FormControl, InputLabel, Select, SelectChangeEvent, MenuItem, Autocomplete, TextField, Button } from '@mui/material';
+import {
+    Paper,
+    Box,
+    FormControl,
+    InputLabel,
+    Select,
+    SelectChangeEvent,
+    MenuItem,
+    Autocomplete,
+    TextField,
+    Button,
+    FormLabel,
+    RadioGroup,
+    FormControlLabel,
+    Radio
+} from '@mui/material';
 import Loader from '@/components/Loader';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { UserDetails } from '@/types/UserTypes';
+import { event } from 'firebase-functions/v1/analytics';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,13 +42,20 @@ const EditUser = (props: EditUserProps) => {
     const { email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props.userDetails;
     const setIsEditMode = props.setIsEditMode;
 
+    let initialRole = '';
+    if (customClaims && customClaims.admin === true) {
+        initialRole = 'admin';
+    } else if (customClaims && customClaims['aid-worker'] === true) {
+        initialRole = 'aid-worker';
+    }
+
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newDisplayName, setNewDisplayName] = useState<string>(displayName);
     const [newEmail, setNewEmail] = useState<string>(email);
-
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [newPhoneNumber, setNewPhoneNumber] = useState<string>(phoneNumber);
+    const [role, setRole] = useState<string>(initialRole);
     const [openDialog, setOpenDialog] = useState<boolean>(false);
 
     //List of Org names, ids from Server
@@ -82,6 +105,10 @@ const EditUser = (props: EditUserProps) => {
 
     const handlePhoneNumberInput: OnValueChange = (values): void => {
         setNewPhoneNumber(values.formattedValue);
+    };
+
+    const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setRole((event.target as HTMLInputElement).value);
     };
 
     useEffect(() => {
@@ -143,6 +170,13 @@ const EditUser = (props: EditUserProps) => {
                             displayType="input"
                             customInput={TextField}
                         />
+                        <FormControl disabled={!customClaims}>
+                            <FormLabel id="role-radio-buttons-label">Role:</FormLabel>
+                            <RadioGroup aria-labelledby="role-radio-buttons-label" name="role-radio-buttons-group" value={role} onChange={handleRadioChange}>
+                                <FormControlLabel value="admin" control={<Radio />} label="Administrator" />
+                                <FormControlLabel value="aid-worker" control={<Radio />} label="Aid Worker" />
+                            </RadioGroup>
+                        </FormControl>
                         <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
                             Cancel
                         </Button>
