@@ -6,34 +6,19 @@ import { useEffect, useState } from 'react';
 //APIs
 import { addErrorEvent, callEnableUser } from '@/api/firebase';
 import { getUserDetails } from '@/api/firebase-users';
-import { checkIfOrganizationExists } from '@/api/firebase-organizations';
 
 //Components
 import Loader from '@/components/Loader';
 import EditUser from '@/components/EditUser';
-import {
-    FormControl,
-    FormLabel,
-    List,
-    ListItem,
-    TextField,
-    Typography,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-    Divider
-} from '@mui/material';
+import { List, ListItem, Typography, Button, Divider } from '@mui/material';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+import CustomDialog from '@/components/CustomDialog';
 
 //Types
 import type { UserDetails } from '@/types/UserTypes';
 
 //styles
 import '../../HomeStyles.module.css';
-import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
-import CustomDialog from '@/components/CustomDialog';
 
 export default function UserDetailsPage({ params }: { params: { id: string } }) {
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -41,7 +26,13 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    const handleClose = () => [setIsDialogOpen(false)];
+    const handleClose = () => {
+        setIsDialogOpen(false);
+        //Re-fetch user to show updated details
+        if (userDetails) {
+            fetchUserDetails(userDetails.uid);
+        }
+    };
 
     const handleEnableUser = async (uid: string): Promise<void> => {
         setIsLoading(true);

@@ -2,36 +2,19 @@
 
 //Hooks
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
-
 //API
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims, callUpdateAuthUser } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
-//Componenets
-import {
-    Paper,
-    Box,
-    FormControl,
-    InputLabel,
-    Select,
-    SelectChangeEvent,
-    MenuItem,
-    Autocomplete,
-    TextField,
-    Button,
-    FormLabel,
-    RadioGroup,
-    FormControlLabel,
-    Radio
-} from '@mui/material';
+import { updateDbUser } from '@/api/firebase-users';
+//Components
+import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from './CustomDialog';
+import ProtectedAdminRoute from './ProtectedAdminRoute';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { UserDetails } from '@/types/UserTypes';
-import { event } from 'firebase-functions/v1/analytics';
-import { updateDbUser } from '@/api/firebase-users';
-import { useRouter } from 'next/navigation';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -61,8 +44,6 @@ const EditUser = (props: EditUserProps) => {
     const [newPhoneNumber, setNewPhoneNumber] = useState<string>(phoneNumber);
     const [role, setRole] = useState<string>(initialRole);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-
-    const router = useRouter();
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -181,7 +162,7 @@ const EditUser = (props: EditUserProps) => {
     }, []);
 
     return (
-        <>
+        <ProtectedAdminRoute>
             <Paper className="content--container" elevation={8} square={false}>
                 {isLoading ? (
                     <Loader />
@@ -257,7 +238,7 @@ const EditUser = (props: EditUserProps) => {
                 title="User sucessfuly updated"
                 content={`The user ${newDisplayName} has been updated.`}
             />
-        </>
+        </ProtectedAdminRoute>
     );
 };
 
