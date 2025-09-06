@@ -33,17 +33,15 @@ import type { UserDetails } from '@/types/UserTypes';
 //styles
 import '../../HomeStyles.module.css';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+import CustomDialog from '@/components/CustomDialog';
 
 export default function UserDetailsPage({ params }: { params: { id: string } }) {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
-    const [open, setIsOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
-    // const [doesOrgExist, setDoesOrgExist] = useState<boolean>(false);
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    const handleClose = () => {
-        setIsOpen(false);
-    };
+    const handleClose = () => [setIsDialogOpen(false)];
 
     const handleEnableUser = async (uid: string): Promise<void> => {
         setIsLoading(true);
@@ -57,7 +55,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                 setUserDetails(enabledUserDetails);
             }
             setIsLoading(false);
-            setIsOpen(true);
+            setIsDialogOpen(true);
         } catch (error) {
             setIsLoading(false);
             addErrorEvent('Call enable user', error);
@@ -91,8 +89,22 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                         <h3>{userDetails.displayName}</h3>
                         <h4>{userDetails.email}</h4>
                         <p>{userDetails.phoneNumber}</p>
+                        {userDetails.organization === null && (
+                            <p style={{ color: 'red' }}>
+                                You must{' '}
+                                <Button variant="text" onClick={() => setIsEditMode(true)}>
+                                    select an organzation
+                                </Button>{' '}
+                                before you can enable this user.
+                            </p>
+                        )}
                         {userDetails.disabled && (
-                            <Button variant="contained" type="button" onClick={() => handleEnableUser(userDetails.uid)}>
+                            <Button
+                                variant="contained"
+                                type="button"
+                                onClick={() => handleEnableUser(userDetails.uid)}
+                                disabled={userDetails.organization === null}
+                            >
                                 Enable User
                             </Button>
                         )}
@@ -102,26 +114,15 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                         <Divider></Divider>
                         <Typography variant="overline">Organization:</Typography>
                         <Typography>{userDetails.organization?.name}</Typography>
-                        {/* {!doesOrgExist && (
-                            <Typography style={{ color: 'red' }}>
-                                This organization does not match any existing organizations. Please select a different organization or create a new one.
-                            </Typography>
-                        )} */}
                         <Typography variant="h4"></Typography>
                         <Typography variant="overline">Notes:</Typography>
                         <List>{userDetails.notes && userDetails.notes.map((note, i) => <ListItem key={i}>{note}</ListItem>)}</List>
                     </div>
                 )}
-                {!isLoading && userDetails && isEditMode && <EditUser userDetails={userDetails} setIsEditMode={setIsEditMode} />}
-                <Dialog open={open} onClose={handleClose} aria-labelledby="dialog-title" aria-describedby="dialog-description">
-                    <DialogTitle>User Updated</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>{`User ${userDetails?.displayName} has been updated successfully.`}</DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleClose}>OK</Button>
-                    </DialogActions>
-                </Dialog>
+                {!isLoading && userDetails && isEditMode && (
+                    <EditUser userDetails={userDetails} setIsEditMode={setIsEditMode} fetchUserDetails={fetchUserDetails} />
+                )}
+                <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="User enabled" content={`User ${userDetails?.displayName} has been enabled.`} />
             </div>
         </ProtectedAdminRoute>
     );

@@ -24,23 +24,27 @@ import {
     Radio
 } from '@mui/material';
 import Loader from '@/components/Loader';
+import CustomDialog from './CustomDialog';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { UserDetails } from '@/types/UserTypes';
 import { event } from 'firebase-functions/v1/analytics';
 import { updateDbUser } from '@/api/firebase-users';
+import { useRouter } from 'next/navigation';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type EditUserProps = {
     userDetails: UserDetails;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
+    fetchUserDetails: (id: string) => void;
 };
 
 const EditUser = (props: EditUserProps) => {
     const { uid, email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props.userDetails;
     const setIsEditMode = props.setIsEditMode;
+    const fetchUserDetails = props.fetchUserDetails;
 
     let initialRole = '';
     if (customClaims && customClaims.admin === true) {
@@ -56,7 +60,15 @@ const EditUser = (props: EditUserProps) => {
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [newPhoneNumber, setNewPhoneNumber] = useState<string>(phoneNumber);
     const [role, setRole] = useState<string>(initialRole);
-    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const router = useRouter();
+
+    const handleClose = () => {
+        setIsDialogOpen(false);
+        setIsEditMode(false);
+        fetchUserDetails(uid);
+    };
 
     //List of Org names, ids from Server
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
@@ -161,7 +173,7 @@ const EditUser = (props: EditUserProps) => {
             return Promise.reject('Failed to update user');
         }
         setIsLoading(false);
-        setIsEditMode(false);
+        setIsDialogOpen(true);
     };
 
     useEffect(() => {
@@ -239,6 +251,12 @@ const EditUser = (props: EditUserProps) => {
                     </Box>
                 )}
             </Paper>
+            <CustomDialog
+                isOpen={isDialogOpen}
+                onClose={handleClose}
+                title="User sucessfuly updated"
+                content={`The user ${newDisplayName} has been updated.`}
+            />
         </>
     );
 };
