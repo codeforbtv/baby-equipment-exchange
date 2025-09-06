@@ -111,14 +111,14 @@ export const checkClaims = async (request: any): Promise<any> => {
 //         }
 //     });
 
-export const updateUser = async (request: any): Promise<void> => {
-    try {
-        const { uid, accountInformation } = request;
-        await auth.updateUser(uid, accountInformation);
-    } catch (error) {
-        addErrorEvent('updateUser', error);
-    }
-};
+// export const updateUser = async (request: any): Promise<void> => {
+//     try {
+//         const { uid, accountInformation } = request;
+//         await auth.updateUser(uid, accountInformation);
+//     } catch (error) {
+//         addErrorEvent('updateUser', error);
+//     }
+// };
 
 export const listAllUsers = async (): Promise<AuthUserRecord[]> => {
     try {

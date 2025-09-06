@@ -34,13 +34,12 @@ import {
     toggleClaimForAidWorker,
     toggleClaimForVerified,
     toggleClaimForVolunteer,
-    updateUser,
     getAuthUserById
 } from './firebaseAdmin';
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
-import { AccountInformation, UserCardProps } from '@/types/post-data';
+import { AccountInformation } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
 import { AuthUserRecord, newUserAccountInfo } from '@/types/UserTypes';
 import { Auth, UserRecord } from 'firebase-admin/auth';
@@ -57,6 +56,7 @@ const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');
 const isEMailInUse = httpsCallable(functions, 'isemailinuse');
 const listAllUsers = httpsCallable(functions, 'listallusers');
 const setCustomClaims = httpsCallable(functions, 'setcustomclaims');
+const updateAuthUser = httpsCallable(functions, 'updateauthuser');
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -94,6 +94,16 @@ export async function callListAllUsers(): Promise<AuthUserRecord[]> {
         return JSON.parse(JSON.stringify(authUsers));
     } catch (error) {
         addErrorEvent('Call list all users', error);
+    }
+    return Promise.reject();
+}
+
+export async function callUpdateAuthUser(uid: string, accountInformation: AccountInformation): Promise<UserRecord> {
+    try {
+        const updatedAuthUser = await updateAuthUser({ uid: uid, accountInformation: accountInformation });
+        return updatedAuthUser.data as UserRecord;
+    } catch (error) {
+        addErrorEvent('Error calling update auth user', error);
     }
     return Promise.reject();
 }
@@ -191,14 +201,6 @@ export async function callRegisterNewUser(options: any): Promise<any> {
 
 export async function callSetUserAccount(userId: string, accountInformation: AccountInformation): Promise<void> {
     await setUserAccount({ userId: userId, accountInformation: accountInformation });
-}
-
-export async function callUpdateUser(uid: string, accountInformation: AccountInformation): Promise<void> {
-    try {
-        await updateUser({ uid: uid, accountInformation: accountInformation });
-    } catch (error) {
-        addErrorEvent('error updating user from firebase.ts', error);
-    }
 }
 
 export async function createUser(accountInfo: newUserAccountInfo): Promise<UserRecord> {

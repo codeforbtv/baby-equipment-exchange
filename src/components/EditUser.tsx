@@ -4,7 +4,7 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 //API
-import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims } from '@/api/firebase';
+import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims, callUpdateAuthUser } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Componenets
 import {
@@ -114,6 +114,10 @@ const EditUser = (props: EditUserProps) => {
         event.preventDefault();
         //if any fields stored in the firebase auth user have changed, update auth user.
         if (email !== newEmail || displayName !== newDisplayName) {
+            const updatedAuthUser = await callUpdateAuthUser(uid, {
+                email: newEmail,
+                displayName: newDisplayName
+            });
         }
 
         //If user role has changed it requires a separate API call

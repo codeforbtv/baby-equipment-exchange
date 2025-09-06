@@ -20,8 +20,8 @@ export type UserCardProps = {
 export type AccountInformation = {
     displayName?: string;
     email?: string;
-    phoneNunber?: string;
 };
+
 export type DonationBody = {
     donorEmail: string;
     donorName: string;

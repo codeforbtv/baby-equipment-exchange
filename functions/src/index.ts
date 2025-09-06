@@ -86,6 +86,23 @@ export const enableuser = onCall(async (request): Promise<UserRecord> => {
     return Promise.reject(new HttpsError('permission-denied', 'Unable to enable user account.'));
 });
 
+export const updateauthuser = onCall(async (request): Promise<UserRecord> => {
+    if (!request.auth) {
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to list all users.'));
+    }
+    if (request.auth && !request.auth.token.admin) {
+        return Promise.reject(new HttpsError('permission-denied', 'Only admins can update custom claims for users.'));
+    }
+    try {
+        const { uid, accountInformation } = request.data;
+        const updatedUser = await auth.updateUser(uid, accountInformation);
+        return updatedUser;
+    } catch (error) {
+        logger.error('Error updating user', error);
+    }
+    return Promise.reject(new HttpsError('invalid-argument', 'Error updating user account.'));
+});
+
 export const isemailinuse = onCall(async (request): Promise<boolean> => {
     try {
         const email = request.data.email;
@@ -132,7 +149,7 @@ export const setcustomclaims = onCall(async (request): Promise<void> => {
     }
     try {
         const { userId, claims } = request.data;
-        auth.setCustomUserClaims(userId, claims);
+        await auth.setCustomUserClaims(userId, claims);
     } catch (error) {
         logger.error('Error updating custom claims', error);
     }
