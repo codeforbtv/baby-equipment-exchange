@@ -111,35 +111,57 @@ const EditUser = (props: EditUserProps) => {
         setRole((event.target as HTMLInputElement).value);
     };
 
-    const handleSubmitUpdatedUser = async (event: React.FormEvent) => {
+    const handleSubmitUpdatedUser = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
-        //if any fields stored in the firebase auth user have changed, update auth user.
-        if (email !== newEmail || displayName !== newDisplayName) {
-            const updatedAuthUser = await callUpdateAuthUser(uid, {
-                email: newEmail,
-                displayName: newDisplayName
-            });
-        }
+        setIsLoading(true);
+        try {
+            //if any fields stored in the firebase auth user have changed, update auth user.
+            if (email !== newEmail || displayName !== newDisplayName) {
+                try {
+                    const updatedAuthUser = await callUpdateAuthUser(uid, {
+                        email: newEmail,
+                        displayName: newDisplayName
+                    });
+                } catch (error) {
+                    setIsLoading(false);
+                    addErrorEvent('Error updating email or display name', error);
+                }
+            }
+            //If user role has changed it requires a separate API call
+            if (role !== initialRole) {
+                try {
+                    const claims = { [`${role}`]: true };
+                    await callSetClaims(uid, claims);
+                } catch (error) {
+                    setIsLoading(false);
+                    addErrorEvent('Error updated custom claims', error);
+                }
+            }
+            //If any fields in User collection in DB, update db user
+            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg) {
+                try {
+                    const updatedOrganization = selectedOrg
+                        ? {
+                              id: orgNamesAndIds[selectedOrg],
+                              name: selectedOrg
+                          }
+                        : null;
 
-        //If user role has changed it requires a separate API call
-        if (role !== initialRole) {
-            const claims = { [`${role}`]: true };
-            await callSetClaims(uid, claims);
+                    await updateDbUser(uid, {
+                        phoneNumber: newPhoneNumber,
+                        organization: updatedOrganization
+                    });
+                } catch (error) {
+                    setIsLoading(false);
+                    addErrorEvent('Error updating phone number or organization', error);
+                }
+            }
+        } catch (error) {
+            setIsLoading(false);
+            return Promise.reject('Failed to update user');
         }
-        //If any fields in User collection in DB, update db user
-        if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg) {
-            const updatedOrganization = selectedOrg
-                ? {
-                      id: orgNamesAndIds[selectedOrg],
-                      name: selectedOrg
-                  }
-                : null;
-
-            await updateDbUser(uid, {
-                phoneNumber: newPhoneNumber,
-                organization: updatedOrganization
-            });
-        }
+        setIsLoading(false);
+        setIsEditMode(false);
     };
 
     useEffect(() => {
