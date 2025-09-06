@@ -123,7 +123,7 @@ export const listallusers = onCall(async (request): Promise<UserRecord[]> => {
     return Promise.reject(new HttpsError('unknown', 'An error occurred while trying to list all users.'));
 });
 
-export const setUserCustomClaims = onCall(async (request): Promise<void> => {
+export const setcustomclaims = onCall(async (request): Promise<void> => {
     if (!request.auth) {
         return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to list all users.'));
     }

@@ -4,7 +4,7 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 //API
-import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse } from '@/api/firebase';
+import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Componenets
 import {
@@ -38,7 +38,7 @@ type EditUserProps = {
 };
 
 const EditUser = (props: EditUserProps) => {
-    const { email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props.userDetails;
+    const { uid, email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props.userDetails;
     const setIsEditMode = props.setIsEditMode;
 
     let initialRole = '';
@@ -118,6 +118,8 @@ const EditUser = (props: EditUserProps) => {
 
         //If user role has changed it requires a separate API call
         if (role !== initialRole) {
+            const claims = { [`${role}`]: true };
+            await callSetClaims(uid, claims);
         }
         //If any fields in User collection in DB, update db user
         if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg) {
@@ -134,7 +136,7 @@ const EditUser = (props: EditUserProps) => {
                 {isLoading ? (
                     <Loader />
                 ) : (
-                    <Box component="form" gap={3} display={'flex'} flexDirection={'column'} className="form--container" onSubmit={}>
+                    <Box component="form" gap={3} display={'flex'} flexDirection={'column'} className="form--container" onSubmit={handleSubmitUpdatedUser}>
                         <TextField
                             type="text"
                             label="Display Name"
