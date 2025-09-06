@@ -1,5 +1,5 @@
 //API
-import { addErrorEvent, callSetClaims, callUpdateUser } from '@/api/firebase';
+import { addErrorEvent, callSetClaims, callUpdateAuthUser } from '@/api/firebase';
 import { getDbUser } from '@/api/firebase-users';
 //Components
 import {
@@ -80,7 +80,7 @@ export default function UserCard(props: AuthUserRecord) {
             email: emailField
             // phoneNumber: `+1${phoneNumberField}`
         };
-        await callUpdateUser(uid, accountInformation);
+        await callUpdateAuthUser(uid, accountInformation);
         await callSetClaims(uid, claims);
         handleHideEditView();
     }

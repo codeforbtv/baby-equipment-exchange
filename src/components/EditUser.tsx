@@ -29,6 +29,7 @@ import '@/styles/globalStyles.css';
 //Types
 import { UserDetails } from '@/types/UserTypes';
 import { event } from 'firebase-functions/v1/analytics';
+import { updateDbUser } from '@/api/firebase-users';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -127,6 +128,17 @@ const EditUser = (props: EditUserProps) => {
         }
         //If any fields in User collection in DB, update db user
         if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg) {
+            const updatedOrganization = selectedOrg
+                ? {
+                      id: orgNamesAndIds[selectedOrg],
+                      name: selectedOrg
+                  }
+                : null;
+
+            await updateDbUser(uid, {
+                phoneNumber: newPhoneNumber,
+                organization: updatedOrganization
+            });
         }
     };
 
