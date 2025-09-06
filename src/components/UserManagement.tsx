@@ -13,8 +13,8 @@ import { UserCardProps } from '@/types/post-data';
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Libs
-import { addErrorEvent } from '../api/firebase';
-import { getAllUsers } from '@/api/firebase-users';
+import { addErrorEvent, callListAllUsers } from '../api/firebase';
+
 // Styles
 import styles from './Browse.module.css';
 import NewUserDialog from './NewUserDialog';
@@ -46,7 +46,7 @@ export default function UserManagement() {
 
     const fetchAllUsers = async (): Promise<void> => {
         try {
-            const allUsers: AuthUserRecord[] = await getAllUsers();
+            const allUsers: AuthUserRecord[] = await callListAllUsers();
             setUsers(allUsers);
             setIsLoading(false);
         } catch (error) {

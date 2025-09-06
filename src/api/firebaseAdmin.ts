@@ -111,20 +111,20 @@ export const checkClaims = async (request: any): Promise<any> => {
 //         }
 //     });
 
-export const updateUser = async (request: any): Promise<void> => {
-    try {
-        const { uid, accountInformation } = request;
-        await auth.updateUser(uid, accountInformation);
-    } catch (error) {
-        addErrorEvent('updateUser', error);
-    }
-};
+// export const updateUser = async (request: any): Promise<void> => {
+//     try {
+//         const { uid, accountInformation } = request;
+//         await auth.updateUser(uid, accountInformation);
+//     } catch (error) {
+//         addErrorEvent('updateUser', error);
+//     }
+// };
 
 export const listAllUsers = async (): Promise<AuthUserRecord[]> => {
     try {
         const usersList = await auth.listUsers(1000);
         const listUsersResult: UserRecord[] = usersList.users;
-        const authUsers: AuthUserRecord[] = listUsersResult.map((user) => {
+        const authUsers = listUsersResult.map((user) => {
             const authUser = {
                 uid: user.uid,
                 email: user.email,
@@ -222,7 +222,7 @@ export const isEmailInUse = async (request: any) => {
         const email = request.email;
         const userRecord: UserRecord = await auth.getUserByEmail(email);
         if (userRecord !== undefined) {
-            logger.error({ error: `${email} was queried via this onCall method.`, data: request.data });
+            logger.info({ error: `${email} was queried via this onCall method.`, data: request.data });
             return true;
         } else {
             return false;

@@ -1,5 +1,5 @@
 // Libs
-import { addErrorEvent, db, getUserId } from './firebase';
+import { addErrorEvent, db, auth, getUserId } from './firebase';
 import {
     arrayUnion,
     collection,
@@ -19,7 +19,7 @@ import {
 } from 'firebase/firestore';
 
 //API
-import { getAuthUserById, listAllUsers } from './firebaseAdmin';
+import { getAuthUserById } from './firebaseAdmin';
 
 // Models
 import { AuthUserRecord, UserDetails } from '@/types/UserTypes';
@@ -64,16 +64,6 @@ export const userConverter = {
     }
 };
 
-export async function getAllUsers(): Promise<AuthUserRecord[]> {
-    try {
-        const usersList = await listAllUsers();
-        return usersList;
-    } catch (error) {
-        addErrorEvent('Error getting all users, ', error);
-    }
-    return Promise.reject();
-}
-
 export async function getDbUser(uid: string): Promise<IUser> {
     try {
         const userRef = doc(db, `${USERS_COLLECTION}/${uid}`).withConverter(userConverter);
@@ -87,6 +77,21 @@ export async function getDbUser(uid: string): Promise<IUser> {
         addErrorEvent('Error getting db User', error);
     }
     return Promise.reject();
+}
+
+export async function updateDbUser(uid: string, accountInformation: any): Promise<void> {
+    if (!auth.currentUser) {
+        return Promise.reject(new Error('Must be logged in to update db user'));
+    }
+    try {
+        const userRef = doc(db, USERS_COLLECTION, uid).withConverter(userConverter);
+        await updateDoc(userRef, {
+            ...accountInformation,
+            modifiedAt: serverTimestamp()
+        });
+    } catch (error) {
+        addErrorEvent('Error updating db user', error);
+    }
 }
 
 //returns Auth User and db User details combined

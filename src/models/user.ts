@@ -19,7 +19,7 @@ export interface IUser {
         | (() => boolean);
     readonly uid: string;
     phoneNumber: string;
-    requestedItems: { id: string; name: string }[] | null | undefined;
+    requestedItems: { id: string; model: string }[] | null | undefined;
     notes: string[] | null | undefined;
     organization: { id: string; name: string } | null;
     modifiedAt: Timestamp | FieldValue;
@@ -38,12 +38,12 @@ export class UserCollection implements IUser {
         | boolean
         | { [key: string]: any }
         | (() => string)
-        | (() => { id: string; name: string }[] | null | undefined)
+        | (() => { id: string; model: string }[] | null | undefined)
         | (() => Timestamp | FieldValue)
         | (() => boolean);
     readonly uid: string;
     phoneNumber: string;
-    requestedItems: { id: string; name: string }[] | null | undefined;
+    requestedItems: { id: string; model: string }[] | null | undefined;
     notes: string[] | null | undefined;
     organization: { id: string; name: string } | null;
     modifiedAt: Timestamp | FieldValue;
@@ -65,7 +65,7 @@ export class UserCollection implements IUser {
         return this.phoneNumber;
     }
 
-    getRequestedItems(): { id: string; name: string }[] | null | undefined {
+    getRequestedItems(): { id: string; model: string }[] | null | undefined {
         return this.requestedItems;
     }
 

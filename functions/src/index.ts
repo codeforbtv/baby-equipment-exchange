@@ -15,6 +15,7 @@ admin.initializeApp();
 const auth = admin.auth();
 const db = admin.firestore();
 
+//User-related
 export const createnewuser = onCall(async (request: CallableRequest): Promise<UserRecord> => {
     try {
         const accountInfo = request.data;
@@ -73,6 +74,8 @@ export const enableuser = onCall(async (request): Promise<UserRecord> => {
             return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to enable a user account.'));
         } else {
             try {
+                //Enabled users are aid-workers by default
+                await auth.setCustomUserClaims(userId, { 'aid-worker': true });
                 const enabledUser = await auth.updateUser(userId, { disabled: false });
                 return enabledUser;
             } catch (error) {
@@ -83,6 +86,76 @@ export const enableuser = onCall(async (request): Promise<UserRecord> => {
     return Promise.reject(new HttpsError('permission-denied', 'Unable to enable user account.'));
 });
 
+export const updateauthuser = onCall(async (request): Promise<UserRecord> => {
+    if (!request.auth) {
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to list all users.'));
+    }
+    if (request.auth && !request.auth.token.admin) {
+        return Promise.reject(new HttpsError('permission-denied', 'Only admins can update custom claims for users.'));
+    }
+    try {
+        const { uid, accountInformation } = request.data;
+        const updatedUser = await auth.updateUser(uid, accountInformation);
+        return updatedUser;
+    } catch (error) {
+        logger.error('Error updating user', error);
+    }
+    return Promise.reject(new HttpsError('invalid-argument', 'Error updating user account.'));
+});
+
+export const isemailinuse = onCall(async (request): Promise<boolean> => {
+    try {
+        const email = request.data.email;
+        const existingUser: UserRecord = await auth.getUserByEmail(email);
+        if (existingUser !== undefined) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error: any) {
+        if (error.code === 'auth/user-not-found') {
+            return false;
+        }
+        if (error.code !== 'auth/invalid-email') {
+            logger.error('Error checking if email is in use', error);
+        }
+    }
+    return true;
+});
+
+export const listallusers = onCall(async (request): Promise<UserRecord[]> => {
+    if (!request.auth) {
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to list all users.'));
+    }
+    if (request.auth && !request.auth.token.admin) {
+        return Promise.reject(new HttpsError('permission-denied', 'Only admins can list all user accounts.'));
+    }
+    try {
+        const usersListresult = await auth.listUsers(1000);
+        const usersList: UserRecord[] = usersListresult.users;
+        return usersList;
+    } catch (error) {
+        logger.error('Error fetching list of users', error);
+    }
+    return Promise.reject(new HttpsError('unknown', 'An error occurred while trying to list all users.'));
+});
+
+export const setcustomclaims = onCall(async (request): Promise<void> => {
+    if (!request.auth) {
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to list all users.'));
+    }
+    if (request.auth && !request.auth.token.admin) {
+        return Promise.reject(new HttpsError('permission-denied', 'Only admins can update custom claims for users.'));
+    }
+    try {
+        const { userId, claims } = request.data;
+        await auth.setCustomUserClaims(userId, claims);
+    } catch (error) {
+        logger.error('Error updating custom claims', error);
+    }
+});
+
+//Orgs-related
 export const getorganizationnames = onCall(
     async (
         request

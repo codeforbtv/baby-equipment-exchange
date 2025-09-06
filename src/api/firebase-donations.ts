@@ -227,7 +227,7 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
                 tagNumber: null,
                 notes: null,
                 status: 'in processing',
-                bulkCollection: bulkDonationsRef,
+                bulkCollection: bulkDonationsRef.id,
                 images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp,
@@ -252,7 +252,7 @@ export async function updateDonationStatus(id: string, status: donationStatus): 
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
         await updateDoc(donationRef, {
             status: status,
-            modifiedAt: serverTimestamp(),
+            modifiedAt: serverTimestamp()
         });
         return status;
     } catch (error) {

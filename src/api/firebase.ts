@@ -19,9 +19,7 @@ import {
     checkClaims,
     getImageAsSignedUrl,
     getUidByEmail,
-    isEmailInUse,
     registerNewUser,
-    listAllUsers,
     setClaimForAdmin,
     setClaimForAidWorker,
     setClaimForDonationReadAccess,
@@ -36,24 +34,29 @@ import {
     toggleClaimForAidWorker,
     toggleClaimForVerified,
     toggleClaimForVolunteer,
-    updateUser,
     getAuthUserById
 } from './firebaseAdmin';
 
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
-import { AccountInformation, UserCardProps } from '@/types/post-data';
+import { AccountInformation } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
 import { AuthUserRecord, newUserAccountInfo } from '@/types/UserTypes';
-import { UserRecord } from 'firebase-admin/auth';
+import { Auth, UserRecord } from 'firebase-admin/auth';
 import { IUser } from '@/models/user';
 import { OrganizationNames } from '@/types/OrganizationTypes';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
+
+//Cloud functions
 const functions = getFunctions(app);
 const createNewUser = httpsCallable(functions, 'createnewuser');
 const enableUser = httpsCallable(functions, 'enableuser');
 const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');
+const isEMailInUse = httpsCallable(functions, 'isemailinuse');
+const listAllUsers = httpsCallable(functions, 'listallusers');
+const setCustomClaims = httpsCallable(functions, 'setcustomclaims');
+const updateAuthUser = httpsCallable(functions, 'updateauthuser');
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
@@ -69,13 +72,53 @@ export async function callCheckClaims(...claimNames: string[]): Promise<any> {
 }
 
 export async function callIsEmailInUse(email: string): Promise<boolean> {
-    const response = await isEmailInUse({ email: email });
-    return response;
+    const response = await isEMailInUse({ email: email });
+    return response.data as boolean;
 }
 
-export async function callSetClaimForNewUser(userId: string): Promise<void> {
-    setClaimForNewUser({ userId: userId });
+export async function callListAllUsers(): Promise<AuthUserRecord[]> {
+    try {
+        const listUsersResult = await listAllUsers();
+        const listUsers = listUsersResult.data as UserRecord[];
+        const authUsers = listUsers.map((user) => {
+            const authUser = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                disabled: user.disabled,
+                metadata: user.metadata,
+                customClaims: user.customClaims
+            };
+            return authUser;
+        });
+        return JSON.parse(JSON.stringify(authUsers));
+    } catch (error) {
+        addErrorEvent('Call list all users', error);
+    }
+    return Promise.reject();
 }
+
+export async function callUpdateAuthUser(uid: string, accountInformation: AccountInformation): Promise<UserRecord> {
+    try {
+        const updatedAuthUser = await updateAuthUser({ uid: uid, accountInformation: accountInformation });
+        return updatedAuthUser.data as UserRecord;
+    } catch (error) {
+        addErrorEvent('Error calling update auth user', error);
+    }
+    return Promise.reject();
+}
+
+export async function callSetClaims(userId: string, claims: any): Promise<void> {
+    try {
+        await setCustomClaims({ userId: userId, claims: claims });
+    } catch (error) {
+        addErrorEvent('Error calling set claims', error);
+    }
+}
+
+// export async function callSetClaimForNewUser(userId: string): Promise<void> {
+//     setClaimForNewUser({ userId: userId });
+// }
 
 // Action based claims.
 export async function callSetClaimForDonationReadAccess(userId: string, canReadDonations: boolean): Promise<void> {
@@ -87,64 +130,24 @@ export async function callToggleCanReadDonations(userId: string): Promise<void> 
 }
 
 // Role based claims.
-export async function canReadDonations(): Promise<boolean> {
-    return checkClaim('can-read-donations');
+export async function checkIsAdmin(user: User): Promise<boolean> {
+    try {
+        const result = await user.getIdTokenResult();
+        return result.claims.admin === true;
+    } catch (error) {
+        addErrorEvent('Check is admin', error);
+    }
+    return Promise.reject();
 }
 
-export async function isAdmin(): Promise<boolean> {
-    return checkClaim('admin');
-}
-
-export async function isAidWorker(): Promise<boolean> {
-    return checkClaim('aid-worker');
-}
-
-export async function isDonor(): Promise<boolean> {
-    return checkClaim('donor');
-}
-
-export async function isVerified(): Promise<boolean> {
-    return checkClaim('verified');
-}
-
-export async function isVolunteer(): Promise<boolean> {
-    return checkClaim('volunteer');
-}
-
-export async function callSetClaimForAdmin(userId: string, isAdmin: boolean): Promise<void> {
-    setClaimForAdmin({ userId: userId, isAdmin: isAdmin });
-}
-
-export async function callSetClaimForAidWorker(userId: string, isAidWorker: boolean): Promise<void> {
-    setClaimForAidWorker({ userId: userId, isAidWorker: isAidWorker });
-}
-
-export async function callSetClaimForDonor(userId: string, isDonor: boolean): Promise<void> {
-    setClaimForDonor({ userId: userId, isDonor: isDonor });
-}
-
-export async function callSetClaimForVerified(userId: string, isVerified: boolean): Promise<void> {
-    setClaimForVerified({ userId: userId, isVerified: isVerified });
-}
-
-export async function callSetClaimForVolunteer(userId: string, isVolunteer: boolean): Promise<void> {
-    setClaimForVolunteer({ userId: userId, isVolunteer: isVolunteer });
-}
-
-export async function callToggleClaimForAdmin(userId: string): Promise<void> {
-    toggleClaimForAdmin({ userId: userId });
-}
-
-export async function callToggleClaimForAidWorker(userId: string): Promise<void> {
-    toggleClaimForAidWorker({ userId: userId });
-}
-
-export async function callToggleClaimForVerified(userId: string): Promise<void> {
-    toggleClaimForVerified({ userId: userId });
-}
-
-export async function callToggleClaimForVolunteer(userId: string): Promise<void> {
-    toggleClaimForVolunteer({ userId: userId });
+export async function checkIsAidWorker(user: User): Promise<boolean> {
+    try {
+        const result = await user.getIdTokenResult();
+        return result.claims['aid-worker'] === true;
+    } catch (error) {
+        addErrorEvent('Check is aid worker', error);
+    }
+    return Promise.reject();
 }
 
 // Utilitarian
@@ -160,31 +163,6 @@ export async function callGetImageAsSignedUrl(url: string): Promise<any> {
     } catch (error) {
         await addErrorEvent('getImageAsSignedUrl', error);
     }
-}
-
-export async function getAccountType(): Promise<string> {
-    let accountType: string = '';
-    const hasAdmin = await isAdmin();
-    const hasVerified = await isVerified();
-    if (hasAdmin) {
-        accountType = 'Administrator';
-    } else {
-        accountType = 'Donor';
-    }
-    if (hasVerified) {
-        accountType += ' (unverified)';
-    }
-    return accountType;
-}
-
-async function checkClaim(claimName: string): Promise<boolean> {
-    await auth.authStateReady();
-    const claims = (await auth.currentUser?.getIdTokenResult(true))?.claims;
-    if (claims === undefined || claims === null) {
-        return Promise.reject();
-    }
-    const claimValue = claims[claimName];
-    return claimValue !== undefined && claimValue === true ? true : false;
 }
 
 export function getUserEmail(): string | null | undefined {
@@ -221,22 +199,8 @@ export async function callRegisterNewUser(options: any): Promise<any> {
     return { ok: okResponse };
 }
 
-export async function callSetClaims(userId: string, claims: any): Promise<void> {
-    await setClaims({ userId: userId, claims: claims });
-    //Reset token so new claims propagate
-    // auth.currentUser?.getIdToken(true);
-}
-
 export async function callSetUserAccount(userId: string, accountInformation: AccountInformation): Promise<void> {
     await setUserAccount({ userId: userId, accountInformation: accountInformation });
-}
-
-export async function callUpdateUser(uid: string, accountInformation: AccountInformation): Promise<void> {
-    try {
-        await updateUser({ uid: uid, accountInformation: accountInformation });
-    } catch (error) {
-        addErrorEvent('error updating user from firebase.ts', error);
-    }
 }
 
 export async function createUser(accountInfo: newUserAccountInfo): Promise<UserRecord> {
@@ -292,26 +256,6 @@ export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
 export async function resetPassword(email: string): Promise<void> {
     if (!email) Promise.reject();
     await sendPasswordResetEmail(auth, email);
-}
-
-export async function checkIsAdmin(user: User): Promise<boolean> {
-    try {
-        const result = await user.getIdTokenResult();
-        return result.claims.admin === true;
-    } catch (error) {
-        addErrorEvent('Check is admin', error);
-    }
-    return Promise.reject();
-}
-
-export async function checkIsAidWorker(user: User): Promise<boolean> {
-    try {
-        const result = await user.getIdTokenResult();
-        return result.claims['aid-worker'] === true;
-    } catch (error) {
-        addErrorEvent('Check is aid worker', error);
-    }
-    return Promise.reject();
 }
 
 export async function loginAnonymousUser(): Promise<User | null> {
