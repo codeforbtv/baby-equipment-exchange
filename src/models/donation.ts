@@ -46,7 +46,7 @@ export interface IDonation {
     donorId: string;
     category: string | null | undefined;
     brand: string | null | undefined;
-    model: string | null | undefined;
+    model: string | undefined;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
     notes: string | null | undefined;
@@ -86,7 +86,7 @@ export class Donation implements IDonation {
     donorId: string;
     category: string | null | undefined;
     brand: string | null | undefined;
-    model: string | null | undefined;
+    model: string | undefined;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
     notes: string | null | undefined;
@@ -144,7 +144,7 @@ export class Donation implements IDonation {
         return this.brand;
     }
 
-    getModel(): string | null | undefined {
+    getModel(): string | undefined {
         return this.model;
     }
 

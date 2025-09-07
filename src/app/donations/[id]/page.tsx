@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { useEffect, useState } from 'react';
+import { MouseEventHandler, SyntheticEvent, useEffect, useState } from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationById } from '@/api/firebase-donations';
@@ -13,12 +13,14 @@ import '@/styles/globalStyles.css';
 //Types
 import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, donationStatuses } from '@/models/donation';
 
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Dialog, DialogActions, FormControl, ImageList, ImageListItem, InputLabel, MenuItem, Select, SelectChangeEvent, Button } from '@mui/material';
 
 export default function DonationDetails({ params }: { params: { id: string } }) {
     const [donationDetails, setDonationDetails] = useState<IDonation | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
+    const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
+    const [openImageURL, setOpenImageURL] = useState<string>('');
 
     const initialStatus: DonationStatusValues = donationDetails ? donationDetails.status : 'in processing';
 
@@ -40,6 +42,13 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
 
     const selectHandler = (event: SelectChangeEvent) => setSelectedStatus(event.target.value);
 
+    const handleImageClick: MouseEventHandler<HTMLImageElement> = (event) => {
+        setOpenImageURL(event.currentTarget.src);
+        setIsImageOpen(true);
+    };
+
+    const handleImageClose = () => setIsImageOpen(false);
+
     useEffect(() => {
         fetchDonation(params.id);
     }, []);
@@ -51,11 +60,18 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                {isEditMode ? <h1>Donation Details</h1> : <h1>Edit Donation</h1>}
+                {!isEditMode ? <h1>Donation Details</h1> : <h1>Edit Donation</h1>}
                 {isLoading && <Loader />}
                 {!isLoading && donationDetails === null && <p>Donation not found</p>}
                 {!isLoading && donationDetails !== null && !isEditMode && (
                     <div className="content--container">
+                        <ImageList>
+                            {donationDetails.images.map((image) => (
+                                <ImageListItem key={image as string}>
+                                    <img src={`${image}`} alt={donationDetails.model} loading="lazy" onClick={handleImageClick} />
+                                </ImageListItem>
+                            ))}
+                        </ImageList>
                         <h2>{donationDetails.brand}</h2>
                         <h3>{donationDetails.model}</h3>
                         <p>{donationDetails.description}</p>
@@ -74,6 +90,14 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
                                 </Select>
                             </FormControl>
                         )}
+                        <Dialog open={isImageOpen} onClose={handleImageClose} sx={{ width: '100%' }}>
+                            <img src={openImageURL} alt={openImageURL} style={{ maxWidth: '100%' }} />
+                            <DialogActions>
+                                <Button type="button" onClick={handleImageClose}>
+                                    Close
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
                     </div>
                 )}
             </div>
