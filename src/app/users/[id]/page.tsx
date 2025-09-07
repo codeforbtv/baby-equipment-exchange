@@ -99,7 +99,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
                                 Enable User
                             </Button>
                         )}
-                        <Button variant="contained" onClick={() => setIsEditMode(true)}>
+                        <Button variant="contained" type="button" onClick={() => setIsEditMode(true)}>
                             Edit User
                         </Button>
                         <Divider></Divider>

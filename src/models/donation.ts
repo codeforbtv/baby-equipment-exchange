@@ -45,9 +45,9 @@ export interface IDonation {
     donorEmail: string;
     donorName: string;
     donorId: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
     notes: string[] | null | undefined;
@@ -86,9 +86,9 @@ export class Donation implements IDonation {
     donorEmail: string;
     donorName: string;
     donorId: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
     notes: string[] | null | undefined;
@@ -138,15 +138,15 @@ export class Donation implements IDonation {
         return this.donorId;
     }
 
-    getCategory(): string | null | undefined {
+    getCategory(): string {
         return this.category;
     }
 
-    getBrand(): string | null | undefined {
+    getBrand(): string {
         return this.brand;
     }
 
-    getModel(): string | undefined {
+    getModel(): string {
         return this.model;
     }
 

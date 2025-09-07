@@ -28,7 +28,7 @@ import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
 
 // Libs
-import { db, auth, addErrorEvent, storage, checkIsAdmin } from './firebase';
+import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
 
 // Imported constants
@@ -247,9 +247,27 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
     }
 }
 
-export async function updateDonationStatus(id: string, status: DonationStatusValues): Promise<DonationStatusValues> {
+export async function updateDonation(id: string, donationDetails: any): Promise<void> {
     if (!auth.currentUser || (auth.currentUser && !checkIsAdmin(auth.currentUser))) {
         return Promise.reject('Must be an admin to update donation status');
+    }
+    try {
+        const donationRef = doc(db, DONATIONS_COLLECTION, id).withConverter(donationConverter);
+        await updateDoc(donationRef, {
+            ...donationDetails,
+            modifiedAt: serverTimestamp()
+        });
+    } catch (error) {
+        addErrorEvent('Error updating donation', error);
+    }
+}
+
+export async function updateDonationStatus(id: string, status: DonationStatusValues): Promise<DonationStatusValues> {
+    if (!auth.currentUser) {
+        return Promise.reject('Must be logged in to change donation status');
+    }
+    if (auth.currentUser && (!checkIsAdmin(auth.currentUser) || !checkIsAidWorker(auth.currentUser))) {
+        return Promise.reject('Only admins and aid workers can update a donation status');
     }
     try {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);

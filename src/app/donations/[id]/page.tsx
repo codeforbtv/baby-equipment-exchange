@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { MouseEventHandler, SyntheticEvent, useEffect, useState } from 'react';
+import { MouseEventHandler, useEffect, useState } from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationById, updateDonationStatus } from '@/api/firebase-donations';
@@ -13,7 +13,8 @@ import '@/styles/globalStyles.css';
 //Types
 import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, donationStatuses } from '@/models/donation';
 
-import { Dialog, DialogActions, FormControl, ImageList, ImageListItem, InputLabel, MenuItem, Select, SelectChangeEvent, Button } from '@mui/material';
+import { Dialog, DialogActions, FormControl, ImageList, ImageListItem, InputLabel, MenuItem, Select, SelectChangeEvent, Button, Divider } from '@mui/material';
+import EditDonation from '@/components/EditDonation';
 
 export default function DonationDetails({ params }: { params: { id: string } }) {
     const [donationDetails, setDonationDetails] = useState<IDonation | null>(null);
@@ -24,6 +25,7 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
 
     const initialStatus: DonationStatusValues = donationDetails ? donationDetails.status : 'in processing';
 
+    //Status names for select menu
     const statusSelectOptions = Object.keys(donationStatuses);
 
     const [selectedStatus, setSelectedStatus] = useState<DonationStatusValues>(initialStatus);
@@ -46,6 +48,8 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
             const updatedStatus = event.target.value;
             const result = await updateDonationStatus(donationDetails.id, updatedStatus);
             setSelectedStatus(result);
+            //Fetch latest details
+            fetchDonation(donationDetails.id);
         } catch (error) {
             addErrorEvent('Error updating donation status', error);
         }
@@ -81,6 +85,10 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
                                 </ImageListItem>
                             ))}
                         </ImageList>
+                        <Button variant="contained" type="button" onClick={() => setIsEditMode(true)} sx={{ marginBottom: '1em' }}>
+                            Edit Donation
+                        </Button>
+                        <Divider sx={{ marginBottom: '1em' }}></Divider>
                         {donationDetails.status && (
                             <FormControl fullWidth>
                                 <InputLabel id="donation-status-label">Status</InputLabel>
@@ -140,6 +148,9 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
                             </DialogActions>
                         </Dialog>
                     </div>
+                )}
+                {!isLoading && donationDetails && isEditMode && (
+                    <EditDonation donationDetails={donationDetails} setIsEditMode={setIsEditMode} fetchDonation={fetchDonation} />
                 )}
             </div>
         </ProtectedAdminRoute>

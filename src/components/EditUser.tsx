@@ -232,12 +232,7 @@ const EditUser = (props: EditUserProps) => {
                     </Box>
                 )}
             </Paper>
-            <CustomDialog
-                isOpen={isDialogOpen}
-                onClose={handleClose}
-                title="User sucessfuly updated"
-                content={`The user ${newDisplayName} has been updated.`}
-            />
+            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="User updated" content={`The user ${newDisplayName} has been updated.`} />
         </ProtectedAdminRoute>
     );
 };
