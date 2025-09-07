@@ -1,12 +1,24 @@
 //Firebase types
 import { DocumentReference, Timestamp } from 'firebase/firestore';
-import { donationStatus } from '@/types/DonationTypes';
 
 export interface IDonationCache {
     [key: string]: string | number;
     id: string;
     modifiedAt: number;
 }
+
+const donationStatuses = {
+    'In Processing': 'in processing',
+    'Pending Delivery': 'pending delivery',
+    Available: 'available',
+    Requested: 'requested',
+    Reserved: 'reserved',
+    Distributed: 'distributed'
+};
+
+export type DonationStatuses = typeof donationStatuses;
+export type DonationStatusKeys = keyof DonationStatuses;
+export type DonationStatusValues = DonationStatuses[keyof DonationStatuses];
 
 export interface IDonation {
     [key: string]:
@@ -38,7 +50,7 @@ export interface IDonation {
     description: string | null | undefined;
     tagNumber: string | null | undefined;
     notes: string | null | undefined;
-    status: donationStatus;
+    status: DonationStatusValues;
     bulkCollection: string | null;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
@@ -78,7 +90,7 @@ export class Donation implements IDonation {
     description: string | null | undefined;
     tagNumber: string | null | undefined;
     notes: string | null | undefined;
-    status: donationStatus;
+    status: DonationStatusValues;
     bulkCollection: string | null;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
@@ -148,7 +160,7 @@ export class Donation implements IDonation {
         return this.notes;
     }
 
-    getStatus(): donationStatus {
+    getStatus(): DonationStatusValues {
         return this.status;
     }
 

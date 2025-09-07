@@ -23,7 +23,7 @@ import {
 // Models
 import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
-import { donationStatus } from '@/types/DonationTypes';
+import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
 
 // Libs
@@ -247,7 +247,7 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
     }
 }
 
-export async function updateDonationStatus(id: string, status: donationStatus): Promise<donationStatus> {
+export async function updateDonationStatus(id: string, status: DonationStatusValues): Promise<DonationStatusValues> {
     try {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
         await updateDoc(donationRef, {
