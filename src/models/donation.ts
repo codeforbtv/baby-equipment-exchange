@@ -7,7 +7,7 @@ export interface IDonationCache {
     modifiedAt: number;
 }
 
-const donationStatuses = {
+export const donationStatuses = {
     'In Processing': 'in processing',
     'Pending Delivery': 'pending delivery',
     Available: 'available',

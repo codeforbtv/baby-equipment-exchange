@@ -3,6 +3,7 @@ import { IconButton, ImageListItem, ImageListItemBar } from '@mui/material';
 import Loader from './Loader';
 // Hooks
 import { Suspense, lazy, useState } from 'react';
+import { useRouter } from 'next/navigation';
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
 // Styles
@@ -15,6 +16,8 @@ const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 export default function DonationCard({ donation, onDelete }: { donation: DonationCardProps; onDelete: (id: string) => Promise<void> }) {
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const image = donation.images ? donation.images[0] : '';
+
+    const router = useRouter();
 
     const closeDialog = () => {
         setShowDialog(false);
@@ -43,7 +46,7 @@ export default function DonationCard({ donation, onDelete }: { donation: Donatio
                     <IconButton
                         sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
                         aria-label={`details about ${donation.brand} ${donation.model}`}
-                        onClick={openDialog}
+                        onClick={() => router.push(`/donations/${donation.id}`)}
                     >
                         <InfoIcon />
                     </IconButton>

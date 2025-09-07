@@ -7,18 +7,27 @@ import { addErrorEvent } from '@/api/firebase';
 import { getDonationById } from '@/api/firebase-donations';
 //Components
 import Loader from '@/components/Loader';
-//Styles
-
-//Types
-import { Donation } from '@/models/donation';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+//Styles
+import '@/styles/globalStyles.css';
+//Types
+import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, donationStatuses } from '@/models/donation';
+
+import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 
 export default function DonationDetails({ params }: { params: { id: string } }) {
-    const [donationDetails, setDonationDetails] = useState<Donation | null>(null);
+    const [donationDetails, setDonationDetails] = useState<IDonation | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
+    const initialStatus: DonationStatusValues = donationDetails ? donationDetails.status : 'in processing';
+
+    const statusSelectOptions = Object.keys(donationStatuses);
+
+    const [selectedStatus, setSelectedStatus] = useState<DonationStatusValues>(initialStatus);
+
     async function fetchDonation(id: string) {
+        setIsLoading(true);
         try {
             const donationToView = await getDonationById(id);
             setDonationDetails(donationToView);
@@ -28,9 +37,16 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
             setIsLoading(false);
         }
     }
+
+    const selectHandler = (event: SelectChangeEvent) => setSelectedStatus(event.target.value);
+
     useEffect(() => {
         fetchDonation(params.id);
     }, []);
+
+    useEffect(() => {
+        setSelectedStatus(initialStatus);
+    }, [initialStatus]);
 
     return (
         <ProtectedAdminRoute>
@@ -43,6 +59,21 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
                         <h2>{donationDetails.brand}</h2>
                         <h3>{donationDetails.model}</h3>
                         <p>{donationDetails.description}</p>
+                        {donationDetails.status && (
+                            <FormControl fullWidth>
+                                <InputLabel id="donation-status-label">Status</InputLabel>
+                                <Select labelId="donation-status-label" id="donation-status" value={selectedStatus} label="Status" onChange={selectHandler}>
+                                    {statusSelectOptions.map((status) => {
+                                        const value = donationStatuses[status as keyof DonationStatuses];
+                                        return (
+                                            <MenuItem key={status} value={value}>
+                                                {status}
+                                            </MenuItem>
+                                        );
+                                    })}
+                                </Select>
+                            </FormControl>
+                        )}
                     </div>
                 )}
             </div>
