@@ -33,6 +33,7 @@ export interface IDonation {
         | undefined
         | (() => string)
         | (() => string[] | DocumentReference[])
+        | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
         | (() => boolean | null | undefined)
@@ -49,7 +50,7 @@ export interface IDonation {
     model: string | undefined;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
+    notes: string[] | null | undefined;
     status: DonationStatusValues;
     bulkCollection: string | null;
     images: DocumentReference[] | string[];
@@ -73,6 +74,7 @@ export class Donation implements IDonation {
         | undefined
         | (() => string)
         | (() => string[] | DocumentReference[])
+        | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
         | (() => boolean | null | undefined)
@@ -89,7 +91,7 @@ export class Donation implements IDonation {
     model: string | undefined;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
+    notes: string[] | null | undefined;
     status: DonationStatusValues;
     bulkCollection: string | null;
     images: DocumentReference[] | string[];
@@ -156,7 +158,7 @@ export class Donation implements IDonation {
         return this.tagNumber;
     }
 
-    getNotes(): string | null | undefined {
+    getNotes(): string[] | null | undefined {
         return this.notes;
     }
 

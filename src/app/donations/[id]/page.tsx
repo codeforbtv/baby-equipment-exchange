@@ -72,9 +72,6 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
                                 </ImageListItem>
                             ))}
                         </ImageList>
-                        <h2>{donationDetails.brand}</h2>
-                        <h3>{donationDetails.model}</h3>
-                        <p>{donationDetails.description}</p>
                         {donationDetails.status && (
                             <FormControl fullWidth>
                                 <InputLabel id="donation-status-label">Status</InputLabel>
@@ -89,6 +86,41 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
                                     })}
                                 </Select>
                             </FormControl>
+                        )}
+                        <h2>
+                            <b>Brand: </b>
+                            {donationDetails.brand}
+                        </h2>
+                        <h3>
+                            <b>Model: </b>
+                            {donationDetails.model}
+                        </h3>
+                        <p>
+                            <b>Description: </b>
+                            {donationDetails.description}
+                        </p>
+
+                        <p>
+                            <b>Donated by: </b>
+                            {donationDetails.donorEmail}
+                        </p>
+                        {donationDetails.requestor && (
+                            <p>
+                                <b>Requested by:</b>
+                                {donationDetails.requestor.name}
+                            </p>
+                        )}
+                        {donationDetails.dateReceived && (
+                            <p>
+                                <b>Date recieved: </b>
+                                {donationDetails.dateReceived.toDate().toDateString()}
+                            </p>
+                        )}
+                        {donationDetails.dateDistributed && (
+                            <p>
+                                <b>Date distributed: </b>
+                                {donationDetails.dateDistributed.toDate().toDateString()}
+                            </p>
                         )}
                         <Dialog open={isImageOpen} onClose={handleImageClose} sx={{ width: '100%' }}>
                             <img src={openImageURL} alt={openImageURL} style={{ maxWidth: '100%' }} />
