@@ -4,7 +4,7 @@
 import { MouseEventHandler, SyntheticEvent, useEffect, useState } from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
-import { getDonationById } from '@/api/firebase-donations';
+import { getDonationById, updateDonationStatus } from '@/api/firebase-donations';
 //Components
 import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -40,7 +40,16 @@ export default function DonationDetails({ params }: { params: { id: string } }) 
         }
     }
 
-    const selectHandler = (event: SelectChangeEvent) => setSelectedStatus(event.target.value);
+    const selectHandler = async (event: SelectChangeEvent) => {
+        try {
+            if (!donationDetails) return;
+            const updatedStatus = event.target.value;
+            const result = await updateDonationStatus(donationDetails.id, updatedStatus);
+            setSelectedStatus(result);
+        } catch (error) {
+            addErrorEvent('Error updating donation status', error);
+        }
+    };
 
     const handleImageClick: MouseEventHandler<HTMLImageElement> = (event) => {
         setOpenImageURL(event.currentTarget.src);
