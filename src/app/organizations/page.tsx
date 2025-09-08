@@ -46,7 +46,7 @@ const Organizations = () => {
                     {!isLoading && orgNamesAndIds && (
                         <List>
                             {orgNames.map((org) => (
-                                <ListItem>
+                                <ListItem key={org}>
                                     <ListItemButton component="a" href={`/organizations/${orgNamesAndIds[org]}`}>
                                         <ListItemText primary={org} sx={{ color: 'black' }} />
                                     </ListItemButton>

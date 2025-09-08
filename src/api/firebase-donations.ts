@@ -189,9 +189,6 @@ export async function getInventoryByIds(inventoryIds: string[]): Promise<Invento
 }
 
 export async function getDonationById(id: string): Promise<Donation> {
-    if (!auth.currentUser || (auth.currentUser && !checkIsAdmin(auth.currentUser))) {
-        return Promise.reject(new Error('Only adminstrators can view donation details.'));
-    }
     try {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
         const donationSnapshot = await getDoc(donationRef);
@@ -251,9 +248,6 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
 }
 
 export async function updateDonation(id: string, donationDetails: any): Promise<void> {
-    if (!auth.currentUser || (auth.currentUser && !checkIsAdmin(auth.currentUser))) {
-        return Promise.reject('Must be an admin to update donation status');
-    }
     try {
         const donationRef = doc(db, DONATIONS_COLLECTION, id).withConverter(donationConverter);
         await updateDoc(donationRef, {
@@ -266,12 +260,6 @@ export async function updateDonation(id: string, donationDetails: any): Promise<
 }
 
 export async function updateDonationStatus(id: string, status: DonationStatusValues): Promise<DonationStatusValues> {
-    if (!auth.currentUser) {
-        return Promise.reject('Must be logged in to change donation status');
-    }
-    if (auth.currentUser && (!checkIsAdmin(auth.currentUser) || !checkIsAidWorker(auth.currentUser))) {
-        return Promise.reject('Only admins and aid workers can update a donation status');
-    }
     try {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
 
