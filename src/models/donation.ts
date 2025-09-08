@@ -1,12 +1,24 @@
 //Firebase types
 import { DocumentReference, Timestamp } from 'firebase/firestore';
-import { donationStatus } from '@/types/DonationTypes';
 
 export interface IDonationCache {
     [key: string]: string | number;
     id: string;
     modifiedAt: number;
 }
+
+export const donationStatuses = {
+    'In Processing': 'in processing',
+    'Pending Delivery': 'pending delivery',
+    Available: 'available',
+    Requested: 'requested',
+    Reserved: 'reserved',
+    Distributed: 'distributed'
+};
+
+export type DonationStatuses = typeof donationStatuses;
+export type DonationStatusKeys = keyof DonationStatuses;
+export type DonationStatusValues = DonationStatuses[keyof DonationStatuses];
 
 export interface IDonation {
     [key: string]:
@@ -21,6 +33,7 @@ export interface IDonation {
         | undefined
         | (() => string)
         | (() => string[] | DocumentReference[])
+        | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
         | (() => boolean | null | undefined)
@@ -32,13 +45,13 @@ export interface IDonation {
     donorEmail: string;
     donorName: string;
     donorId: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
-    status: donationStatus;
+    notes: string[] | null | undefined;
+    status: DonationStatusValues;
     bulkCollection: string | null;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
@@ -61,6 +74,7 @@ export class Donation implements IDonation {
         | undefined
         | (() => string)
         | (() => string[] | DocumentReference[])
+        | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
         | (() => boolean | null | undefined)
@@ -72,13 +86,13 @@ export class Donation implements IDonation {
     donorEmail: string;
     donorName: string;
     donorId: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
-    status: donationStatus;
+    notes: string[] | null | undefined;
+    status: DonationStatusValues;
     bulkCollection: string | null;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
@@ -124,15 +138,15 @@ export class Donation implements IDonation {
         return this.donorId;
     }
 
-    getCategory(): string | null | undefined {
+    getCategory(): string {
         return this.category;
     }
 
-    getBrand(): string | null | undefined {
+    getBrand(): string {
         return this.brand;
     }
 
-    getModel(): string | null | undefined {
+    getModel(): string {
         return this.model;
     }
 
@@ -144,11 +158,11 @@ export class Donation implements IDonation {
         return this.tagNumber;
     }
 
-    getNotes(): string | null | undefined {
+    getNotes(): string[] | null | undefined {
         return this.notes;
     }
 
-    getStatus(): donationStatus {
+    getStatus(): DonationStatusValues {
         return this.status;
     }
 

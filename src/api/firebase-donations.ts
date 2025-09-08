@@ -17,19 +17,19 @@ import {
     where,
     writeBatch,
     documentId,
-    DocumentReference
+    DocumentReference,
+    FieldValue
 } from 'firebase/firestore';
 
 // Models
 import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
-import { donationStatus } from '@/types/DonationTypes';
+import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
 
 // Libs
-import { db, addErrorEvent, storage } from './firebase';
+import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
-import { User } from 'firebase/auth';
 
 // Imported constants
 
@@ -247,13 +247,52 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
     }
 }
 
-export async function updateDonationStatus(id: string, status: donationStatus): Promise<donationStatus> {
+export async function updateDonation(id: string, donationDetails: any): Promise<void> {
+    if (!auth.currentUser || (auth.currentUser && !checkIsAdmin(auth.currentUser))) {
+        return Promise.reject('Must be an admin to update donation status');
+    }
     try {
-        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
+        const donationRef = doc(db, DONATIONS_COLLECTION, id).withConverter(donationConverter);
         await updateDoc(donationRef, {
-            status: status,
+            ...donationDetails,
             modifiedAt: serverTimestamp()
         });
+    } catch (error) {
+        addErrorEvent('Error updating donation', error);
+    }
+}
+
+export async function updateDonationStatus(id: string, status: DonationStatusValues): Promise<DonationStatusValues> {
+    if (!auth.currentUser) {
+        return Promise.reject('Must be logged in to change donation status');
+    }
+    if (auth.currentUser && (!checkIsAdmin(auth.currentUser) || !checkIsAidWorker(auth.currentUser))) {
+        return Promise.reject('Only admins and aid workers can update a donation status');
+    }
+    try {
+        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
+
+        let statusUpdate;
+
+        if (status === 'available') {
+            statusUpdate = {
+                status: status,
+                modfiedAt: serverTimestamp(),
+                dateReceived: serverTimestamp()
+            };
+        } else if (status === 'distributed') {
+            statusUpdate = {
+                status: status,
+                modfiedAt: serverTimestamp(),
+                dateDistributed: serverTimestamp()
+            };
+        } else {
+            statusUpdate = {
+                status: status,
+                modfiedAt: serverTimestamp()
+            };
+        }
+        await updateDoc(donationRef, statusUpdate);
         return status;
     } catch (error) {
         addErrorEvent('updateDonationStatus', error);
