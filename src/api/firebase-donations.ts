@@ -189,13 +189,16 @@ export async function getInventoryByIds(inventoryIds: string[]): Promise<Invento
 }
 
 export async function getDonationById(id: string): Promise<Donation> {
+    if (!auth.currentUser || (auth.currentUser && !checkIsAdmin(auth.currentUser))) {
+        return Promise.reject(new Error('Only adminstrators can view donation details.'));
+    }
     try {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
         const donationSnapshot = await getDoc(donationRef);
         if (donationSnapshot.exists()) {
             return donationSnapshot.data();
         } else {
-            return Promise.reject();
+            return Promise.reject(new Error('Donation not found'));
         }
     } catch (error: any) {
         addErrorEvent('getDonationById', error);

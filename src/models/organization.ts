@@ -30,6 +30,7 @@ export interface IOrganization {
         | (() => Timestamp);
     name: string;
     address?: IAddress;
+    county?: string;
     phoneNumber?: string;
     tags: OrganizationTagValues[];
     notes: string[];
@@ -51,6 +52,7 @@ export class Organization implements IOrganization {
         | (() => Timestamp);
     name: string;
     address?: IAddress;
+    county?: string;
     phoneNumber?: string;
     tags: OrganizationTagValues[];
     notes: string[];
@@ -73,6 +75,10 @@ export class Organization implements IOrganization {
 
     getAddress() {
         return this.address;
+    }
+
+    getCounty() {
+        return this.county;
     }
 
     getPhoneNumber() {

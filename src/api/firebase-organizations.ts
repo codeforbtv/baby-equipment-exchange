@@ -16,8 +16,8 @@ import {
 import { IOrganization, Organization } from '@/models/organization';
 import { OrganizationBody } from '@/types/OrganizationTypes';
 // Libs
-import { addErrorEvent, db } from './firebase';
-
+import { addErrorEvent, db, auth, checkIsAdmin } from './firebase';
+//Constants
 export const ORGANIZATIONS_COLLECTION = 'Organizations';
 
 export const organizationConverter = {
@@ -54,6 +54,9 @@ export const organizationConverter = {
 };
 
 export async function addOrganization(newOrganization: OrganizationBody): Promise<void> {
+    if (!auth.currentUser || (auth.currentUser && !checkIsAdmin(auth.currentUser))) {
+        return Promise.reject(new Error('Only adminstrators can create new organizations'));
+    }
     const organizationParams: IOrganization = {
         name: newOrganization.name,
         address: newOrganization.address,
@@ -85,6 +88,24 @@ export async function checkIfOrganizationExists(name: string): Promise<boolean> 
         return orgSnapshot.exists();
     } catch (error) {
         addErrorEvent('Error checking if organization exists', error);
+    }
+    return Promise.reject();
+}
+
+export async function getOrganizationById(id: string): Promise<IOrganization> {
+    if (!auth.currentUser || (auth.currentUser && !checkIsAdmin(auth.currentUser))) {
+        return Promise.reject(new Error('Only adminstrators can view organization details.'));
+    }
+    try {
+        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, id).withConverter(organizationConverter);
+        const organizationSnapshot = await getDoc(organizationRef);
+        if (organizationSnapshot.exists()) {
+            return organizationSnapshot.data();
+        } else {
+            return Promise.reject(new Error('Organization not found'));
+        }
+    } catch (error) {
+        addErrorEvent('Get organization by id', error);
     }
     return Promise.reject();
 }
