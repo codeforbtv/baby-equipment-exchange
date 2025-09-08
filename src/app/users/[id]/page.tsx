@@ -18,7 +18,7 @@ import CustomDialog from '@/components/CustomDialog';
 import type { UserDetails } from '@/types/UserTypes';
 
 //styles
-import '../../HomeStyles.module.css';
+import '@/styles/globalStyles.css';
 
 export default function UserDetailsPage({ params }: { params: { id: string } }) {
     const [isLoading, setIsLoading] = useState<boolean>(true);

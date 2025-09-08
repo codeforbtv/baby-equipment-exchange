@@ -6,7 +6,7 @@ import Loader from '@/components/Loader';
 //Hooks
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-//Spi
+//Api
 import { callIsEmailInUse, createUser, addErrorEvent, callGetOrganizationNames } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
