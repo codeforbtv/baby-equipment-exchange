@@ -12,7 +12,9 @@ import { addErrorEvent } from '@/api/firebase';
 //Styling
 import '@/styles/globalStyles.css';
 //Types
-import { IOrganization } from '@/models/organization';
+import { orgTags, OrganizationTagKeys, IOrganization } from '@/models/organization';
+
+const tagNames: OrganizationTagKeys[] = Object.keys(orgTags) as OrganizationTagKeys[];
 
 const OrganizationDetails = ({ params }: { params: { id: string } }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -35,6 +37,10 @@ const OrganizationDetails = ({ params }: { params: { id: string } }) => {
         fetchOrganizationById(params.id);
     }, []);
 
+    useEffect(() => {
+        console.log(organizationDetails);
+    }, [organizationDetails]);
+
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
@@ -48,20 +54,33 @@ const OrganizationDetails = ({ params }: { params: { id: string } }) => {
                             <div className="address">
                                 <p>{organizationDetails.address.line_1}</p>
                                 <p>{organizationDetails.address.line_2}</p>
-                                <p>{organizationDetails.address.city}</p> <p>{organizationDetails.address.state}</p>
-                                <p>{organizationDetails.address.zipcode}</p>
+                                <p>
+                                    {organizationDetails.address.city} {organizationDetails.address.state} {organizationDetails.address.zipcode}
+                                </p>
                             </div>
                         )}
-                        {organizationDetails.county && <p>{organizationDetails.county} County</p>}
-                        {organizationDetails.phoneNumber && <p>{organizationDetails.phoneNumber}</p>}
+                        {organizationDetails.county && (
+                            <p>
+                                <b>County: </b>
+                                {organizationDetails.county}
+                            </p>
+                        )}
+                        {organizationDetails.phoneNumber && (
+                            <p>
+                                <b>Phone: </b>
+                                {organizationDetails.phoneNumber}
+                            </p>
+                        )}
                         <p>
                             <b>Tags:</b>
                         </p>
+
                         <ul>
                             {organizationDetails.tags.map((tag) => (
-                                <li key={tag}>{tag}</li>
+                                <li key={tag}>{tagNames.find((tagname) => orgTags[tagname] === tag)}</li>
                             ))}
                         </ul>
+
                         {organizationDetails.notes.length > 0 && (
                             <>
                                 <p>

@@ -167,7 +167,7 @@ const EditOrganization = (props: EditOrganizationProps) => {
                             id="county"
                             placeholder="County"
                             onChange={(e) => setNewCounty(e.target.value)}
-                            value={county}
+                            value={newCounty}
                         ></TextField>
                         <PatternFormat
                             id="phone-number"

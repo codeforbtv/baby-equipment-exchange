@@ -65,6 +65,7 @@ export class Organization implements IOrganization {
         this.id = args.id;
         this.name = args.name;
         this.address = args.address;
+        this.county = args.county;
         this.phoneNumber = args.phoneNumber;
         this.tags = args.tags;
         this.notes = args.notes;
