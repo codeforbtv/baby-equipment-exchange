@@ -28,8 +28,10 @@ export interface IOrganization {
         | (() => IAddress | undefined)
         | (() => string | undefined)
         | (() => Timestamp);
+    id: string;
     name: string;
     address?: IAddress;
+    county?: string;
     phoneNumber?: string;
     tags: OrganizationTagValues[];
     notes: string[];
@@ -49,8 +51,10 @@ export class Organization implements IOrganization {
         | (() => string[])
         | (() => string | undefined)
         | (() => Timestamp);
+    id: string;
     name: string;
     address?: IAddress;
+    county?: string;
     phoneNumber?: string;
     tags: OrganizationTagValues[];
     notes: string[];
@@ -58,13 +62,19 @@ export class Organization implements IOrganization {
     modifiedAt: Timestamp;
 
     constructor(args: IOrganization) {
+        this.id = args.id;
         this.name = args.name;
         this.address = args.address;
+        this.county = args.county;
         this.phoneNumber = args.phoneNumber;
         this.tags = args.tags;
         this.notes = args.notes;
         this.createdAt = args.createdAt as Timestamp;
         this.modifiedAt = args.modifiedAt as Timestamp;
+    }
+
+    getId() {
+        return this.id;
     }
 
     getName() {
@@ -73,6 +83,10 @@ export class Organization implements IOrganization {
 
     getAddress() {
         return this.address;
+    }
+
+    getCounty() {
+        return this.county;
     }
 
     getPhoneNumber() {

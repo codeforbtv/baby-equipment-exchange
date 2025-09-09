@@ -4,6 +4,7 @@ import { OrganizationTagValues } from '@/models/organization';
 export type OrganizationBody = {
     name: string;
     address?: IAddress;
+    county?: string;
     phoneNumber?: string;
     tags: OrganizationTagValues[];
     notes: string[];
