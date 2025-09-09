@@ -23,12 +23,10 @@ export default function Footer() {
         <footer className={styles['footer-wrapper']}>
             <Link className={styles['menu__link']} id="home" href="/">
                 Home
+            </Link>      
+            <Link className={styles['menu__link']} id="donate" href="/donate">
+                Donate
             </Link>
-            {currentUser && (
-                <Link className={styles['menu__link']} id="donate" href="/donate">
-                    Donate
-                </Link>
-            )}
             {currentUser && (
                 <Link className={styles['menu__link']} id="account" href="/account">
                     Account
