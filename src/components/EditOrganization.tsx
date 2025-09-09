@@ -11,7 +11,7 @@ import CustomDialog from '@/components/CustomDialog';
 import Loader from '@/components/Loader';
 //API
 import { addErrorEvent } from '@/api/firebase';
-import { addOrganization } from '@/api/firebase-organizations';
+import { addOrganization, updateOrganization } from '@/api/firebase-organizations';
 //Types
 import { orgTags, OrganizationTagKeys, OrganizationTagValues, organizationTags, IOrganization } from '@/models/organization';
 import { IAddress } from '@/models/address';
@@ -80,6 +80,14 @@ const EditOrganization = (props: EditOrganizationProps) => {
         event.preventDefault();
         setIsLoading(true);
         try {
+            const updatedOrganization = {
+                name: newName,
+                address: newAddress,
+                county: newCounty,
+                phoneNumber: newPhoneNumber,
+                tags: newTags
+            };
+            await updateOrganization(id, updatedOrganization);
         } catch (error) {
             setIsLoading(false);
             addErrorEvent('Error submitting organization update', error);
@@ -185,7 +193,7 @@ const EditOrganization = (props: EditOrganizationProps) => {
                                                 name={`${tag}`}
                                                 onChange={handleCheck}
                                                 value={orgTags[tag as keyof organizationTags]}
-                                                checked={tags.includes(orgTags[tag as keyof organizationTags])}
+                                                checked={newTags.includes(orgTags[tag as keyof organizationTags])}
                                                 inputProps={{ 'aria-label': `${tag}` }}
                                             />
                                         }

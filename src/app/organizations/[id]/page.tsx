@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
+import EditOrganization from '@/components/EditOrganization';
+import { Button } from '@mui/material';
 //Api
 import { getOrganizationById } from '@/api/firebase-organizations';
+import { addErrorEvent } from '@/api/firebase';
 //Styling
 import '@/styles/globalStyles.css';
+//Types
 import { IOrganization } from '@/models/organization';
-import { addErrorEvent } from '@/api/firebase';
-import { Notes } from '@mui/icons-material';
-import { Button } from '@mui/material';
-import EditOrganization from '@/components/EditOrganization';
 
 const OrganizationDetails = ({ params }: { params: { id: string } }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -34,10 +34,6 @@ const OrganizationDetails = ({ params }: { params: { id: string } }) => {
     useEffect(() => {
         fetchOrganizationById(params.id);
     }, []);
-
-    useEffect(() => {
-        console.log(organizationDetails);
-    }, [organizationDetails]);
 
     return (
         <ProtectedAdminRoute>

@@ -70,7 +70,7 @@ const EditDonation = (props: EditDonationProps) => {
             await updateDonation(id, updatedDonation);
         } catch (error) {
             setIsLoading(false);
-            addErrorEvent('Error updating donation', error);
+            addErrorEvent('Error submitting donation update', error);
         }
         setIsLoading(false);
         setIsDialogOpen(true);

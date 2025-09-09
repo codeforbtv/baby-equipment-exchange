@@ -10,7 +10,8 @@ import {
     setDoc,
     serverTimestamp,
     Timestamp,
-    getDoc
+    getDoc,
+    updateDoc
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 // Models
@@ -75,6 +76,18 @@ export async function addOrganization(newOrganization: OrganizationBody): Promis
         await setDoc(organizationRef, organizationConverter.toFirestore(organization));
     } catch (error) {
         addErrorEvent('Add organization', error);
+    }
+}
+
+export async function updateOrganization(id: string, organizationDetails: any): Promise<void> {
+    try {
+        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, id).withConverter(organizationConverter);
+        await updateDoc(organizationRef, {
+            ...organizationDetails,
+            modifiedAt: serverTimestamp()
+        });
+    } catch (error) {
+        addErrorEvent('Error updating organization', error);
     }
 }
 
