@@ -26,6 +26,7 @@ const auth = getAuth();
 export const organizationConverter = {
     toFirestore(organization: Organization): DocumentData {
         const organizationData: IOrganization = {
+            id: organization.getId(),
             name: organization.getName(),
             address: organization.getAddress(),
             phoneNumber: organization.getPhoneNumber(),
@@ -44,6 +45,7 @@ export const organizationConverter = {
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Organization {
         const data = snapshot.data(options);
         const organizationData: IOrganization = {
+            id: data.id,
             name: data.name,
             address: data.address,
             phoneNumber: data.phoneNumber,
@@ -57,7 +59,9 @@ export const organizationConverter = {
 };
 
 export async function addOrganization(newOrganization: OrganizationBody): Promise<void> {
+    const organizationRef = doc(collection(db, ORGANIZATIONS_COLLECTION));
     const organizationParams: IOrganization = {
+        id: organizationRef.id,
         name: newOrganization.name,
         address: newOrganization.address,
         phoneNumber: newOrganization.phoneNumber,
@@ -68,7 +72,6 @@ export async function addOrganization(newOrganization: OrganizationBody): Promis
     };
     const organization = new Organization(organizationParams);
     try {
-        const organizationRef = doc(collection(db, ORGANIZATIONS_COLLECTION));
         await setDoc(organizationRef, organizationConverter.toFirestore(organization));
     } catch (error) {
         addErrorEvent('Add organization', error);

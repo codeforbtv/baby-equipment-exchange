@@ -26,8 +26,7 @@ type EditUserProps = {
 
 const EditUser = (props: EditUserProps) => {
     const { uid, email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props.userDetails;
-    const setIsEditMode = props.setIsEditMode;
-    const fetchUserDetails = props.fetchUserDetails;
+    const { setIsEditMode, fetchUserDetails } = props;
 
     let initialRole = '';
     if (customClaims && customClaims.admin === true) {
