@@ -33,6 +33,8 @@ const Organizations = () => {
         setIsLoading(false);
     };
 
+    console.log('orgs is mounted');
+
     useEffect(() => {
         getOrgNames();
     }, []);

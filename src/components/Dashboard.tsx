@@ -4,44 +4,91 @@
 import { Tab, Tabs } from '@mui/material';
 import Browse from './Browse';
 import UserManagement from './UserManagement';
+import Organizations from '@/app/organizations/page';
+import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
-
 //Hooks
 import React, { useEffect, useState } from 'react';
-import { useUserContext } from '@/contexts/UserContext';
+//API
+import { addErrorEvent, callGetOrganizationNames, callListAllUsers } from '@/api/firebase';
+//Types
+import { Donation } from '@/models/donation';
+import { AuthUserRecord } from '@/types/UserTypes';
+import { getAllDonations } from '@/api/firebase-donations';
 
 export default function Dashboard() {
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [currentTab, setCurrentTab] = useState<number>(0);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [displayUserManagement, setDisplayUserManagement] = useState<boolean>(false);
+    const [donations, setDonations] = useState<Donation[] | null>(null);
+    const [users, setUser] = useState<AuthUserRecord[] | null>(null);
+    const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
+        [key: string]: string;
+    } | null>(null);
+
     const handleCurrentTab = (event: React.SyntheticEvent, target: number) => {
         setCurrentTab(target);
     };
 
-    const { isAdmin } = useUserContext();
+    async function fetchDonations(): Promise<void> {
+        setIsLoading(true);
+        try {
+            const donationsResult = await getAllDonations();
+            setDonations(donationsResult);
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            addErrorEvent('Error fetching all donations', error);
+        }
+    }
 
-    useEffect(() => {
-        setDisplayUserManagement(isAdmin);
+    const fetchUser = async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+            const usersResult = await callListAllUsers();
+            setUser(usersResult);
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            addErrorEvent('Error fetching all users', error);
+        }
+    };
+
+    const fetchOrgNames = async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+            const orgNamesResult = await callGetOrganizationNames();
+            setOrgNamesAndIds(orgNamesResult);
+            setIsLoading(false);
+        } catch (error) {
+            addErrorEvent('Could not fetch org names', error);
+            setIsLoading(false);
+        }
         setIsLoading(false);
-    }, []);
+    };
+
+    useEffect(() => {}, []);
 
     return isLoading ? (
         <Loader />
     ) : (
-        //Tweak styling
-        <div style={{ marginTop: '4rem' }}>
-            <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
-                <Tab label="Donations" />
-                {displayUserManagement && <Tab label="Users" />}
-            </Tabs>
-            <div role="tabpanel" hidden={currentTab !== 0}>
-                <Browse />
-            </div>
-            {displayUserManagement && (
+        <ProtectedAdminRoute>
+            <div style={{ marginTop: '4rem' }}>
+                <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
+                    <Tab label="Donations" />
+                    <Tab label="Users" />
+                    <Tab label="Organizations" />
+                </Tabs>
+                <div role="tabpanel" hidden={currentTab !== 0}>
+                    <Browse />
+                </div>
                 <div role="tabpanel" hidden={currentTab !== 1}>
                     <UserManagement />
                 </div>
-            )}
-        </div>
+                )
+                <div role="tabpanel" hidden={currentTab !== 2}>
+                    <Organizations />
+                </div>
+            </div>
+        </ProtectedAdminRoute>
     );
 }

@@ -5,20 +5,18 @@ import SearchBar from './SearchBar';
 import Filter from './Filter';
 import Loader from './Loader';
 import UserCard from './UserCard';
+import NewUserDialog from './NewUserDialog';
 // Hooks
 import React, { useEffect, useState } from 'react';
-// Types
-import { UserCardProps } from '@/types/post-data';
+
 // Icons
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Libs
 import { addErrorEvent, callListAllUsers } from '../api/firebase';
-
 // Styles
 import styles from './Browse.module.css';
-import NewUserDialog from './NewUserDialog';
-import { UserRecord } from 'firebase-admin/auth';
+// Types
 import { AuthUserRecord } from '@/types/UserTypes';
 
 export default function UserManagement() {
