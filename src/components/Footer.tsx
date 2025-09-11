@@ -1,9 +1,9 @@
 'use client';
 import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+import Link from 'next/link';
 
 //Styles
-import Link from 'next/link';
 import styles from './Footer.module.css';
 
 import { signOutUser } from '@/api/firebase';

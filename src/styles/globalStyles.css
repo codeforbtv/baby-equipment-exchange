@@ -31,19 +31,17 @@
 
 .body--wrapper *[class*='MuiInput'] {
     box-sizing: content-box;
+    font-family: var(--font-montserrat);
 }
 
-/* .body--wrapper * .MuiTypography-root {
-} */
-
-/* .body--wrapper h1,
+.body--wrapper h1,
 .body--wrapper h2,
 .body--wrapper h3,
 .body--wrapper h4,
 .body--wrapper h5,
 .body--wrapper h6 {
     font-family: var(--font-montserrat);
-} */
+}
 
 .body--wrapper h1 {
     font-weight: 700;

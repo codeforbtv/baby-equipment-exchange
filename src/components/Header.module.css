@@ -10,7 +10,7 @@
 }
 
 .header__primary {
-    font-family: var(--primary-font);
+    font-family: var(--font-montserrat);
     background-color: var(--primary);
     height: 2.5rem;
     display: flex;
@@ -35,7 +35,7 @@
 }
 
 .menu__link {
-    font-family: var(--primary-font);
+    /* font-family: var(--primary-font); */
     color: white;
     padding: 0.5rem 0;
     font-size: 1.25rem;

@@ -1,5 +1,6 @@
 'use client';
 import { createTheme } from '@mui/material';
+import { garamond, montserrat } from '@/styles/fonts';
 
 const theme = createTheme({
     palette: {
@@ -8,24 +9,24 @@ const theme = createTheme({
         }
     },
     typography: {
-        fontFamily: ['var(--font-montserrat)', 'var(--font-garamond)'].join(','),
+        fontFamily: montserrat.style.fontFamily,
         h1: {
-            fontFamily: 'var(--font-montserrat)'
+            fontFamily: montserrat.style.fontFamily
         },
         h2: {
-            fontFamily: 'var(--font-montserrat)'
+            fontFamily: montserrat.style.fontFamily
         },
         h3: {
-            fontFamily: 'var(--font-montserrat)'
+            fontFamily: montserrat.style.fontFamily
         },
         h4: {
-            fontFamily: 'var(--font-montserrat)'
+            fontFamily: montserrat.style.fontFamily
         },
         body1: {
-            fontFamily: 'var(--font-garamond)'
+            fontFamily: garamond.style.fontFamily
         },
         body2: {
-            fontFamily: 'var(--font-garamond)',
+            fontFamily: garamond.style.fontFamily,
             fontStyle: 'italic'
         }
     }

@@ -1,3 +1,5 @@
+//Change to rules must be replicated in the Firestore console unless you deploy them
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -35,12 +37,12 @@ service cloud.firestore {
 
       // aid worker can only view inventory (donation status = 'available')
       match /Donations/{document=**} {
-        allow read: if request.auth != null && request.auth.token['aid-worker'] == true && request.resource.data.staus == 'available';
+        allow read: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available';
       } 
 
       // aid worker can only update 'requestor' and 'modifiedAt' fields of avilable donations
       match /Donations/{document=**} {
-        allow update: if request.auth != null && request.auth.token['aid-worker'] && request.resource.data.staus == 'available' && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt']))
+        allow update: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available' && (resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt']))
       }  
      
       // Standard user role
