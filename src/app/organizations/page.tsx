@@ -12,32 +12,16 @@ import '@/styles/globalStyles.css';
 import Loader from '@/components/Loader';
 import { Card, CardContent, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 
-const Organizations = () => {
+type OrganizationsProps = {
+    orgNamesAndIds: { [key: string]: string };
+};
+
+const Organizations = (props: OrganizationsProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     //List of Org names, ids from Server
-    const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
-        [key: string]: string;
-    }>({});
+    const { orgNamesAndIds } = props;
 
     const orgNames = Object.keys(orgNamesAndIds);
-
-    const getOrgNames = async (): Promise<void> => {
-        setIsLoading(true);
-        try {
-            const organizationNames = await callGetOrganizationNames();
-            setOrgNamesAndIds(organizationNames);
-        } catch (error) {
-            addErrorEvent('Could not fetch org names', error);
-            setIsLoading(false);
-        }
-        setIsLoading(false);
-    };
-
-    console.log('orgs is mounted');
-
-    useEffect(() => {
-        getOrgNames();
-    }, []);
 
     return (
         <ProtectedAdminRoute>

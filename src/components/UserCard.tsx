@@ -66,10 +66,6 @@ export default function UserCard(props: AuthUserRecord) {
         }
     }, [editView]);
 
-    useEffect(() => {
-        console.log(dbUser);
-    }, [dbUser]);
-
     async function handleFormSubmit() {
         const claims = {
             admin: isAdmin,

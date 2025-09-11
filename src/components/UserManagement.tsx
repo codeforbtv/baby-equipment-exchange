@@ -18,13 +18,15 @@ import { addErrorEvent, callListAllUsers } from '../api/firebase';
 import styles from './Browse.module.css';
 // Types
 import { AuthUserRecord } from '@/types/UserTypes';
+type UserManagementProps = {
+    users: AuthUserRecord[];
+};
 
-export default function UserManagement() {
-    const [users, setUsers] = useState<AuthUserRecord[]>([]);
+export default function UserManagement(props: UserManagementProps) {
+    const { users } = props;
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
     const [isNewUserDialogVisible, setIsNewUserDialogVisible] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
 
     function closeNewUserDialog() {
         setIsNewUserDialogVisible(false);
@@ -42,23 +44,7 @@ export default function UserManagement() {
         setIsFilterVisible((prev: any) => !prev);
     }
 
-    const fetchAllUsers = async (): Promise<void> => {
-        try {
-            const allUsers: AuthUserRecord[] = await callListAllUsers();
-            setUsers(allUsers);
-            setIsLoading(false);
-        } catch (error) {
-            addErrorEvent('Fetch all user', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchAllUsers();
-    }, []);
-
-    return isLoading ? (
-        <Loader />
-    ) : (
+    return (
         <>
             <div>
                 <div className={styles['browse__header']}>

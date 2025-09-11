@@ -89,14 +89,13 @@ export default function Dashboard() {
                     <Tab label="Organizations" />
                 </Tabs>
                 <CustomTabPanel value={currentTab} index={0}>
-                    {/* {donations ? <Donations {...donations} /> : <p>No donations found.</p>} */}
-                    {donations && <Donations donations={donations} />}
+                    {donations ? <Donations donations={donations} /> : <p>No donations found.</p>}
                 </CustomTabPanel>
                 <CustomTabPanel value={currentTab} index={1}>
-                    {users ? <UserManagement /> : <p>No users found.</p>}
+                    {users ? <UserManagement users={users} /> : <p>No users found.</p>}
                 </CustomTabPanel>
                 <CustomTabPanel value={currentTab} index={2}>
-                    {orgNamesAndIds ? <Organizations /> : <p>No organizations found.</p>}
+                    {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} /> : <p>No organizations found.</p>}
                 </CustomTabPanel>
             </div>
         </ProtectedAdminRoute>
