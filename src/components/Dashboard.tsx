@@ -15,6 +15,9 @@ import { addErrorEvent, callGetOrganizationNames, callListAllUsers } from '@/api
 import { Donation } from '@/models/donation';
 import { AuthUserRecord } from '@/types/UserTypes';
 import { getAllDonations } from '@/api/firebase-donations';
+import CustomTabPanel from './CustomTabPanel';
+import { user } from 'firebase-functions/v1/auth';
+import { Cute_Font } from 'next/font/google';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -41,7 +44,7 @@ export default function Dashboard() {
         }
     }
 
-    const fetchUser = async (): Promise<void> => {
+    const fetchUsers = async (): Promise<void> => {
         setIsLoading(true);
         try {
             const usersResult = await callListAllUsers();
@@ -66,7 +69,15 @@ export default function Dashboard() {
         setIsLoading(false);
     };
 
-    useEffect(() => {}, []);
+    useEffect(() => {
+        if (currentTab === 0 && !donations) {
+            fetchDonations();
+        } else if (currentTab === 1 && !users) {
+            fetchUsers();
+        } else if (currentTab === 2 && !orgNamesAndIds) {
+            fetchOrgNames();
+        }
+    }, [currentTab]);
 
     return isLoading ? (
         <Loader />
@@ -78,16 +89,6 @@ export default function Dashboard() {
                     <Tab label="Users" />
                     <Tab label="Organizations" />
                 </Tabs>
-                <div role="tabpanel" hidden={currentTab !== 0}>
-                    <Browse />
-                </div>
-                <div role="tabpanel" hidden={currentTab !== 1}>
-                    <UserManagement />
-                </div>
-                )
-                <div role="tabpanel" hidden={currentTab !== 2}>
-                    <Organizations />
-                </div>
             </div>
         </ProtectedAdminRoute>
     );
