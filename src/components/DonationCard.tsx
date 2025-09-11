@@ -2,7 +2,7 @@
 import { IconButton, ImageListItem, ImageListItemBar } from '@mui/material';
 import Loader from './Loader';
 // Hooks
-import { Suspense, lazy, useState } from 'react';
+import { Suspense, lazy, useState, Dispatch, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
@@ -16,10 +16,11 @@ const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
 type DonationCardProps = {
     donation: Donation;
+    setShowDetails: Dispatch<SetStateAction<string | null>>;
 };
 
 export default function DonationCard(props: DonationCardProps) {
-    const { donation } = props;
+    const { donation, setShowDetails } = props;
 
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const image = donation.images ? donation.images[0] : '';
@@ -52,7 +53,7 @@ export default function DonationCard(props: DonationCardProps) {
                     <IconButton
                         sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
                         aria-label={`details about ${donation.brand} ${donation.model}`}
-                        onClick={() => router.push(`/donations/${donation.id}`)}
+                        onClick={() => setShowDetails(donation.id)}
                     >
                         <InfoIcon />
                     </IconButton>

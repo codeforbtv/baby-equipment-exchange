@@ -78,9 +78,7 @@ export default function Dashboard() {
         }
     }, [currentTab]);
 
-    return isLoading ? (
-        <Loader />
-    ) : (
+    return (
         <ProtectedAdminRoute>
             <div style={{ marginTop: '4rem' }}>
                 <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
@@ -88,15 +86,21 @@ export default function Dashboard() {
                     <Tab label="Users" />
                     <Tab label="Organizations" />
                 </Tabs>
-                <CustomTabPanel value={currentTab} index={0}>
-                    {donations ? <Donations donations={donations} /> : <p>No donations found.</p>}
-                </CustomTabPanel>
-                <CustomTabPanel value={currentTab} index={1}>
-                    {users ? <UserManagement users={users} /> : <p>No users found.</p>}
-                </CustomTabPanel>
-                <CustomTabPanel value={currentTab} index={2}>
-                    {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} /> : <p>No organizations found.</p>}
-                </CustomTabPanel>
+                {isLoading ? (
+                    <Loader />
+                ) : (
+                    <>
+                        <CustomTabPanel value={currentTab} index={0}>
+                            {donations ? <Donations donations={donations} /> : <p>No donations found.</p>}
+                        </CustomTabPanel>
+                        <CustomTabPanel value={currentTab} index={1}>
+                            {users ? <UserManagement users={users} /> : <p>No users found.</p>}
+                        </CustomTabPanel>
+                        <CustomTabPanel value={currentTab} index={2}>
+                            {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} /> : <p>No organizations found.</p>}
+                        </CustomTabPanel>
+                    </>
+                )}
             </div>
         </ProtectedAdminRoute>
     );
