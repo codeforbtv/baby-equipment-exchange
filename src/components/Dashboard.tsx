@@ -5,19 +5,18 @@ import { Tab, Tabs } from '@mui/material';
 import Browse from './Browse';
 import UserManagement from './UserManagement';
 import Organizations from '@/app/organizations/page';
+import Donations from '@/app/donations/page';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
+import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
 //Hooks
 import React, { useEffect, useState } from 'react';
 //API
 import { addErrorEvent, callGetOrganizationNames, callListAllUsers } from '@/api/firebase';
+import { getAllDonations } from '@/api/firebase-donations';
 //Types
 import { Donation } from '@/models/donation';
 import { AuthUserRecord } from '@/types/UserTypes';
-import { getAllDonations } from '@/api/firebase-donations';
-import CustomTabPanel from './CustomTabPanel';
-import { user } from 'firebase-functions/v1/auth';
-import { Cute_Font } from 'next/font/google';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -90,13 +89,14 @@ export default function Dashboard() {
                     <Tab label="Organizations" />
                 </Tabs>
                 <CustomTabPanel value={currentTab} index={0}>
-                    {donations ? <Browse donations={donations} /> : <p>No donations found.</p>}
+                    {/* {donations ? <Donations {...donations} /> : <p>No donations found.</p>} */}
+                    {donations && <Donations donations={donations} />}
                 </CustomTabPanel>
                 <CustomTabPanel value={currentTab} index={1}>
-                    {users ? <UserManagement users={user} /> : <p>No users found.</p>}
+                    {users ? <UserManagement /> : <p>No users found.</p>}
                 </CustomTabPanel>
                 <CustomTabPanel value={currentTab} index={2}>
-                    {orgNamesAndIds ? <Organizations organizations={orgNamesAndIds} /> : <p>No organizations found.</p>}
+                    {orgNamesAndIds ? <Organizations /> : <p>No organizations found.</p>}
                 </CustomTabPanel>
             </div>
         </ProtectedAdminRoute>

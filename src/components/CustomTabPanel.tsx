@@ -1,5 +1,4 @@
 'use client';
-import { Children } from 'react';
 
 type TabPanelProps = {
     children?: React.ReactNode;
@@ -12,7 +11,7 @@ const CustomTabPanel = (props: TabPanelProps) => {
 
     return (
         <div role="tabpanel" hidden={value !== index} id={`tab-panel-${index}`} aria-labelledby={`tab-index-${index}`}>
-            {value === index && <>{Children}</>}
+            {value === index && <>{children}</>}
         </div>
     );
 };
