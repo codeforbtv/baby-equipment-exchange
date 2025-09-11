@@ -89,6 +89,15 @@ export default function Dashboard() {
                     <Tab label="Users" />
                     <Tab label="Organizations" />
                 </Tabs>
+                <CustomTabPanel value={currentTab} index={0}>
+                    {donations ? <Browse donations={donations} /> : <p>No donations found.</p>}
+                </CustomTabPanel>
+                <CustomTabPanel value={currentTab} index={1}>
+                    {users ? <UserManagement users={user} /> : <p>No users found.</p>}
+                </CustomTabPanel>
+                <CustomTabPanel value={currentTab} index={2}>
+                    {orgNamesAndIds ? <Organizations organizations={orgNamesAndIds} /> : <p>No organizations found.</p>}
+                </CustomTabPanel>
             </div>
         </ProtectedAdminRoute>
     );

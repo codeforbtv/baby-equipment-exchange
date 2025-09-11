@@ -159,7 +159,7 @@ const Browse: React.FC = () => {
                                 };
 
                                 // An active donation must have at least one photo for display.
-                                return <DonationCard key={donation.id} donation={props} onDelete={deleteDonation} />;
+                                return <DonationCard key={donation.id} donation={donation} />;
                             })}
                     </ImageList>
                 </>

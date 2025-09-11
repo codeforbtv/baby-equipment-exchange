@@ -10,10 +10,11 @@ import InfoIcon from '@mui/icons-material/Info';
 import styles from './Card.module.css';
 // Types
 import { DonationCardProps } from '@/types/DonationTypes';
+import { Donation } from '@/models/donation';
 
 const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
-export default function DonationCard({ donation, onDelete }: { donation: DonationCardProps; onDelete: (id: string) => Promise<void> }) {
+export default function DonationCard({ donation }: { donation: Donation }) {
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const image = donation.images ? donation.images[0] : '';
 
@@ -28,7 +29,6 @@ export default function DonationCard({ donation, onDelete }: { donation: Donatio
     };
 
     const deleteDonation = () => {
-        onDelete(donation.id);
         closeDialog();
     };
 
