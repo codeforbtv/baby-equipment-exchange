@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 //Lib
-import { getAccountType } from '@/api/firebase';
+
 // import { getUserAccount, setUserAccount } from '@/api/firebase-users';
 //Models
 import { AccountInformation as AccountInfo } from '@/types/post-data';
@@ -32,16 +32,6 @@ export default function EditAccount() {
     const [accountType, setAccountType] = useState<string>('');
     const { currentUser } = useUserContext();
     const router = useRouter();
-
-    useEffect(() => {
-        getAccountType()
-            .then((acctType) => {
-                setAccountType(acctType);
-            })
-            .catch((_reason: any) => {
-                setAccountType('(unavailable)');
-            });
-    }, []);
 
     // const [accountInfo, setAccountInfo] = useState<AccountInfo>({
     //     name: '',

@@ -12,7 +12,7 @@ import { AccountInformation as AccountInfo } from '@/types/post-data';
 //Styling
 import '../../styles/globalStyles.css';
 import styles from './Account.module.css';
-import { getAccountType } from '@/api/firebase';
+
 // import { getUserAccount } from '@/api/firebase-users';
 import Browse from '@/components/Browse';
 

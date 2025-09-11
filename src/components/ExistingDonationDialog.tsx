@@ -1,6 +1,6 @@
-import { DonationCardProps, donationStatus } from '@/types/DonationTypes';
+import { DonationCardProps } from '@/types/DonationTypes';
 import { updateDonationStatus } from '@/api/firebase-donations';
-import { DonationStatusValues } from '@/models/donation';
+
 import {
     Button,
     Dialog,
@@ -21,6 +21,8 @@ import { useRouter } from 'next/navigation';
 // Styles
 import styles from './Browse.module.css';
 
+import { donationStatuses, DonationStatusValues } from '@/models/donation';
+
 export default function ExistingDonationDialog({
     initialParameters,
     onClose,
@@ -36,7 +38,7 @@ export default function ExistingDonationDialog({
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
 
-    const donationStatusToName: { [key in donationStatus]: string } = {
+    const donationStatusToName: { [key in DonationStatusValues]: string } = {
         'in processing': 'In Processing',
         'pending delivery': 'Pending Delivery',
         available: 'Available',
@@ -117,7 +119,7 @@ export default function ExistingDonationDialog({
                                 if (!isAdmin) {
                                     return;
                                 }
-                                const newStatus = event.target.value as donationStatus;
+                                const newStatus = event.target.value as DonationStatusValues;
                                 const resultStatus: DonationStatusValues = await updateDonationStatus(donation.id, newStatus);
                                 setDonationStatus(resultStatus);
                             }

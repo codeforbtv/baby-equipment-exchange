@@ -1,5 +1,5 @@
 .footer-wrapper {
-    font-family: 'adobe-garamond-pro';
+    /* font-family: 'adobe-garamond-pro'; */
     background-color: var(--bg-grey);
     width: 100%;
     display: flex;
@@ -8,7 +8,7 @@
 }
 
 .menu__link {
-    font-family: var(--primary-font);
+    font-family: var(--font-montserrat);
     color: white;
     padding: 0.5rem 0;
     font-size: 0.9rem;
