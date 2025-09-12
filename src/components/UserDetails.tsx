@@ -21,7 +21,7 @@ import '@/styles/globalStyles.css';
 import type { UserDetails } from '@/types/UserTypes';
 type UserDetailsProps = {
     id: string;
-    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
+    setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
 };
 
 export default function UserDetails(props: UserDetailsProps) {
@@ -78,9 +78,11 @@ export default function UserDetails(props: UserDetailsProps) {
         <ProtectedAdminRoute>
             <div className="page--header">
                 {isEditMode ? <h1>Edit User</h1> : <h1>User Details</h1>}
-                <IconButton onClick={() => setIdToDisplay(null)}>
-                    <ArrowBackIcon />
-                </IconButton>
+                {setIdToDisplay && (
+                    <IconButton onClick={() => setIdToDisplay(null)}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                )}
                 {isLoading && <Loader />}
                 {!isLoading && !userDetails && <p>User not found</p>}
                 {!isLoading && userDetails && !isEditMode && (

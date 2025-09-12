@@ -32,7 +32,7 @@ import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, 
 
 type DonationDetailsProps = {
     id: string;
-    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
+    setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
 };
 
 const DonationDetails = (props: DonationDetailsProps) => {
@@ -94,9 +94,12 @@ const DonationDetails = (props: DonationDetailsProps) => {
         <ProtectedAdminRoute>
             <div className="page--header">
                 {!isEditMode ? <h1>Donation Details</h1> : <h1>Edit Donation</h1>}
-                <IconButton onClick={() => setIdToDisplay(null)}>
-                    <ArrowBackIcon />
-                </IconButton>
+                {setIdToDisplay && (
+                    <IconButton onClick={() => setIdToDisplay(null)}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                )}
+
                 {isLoading && <Loader />}
                 {!isLoading && donationDetails === null && <p>Donation not found</p>}
                 {!isLoading && donationDetails !== null && !isEditMode && (
