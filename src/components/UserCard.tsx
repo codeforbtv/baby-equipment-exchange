@@ -126,7 +126,7 @@ export default function UserCard(props: UserCardProps) {
         <ListItem
             key={uid!}
             secondaryAction={
-                <IconButton sx={{ color: 'rgba(16, 16, 16, 0.54)' }} aria-label={`details about ${displayName}`} onClick={handleIconButtonClick}>
+                <IconButton sx={{ color: 'rgba(16, 16, 16, 0.54)' }} aria-label={`details about ${displayName}`} onClick={() => setIdToDisplay(uid)}>
                     <InfoIcon />
                 </IconButton>
             }
