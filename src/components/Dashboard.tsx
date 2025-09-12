@@ -6,6 +6,7 @@ import Browse from './Browse';
 import UserManagement from './UserManagement';
 import Organizations from '@/app/organizations/page';
 import Donations from '@/app/donations/page';
+import UsersList from '@/app/users/page';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
@@ -22,7 +23,7 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [currentTab, setCurrentTab] = useState<number>(0);
     const [donations, setDonations] = useState<Donation[] | null>(null);
-    const [users, setUser] = useState<AuthUserRecord[] | null>(null);
+    const [users, setUsers] = useState<AuthUserRecord[] | null>(null);
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
         [key: string]: string;
     } | null>(null);
@@ -47,7 +48,7 @@ export default function Dashboard() {
         setIsLoading(true);
         try {
             const usersResult = await callListAllUsers();
-            setUser(usersResult);
+            setUsers(usersResult);
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
@@ -94,7 +95,7 @@ export default function Dashboard() {
                             {donations ? <Donations donations={donations} /> : <p>No donations found.</p>}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={1}>
-                            {users ? <UserManagement users={users} /> : <p>No users found.</p>}
+                            {users ? <UsersList users={users} /> : <p>No users found.</p>}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={2}>
                             {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} /> : <p>No organizations found.</p>}
