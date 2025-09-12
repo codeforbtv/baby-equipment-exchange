@@ -27,7 +27,7 @@ export default function UsersList(props: UserListProps) {
     const { users } = props;
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
-    const [showDetails, setShowDetails] = useState<string | null>(null);
+    const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
 
     function toggleSearchBar() {
         setIsSearchVisible((prev: any) => !prev);
@@ -55,7 +55,7 @@ export default function UsersList(props: UserListProps) {
                 <div className="content--container">
                     <List className={styles['browse__grid']}>
                         {users.map((userRecord: AuthUserRecord) => {
-                            return <UserCard key={userRecord.uid} authUser={userRecord} setShowDetails={setShowDetails} />;
+                            return <UserCard key={userRecord.uid} authUser={userRecord} setIdToDisplay={setIdToDisplay} />;
                         })}
                     </List>
                 </div>

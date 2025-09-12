@@ -2,8 +2,6 @@
 
 //Components
 import { Tab, Tabs } from '@mui/material';
-import Browse from './Browse';
-import UserManagement from './UserManagement';
 import Organizations from '@/app/organizations/page';
 import Donations from '@/app/donations/page';
 import UsersList from '@/app/users/page';

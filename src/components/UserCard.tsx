@@ -32,12 +32,12 @@ import { useRouter } from 'next/navigation';
 
 type UserCardProps = {
     authUser: AuthUserRecord;
-    setShowDetails: Dispatch<SetStateAction<string | null>>;
+    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
 };
 
 export default function UserCard(props: UserCardProps) {
     const { uid, email, displayName, customClaims, disabled } = props.authUser;
-    const setShowDetails = props.setShowDetails;
+    const setIdToDisplay = props.setIdToDisplay;
 
     const [isDialogLoading, setIsDialogLoading] = useState<boolean>(false);
     const [editView, showEditView] = useState<boolean>(false);
