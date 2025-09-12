@@ -10,6 +10,7 @@ import styles from '@/components/Browse.module.css';
 import { Donation } from '@/models/donation';
 import { useState } from 'react';
 import DonationDetails from '@/components/DonationDetails';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 
 type DonationsProps = {
     donations: Donation[];
@@ -20,7 +21,7 @@ const Donations = (props: DonationsProps) => {
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
 
     return (
-        <>
+        <ProtectedAdminRoute>
             {idToDisplay ? (
                 <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />
             ) : (
@@ -35,7 +36,7 @@ const Donations = (props: DonationsProps) => {
                     </ImageList>
                 </>
             )}
-        </>
+        </ProtectedAdminRoute>
     );
 };
 
