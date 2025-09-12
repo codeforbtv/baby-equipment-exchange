@@ -42,7 +42,7 @@ export default function UsersList(props: UserListProps) {
     return (
         <>
             {idToDisplay ? (
-                <UserDetails id={idToDisplay} />
+                <UserDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />
             ) : (
                 <>
                     <div className={'page--header'}>

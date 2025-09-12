@@ -1,14 +1,29 @@
 'use client';
 
 //Hooks
-import { MouseEventHandler, useEffect, useState } from 'react';
+import { MouseEventHandler, useEffect, useState, Dispatch, SetStateAction } from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationById, updateDonationStatus } from '@/api/firebase-donations';
 //Components
-import { Dialog, DialogActions, FormControl, ImageList, ImageListItem, InputLabel, MenuItem, Select, SelectChangeEvent, Button, Divider } from '@mui/material';
+import {
+    Dialog,
+    DialogActions,
+    FormControl,
+    ImageList,
+    ImageListItem,
+    InputLabel,
+    MenuItem,
+    Select,
+    SelectChangeEvent,
+    Button,
+    Divider,
+    IconButton
+} from '@mui/material';
 import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+//icons
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Styles
 import EditDonation from '@/components/EditDonation';
 import '@/styles/globalStyles.css';
@@ -17,10 +32,11 @@ import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, 
 
 type DonationDetailsProps = {
     id: string;
+    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
 };
 
 const DonationDetails = (props: DonationDetailsProps) => {
-    const { id } = props;
+    const { id, setIdToDisplay } = props;
     const [donationDetails, setDonationDetails] = useState<IDonation | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -78,6 +94,9 @@ const DonationDetails = (props: DonationDetailsProps) => {
         <ProtectedAdminRoute>
             <div className="page--header">
                 {!isEditMode ? <h1>Donation Details</h1> : <h1>Edit Donation</h1>}
+                <IconButton onClick={() => setIdToDisplay(null)}>
+                    <ArrowBackIcon />
+                </IconButton>
                 {isLoading && <Loader />}
                 {!isLoading && donationDetails === null && <p>Donation not found</p>}
                 {!isLoading && donationDetails !== null && !isEditMode && (

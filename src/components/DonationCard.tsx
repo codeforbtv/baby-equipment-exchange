@@ -16,11 +16,11 @@ const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
 type DonationCardProps = {
     donation: Donation;
-    setShowDetails: Dispatch<SetStateAction<string | null>>;
+    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
 };
 
 export default function DonationCard(props: DonationCardProps) {
-    const { donation, setShowDetails } = props;
+    const { donation, setIdToDisplay } = props;
 
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const image = donation.images ? donation.images[0] : '';
@@ -53,7 +53,7 @@ export default function DonationCard(props: DonationCardProps) {
                     <IconButton
                         sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
                         aria-label={`details about ${donation.brand} ${donation.model}`}
-                        onClick={() => setShowDetails(donation.id)}
+                        onClick={() => setIdToDisplay(donation.id)}
                     >
                         <InfoIcon />
                     </IconButton>

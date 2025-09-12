@@ -17,12 +17,12 @@ type DonationsProps = {
 
 const Donations = (props: DonationsProps) => {
     const { donations } = props;
-    const [showDetails, setShowDetails] = useState<string | null>(null);
+    const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
 
     return (
         <>
-            {showDetails ? (
-                <DonationDetails id={showDetails} />
+            {idToDisplay ? (
+                <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />
             ) : (
                 <>
                     <div className="page--header">
@@ -30,7 +30,7 @@ const Donations = (props: DonationsProps) => {
                     </div>
                     <ImageList className={styles['browse__grid']}>
                         {donations.map((donation) => (
-                            <DonationCard key={donation.id} donation={donation} setShowDetails={setShowDetails} />
+                            <DonationCard key={donation.id} donation={donation} setIdToDisplay={setIdToDisplay} />
                         ))}
                     </ImageList>
                 </>

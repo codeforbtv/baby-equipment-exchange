@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 
 //APIs
 import { addErrorEvent, callEnableUser } from '@/api/firebase';
@@ -10,19 +10,22 @@ import { getUserDetails } from '@/api/firebase-users';
 //Components
 import Loader from '@/components/Loader';
 import EditUser from '@/components/EditUser';
-import { List, ListItem, Typography, Button, Divider } from '@mui/material';
+import { List, ListItem, Typography, Button, Divider, IconButton } from '@mui/material';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
+//icons
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles
 import '@/styles/globalStyles.css';
 //Types
 import type { UserDetails } from '@/types/UserTypes';
 type UserDetailsProps = {
     id: string;
+    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
 };
 
 export default function UserDetails(props: UserDetailsProps) {
-    const { id } = props;
+    const { id, setIdToDisplay } = props;
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -75,6 +78,9 @@ export default function UserDetails(props: UserDetailsProps) {
         <ProtectedAdminRoute>
             <div className="page--header">
                 {isEditMode ? <h1>Edit User</h1> : <h1>User Details</h1>}
+                <IconButton onClick={() => setIdToDisplay(null)}>
+                    <ArrowBackIcon />
+                </IconButton>
                 {isLoading && <Loader />}
                 {!isLoading && !userDetails && <p>User not found</p>}
                 {!isLoading && userDetails && !isEditMode && (
