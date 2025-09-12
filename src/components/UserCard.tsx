@@ -14,6 +14,7 @@ import {
     FormLabel,
     IconButton,
     ListItem,
+    ListItemButton,
     ListItemText,
     TextField
 } from '@mui/material';
@@ -123,16 +124,11 @@ export default function UserCard(props: UserCardProps) {
     // };
 
     return (
-        <ListItem
-            key={uid!}
-            secondaryAction={
-                <IconButton sx={{ color: 'rgba(16, 16, 16, 0.54)' }} aria-label={`details about ${displayName}`} onClick={() => setIdToDisplay(uid)}>
-                    <InfoIcon />
-                </IconButton>
-            }
-        >
-            <ListItemText primary={displayName} secondary={email} />
-            {disabled && <ListItemText primary={'This user requires approval'} sx={{ color: 'red' }}></ListItemText>}
+        <ListItem key={uid!}>
+            <ListItemButton component="a" onClick={() => setIdToDisplay(uid)}>
+                <ListItemText primary={displayName} secondary={email} sx={{ color: 'black' }} />
+                {disabled && <ListItemText primary={'This user requires approval'} sx={{ color: 'red' }}></ListItemText>}
+            </ListItemButton>
             <Dialog open={editView} onClose={handleHideEditView}>
                 <DialogContent>
                     <h3>Edit {displayName ? `${displayName}` : 'user'}</h3>
