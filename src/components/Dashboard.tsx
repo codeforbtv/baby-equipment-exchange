@@ -4,7 +4,7 @@
 import { Tab, Tabs } from '@mui/material';
 import Organizations from '@/app/organizations/page';
 import Donations from '@/app/donations/page';
-import UsersList from '@/app/users/page';
+import Users from '@/app/users/page';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
@@ -93,7 +93,7 @@ export default function Dashboard() {
                             {donations ? <Donations donations={donations} /> : <p>No donations found.</p>}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={1}>
-                            {users ? <UsersList users={users} /> : <p>No users found.</p>}
+                            {users ? <Users users={users} /> : <p>No users found.</p>}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={2}>
                             {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} /> : <p>No organizations found.</p>}

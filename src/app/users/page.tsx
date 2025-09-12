@@ -25,7 +25,7 @@ type UserListProps = {
     users: AuthUserRecord[];
 };
 
-export default function UsersList(props: UserListProps) {
+export default function Users(props: UserListProps) {
     const { users } = props;
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
