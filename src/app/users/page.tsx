@@ -1,7 +1,7 @@
 'use client';
 
 // Hooks
-import React, { useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 // Components
 import { Button, List } from '@mui/material';
 import SearchBar from '@/components/SearchBar';
@@ -21,15 +21,18 @@ import '@/styles/globalStyles.css';
 // Types
 import { AuthUserRecord } from '@/types/UserTypes';
 import { UserDetail } from '@/models/user-detail';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 type UserListProps = {
     users: AuthUserRecord[];
+    setUsersUpdated: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function Users(props: UserListProps) {
-    const { users } = props;
+    const { users, setUsersUpdated } = props;
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
+    const [showForm, setShowForm] = useState<boolean>(false);
 
     function toggleSearchBar() {
         setIsSearchVisible((prev: any) => !prev);
@@ -40,10 +43,10 @@ export default function Users(props: UserListProps) {
     }
 
     return (
-        <>
-            {idToDisplay ? (
-                <UserDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />
-            ) : (
+        <ProtectedAdminRoute>
+            {idToDisplay && <UserDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setUsersUpdated={setUsersUpdated} />}
+
+            {!idToDisplay && !showForm && (
                 <>
                     <div className={'page--header'}>
                         <h1>Users</h1>
@@ -67,6 +70,6 @@ export default function Users(props: UserListProps) {
                     </div>
                 </>
             )}
-        </>
+        </ProtectedAdminRoute>
     );
 }

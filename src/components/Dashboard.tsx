@@ -102,7 +102,7 @@ export default function Dashboard() {
                             {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={1}>
-                            {users ? <Users users={users} /> : <p>No users found.</p>}
+                            {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={2}>
                             {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} /> : <p>No organizations found.</p>}

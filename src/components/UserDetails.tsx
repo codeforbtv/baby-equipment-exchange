@@ -22,10 +22,11 @@ import type { UserDetails } from '@/types/UserTypes';
 type UserDetailsProps = {
     id: string;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
+    setUsersUpdated: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function UserDetails(props: UserDetailsProps) {
-    const { id, setIdToDisplay } = props;
+    const { id, setIdToDisplay, setUsersUpdated } = props;
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
