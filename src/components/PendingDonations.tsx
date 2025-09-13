@@ -16,7 +16,7 @@ type pendingDonationProps = {
     removeHandler: (index: number) => void;
 };
 
-export default function PendingDontions(props: pendingDonationProps) {
+export default function PendingDonations(props: pendingDonationProps) {
     return (
         <Box>
             <Typography variant="h3">Items to be donated:</Typography>

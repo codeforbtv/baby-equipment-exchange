@@ -42,7 +42,7 @@ export type DonationBody = {
 };
 
 export type DonationFormProps = {
-    setShowForm: Dispatch<SetStateAction<boolean>>;
+    setShowForm?: Dispatch<SetStateAction<boolean>>;
 };
 
 export type InventoryItemCardProps = {

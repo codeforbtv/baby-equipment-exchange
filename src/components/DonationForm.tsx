@@ -83,7 +83,7 @@ export default function DonationForm(props: DonationFormProps) {
         });
         setImages(null);
         setImageElements([]);
-        props.setShowForm(false);
+        if (props.setShowForm) props.setShowForm(false);
     }
 
     function handleCancel(e: React.SyntheticEvent) {
@@ -97,7 +97,7 @@ export default function DonationForm(props: DonationFormProps) {
         });
         setImages(null);
         setImageElements([]);
-        props.setShowForm(false);
+        if (props.setShowForm) props.setShowForm(false);
     }
 
     return (

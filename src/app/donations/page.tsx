@@ -12,6 +12,7 @@ import { MouseEventHandler, useState } from 'react';
 import DonationDetails from '@/components/DonationDetails';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import DonationForm from '@/components/DonationForm';
+import CreateAdminDonation from '@/components/CreateAdminDonation';
 
 type DonationsProps = {
     donations: Donation[];
@@ -31,7 +32,7 @@ const Donations = (props: DonationsProps) => {
     return (
         <ProtectedAdminRoute>
             {idToDisplay && <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />}
-            {showForm && <DonationForm setShowForm={setShowForm} />}
+            {showForm && <CreateAdminDonation setShowForm={setShowForm} />}
             {!idToDisplay && !showForm && (
                 <>
                     <div className="page--header">

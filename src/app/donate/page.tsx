@@ -7,12 +7,12 @@ import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //components
 import Link from 'next/link';
-import PendingDontions from '@/components/PendingDonations';
+import PendingDonations from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
 import { Button, Box, TextField, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
 //libs
-import { addBulkDonation } from '@/api/firebase-donations';
+import { addDonation } from '@/api/firebase-donations';
 import { addErrorEvent, loginAnonymousUser } from '@/api/firebase';
 import { uploadImages } from '@/api/firebase-images';
 //styles
@@ -127,7 +127,7 @@ export default function Donate() {
         try {
             setSubmitState('submitting');
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
-            await addBulkDonation(donationsToUpload);
+            await addDonation(donationsToUpload);
             clearPendingDonations();
             localStorage.clear();
             setSubmitState('idle');
@@ -204,7 +204,7 @@ export default function Donate() {
                             onBlur={() => handleConfirmEmail}
                         />
                     </Box>
-                    {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
+                    {pendingDonations.length > 0 && <PendingDonations pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
 
                     <div className={styles['btn--group']}>
                         {!showForm && (
