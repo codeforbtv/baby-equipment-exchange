@@ -22,7 +22,7 @@ import type { UserDetails } from '@/types/UserTypes';
 type UserDetailsProps = {
     id: string;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setUsersUpdated: Dispatch<SetStateAction<boolean>>;
+    setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function UserDetails(props: UserDetailsProps) {
@@ -33,6 +33,7 @@ export default function UserDetails(props: UserDetailsProps) {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleClose = () => {
+        if (setUsersUpdated) setUsersUpdated(true);
         setIsDialogOpen(false);
         //Re-fetch user to show updated details
         if (userDetails) {
@@ -51,7 +52,6 @@ export default function UserDetails(props: UserDetailsProps) {
                 };
                 setUserDetails(enabledUserDetails);
             }
-            setUsersUpdated(true);
             setIsLoading(false);
             setIsDialogOpen(true);
         } catch (error) {
