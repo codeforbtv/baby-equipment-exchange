@@ -16,9 +16,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import '@/styles/globalStyles.css';
 //Types
 import { orgTags, OrganizationTagKeys, IOrganization } from '@/models/organization';
+
 type OrganizationDetailsProps = {
     id: string;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
+    setOrgsUpdated: Dispatch<SetStateAction<boolean>>;
 };
 
 const tagNames: OrganizationTagKeys[] = Object.keys(orgTags) as OrganizationTagKeys[];
