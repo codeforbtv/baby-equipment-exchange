@@ -22,11 +22,12 @@ type EditUserProps = {
     userDetails: UserDetails;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
     fetchUserDetails: (id: string) => void;
+    setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const EditUser = (props: EditUserProps) => {
     const { uid, email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props.userDetails;
-    const { setIsEditMode, fetchUserDetails } = props;
+    const { setIsEditMode, fetchUserDetails, setUsersUpdated } = props;
 
     let initialRole = '';
     if (customClaims && customClaims.admin === true) {
@@ -45,6 +46,7 @@ const EditUser = (props: EditUserProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleClose = () => {
+        if (setUsersUpdated) setUsersUpdated(true);
         setIsDialogOpen(false);
         setIsEditMode(false);
         fetchUserDetails(uid);

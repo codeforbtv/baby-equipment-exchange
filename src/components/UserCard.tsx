@@ -14,12 +14,13 @@ import {
     FormLabel,
     IconButton,
     ListItem,
+    ListItemButton,
     ListItemText,
     TextField
 } from '@mui/material';
 import Loader from './Loader';
 //Hooks
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Dispatch, SetStateAction } from 'react';
 //Icons
 import InfoIcon from '@mui/icons-material/Info';
 
@@ -30,10 +31,15 @@ import { AuthUserRecord } from '@/types/UserTypes';
 import { IUser } from '@/models/user';
 import { useRouter } from 'next/navigation';
 
-export default function UserCard(props: AuthUserRecord) {
-    const { uid, email, displayName, customClaims, disabled } = props;
+type UserCardProps = {
+    authUser: AuthUserRecord;
+    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
+};
 
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+export default function UserCard(props: UserCardProps) {
+    const { uid, email, displayName, customClaims, disabled } = props.authUser;
+    const setIdToDisplay = props.setIdToDisplay;
+
     const [isDialogLoading, setIsDialogLoading] = useState<boolean>(false);
     const [editView, showEditView] = useState<boolean>(false);
     const [displayNameField, setDisplayNameField] = useState<string | undefined>(displayName);
@@ -55,20 +61,12 @@ export default function UserCard(props: AuthUserRecord) {
     };
 
     useEffect(() => {
-        if (uid) setIsLoading(false);
-    }, []);
-
-    useEffect(() => {
         if (editView) {
             setIsDialogLoading(true);
             fetchDbUser(uid);
             setIsDialogLoading(false);
         }
     }, [editView]);
-
-    useEffect(() => {
-        console.log(dbUser);
-    }, [dbUser]);
 
     async function handleFormSubmit() {
         const claims = {
@@ -125,76 +123,64 @@ export default function UserCard(props: AuthUserRecord) {
     //     }
     // };
 
-    if (!uid) {
-        return <></>;
-    } else {
-        return isLoading ? (
-            <Loader key={uid!} />
-        ) : (
-            <ListItem
-                key={uid!}
-                className={styles['grid__item']}
-                secondaryAction={
-                    <IconButton sx={{ color: 'rgba(16, 16, 16, 0.54)' }} aria-label={`details about ${displayName}`} onClick={handleIconButtonClick}>
-                        <InfoIcon />
-                    </IconButton>
-                }
-            >
-                <ListItemText primary={displayName} secondary={email} />
-                {disabled && <ListItemText primary={'This user requires review'} sx={{ color: 'red' }}></ListItemText>}
-                <Dialog open={editView} onClose={handleHideEditView}>
-                    <DialogContent>
-                        <h3>Edit {displayName ? `${displayName}` : 'user'}</h3>
-                        {isDialogLoading ? (
-                            <Loader />
-                        ) : (
-                            <FormControl component="fieldset">
-                                <FormLabel component="legend">Roles</FormLabel>
-                                <FormGroup id="roles" aria-label="Roles" row>
-                                    <FormControlLabel label="Administrator" control={<Checkbox checked={isAdmin} onChange={handleToggleIsAdmin} />} />
-                                    <FormControlLabel label="Aid Worker" control={<Checkbox checked={isAidWorker} onChange={handleToggleIsAidWorker} />} />
-                                </FormGroup>
+    return (
+        <ListItem key={uid!}>
+            <ListItemButton component="a" onClick={() => setIdToDisplay(uid)}>
+                <ListItemText primary={displayName} secondary={email} sx={{ color: 'black' }} />
+                {disabled && <ListItemText primary={'This user requires approval'} sx={{ color: 'red' }}></ListItemText>}
+            </ListItemButton>
+            <Dialog open={editView} onClose={handleHideEditView}>
+                <DialogContent>
+                    <h3>Edit {displayName ? `${displayName}` : 'user'}</h3>
+                    {isDialogLoading ? (
+                        <Loader />
+                    ) : (
+                        <FormControl component="fieldset">
+                            <FormLabel component="legend">Roles</FormLabel>
+                            <FormGroup id="roles" aria-label="Roles" row>
+                                <FormControlLabel label="Administrator" control={<Checkbox checked={isAdmin} onChange={handleToggleIsAdmin} />} />
+                                <FormControlLabel label="Aid Worker" control={<Checkbox checked={isAidWorker} onChange={handleToggleIsAidWorker} />} />
+                            </FormGroup>
 
-                                <FormLabel component="legend">Contact Details</FormLabel>
-                                <TextField
-                                    type="email"
-                                    label="Email"
-                                    placeholder="Input email"
-                                    name="contactEmail"
-                                    id="contactEmail"
-                                    onChange={handleEmailChange}
-                                    value={email}
-                                    variant="standard"
-                                />
-                                <TextField
-                                    type="text"
-                                    label="Display Name"
-                                    placeholder="Input display name"
-                                    name="displayName"
-                                    id="displayName"
-                                    onChange={handleDisplayNameChange}
-                                    value={displayName}
-                                    variant="standard"
-                                />
-                                <TextField
-                                    type="tel"
-                                    label="Phone Number"
-                                    placeholder="input phone number"
-                                    name="contactPhone"
-                                    id="contactPhone"
-                                    // onChange={handlePhoneNumberChange}
-                                    // value={phoneNumber}
-                                    variant="standard"
-                                />
-                            </FormControl>
-                        )}
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleFormSubmit}>update</Button>
-                        <Button onClick={handleHideEditView}>close</Button>
-                    </DialogActions>
-                </Dialog>
-            </ListItem>
-        );
-    }
+                            <FormLabel component="legend">Contact Details</FormLabel>
+                            <TextField
+                                type="email"
+                                label="Email"
+                                placeholder="Input email"
+                                name="contactEmail"
+                                id="contactEmail"
+                                onChange={handleEmailChange}
+                                value={email}
+                                variant="standard"
+                            />
+                            <TextField
+                                type="text"
+                                label="Display Name"
+                                placeholder="Input display name"
+                                name="displayName"
+                                id="displayName"
+                                onChange={handleDisplayNameChange}
+                                value={displayName}
+                                variant="standard"
+                            />
+                            <TextField
+                                type="tel"
+                                label="Phone Number"
+                                placeholder="input phone number"
+                                name="contactPhone"
+                                id="contactPhone"
+                                // onChange={handlePhoneNumberChange}
+                                // value={phoneNumber}
+                                variant="standard"
+                            />
+                        </FormControl>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleFormSubmit}>update</Button>
+                    <Button onClick={handleHideEditView}>close</Button>
+                </DialogActions>
+            </Dialog>
+        </ListItem>
+    );
 }

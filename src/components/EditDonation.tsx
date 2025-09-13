@@ -21,12 +21,12 @@ type EditDonationProps = {
     donationDetails: IDonation;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
     fetchDonation: (id: string) => void;
+    setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const EditDonation = (props: EditDonationProps) => {
     const { id, category, brand, model, description, status, requestor } = props.donationDetails;
-    const setIsEditMode = props.setIsEditMode;
-    const fetchDonation = props.fetchDonation;
+    const { setIsEditMode, fetchDonation, setDonationsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newCategory, setNewCategory] = useState<string>(category);
@@ -43,6 +43,7 @@ const EditDonation = (props: EditDonationProps) => {
     const [selectedStatus, setSelectedStatus] = useState<DonationStatusValues>(initialStatus);
 
     const handleClose = () => {
+        if (setDonationsUpdated) setDonationsUpdated(true);
         setIsDialogOpen(false);
         setIsEditMode(false);
         fetchDonation(id);

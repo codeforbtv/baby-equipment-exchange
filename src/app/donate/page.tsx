@@ -1,55 +1,51 @@
 'use client';
 
-//components
+//Hooks
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUserContext } from '@/contexts/UserContext';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+//components
 import Link from 'next/link';
-import PendingDontions from '@/components/PendingDonations';
+import PendingDonations from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
 import { Button, Box, TextField, Typography } from '@mui/material';
-import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
-import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
 //libs
-import { addBulkDonation } from '@/api/firebase-donations';
+import { addDonation } from '@/api/firebase-donations';
 import { addErrorEvent, loginAnonymousUser } from '@/api/firebase';
-import { DonationBody } from '@/types/post-data';
 import { uploadImages } from '@/api/firebase-images';
-
 //styles
 import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
 import homeStyles from '../HomeStyles.module.css';
-
-//Hooks
-import { useUserContext } from '@/contexts/UserContext';
-import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
-
+//Icons
+import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
+import AddIcon from '@mui/icons-material/Add';
 //Types
-import { DonationFormData } from '@/types/DonationTypes';
-
-//This will be initially set from the database if editing an existing donation
-const dummyDonationData: DonationFormData = {
-    category: 'Option A',
-    brand: 'Brand Name',
-    model: 'Model Name',
-    description: '',
-    images: null
-};
+import { DonationFormData, DonationBody } from '@/types/DonationTypes';
+import CustomDialog from '@/components/CustomDialog';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Donate() {
     const [donorName, setDonorName] = useState<string>('');
+    const [isValidName, setIsValidName] = useState<boolean>(true);
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [confirmEmail, setConfirmEmail] = useState<string>('');
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
     const [showForm, setShowForm] = useState<boolean>(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+
     const { currentUser } = useUserContext();
     const { pendingDonations, removePendingDonation, clearPendingDonations, getPendingDonationsFromLocalStorage } = usePendingDonationsContext();
     const router = useRouter();
+
+    const handleClose = () => {
+        setIsOpen(false);
+    };
 
     useEffect(() => {
         getDonorFromLocalStorage();
@@ -135,14 +131,14 @@ export default function Donate() {
     //Use this to handle passing form data to the database on submission
     async function handleFormSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
+        setSubmitState('submitting');
         try {
-            setSubmitState('submitting');
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
-            await addBulkDonation(donationsToUpload);
+            await addDonation(donationsToUpload);
             clearPendingDonations();
             localStorage.clear();
             setSubmitState('idle');
-            router.push('/');
+            setIsOpen(true);
         } catch (error) {
             setSubmitState('error');
             addErrorEvent('Bulk donation', error);
@@ -181,6 +177,9 @@ export default function Donate() {
                             onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
                                 setDonorName(event.target.value);
                             }}
+                            onBlur={() => setIsValidName(donorName.length > 0)}
+                            error={!isValidName}
+                            helperText={!isValidName && 'Name is required'}
                             value={donorName}
                             required
                         />
@@ -193,7 +192,7 @@ export default function Donate() {
                             autoComplete="email"
                             value={donorEmail}
                             error={isInvalidEmail}
-                            helperText={isInvalidEmail && 'Please enter a valid email addres'}
+                            helperText={isInvalidEmail && 'Please enter a valid email address'}
                             required
                             onChange={handleEmailInput}
                             onBlur={() => validateEmail(donorEmail)}
@@ -212,11 +211,17 @@ export default function Donate() {
                             onBlur={() => handleConfirmEmail}
                         />
                     </Box>
-                    {pendingDonations.length > 0 && <PendingDontions pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
+                    {pendingDonations.length > 0 && <PendingDonations pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
 
                     <div className={styles['btn--group']}>
                         {!showForm && (
-                            <Button type="button" variant="outlined" startIcon={<AddIcon />} onClick={handleShowForm}>
+                            <Button
+                                type="button"
+                                variant="outlined"
+                                startIcon={<AddIcon />}
+                                onClick={handleShowForm}
+                                disabled={emailsDoNotMatch || donorName.length === 0}
+                            >
                                 {pendingDonations.length > 0 ? 'Add another item' : 'Add item'}
                             </Button>
                         )}
@@ -257,6 +262,12 @@ export default function Donate() {
                     </div>
                 </>
             )}
+            <CustomDialog
+                isOpen={isOpen}
+                onClose={handleClose}
+                title="Donation submitted"
+                content={`Your donation has been submitted. An email with next steps will be sent to ${donorEmail} once your donation has been approved.`}
+            />
         </>
     );
 }

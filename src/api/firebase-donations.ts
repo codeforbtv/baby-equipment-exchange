@@ -203,8 +203,9 @@ export async function getDonationById(id: string): Promise<Donation> {
     return Promise.reject();
 }
 
-export async function addBulkDonation(newDonations: DonationBody[]) {
+export async function addDonation(newDonations: DonationBody[]) {
     try {
+        //All donations are assigned a bulk donatin id to account for multiple items
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
         const batch = writeBatch(db);
         batch.set(bulkDonationsRef, {
@@ -227,6 +228,52 @@ export async function addBulkDonation(newDonations: DonationBody[]) {
                 tagNumber: null,
                 notes: null,
                 status: 'in processing',
+                bulkCollection: bulkDonationsRef.id,
+                images: newDonation.images,
+                createdAt: serverTimestamp() as Timestamp,
+                modifiedAt: serverTimestamp() as Timestamp,
+                dateReceived: null,
+                dateDistributed: null,
+                requestor: null
+            };
+            const donation = new Donation(donationParams);
+            batch.set(donationRef, donationConverter.toFirestore(donation));
+            batch.update(bulkDonationsRef, {
+                donations: arrayUnion(donationRef)
+            });
+        }
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('addBulkDonation', error);
+    }
+}
+
+//When admins make donations, status is automatically set to 'available'
+export async function addAdminDonation(newDonations: DonationBody[]): Promise<void> {
+    try {
+        //All donations are assigned a bulk donatin id to account for multiple items
+        const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
+        const batch = writeBatch(db);
+        batch.set(bulkDonationsRef, {
+            donations: [],
+            donorEmail: newDonations[0].donorEmail,
+            donorName: newDonations[0].donorName,
+            donorId: newDonations[0].donorId
+        });
+        for (const newDonation of newDonations) {
+            const donationRef = doc(collection(db, DONATIONS_COLLECTION));
+            const donationParams: IDonation = {
+                id: donationRef.id,
+                donorEmail: newDonation.donorEmail,
+                donorName: newDonation.donorName,
+                donorId: newDonation.donorId,
+                category: newDonation.category,
+                brand: newDonation.brand,
+                model: newDonation.model,
+                description: newDonation.description,
+                tagNumber: null,
+                notes: null,
+                status: 'available',
                 bulkCollection: bulkDonationsRef.id,
                 images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,

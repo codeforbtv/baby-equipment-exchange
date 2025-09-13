@@ -144,7 +144,7 @@ const Browse: React.FC = () => {
                         }
                     </>
                     <>{isFilterVisible && <Filter />}</>
-                    <ImageList className={styles['browse__grid']}>
+                    {/* <ImageList className={styles['browse__grid']}>
                         {donations
                             .sort((a, b) => {
                                 if (a.modifiedAt && b.modifiedAt) {
@@ -159,9 +159,9 @@ const Browse: React.FC = () => {
                                 };
 
                                 // An active donation must have at least one photo for display.
-                                return <DonationCard key={donation.id} donation={props} onDelete={deleteDonation} />;
+                                return <DonationCard key={donation.id} donation={donation} />;
                             })}
-                    </ImageList>
+                    </ImageList> */}
                 </>
             )}
         </>

@@ -53,7 +53,7 @@ export interface IDonation {
     notes: string[] | null | undefined;
     status: DonationStatusValues;
     bulkCollection: string | null;
-    images: DocumentReference[] | string[];
+    images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
     dateReceived: Timestamp | null | undefined;
@@ -94,7 +94,7 @@ export class Donation implements IDonation {
     notes: string[] | null | undefined;
     status: DonationStatusValues;
     bulkCollection: string | null;
-    images: DocumentReference[] | string[];
+    images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
     dateReceived: Timestamp | null | undefined;
@@ -170,7 +170,7 @@ export class Donation implements IDonation {
         return this.bulkCollection;
     }
 
-    getImages(): string[] | DocumentReference[] {
+    getImages(): string[] {
         return this.images;
     }
 
