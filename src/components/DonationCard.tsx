@@ -27,7 +27,7 @@ export default function DonationCard(props: DonationCardProps) {
         <ImageListItem key={donation.id} className={styles['grid__item']}>
             <img
                 src={image}
-                style={{ width: '100%', height: '100%', objectFit: 'fill' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 alt={`Brand ${donation.brand} and model ${donation.model} description ${donation.description}`}
             />
             <ImageListItemBar
