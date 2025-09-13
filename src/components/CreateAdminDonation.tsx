@@ -24,17 +24,19 @@ import CustomDialog from './CustomDialog';
 
 type CreateAdminDonationProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
+    setDonationsUpdated: Dispatch<SetStateAction<boolean>>;
 };
 
 const CreateAdminDonation = (props: CreateAdminDonationProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
-    const { setShowForm } = props;
+    const { setShowForm, setDonationsUpdated } = props;
     const { currentUser } = useUserContext();
     const { pendingDonations, removePendingDonation, clearPendingDonations, getPendingDonationsFromLocalStorage } = usePendingDonationsContext();
 
     const handleClose = () => {
+        setDonationsUpdated(true);
         setIsOpen(false);
         setShowForm(false);
     };

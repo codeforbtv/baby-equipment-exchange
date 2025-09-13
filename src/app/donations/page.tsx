@@ -1,5 +1,8 @@
 'use client';
 
+//Hooks
+import { SetStateAction, useState, Dispatch } from 'react';
+
 //Components
 import { Button, ImageList } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
@@ -8,7 +11,7 @@ import '@/styles/globalStyles.css';
 import styles from '@/components/Browse.module.css';
 //Types
 import { Donation } from '@/models/donation';
-import { MouseEventHandler, useState } from 'react';
+
 import DonationDetails from '@/components/DonationDetails';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import DonationForm from '@/components/DonationForm';
@@ -16,10 +19,11 @@ import CreateAdminDonation from '@/components/CreateAdminDonation';
 
 type DonationsProps = {
     donations: Donation[];
+    setDonationsUpdated: Dispatch<SetStateAction<boolean>>;
 };
 
 const Donations = (props: DonationsProps) => {
-    const { donations } = props;
+    const { donations, setDonationsUpdated } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
 
@@ -32,7 +36,7 @@ const Donations = (props: DonationsProps) => {
     return (
         <ProtectedAdminRoute>
             {idToDisplay && <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />}
-            {showForm && <CreateAdminDonation setShowForm={setShowForm} />}
+            {showForm && <CreateAdminDonation setShowForm={setShowForm} setDonationsUpdated={setDonationsUpdated} />}
             {!idToDisplay && !showForm && (
                 <>
                     <div className="page--header">

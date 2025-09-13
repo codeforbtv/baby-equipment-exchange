@@ -26,6 +26,11 @@ export default function Dashboard() {
         [key: string]: string;
     } | null>(null);
 
+    //Track whether updates have been made
+    const [donationsUpdated, setDonationsUpdated] = useState<boolean>(false);
+    const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
+    const [orgsUpdated, setOrgsUpdated] = useState<boolean>(false);
+
     const handleCurrentTab = (event: React.SyntheticEvent, target: number) => {
         setCurrentTab(target);
     };
@@ -35,6 +40,7 @@ export default function Dashboard() {
         try {
             const donationsResult = await getAllDonations();
             setDonations(donationsResult);
+            setDonationsUpdated(false);
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
@@ -47,6 +53,7 @@ export default function Dashboard() {
         try {
             const usersResult = await callListAllUsers();
             setUsers(usersResult);
+            setUsersUpdated(false);
             setIsLoading(false);
         } catch (error) {
             setIsLoading(false);
@@ -59,6 +66,7 @@ export default function Dashboard() {
         try {
             const orgNamesResult = await callGetOrganizationNames();
             setOrgNamesAndIds(orgNamesResult);
+            setOrgsUpdated(false);
             setIsLoading(false);
         } catch (error) {
             addErrorEvent('Could not fetch org names', error);
@@ -67,15 +75,16 @@ export default function Dashboard() {
         setIsLoading(false);
     };
 
+    // Only fetch collections once when selected unless there's been an update
     useEffect(() => {
-        if (currentTab === 0 && !donations) {
+        if ((currentTab === 0 && !donations) || (currentTab === 0 && donationsUpdated)) {
             fetchDonations();
-        } else if (currentTab === 1 && !users) {
+        } else if ((currentTab === 1 && !users) || (currentTab === 1 && usersUpdated)) {
             fetchUsers();
-        } else if (currentTab === 2 && !orgNamesAndIds) {
+        } else if ((currentTab === 2 && !orgNamesAndIds) || (currentTab === 2 && orgsUpdated)) {
             fetchOrgNames();
         }
-    }, [currentTab]);
+    }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -90,7 +99,7 @@ export default function Dashboard() {
                 ) : (
                     <>
                         <CustomTabPanel value={currentTab} index={0}>
-                            {donations ? <Donations donations={donations} /> : <p>No donations found.</p>}
+                            {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={1}>
                             {users ? <Users users={users} /> : <p>No users found.</p>}
