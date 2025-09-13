@@ -1,46 +1,35 @@
 'use client';
 
-//components
+//Hooks
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUserContext } from '@/contexts/UserContext';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+//components
 import Link from 'next/link';
 import PendingDontions from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
 import { Button, Box, TextField, Typography } from '@mui/material';
-import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
-import AddIcon from '@mui/icons-material/Add';
 import Loader from '@/components/Loader';
 //libs
 import { addBulkDonation } from '@/api/firebase-donations';
 import { addErrorEvent, loginAnonymousUser } from '@/api/firebase';
-import { DonationBody } from '@/types/post-data';
 import { uploadImages } from '@/api/firebase-images';
-
 //styles
 import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
 import homeStyles from '../HomeStyles.module.css';
-
-//Hooks
-import { useUserContext } from '@/contexts/UserContext';
-import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
-
+//Icons
+import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
+import AddIcon from '@mui/icons-material/Add';
 //Types
-import { DonationFormData } from '@/types/DonationTypes';
-
-//This will be initially set from the database if editing an existing donation
-const dummyDonationData: DonationFormData = {
-    category: 'Option A',
-    brand: 'Brand Name',
-    model: 'Model Name',
-    description: '',
-    images: null
-};
+import { DonationFormData, DonationBody } from '@/types/DonationTypes';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Donate() {
     const [donorName, setDonorName] = useState<string>('');
+    const [isValidName, setIsValidName] = useState<boolean>(true);
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [confirmEmail, setConfirmEmail] = useState<string>('');
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
@@ -181,6 +170,9 @@ export default function Donate() {
                             onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
                                 setDonorName(event.target.value);
                             }}
+                            onBlur={() => setIsValidName(donorName.length > 0)}
+                            error={!isValidName}
+                            helperText={!isValidName && 'Name is required'}
                             value={donorName}
                             required
                         />
@@ -193,7 +185,7 @@ export default function Donate() {
                             autoComplete="email"
                             value={donorEmail}
                             error={isInvalidEmail}
-                            helperText={isInvalidEmail && 'Please enter a valid email addres'}
+                            helperText={isInvalidEmail && 'Please enter a valid email address'}
                             required
                             onChange={handleEmailInput}
                             onBlur={() => validateEmail(donorEmail)}
@@ -216,7 +208,13 @@ export default function Donate() {
 
                     <div className={styles['btn--group']}>
                         {!showForm && (
-                            <Button type="button" variant="outlined" startIcon={<AddIcon />} onClick={handleShowForm}>
+                            <Button
+                                type="button"
+                                variant="outlined"
+                                startIcon={<AddIcon />}
+                                onClick={handleShowForm}
+                                disabled={emailsDoNotMatch || donorName.length === 0}
+                            >
                                 {pendingDonations.length > 0 ? 'Add another item' : 'Add item'}
                             </Button>
                         )}

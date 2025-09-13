@@ -30,6 +30,17 @@ export type DonationFormData = {
     base64Images?: base64ImageObj[];
 };
 
+export type DonationBody = {
+    donorEmail: string;
+    donorName: string;
+    donorId: string;
+    category: string;
+    brand: string;
+    model: string;
+    description: string;
+    images: string[];
+};
+
 export type DonationFormProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
 };
