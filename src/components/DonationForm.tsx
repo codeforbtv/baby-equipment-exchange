@@ -16,6 +16,7 @@ import '../styles/globalStyles.css';
 
 //Types
 import { DonationFormData, DonationFormProps } from '@/types/DonationTypes';
+import CustomDialog from './CustomDialog';
 
 export default function DonationForm(props: DonationFormProps) {
     const [formData, setFormData] = useState<DonationFormData>({
@@ -27,6 +28,7 @@ export default function DonationForm(props: DonationFormProps) {
     });
     const [images, setImages] = useState<File[] | null>();
     const [imageElements, setImageElements] = useState<ReactElement[]>([]);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const { addPendingDonation } = usePendingDonationsContext();
 
@@ -49,6 +51,8 @@ export default function DonationForm(props: DonationFormProps) {
         }
     }, [images]);
 
+    const handleClose = () => setIsOpen(false);
+
     function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLTextAreaElement>) {
         setFormData((prev) => {
             return { ...prev, [e.target.name]: e.target.value };
@@ -58,7 +62,7 @@ export default function DonationForm(props: DonationFormProps) {
     function handleAddPendingDonation(e: React.SyntheticEvent) {
         e.preventDefault();
         if (!images) {
-            alert('At least one image is required.');
+            setIsOpen(true);
             return;
         }
 
@@ -181,6 +185,7 @@ export default function DonationForm(props: DonationFormProps) {
                     </Button>
                 </Box>
             </Box>
+            <CustomDialog isOpen={isOpen} onClose={handleClose} title="Image required" content="You must provide at least one image for your donation." />
         </div>
     );
 }
