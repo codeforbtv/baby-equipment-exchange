@@ -41,10 +41,6 @@ export type DonationBody = {
     images: string[];
 };
 
-export type DonationFormProps = {
-    setShowForm?: Dispatch<SetStateAction<boolean>>;
-};
-
 export type InventoryItemCardProps = {
     inventoryItem: InventoryItem;
     requestHandler: (inventoryItem: InventoryItem) => void;

@@ -15,8 +15,12 @@ import styles from './DonationForm.module.css';
 import '../styles/globalStyles.css';
 
 //Types
-import { DonationFormData, DonationFormProps } from '@/types/DonationTypes';
+import { DonationFormData } from '@/types/DonationTypes';
 import CustomDialog from './CustomDialog';
+
+export type DonationFormProps = {
+    setShowForm: Dispatch<SetStateAction<boolean>>;
+};
 
 export default function DonationForm(props: DonationFormProps) {
     const [formData, setFormData] = useState<DonationFormData>({
@@ -83,7 +87,7 @@ export default function DonationForm(props: DonationFormProps) {
         });
         setImages(null);
         setImageElements([]);
-        if (props.setShowForm) props.setShowForm(false);
+        props.setShowForm(false);
     }
 
     function handleCancel(e: React.SyntheticEvent) {
@@ -97,7 +101,7 @@ export default function DonationForm(props: DonationFormProps) {
         });
         setImages(null);
         setImageElements([]);
-        if (props.setShowForm) props.setShowForm(false);
+        props.setShowForm(false);
     }
 
     return (

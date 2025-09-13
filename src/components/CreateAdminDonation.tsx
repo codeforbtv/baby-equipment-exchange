@@ -7,13 +7,13 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
 import PendingDonations from './PendingDonations';
 import DonationForm from './DonationForm';
-import { Button } from '@mui/material';
+import { Button, IconButton } from '@mui/material';
 //Api
 import { addErrorEvent } from '@/api/firebase';
 import { uploadImages } from '@/api/firebase-images';
 //Icons
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
-import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles
 import '@/styles/globalStyles.css';
 //Types
@@ -93,12 +93,15 @@ const CreateAdminDonation = (props: CreateAdminDonationProps) => {
             <div className="page--header">
                 <h3>Create donation</h3>
             </div>
+            <IconButton onClick={() => setShowForm(false)}>
+                <ArrowBackIcon />
+            </IconButton>
             {isLoading ? (
                 <Loader />
             ) : (
                 <>
                     {pendingDonations.length > 0 && <PendingDonations pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
-                    <DonationForm />
+                    <DonationForm setShowForm={setShowForm} />
                     {pendingDonations.length > 0 && (
                         <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
                             {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
