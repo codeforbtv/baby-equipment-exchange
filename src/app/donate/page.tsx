@@ -24,6 +24,7 @@ import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
 //Types
 import { DonationFormData, DonationBody } from '@/types/DonationTypes';
+import CustomDialog from '@/components/CustomDialog';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,9 +37,15 @@ export default function Donate() {
     const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
     const [showForm, setShowForm] = useState<boolean>(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+
     const { currentUser } = useUserContext();
     const { pendingDonations, removePendingDonation, clearPendingDonations, getPendingDonationsFromLocalStorage } = usePendingDonationsContext();
     const router = useRouter();
+
+    const handleClose = () => {
+        setIsOpen(false);
+    };
 
     useEffect(() => {
         getDonorFromLocalStorage();
@@ -124,14 +131,14 @@ export default function Donate() {
     //Use this to handle passing form data to the database on submission
     async function handleFormSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
+        setSubmitState('submitting');
         try {
-            setSubmitState('submitting');
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
             await addDonation(donationsToUpload);
             clearPendingDonations();
             localStorage.clear();
             setSubmitState('idle');
-            router.push('/');
+            setIsOpen(true);
         } catch (error) {
             setSubmitState('error');
             addErrorEvent('Bulk donation', error);
@@ -255,6 +262,12 @@ export default function Donate() {
                     </div>
                 </>
             )}
+            <CustomDialog
+                isOpen={isOpen}
+                onClose={handleClose}
+                title="Donation submitted"
+                content={`Your donation has been submitted. An email with next steps will be sent to ${donorEmail} once your donation has been approved.`}
+            />
         </>
     );
 }
