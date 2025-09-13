@@ -11,6 +11,7 @@ import styles from './Card.module.css';
 // Types
 
 import { Donation } from '@/models/donation';
+import Link from 'next/link';
 
 const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
@@ -29,6 +30,7 @@ export default function DonationCard(props: DonationCardProps) {
                 src={image}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 alt={`Brand ${donation.brand} and model ${donation.model} description ${donation.description}`}
+                onClick={() => setIdToDisplay(donation.id)}
             />
             <ImageListItemBar
                 title={donation.brand}
