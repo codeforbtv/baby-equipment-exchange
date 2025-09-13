@@ -35,7 +35,7 @@ const Donations = (props: DonationsProps) => {
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />}
+            {idToDisplay && <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setDonationsUpdated={setDonationsUpdated} />}
             {showForm && <CreateAdminDonation setShowForm={setShowForm} setDonationsUpdated={setDonationsUpdated} />}
             {!idToDisplay && !showForm && (
                 <>

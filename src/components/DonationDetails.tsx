@@ -33,10 +33,11 @@ import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, 
 type DonationDetailsProps = {
     id: string;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
+    setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const DonationDetails = (props: DonationDetailsProps) => {
-    const { id, setIdToDisplay } = props;
+    const { id, setIdToDisplay, setDonationsUpdated } = props;
     const [donationDetails, setDonationDetails] = useState<IDonation | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -176,7 +177,12 @@ const DonationDetails = (props: DonationDetailsProps) => {
                     </div>
                 )}
                 {!isLoading && donationDetails && isEditMode && (
-                    <EditDonation donationDetails={donationDetails} setIsEditMode={setIsEditMode} fetchDonation={fetchDonation} />
+                    <EditDonation
+                        donationDetails={donationDetails}
+                        setIsEditMode={setIsEditMode}
+                        fetchDonation={fetchDonation}
+                        setDonationsUpdated={setDonationsUpdated && setDonationsUpdated}
+                    />
                 )}
             </div>
         </ProtectedAdminRoute>

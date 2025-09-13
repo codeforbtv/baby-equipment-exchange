@@ -21,23 +21,7 @@ type DonationCardProps = {
 
 export default function DonationCard(props: DonationCardProps) {
     const { donation, setIdToDisplay } = props;
-
-    const [showDialog, setShowDialog] = useState<boolean>(false);
     const image = donation.images ? donation.images[0] : '';
-
-    const router = useRouter();
-
-    const closeDialog = () => {
-        setShowDialog(false);
-    };
-
-    const openDialog = () => {
-        setShowDialog(true);
-    };
-
-    const deleteDonation = () => {
-        closeDialog();
-    };
 
     return (
         <ImageListItem key={donation.id} className={styles['grid__item']}>
@@ -59,9 +43,6 @@ export default function DonationCard(props: DonationCardProps) {
                     </IconButton>
                 }
             />
-            <Suspense fallback={<Loader />}>
-                <ExistingDonationDialog initialParameters={{ initAsOpen: showDialog, data: donation }} onClose={closeDialog} onDelete={deleteDonation} />
-            </Suspense>
         </ImageListItem>
     );
 }
