@@ -27,7 +27,7 @@ type CreateAdminDonationProps = {
     setDonationsUpdated: Dispatch<SetStateAction<boolean>>;
 };
 
-const CreateAdminDonation = (props: CreateAdminDonationProps) => {
+const AdminCreateDonation = (props: CreateAdminDonationProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -115,4 +115,4 @@ const CreateAdminDonation = (props: CreateAdminDonationProps) => {
     );
 };
 
-export default CreateAdminDonation;
+export default AdminCreateDonation;

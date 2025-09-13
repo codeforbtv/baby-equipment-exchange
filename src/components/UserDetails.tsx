@@ -51,6 +51,7 @@ export default function UserDetails(props: UserDetailsProps) {
                 };
                 setUserDetails(enabledUserDetails);
             }
+            setUsersUpdated(true);
             setIsLoading(false);
             setIsDialogOpen(true);
         } catch (error) {
@@ -122,7 +123,7 @@ export default function UserDetails(props: UserDetailsProps) {
                     </div>
                 )}
                 {!isLoading && userDetails && isEditMode && (
-                    <EditUser userDetails={userDetails} setIsEditMode={setIsEditMode} fetchUserDetails={fetchUserDetails} />
+                    <EditUser userDetails={userDetails} setIsEditMode={setIsEditMode} fetchUserDetails={fetchUserDetails} setUsersUpdated={setUsersUpdated} />
                 )}
                 <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="User enabled" content={`User ${userDetails?.displayName} has been enabled.`} />
             </div>

@@ -14,8 +14,7 @@ import { Donation } from '@/models/donation';
 
 import DonationDetails from '@/components/DonationDetails';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
-import DonationForm from '@/components/DonationForm';
-import CreateAdminDonation from '@/components/CreateAdminDonation';
+import AdminCreateDonation from '@/components/AdminCreateDonation';
 
 type DonationsProps = {
     donations: Donation[];
@@ -36,7 +35,7 @@ const Donations = (props: DonationsProps) => {
     return (
         <ProtectedAdminRoute>
             {idToDisplay && <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setDonationsUpdated={setDonationsUpdated} />}
-            {showForm && <CreateAdminDonation setShowForm={setShowForm} setDonationsUpdated={setDonationsUpdated} />}
+            {showForm && <AdminCreateDonation setShowForm={setShowForm} setDonationsUpdated={setDonationsUpdated} />}
             {!idToDisplay && !showForm && (
                 <>
                     <div className="page--header">
