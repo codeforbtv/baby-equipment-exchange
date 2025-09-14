@@ -2,17 +2,15 @@
 
 //Hooks
 import { useEffect, useState, Dispatch, SetStateAction } from 'react';
-
-//APIs
-import { addErrorEvent, callEnableUser } from '@/api/firebase';
-import { getUserDetails } from '@/api/firebase-users';
-
 //Components
 import Loader from '@/components/Loader';
 import EditUser from '@/components/EditUser';
 import { List, ListItem, Typography, Button, Divider, IconButton } from '@mui/material';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
+//APIs
+import { addErrorEvent, callEnableUser } from '@/api/firebase';
+import { getUserDetails } from '@/api/firebase-users';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles

@@ -1,8 +1,11 @@
 'use client';
-
-import { onAuthStateChangedListener, checkIsAdmin, checkIsAidWorker } from '@/api/firebase';
-import { User } from 'firebase/auth';
+//Hooks
 import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
+//Libs
+import { checkIsAdmin, checkIsAidWorker } from '@/api/firebase';
+import { onAuthStateChangedListener } from '@/api/firebase-users';
+//Types
+import { User } from 'firebase/auth';
 
 type UserContextType = {
     currentUser: User | null;

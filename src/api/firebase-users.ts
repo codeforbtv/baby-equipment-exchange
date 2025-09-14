@@ -1,34 +1,29 @@
 // Libs
-import { addErrorEvent, db, auth, getUserId } from './firebase';
-import {
-    arrayUnion,
-    collection,
-    doc,
-    DocumentData,
-    DocumentReference,
-    DocumentSnapshot,
-    getDoc,
-    getDocs,
-    query,
-    QueryDocumentSnapshot,
-    runTransaction,
-    serverTimestamp,
-    SnapshotOptions,
-    Timestamp,
-    updateDoc
-} from 'firebase/firestore';
+import { addErrorEvent, db, auth } from './firebase';
+import { doc, DocumentData, getDoc, QueryDocumentSnapshot, serverTimestamp, SnapshotOptions, updateDoc } from 'firebase/firestore';
 
 //API
 import { getAuthUserById } from './firebaseAdmin';
 
 // Models
-import { AuthUserRecord, UserDetails } from '@/types/UserTypes';
+import { UserDetails } from '@/types/UserTypes';
 import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
 // Types
-import { AccountInformation, UserBody, NoteBody } from '@/types/post-data';
+import { NoteBody } from '@/types/post-data';
 // Utility methods
 import { stripNullUndefined } from '@/utils/utils';
+
+import {
+    NextOrObserver,
+    onAuthStateChanged,
+    sendPasswordResetEmail,
+    signInAnonymously,
+    signInWithEmailAndPassword,
+    signOut,
+    User,
+    UserCredential
+} from 'firebase/auth';
 
 export const USERS_COLLECTION = 'Users';
 
@@ -36,6 +31,7 @@ export const userConverter = {
     toFirestore(user: UserCollection): DocumentData {
         const userData: IUser = {
             uid: user.getUid(),
+            isDisabled: user.getIsDisabled(),
             phoneNumber: user.getPhoneNumber(),
             requestedItems: user.getRequestedItems(),
             notes: user.getNotes(),
@@ -54,6 +50,7 @@ export const userConverter = {
         const data = snapshot.data(options)!;
         const userData: IUser = {
             uid: data.uid,
+            isDisabled: data.isDisabled,
             phoneNumber: data.phoneNumber,
             requestedItems: data.requestedItems,
             notes: data.notes,
@@ -118,132 +115,57 @@ export async function getUserDetails(uid: string): Promise<UserDetails> {
     return Promise.reject();
 }
 
-// async function _getUserAccount(userId: string): Promise<AccountInformation> {
-//     const userRef = doc(db, `${USERS_COLLECTION}/${userId}`).withConverter(userConverter);
-//     const userDocument: DocumentSnapshot<User> = await getDoc(userRef);
-//     const userDetailsRef = doc(db, USER_DETAILS_COLLECTION, userId).withConverter(userDetailConverter);
-//     const userDetailDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef);
-//     let accountInformation: AccountInformation = {
-//         name: '',
-//         contact: {
-//             user: undefined,
-//             name: undefined,
-//             email: undefined,
-//             phone: undefined,
-//             website: undefined,
-//             notes: undefined
-//         },
-//         location: {
-//             line_1: undefined,
-//             line_2: undefined,
-//             city: undefined,
-//             state: undefined,
-//             zipcode: undefined,
-//             latitude: undefined,
-//             longitude: undefined
-//         },
-//         photo: undefined
-//     };
+// User based
+export function getUserEmail(): string | null | undefined {
+    return auth.currentUser?.email;
+}
 
-//     if (userDocument.exists() && userDetailDocument.exists()) {
-//         const user: User = userDocument.data();
-//         const userDetail: UserDetail = userDetailDocument.data();
-//         accountInformation = {
-//             name: user.getName(),
-//             contact: {
-//                 user: userRef,
-//                 name: user.getName(),
-//                 email: userDetail.getPrimaryEmail(),
-//                 phone: userDetail.getPrimaryPhone(),
-//                 website: userDetail.getPrimaryWebsite(),
-//                 notes: userDetail.getNotes()
-//             },
-//             location: userDetail.getPrimaryAddress(),
-//             photo: user.getPhoto()
-//         };
-//     } else {
-//         return Promise.reject();
-//     }
+export async function getUserId(): Promise<string> {
+    await auth.authStateReady();
+    const currentUser = auth.currentUser?.uid;
+    return currentUser ?? Promise.reject();
+}
 
-//     return accountInformation;
-// }
+export async function getUserEmailById(id: string): Promise<string> {
+    try {
+        const user = await getAuthUserById(id);
+        if (user.email) return user.email;
+    } catch (error) {
+        addErrorEvent('Get user email by ID', error);
+    }
+    return Promise.reject();
+}
 
-// export async function setUserAccount(accountInformation: AccountInformation) {
-//     try {
-//         const userId: string = await getUserId();
-//         const userRef = doc(db, `${USERS_COLLECTION}/${userId}`).withConverter(userConverter);
-//         const userDocument: DocumentSnapshot<User> = await getDoc(userRef);
-//         const userDetailsRef = doc(db, `${USER_DETAILS_COLLECTION}/${userId}`).withConverter(userDetailConverter);
-//         const userDetailsDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef);
-//         if (userDocument.exists() && userDetailsDocument.exists()) {
-//             const userChanges: any = {};
-//             const userDetailChanges: any = {};
-//             const name: any = accountInformation.name;
-//             const photo: any = accountInformation.photo;
-//             const primaryContact: any = stripNullUndefined(accountInformation.contact);
-//             const primaryLocation: any = stripNullUndefined(accountInformation.location);
+export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
+    if (!email || !password) {
+        return null;
+    }
+    const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+}
 
-//             if (name !== null && name !== undefined) {
-//                 userChanges['name'] = name;
-//             }
+export function signOutUser(): void {
+    signOut(auth);
+}
 
-//             if (photo !== null && photo !== undefined) {
-//                 userChanges['photo'] = photo;
-//             }
+export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
+    onAuthStateChanged(auth, callback);
+}
 
-//             if (primaryContact !== null && primaryContact !== undefined) {
-//                 for (const key in primaryContact) {
-//                     if (primaryContact[key] !== null && primaryContact[key] !== undefined) {
-//                         userDetailChanges[key] = primaryContact[key];
-//                     }
-//                 }
+export async function resetPassword(email: string): Promise<void> {
+    if (!email) Promise.reject();
+    await sendPasswordResetEmail(auth, email);
+}
 
-//                 if (userDetailChanges.email !== null && userDetailChanges.email !== undefined) {
-//                     userDetailChanges.emails = arrayUnion(userDetailChanges.email);
-//                 }
-
-//                 if (userDetailChanges.phone !== null && userDetailChanges.phone !== undefined) {
-//                     userDetailChanges.phones = arrayUnion(userDetailChanges.phone);
-//                 }
-
-//                 if (userDetailChanges.website !== null && userDetailChanges.website !== undefined) {
-//                     userDetailChanges.websites = arrayUnion(userDetailChanges.website);
-//                 }
-//             }
-
-//             if (primaryLocation !== null && primaryLocation !== undefined) {
-//                 if (userDetailChanges.address === null || userDetailChanges.address === undefined) {
-//                     userDetailChanges.address = {};
-//                 }
-
-//                 for (const key in primaryLocation) {
-//                     if (primaryLocation[key] !== null && primaryLocation[key] !== undefined) {
-//                         userDetailChanges['address'][key] = primaryLocation[key];
-//                     }
-//                 }
-
-//                 userDetailChanges.addresses = arrayUnion(userDetailChanges.address);
-//             }
-
-//             if (Object.keys(userChanges).length > 0) {
-//                 userChanges['modifiedAt'] = serverTimestamp();
-//                 stripNullUndefined(userChanges);
-//             }
-
-//             if (Object.keys(userDetailChanges).length > 0) {
-//                 userDetailChanges['modifiedAt'] = serverTimestamp();
-//                 stripNullUndefined(userDetailChanges);
-//             }
-
-//             runTransaction(db, async (transaction) => {
-//                 transaction.set(userRef, userChanges);
-//                 transaction.set(userDetailsRef, userDetailChanges);
-//             });
-//         }
-//     } catch (error) {
-//         // eslint-disable-line no-empty
-//     }
-// }
+export async function loginAnonymousUser(): Promise<User | null> {
+    try {
+        const userCredential = await signInAnonymously(auth);
+        return userCredential.user;
+    } catch (error) {
+        addErrorEvent('Login anonymously', error);
+    }
+    return Promise.reject();
+}
 
 export async function addNote(note: NoteBody) {
     try {

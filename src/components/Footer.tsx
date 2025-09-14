@@ -1,12 +1,13 @@
 'use client';
+//Hooks
 import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+//Components
 import Link from 'next/link';
-
+//Libs
+import { signOutUser } from '@/api/firebase-users';
 //Styles
 import styles from './Footer.module.css';
-
-import { signOutUser } from '@/api/firebase';
 
 export default function Footer() {
     const { currentUser } = useUserContext();

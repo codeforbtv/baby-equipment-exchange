@@ -13,7 +13,7 @@ import { Button, Box, TextField, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
 //libs
 import { addDonation } from '@/api/firebase-donations';
-import { addErrorEvent, loginAnonymousUser } from '@/api/firebase';
+import { addErrorEvent } from '@/api/firebase';
 import { uploadImages } from '@/api/firebase-images';
 //styles
 import '../../styles/globalStyles.css';
@@ -25,6 +25,7 @@ import AddIcon from '@mui/icons-material/Add';
 //Types
 import { DonationFormData, DonationBody } from '@/types/DonationTypes';
 import CustomDialog from '@/components/CustomDialog';
+import { loginAnonymousUser } from '@/api/firebase-users';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

@@ -1,7 +1,7 @@
 import { UserMetadata } from 'firebase-admin/auth';
 import { IUser } from '@/models/user';
 
-export type newUserAccountInfo = {
+export type NewUserAccountInfo = {
     displayName: string;
     email: string;
     password: string;

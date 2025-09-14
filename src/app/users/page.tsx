@@ -1,27 +1,23 @@
 'use client';
 
 // Hooks
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 // Components
-import { Button, List } from '@mui/material';
+import { List } from '@mui/material';
 import SearchBar from '@/components/SearchBar';
 import Filter from '@/components/Filter';
-import Loader from '@/components/Loader';
 import UserCard from '@/components/UserCard';
-import NewUserDialog from '@/components/NewUserDialog';
 import UserDetails from '@/components/UserDetails';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 // Icons
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// Libs
-import { addErrorEvent, callListAllUsers } from '@/api/firebase';
 // Styles
 import styles from '@/components/Browse.module.css';
 import '@/styles/globalStyles.css';
 // Types
 import { AuthUserRecord } from '@/types/UserTypes';
-import { UserDetail } from '@/models/user-detail';
-import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+
 type UserListProps = {
     users: AuthUserRecord[];
     setUsersUpdated: Dispatch<SetStateAction<boolean>>;

@@ -1,15 +1,11 @@
 'use client';
 //Components
-import ToasterNotification from '@/components/ToasterNotification';
-import Loader from '@/components/Loader';
-import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import { Box, TextField, Button } from '@mui/material';
-
 //Hooks
-import { useEffect, useState, Suspense } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
-import { resetPassword } from '@/api/firebase';
+import { resetPassword } from '@/api/firebase-users';
 //Styling
 import '../../styles/globalStyles.css';
 

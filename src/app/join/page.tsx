@@ -7,12 +7,12 @@ import Loader from '@/components/Loader';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Api
-import { callIsEmailInUse, createUser, addErrorEvent, callGetOrganizationNames } from '@/api/firebase';
+import { callIsEmailInUse, addErrorEvent, callGetOrganizationNames, callCreateUser } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
 //Types
-import { newUserAccountInfo } from '@/types/UserTypes';
+import { NewUserAccountInfo } from '@/types/UserTypes';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -72,7 +72,7 @@ export default function NewAccount() {
             notes = [`User provided organization: ${orgInputValue}`];
         }
 
-        const accountInfo: newUserAccountInfo = {
+        const accountInfo: NewUserAccountInfo = {
             displayName: displayName,
             email: email,
             password: password,
@@ -81,7 +81,7 @@ export default function NewAccount() {
             notes: notes
         };
         try {
-            const newUser = await createUser(accountInfo);
+            const newUser = await callCreateUser(accountInfo);
             newUser.displayName && setConfirmedUserName(newUser.displayName);
             setIsLoading(false);
             setOpenDialog(true);
