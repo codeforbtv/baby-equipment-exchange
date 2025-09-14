@@ -213,10 +213,9 @@ export async function createUser(accountInfo: newUserAccountInfo): Promise<UserR
     return Promise.reject();
 }
 
-export async function callEnableUser(userId: string): Promise<UserRecord> {
+export async function callEnableUser(userId: string): Promise<void> {
     try {
-        const enabledUser = await enableUser({ userId: userId });
-        return enabledUser.data as UserRecord;
+        await enableUser({ userId: userId });
     } catch (error) {
         addErrorEvent('Could not enable user', error);
     }
