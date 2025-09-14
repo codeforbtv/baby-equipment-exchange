@@ -13,8 +13,7 @@ import { convertToString } from '@/utils/utils';
 import { UserRecord } from 'firebase-admin/auth';
 import { getDonationNotifications } from './firebase-donations';
 import { getUsersNotifications } from './firebase-users';
-import { UserCollection } from '@/models/user';
-import { Donation } from '@/models/donation';
+import { Notification } from '@/types/NotificationTypes';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -121,11 +120,14 @@ export async function callGetOrganizationNames(): Promise<{
 }
 
 //Multi-collection query
-export async function getNotifications(): Promise<[Donation[], UserCollection[]]> {
+export async function getNotifications(): Promise<Notification> {
     try {
         const donationNotifications = await getDonationNotifications();
         const userNotifications = await getUsersNotifications();
-        return [donationNotifications, userNotifications];
+        return {
+            donations: donationNotifications,
+            users: userNotifications
+        };
     } catch (error) {
         addErrorEvent('Error getting notifications', error);
     }

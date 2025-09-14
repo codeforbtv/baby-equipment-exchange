@@ -17,6 +17,8 @@ import { getAllDonations } from '@/api/firebase-donations';
 import { Donation } from '@/models/donation';
 import { AuthUserRecord } from '@/types/UserTypes';
 import { UserCollection } from '@/models/user';
+import { Notification } from '@/types/NotificationTypes';
+import Notifications from '@/app/notifications/page';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -26,7 +28,7 @@ export default function Dashboard() {
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
         [key: string]: string;
     } | null>(null);
-    const [notifications, setNotifications] = useState<[Donation[], UserCollection[]] | null>(null);
+    const [notifications, setNotifications] = useState<Notification | null>(null);
 
     //Track whether updates have been made
     const [notificationsUpdated, setNotificationsUpdated] = useState<boolean>(false);
@@ -118,7 +120,13 @@ export default function Dashboard() {
                     <Loader />
                 ) : (
                     <>
-                        <CustomTabPanel value={currentTab} index={0} />
+                        <CustomTabPanel value={currentTab} index={0}>
+                            {notifications ? (
+                                <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
+                            ) : (
+                                <p>No notifications at this time.</p>
+                            )}
+                        </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={1}>
                             {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
                         </CustomTabPanel>
