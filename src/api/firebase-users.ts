@@ -1,6 +1,18 @@
 // Libs
 import { addErrorEvent, db, auth } from './firebase';
-import { doc, DocumentData, getDoc, QueryDocumentSnapshot, serverTimestamp, SnapshotOptions, updateDoc } from 'firebase/firestore';
+import {
+    doc,
+    DocumentData,
+    getDoc,
+    QueryDocumentSnapshot,
+    serverTimestamp,
+    SnapshotOptions,
+    updateDoc,
+    where,
+    collection,
+    query,
+    getDocs
+} from 'firebase/firestore';
 
 //API
 import { getAuthUserById } from './firebaseAdmin';
@@ -115,7 +127,22 @@ export async function getUserDetails(uid: string): Promise<UserDetails> {
     return Promise.reject();
 }
 
-// User based
+export async function getUsersNotifications(): Promise<UserCollection[]> {
+    let users: UserCollection[] = [];
+    try {
+        const usersRef = collection(db, USERS_COLLECTION);
+        const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
+        const usersNotificationsSnapshot = await getDocs(usersNotificationsQuery);
+        usersNotificationsSnapshot.forEach((doc) => {
+            users.push(doc.data());
+        });
+        return users;
+    } catch (error) {
+        addErrorEvent('Get users notifications', error);
+    }
+    return Promise.reject();
+}
+
 export function getUserEmail(): string | null | undefined {
     return auth.currentUser?.email;
 }

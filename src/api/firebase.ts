@@ -1,5 +1,5 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { collection, getDocs, getFirestore, query, where, and, or } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { User, getAuth } from 'firebase/auth';
 
@@ -11,6 +11,8 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
 import { UserRecord } from 'firebase-admin/auth';
+import { DONATIONS_COLLECTION, getDonationNotifications } from './firebase-donations';
+import { getUsersNotifications, USERS_COLLECTION } from './firebase-users';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -114,6 +116,19 @@ export async function callGetOrganizationNames(): Promise<{
         addErrorEvent('Could not fetch organization names', error);
     }
     return Promise.reject();
+}
+
+//Multi-collection query
+export async function getNotifications(): Promise<void> {
+    console.log('get notifications ran');
+    try {
+        const donationNotifications = await getDonationNotifications();
+        console.log('Donation notifications: ', donationNotifications);
+        const userNotifications = await getUsersNotifications();
+        console.log('Users notifications: ', userNotifications);
+    } catch (error) {
+        addErrorEvent('Error getting notifications', error);
+    }
 }
 
 // Role based claims.

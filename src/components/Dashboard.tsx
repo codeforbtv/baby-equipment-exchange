@@ -11,7 +11,7 @@ import Loader from './Loader';
 //Hooks
 import React, { useEffect, useState } from 'react';
 //API
-import { addErrorEvent, callGetOrganizationNames, callListAllUsers } from '@/api/firebase';
+import { addErrorEvent, callGetOrganizationNames, callListAllUsers, getNotifications } from '@/api/firebase';
 import { getAllDonations } from '@/api/firebase-donations';
 //Types
 import { Donation } from '@/models/donation';
@@ -78,6 +78,7 @@ export default function Dashboard() {
     // Only fetch collections once when selected unless there's been an update
     useEffect(() => {
         if ((currentTab === 0 && !donations) || (currentTab === 0 && donationsUpdated)) {
+            getNotifications();
             fetchDonations();
         } else if ((currentTab === 1 && !users) || (currentTab === 1 && usersUpdated)) {
             fetchUsers();
