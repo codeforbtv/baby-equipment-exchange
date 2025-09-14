@@ -67,9 +67,9 @@ export const enableuser = onCall(async (request): Promise<void> => {
     if (!request.auth) {
         return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to enable user account.'));
     }
-    if (request.auth && !request.auth.token.admin) {
+    if (request.auth && request.auth.token.admin != true) {
         return Promise.reject(new HttpsError('permission-denied', 'Only admins can enable user accounts.'));
-    } else if (request.auth && request.auth.token.admin) {
+    } else if (request.auth && request.auth.token.admin == true) {
         const userId = request.data.userId;
         if (!userId) {
             return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to enable a user account.'));
@@ -85,7 +85,6 @@ export const enableuser = onCall(async (request): Promise<void> => {
             }
         }
     }
-    return Promise.reject(new HttpsError('permission-denied', 'Unable to enable user account.'));
 });
 
 export const updateauthuser = onCall(async (request): Promise<UserRecord> => {
