@@ -1,5 +1,5 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
-import { collection, getDocs, getFirestore, query, where, and, or } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { User, getAuth } from 'firebase/auth';
 
@@ -11,8 +11,10 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
 import { UserRecord } from 'firebase-admin/auth';
-import { DONATIONS_COLLECTION, getDonationNotifications } from './firebase-donations';
-import { getUsersNotifications, USERS_COLLECTION } from './firebase-users';
+import { getDonationNotifications } from './firebase-donations';
+import { getUsersNotifications } from './firebase-users';
+import { UserCollection } from '@/models/user';
+import { Donation } from '@/models/donation';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -119,16 +121,15 @@ export async function callGetOrganizationNames(): Promise<{
 }
 
 //Multi-collection query
-export async function getNotifications(): Promise<void> {
-    console.log('get notifications ran');
+export async function getNotifications(): Promise<[Donation[], UserCollection[]]> {
     try {
         const donationNotifications = await getDonationNotifications();
-        console.log('Donation notifications: ', donationNotifications);
         const userNotifications = await getUsersNotifications();
-        console.log('Users notifications: ', userNotifications);
+        return [donationNotifications, userNotifications];
     } catch (error) {
         addErrorEvent('Error getting notifications', error);
     }
+    return Promise.reject();
 }
 
 // Role based claims.

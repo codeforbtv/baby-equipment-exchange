@@ -16,6 +16,7 @@ import { getAllDonations } from '@/api/firebase-donations';
 //Types
 import { Donation } from '@/models/donation';
 import { AuthUserRecord } from '@/types/UserTypes';
+import { UserCollection } from '@/models/user';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -25,8 +26,10 @@ export default function Dashboard() {
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
         [key: string]: string;
     } | null>(null);
+    const [notifications, setNotifications] = useState<[Donation[], UserCollection[]] | null>(null);
 
     //Track whether updates have been made
+    const [notificationsUpdated, setNotificationsUpdated] = useState<boolean>(false);
     const [donationsUpdated, setDonationsUpdated] = useState<boolean>(false);
     const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
     const [orgsUpdated, setOrgsUpdated] = useState<boolean>(false);
@@ -34,6 +37,19 @@ export default function Dashboard() {
     const handleCurrentTab = (event: React.SyntheticEvent, target: number) => {
         setCurrentTab(target);
     };
+
+    async function fetchNotifications(): Promise<void> {
+        setIsLoading(true);
+        try {
+            const notificationsResult = await getNotifications();
+            setNotifications(notificationsResult);
+            setNotificationsUpdated(false);
+            setIsLoading(false);
+        } catch (error) {
+            setIsLoading(false);
+            addErrorEvent('Fetch notifications', error);
+        }
+    }
 
     async function fetchDonations(): Promise<void> {
         setIsLoading(true);
@@ -77,12 +93,14 @@ export default function Dashboard() {
 
     // Only fetch collections once when selected unless there's been an update
     useEffect(() => {
-        if ((currentTab === 0 && !donations) || (currentTab === 0 && donationsUpdated)) {
-            getNotifications();
+        if ((currentTab === 0 && !notifications) || (currentTab === 0 && notificationsUpdated)) {
+            fetchNotifications();
+        }
+        if ((currentTab === 1 && !donations) || (currentTab === 1 && donationsUpdated)) {
             fetchDonations();
-        } else if ((currentTab === 1 && !users) || (currentTab === 1 && usersUpdated)) {
+        } else if ((currentTab === 2 && !users) || (currentTab === 2 && usersUpdated)) {
             fetchUsers();
-        } else if ((currentTab === 2 && !orgNamesAndIds) || (currentTab === 2 && orgsUpdated)) {
+        } else if ((currentTab === 3 && !orgNamesAndIds) || (currentTab === 3 && orgsUpdated)) {
             fetchOrgNames();
         }
     }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
@@ -91,6 +109,7 @@ export default function Dashboard() {
         <ProtectedAdminRoute>
             <div style={{ marginTop: '4rem' }}>
                 <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
+                    <Tab label="Notifications" />
                     <Tab label="Donations" />
                     <Tab label="Users" />
                     <Tab label="Organizations" />
@@ -99,13 +118,14 @@ export default function Dashboard() {
                     <Loader />
                 ) : (
                     <>
-                        <CustomTabPanel value={currentTab} index={0}>
+                        <CustomTabPanel value={currentTab} index={0} />
+                        <CustomTabPanel value={currentTab} index={1}>
                             {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
                         </CustomTabPanel>
-                        <CustomTabPanel value={currentTab} index={1}>
+                        <CustomTabPanel value={currentTab} index={2}>
                             {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
                         </CustomTabPanel>
-                        <CustomTabPanel value={currentTab} index={2}>
+                        <CustomTabPanel value={currentTab} index={3}>
                             {orgNamesAndIds ? (
                                 <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} />
                             ) : (
