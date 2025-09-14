@@ -11,12 +11,12 @@ import styles from './PendingDonations.module.css';
 //Types
 import { DonationFormData } from '@/types/DonationTypes';
 
-type pendingDonationProps = {
+type PendingDonationProps = {
     pendingDonations: DonationFormData[];
     removeHandler: (index: number) => void;
 };
 
-export default function PendingDonations(props: pendingDonationProps) {
+export default function PendingDonations(props: PendingDonationProps) {
     return (
         <Box>
             <Typography variant="h3">Items to be donated:</Typography>

@@ -18,7 +18,7 @@ import {
 import { getAuthUserById } from './firebaseAdmin';
 
 // Models
-import { UserDetails } from '@/types/UserTypes';
+import { AuthUserRecord, UserDetails } from '@/types/UserTypes';
 import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
 // Types
@@ -127,14 +127,15 @@ export async function getUserDetails(uid: string): Promise<UserDetails> {
     return Promise.reject();
 }
 
-export async function getUsersNotifications(): Promise<UserCollection[]> {
-    let users: UserCollection[] = [];
+export async function getUsersNotifications(): Promise<AuthUserRecord[]> {
+    let users: AuthUserRecord[] = [];
     try {
         const usersRef = collection(db, USERS_COLLECTION);
         const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
         const usersNotificationsSnapshot = await getDocs(usersNotificationsQuery);
-        usersNotificationsSnapshot.forEach((doc) => {
-            users.push(doc.data());
+        usersNotificationsSnapshot.forEach(async (doc) => {
+            const authUser = await getAuthUserById(doc.id);
+            users.push(authUser);
         });
         return users;
     } catch (error) {

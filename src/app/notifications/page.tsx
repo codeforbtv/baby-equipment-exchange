@@ -9,10 +9,12 @@ import { ListItem, ListItemText, List } from '@mui/material';
 
 //Styles
 import '@/styles/globalStyles.css';
+import styles from '@/components/Browse.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
 import DonationCard from '@/components/DonationCard';
 import DonationDetails from '@/components/DonationDetails';
+import UserCard from '@/components/UserCard';
 
 type NotificationsProps = {
     notifications: Notification;
@@ -25,11 +27,11 @@ const Notifications = (props: NotificationsProps) => {
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
 
+    const notificationCount = notifications.donations.length + notifications.users.length;
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
     const requestedDonations = notifications.donations.filter((donation) => donation.status === 'requested');
     const usersAwaitingApproval = notifications.users;
 
-    console.log(donationsAwaitingApproval, requestedDonations, usersAwaitingApproval);
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
@@ -37,11 +39,11 @@ const Notifications = (props: NotificationsProps) => {
             {!donationIdToDisplay && !userIdToDisplay && (
                 <>
                     <div className="page--header">
-                        <h3>Notifications</h3>
+                        <h3>{`You have ${notificationCount} notifications`}</h3>
                     </div>
                     {donationsAwaitingApproval.length > 0 && (
                         <>
-                            <h3>Submitted donations requiring approval</h3>
+                            <h4>Donations requiring approval</h4>
                             {donationsAwaitingApproval.map((donation) => (
                                 <DonationCard key={donation.id} donation={donation} setIdToDisplay={setDonationIdToDisplay} />
                             ))}
@@ -49,24 +51,24 @@ const Notifications = (props: NotificationsProps) => {
                     )}
                     {requestedDonations.length > 0 && (
                         <>
-                            <h3>Requested donations</h3>
+                            <h4>Requested Equipment</h4>
                             {requestedDonations.map((donation) => (
                                 <DonationCard key={donation.id} donation={donation} setIdToDisplay={setDonationIdToDisplay} />
                             ))}
                         </>
                     )}
-                    {/* {usersAwaitingApproval.length > 0 && (
+                    {usersAwaitingApproval.length > 0 && (
                         <>
-                            <h3>Users awaiting approval</h3>
-                             <div className="content--container">
-                                     <List className={styles['browse__grid']}>
-                            {usersAwaitingApproval.map((user) => {
-                    
-
-                             </List>
+                            <h4>Users awaiting approval</h4>
+                            <div className="content--container">
+                                <List className={styles['browse__grid']}>
+                                    {usersAwaitingApproval.map((user) => (
+                                        <UserCard key={user.uid} authUser={user} setIdToDisplay={setUserIdToDisplay} />
+                                    ))}
+                                </List>
                             </div>
                         </>
-                    )} */}
+                    )}
                 </>
             )}
         </ProtectedAdminRoute>
