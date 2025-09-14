@@ -35,6 +35,7 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
 
         const userParams = {
             uid: userRecord.uid,
+            isDisabled: true,
             email: userRecord.email,
             organization: organization,
             displayName: userRecord.displayName,
@@ -62,7 +63,7 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
     return Promise.reject(new HttpsError('unknown', 'An error occurred while trying to create a new user.'));
 });
 
-export const enableuser = onCall(async (request): Promise<UserRecord> => {
+export const enableuser = onCall(async (request): Promise<void> => {
     if (!request.auth) {
         return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to enable user account.'));
     }
@@ -75,9 +76,10 @@ export const enableuser = onCall(async (request): Promise<UserRecord> => {
         } else {
             try {
                 //Enabled users are aid-workers by default
+                const docRef = db.collection(USERS_COLLECTION).doc(userId);
+                await docRef.update({ isDisabled: false });
                 await auth.setCustomUserClaims(userId, { 'aid-worker': true });
-                const enabledUser = await auth.updateUser(userId, { disabled: false });
-                return enabledUser;
+                await auth.updateUser(userId, { disabled: false });
             } catch (error) {
                 return Promise.reject(new HttpsError('invalid-argument', 'Unable to update user account.'));
             }
