@@ -12,6 +12,8 @@ import {
     getDoc,
     getDocs,
     query,
+    and,
+    or,
     serverTimestamp,
     updateDoc,
     where,
@@ -150,6 +152,24 @@ export async function getAllDonations(): Promise<Donation[]> {
         return donations;
     } catch (error) {
         addErrorEvent('Get all donations', error);
+    }
+    return Promise.reject();
+}
+
+export async function getDonationNotifications(): Promise<Donation[]> {
+    let donations: Donation[] = [];
+    try {
+        const donationsRef = collection(db, DONATIONS_COLLECTION);
+        const donationNotificationsQuery = query(donationsRef, or(where('status', '==', 'in processing'), where('status', '==', 'requested'))).withConverter(
+            donationConverter
+        );
+        const donationsNotificationsSnapshot = await getDocs(donationNotificationsQuery);
+        donationsNotificationsSnapshot.forEach((doc) => {
+            donations.push(doc.data());
+        });
+        return donations;
+    } catch (error) {
+        addErrorEvent('Get donation notifications', error);
     }
     return Promise.reject();
 }

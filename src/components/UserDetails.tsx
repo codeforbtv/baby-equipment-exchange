@@ -2,17 +2,15 @@
 
 //Hooks
 import { useEffect, useState, Dispatch, SetStateAction } from 'react';
-
-//APIs
-import { addErrorEvent, callEnableUser } from '@/api/firebase';
-import { getUserDetails } from '@/api/firebase-users';
-
 //Components
 import Loader from '@/components/Loader';
 import EditUser from '@/components/EditUser';
 import { List, ListItem, Typography, Button, Divider, IconButton } from '@mui/material';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
+//APIs
+import { addErrorEvent, callEnableUser } from '@/api/firebase';
+import { getUserDetails } from '@/api/firebase-users';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles
@@ -34,24 +32,17 @@ export default function UserDetails(props: UserDetailsProps) {
 
     const handleClose = () => {
         if (setUsersUpdated) setUsersUpdated(true);
-        setIsDialogOpen(false);
         //Re-fetch user to show updated details
         if (userDetails) {
             fetchUserDetails(userDetails.uid);
         }
+        setIsDialogOpen(false);
     };
 
     const handleEnableUser = async (uid: string): Promise<void> => {
         setIsLoading(true);
         try {
-            const enabledUser = await callEnableUser(uid);
-            if (userDetails) {
-                const enabledUserDetails: UserDetails = {
-                    ...userDetails,
-                    disabled: enabledUser.disabled
-                };
-                setUserDetails(enabledUserDetails);
-            }
+            await callEnableUser(uid);
             setIsLoading(false);
             setIsDialogOpen(true);
         } catch (error) {
@@ -62,6 +53,7 @@ export default function UserDetails(props: UserDetailsProps) {
     };
 
     async function fetchUserDetails(id: string): Promise<void> {
+        setIsLoading(true);
         try {
             const userDetailsResult: UserDetails = await getUserDetails(id);
             setUserDetails(userDetailsResult);
@@ -70,6 +62,7 @@ export default function UserDetails(props: UserDetailsProps) {
             setIsLoading(false);
             addErrorEvent('Fetch user details', error);
         }
+        setIsLoading(false);
     }
 
     useEffect(() => {

@@ -10,14 +10,16 @@ export interface IUser {
         | null
         | undefined
         | boolean
+        | undefined
         | { [key: string]: any }
         | (() => string)
         | (() => { id: string; name: string }[] | null | undefined)
         | (() => DocumentReference | null | undefined)
         | (() => DocumentReference[] | null | undefined)
         | (() => Timestamp | FieldValue)
-        | (() => boolean);
+        | (() => boolean | undefined);
     readonly uid: string;
+    isDisabled?: boolean;
     phoneNumber: string;
     requestedItems: { id: string; model: string }[] | null | undefined;
     notes: string[] | null | undefined;
@@ -36,12 +38,14 @@ export class UserCollection implements IUser {
         | null
         | undefined
         | boolean
+        | undefined
         | { [key: string]: any }
         | (() => string)
         | (() => { id: string; model: string }[] | null | undefined)
         | (() => Timestamp | FieldValue)
-        | (() => boolean);
+        | (() => boolean | undefined);
     readonly uid: string;
+    isDisabled?: boolean;
     phoneNumber: string;
     requestedItems: { id: string; model: string }[] | null | undefined;
     notes: string[] | null | undefined;
@@ -50,6 +54,7 @@ export class UserCollection implements IUser {
 
     constructor(args: IUser) {
         this.uid = args.uid;
+        this.isDisabled;
         this.phoneNumber = args.phoneNumber;
         this.requestedItems = args.requestedItems;
         this.notes = args.notes;
@@ -59,6 +64,10 @@ export class UserCollection implements IUser {
 
     getUid(): string {
         return this.uid;
+    }
+
+    getIsDisabled(): boolean | undefined {
+        return this.isDisabled;
     }
 
     getPhoneNumber(): string {

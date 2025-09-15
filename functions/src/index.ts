@@ -35,6 +35,7 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
 
         const userParams = {
             uid: userRecord.uid,
+            isDisabled: true,
             email: userRecord.email,
             organization: organization,
             displayName: userRecord.displayName,
@@ -62,28 +63,28 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
     return Promise.reject(new HttpsError('unknown', 'An error occurred while trying to create a new user.'));
 });
 
-export const enableuser = onCall(async (request): Promise<UserRecord> => {
+export const enableuser = onCall(async (request): Promise<void> => {
     if (!request.auth) {
         return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to enable user account.'));
     }
-    if (request.auth && !request.auth.token.admin) {
+    if (request.auth && request.auth.token.admin != true) {
         return Promise.reject(new HttpsError('permission-denied', 'Only admins can enable user accounts.'));
-    } else if (request.auth && request.auth.token.admin) {
+    } else if (request.auth && request.auth.token.admin == true) {
         const userId = request.data.userId;
         if (!userId) {
             return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to enable a user account.'));
         } else {
             try {
                 //Enabled users are aid-workers by default
+                const docRef = db.collection(USERS_COLLECTION).doc(userId);
+                await docRef.update({ isDisabled: false });
                 await auth.setCustomUserClaims(userId, { 'aid-worker': true });
-                const enabledUser = await auth.updateUser(userId, { disabled: false });
-                return enabledUser;
+                await auth.updateUser(userId, { disabled: false });
             } catch (error) {
                 return Promise.reject(new HttpsError('invalid-argument', 'Unable to update user account.'));
             }
         }
     }
-    return Promise.reject(new HttpsError('permission-denied', 'Unable to enable user account.'));
 });
 
 export const updateauthuser = onCall(async (request): Promise<UserRecord> => {

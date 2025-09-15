@@ -2,17 +2,14 @@
 
 //Components
 import Link from 'next/link';
-
-//Hooks
-import { useUserContext } from '@/contexts/UserContext';
-import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
-
-//Libs
-import { signOutUser } from '@/api/firebase';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Drawer from '@mui/material/Drawer';
-
+//Hooks
+import { useUserContext } from '@/contexts/UserContext';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+//Libs
+import { signOutUser } from '@/api/firebase-users';
 //styles
 import styles from './NavMenu.module.css';
 

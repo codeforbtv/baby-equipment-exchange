@@ -1,16 +1,15 @@
 'use client';
 //Components
-import ToasterNotification from '@/components/ToasterNotification';
 import Loader from '@/components/Loader';
-import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import { Box, TextField, Button } from '@mui/material';
-
+import Link from 'next/link';
 //Hooks
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 //Libs
-import { signInAuthUserWithEmailAndPassword, onAuthStateChangedListener } from '@/api/firebase';
+import { onAuthStateChangedListener, signInAuthUserWithEmailAndPassword } from '@/api/firebase-users';
+//Icons
+import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 //Styling
 import '../../styles/globalStyles.css';
 import styles from './Login.module.css';
