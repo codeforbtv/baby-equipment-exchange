@@ -1,19 +1,16 @@
+'use client';
+
+// Hooks
+import { Dispatch, SetStateAction } from 'react';
 // Components
 import { IconButton, ImageListItem, ImageListItemBar } from '@mui/material';
 import Loader from './Loader';
-// Hooks
-import { Suspense, lazy, useState, Dispatch, SetStateAction } from 'react';
-import { useRouter } from 'next/navigation';
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
 // Styles
 import styles from './Card.module.css';
 // Types
-
 import { Donation } from '@/models/donation';
-import Link from 'next/link';
-
-const ExistingDonationDialog = lazy(() => import('./ExistingDonationDialog'));
 
 type DonationCardProps = {
     donation: Donation;

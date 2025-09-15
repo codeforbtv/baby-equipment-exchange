@@ -1,10 +1,11 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import UserDetails from '@/components/UserDetails';
-import { ListItem, ListItemText, List } from '@mui/material';
+import DonationDetails from '@/components/DonationDetails';
+import NotificationCard from '@/components/NotificationCard';
 //Api
 
 //Styles
@@ -12,9 +13,6 @@ import '@/styles/globalStyles.css';
 import styles from '@/components/Browse.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
-import DonationCard from '@/components/DonationCard';
-import DonationDetails from '@/components/DonationDetails';
-import UserCard from '@/components/UserCard';
 
 type NotificationsProps = {
     notifications: Notification;
@@ -45,7 +43,13 @@ const Notifications = (props: NotificationsProps) => {
                         <>
                             <h4>Donations requiring approval</h4>
                             {donationsAwaitingApproval.map((donation) => (
-                                <DonationCard key={donation.id} donation={donation} setIdToDisplay={setDonationIdToDisplay} />
+                                <NotificationCard
+                                    key={donation.id}
+                                    donation={donation}
+                                    type="pending-donation"
+                                    setIdToDisplay={setDonationIdToDisplay}
+                                    setNotificationsUpdated={setNotificationsUpdated}
+                                />
                             ))}
                         </>
                     )}
@@ -53,20 +57,28 @@ const Notifications = (props: NotificationsProps) => {
                         <>
                             <h4>Requested Equipment</h4>
                             {requestedDonations.map((donation) => (
-                                <DonationCard key={donation.id} donation={donation} setIdToDisplay={setDonationIdToDisplay} />
+                                <NotificationCard
+                                    key={donation.id}
+                                    type="requested-donation"
+                                    donation={donation}
+                                    setIdToDisplay={setDonationIdToDisplay}
+                                    setNotificationsUpdated={setNotificationsUpdated}
+                                />
                             ))}
                         </>
                     )}
                     {usersAwaitingApproval.length > 0 && (
                         <>
                             <h4>Users awaiting approval</h4>
-                            <div className="content--container">
-                                <List className={styles['browse__grid']}>
-                                    {usersAwaitingApproval.map((user) => (
-                                        <UserCard key={user.uid} authUser={user} setIdToDisplay={setUserIdToDisplay} />
-                                    ))}
-                                </List>
-                            </div>
+                            {usersAwaitingApproval.map((user) => (
+                                <NotificationCard
+                                    key={user.uid}
+                                    type="pending-user"
+                                    authUser={user}
+                                    setIdToDisplay={setUserIdToDisplay}
+                                    setNotificationsUpdated={setNotificationsUpdated}
+                                />
+                            ))}
                         </>
                     )}
                 </>

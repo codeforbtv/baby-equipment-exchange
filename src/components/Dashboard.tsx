@@ -8,6 +8,7 @@ import Users from '@/app/users/page';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
+import Notifications from '@/app/notifications/page';
 //Hooks
 import React, { useEffect, useState } from 'react';
 //API
@@ -16,9 +17,7 @@ import { getAllDonations } from '@/api/firebase-donations';
 //Types
 import { Donation } from '@/models/donation';
 import { AuthUserRecord } from '@/types/UserTypes';
-import { UserCollection } from '@/models/user';
 import { Notification } from '@/types/NotificationTypes';
-import Notifications from '@/app/notifications/page';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
