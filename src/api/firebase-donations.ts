@@ -32,7 +32,6 @@ import { DonationBody } from '@/types/post-data';
 // Libs
 import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
-import { error } from 'console';
 
 // Imported constants
 
@@ -237,7 +236,7 @@ export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
             });
         }
         return donations;
-    } catch {
+    } catch (error) {
         addErrorEvent('Get donations by bulk id', error);
     }
     return Promise.reject();
