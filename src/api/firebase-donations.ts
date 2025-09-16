@@ -32,6 +32,7 @@ import { DonationBody } from '@/types/post-data';
 // Libs
 import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
+import { error } from 'console';
 
 // Imported constants
 
@@ -219,6 +220,25 @@ export async function getDonationById(id: string): Promise<Donation> {
         }
     } catch (error: any) {
         addErrorEvent('getDonationById', error);
+    }
+    return Promise.reject();
+}
+
+export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
+    try {
+        let donations: Donation[] = [];
+        const bulkRef = doc(db, BULK_DONATIONS_COLLECTION, id);
+        const bulkSnapshot = await getDoc(bulkRef);
+        if (bulkSnapshot.exists()) {
+            const bulkData = bulkSnapshot.data();
+            bulkData.donations.forEach(async (donation: DocumentReference) => {
+                const donationDetails = await getDonationById(donation.id);
+                donations.push(donationDetails);
+            });
+        }
+        return donations;
+    } catch {
+        addErrorEvent('Get donations by bulk id', error);
     }
     return Promise.reject();
 }
