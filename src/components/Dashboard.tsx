@@ -2,13 +2,13 @@
 
 //Components
 import { Tab, Tabs } from '@mui/material';
-import Organizations from '@/app/organizations/page';
-import Donations from '@/app/donations/page';
-import Users from '@/app/users/page';
+import Organizations from './Organizations';
+import Donations from './Donations';
+import Users from './Users';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
-import Notifications from '@/app/notifications/page';
+import Notifications from './Notifications';
 //Hooks
 import React, { useEffect, useState } from 'react';
 //API

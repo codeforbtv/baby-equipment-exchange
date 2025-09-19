@@ -24,7 +24,7 @@ import CustomDialog from './CustomDialog';
 
 type CreateAdminDonationProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
-    setDonationsUpdated: Dispatch<SetStateAction<boolean>>;
+    setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const AdminCreateDonation = (props: CreateAdminDonationProps) => {
@@ -36,7 +36,7 @@ const AdminCreateDonation = (props: CreateAdminDonationProps) => {
     const { pendingDonations, removePendingDonation, clearPendingDonations, getPendingDonationsFromLocalStorage } = usePendingDonationsContext();
 
     const handleClose = () => {
-        setDonationsUpdated(true);
+        if (setDonationsUpdated) setDonationsUpdated(true);
         setIsOpen(false);
         setShowForm(false);
     };

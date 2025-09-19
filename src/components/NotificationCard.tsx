@@ -25,7 +25,7 @@ type NotificationCardProps = {
     donation?: Donation;
     authUser?: AuthUserRecord;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated: Dispatch<SetStateAction<boolean>>;
+    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 //TO-DO: Set up buttons
