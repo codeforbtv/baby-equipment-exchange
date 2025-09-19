@@ -13,12 +13,14 @@ import '@/styles/globalStyles.css';
 //Types
 import { Donation } from '@/models/donation';
 import AcceptRejectCard from '@/components/AcceptRejectCard';
+import DonationDetails from '@/components/DonationDetails';
 
 const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donations, setDonations] = useState<Donation[] | null>(null);
     const [accepted, setAccepted] = useState<string[]>([]);
     const [rejected, setRejected] = useState<string[]>([]);
+    const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
 
     const fetchDonationsByBulkId = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -52,27 +54,32 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     }, []);
 
     useEffect(() => {
-        console.log(donations);
-    }, [donations]);
-
-    useEffect(() => {
-        console.log('accepts: ', accepted, 'rejects: ', rejected);
-    }, [accepted, rejected]);
+        console.log('dontations', donations);
+        console.log('isLoading', isLoading);
+    }, [donations, isLoading]);
 
     return (
         <ProtectedAdminRoute>
-            <div className="page--header">
-                <h3>Review donation</h3>
-                {isLoading && <Loader />}
-                {!isLoading && !donations && <p>Donation collection not found.</p>}
-                {!isLoading && donations && (
-                    <div className="content--container">
-                        {donations.map((item) => (
-                            <AcceptRejectCard donation={item} handleAcceptReject={handleAcceptReject} />
-                        ))}
+            {!isLoading && idToDisplay ? (
+                <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />
+            ) : (
+                <div style={{ marginTop: '4em' }}>
+                    <div className="page--header">
+                        <h3>Review donation</h3>
                     </div>
-                )}
-            </div>
+                    {isLoading && !idToDisplay && <Loader />}
+                    {!isLoading && !idToDisplay && donations === null && <p>Donation collection not found.</p>}
+                    {!isLoading && !idToDisplay && donations && (
+                        <div>
+                            {donations.map((item) => (
+                                <>
+                                    <AcceptRejectCard key={item.id} donation={item} handleAcceptReject={handleAcceptReject} setIdToDisplay={setIdToDisplay} />
+                                </>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </ProtectedAdminRoute>
     );
 };
