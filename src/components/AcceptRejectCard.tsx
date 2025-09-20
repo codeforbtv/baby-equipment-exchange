@@ -1,10 +1,11 @@
 'use client';
 
-import { Card, CardActions, CardMedia, CardContent, Typography, ButtonGroup, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Card, CardActions, CardMedia, CardContent, Typography, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Donation } from '@/models/donation';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { validateTestPhoneNumbers } from 'firebase-admin/lib/auth/auth-config';
+
+import '@/styles/globalStyles.css';
 
 const thumbnailStyles = {
     width: '15%',
