@@ -21,10 +21,10 @@ const NotificationsPage = () => {
         try {
             const notificationsResult = await getNotifications();
             setNotifications(notificationsResult);
-            setIsLoading(false);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Fetch notifications', error);
+        } finally {
+            setIsLoading(false);
         }
     }
 

@@ -22,10 +22,10 @@ export default function UsersPage() {
         try {
             const usersResult = await callListAllUsers();
             setUsers(usersResult);
-            setIsLoading(false);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Error fetching all users', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 

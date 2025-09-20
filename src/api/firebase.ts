@@ -122,8 +122,8 @@ export async function callGetOrganizationNames(): Promise<{
 //Multi-collection query
 export async function getNotifications(): Promise<Notification> {
     try {
-        const donationNotifications = await getDonationNotifications();
-        const userNotifications = await getUsersNotifications();
+        const [donationNotifications, userNotifications] = await Promise.all([getDonationNotifications(), getUsersNotifications()]);
+
         return {
             donations: donationNotifications,
             users: userNotifications
