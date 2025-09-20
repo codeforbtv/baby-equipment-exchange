@@ -14,6 +14,9 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Box, Button, FormControl, NativeSelect, TextField, InputLabel } from '@mui/material';
 import DonationCardSmall from './DonationCardSmall';
 import sendEmail from '@/api/sendgrid';
+import sendMail from '@/api/nodemailer';
+import accept from '@/email-templates/accept';
+import reject from '@/email-templates/reject';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
@@ -45,8 +48,19 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         //send email with renderToString(message) and update donation statuses
+        const emailMsg = acceptedDonations && acceptedDonations.length > 0 ? accept(donorEmail, inviteUrl, notes) : reject(donorEmail, notes);
+        try {
+            await sendMail({
+                from: 'bryan.parmelee@gmail.com',
+                to: donorEmail,
+                subject: 'Your Baby Equipment Exchange donation has been reviewed',
+                html: renderToString(message)
+            });
+        } catch (error) {
+            addErrorEvent('Error submitting accept/reject email', error);
+        }
     };
 
     const fetchEvents = async () => {
