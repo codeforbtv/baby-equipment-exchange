@@ -6,7 +6,7 @@ export default function accept(donorEmail: string, inviteUrl: string, notes?: st
     return {
         to: donorEmail,
         from: 'info@vermontconnector.org',
-        subject: 'Your Baby Equipment Exchange donation(s) have been accpeted',
+        subject: 'Your Baby Equipment Exchange donation has been reviewed',
         html: `
             <p>Your donation(s) to the Baby Equipment Exchange have been accepted!</p>
             <p>Click <a href='${inviteUrl}'>here</a> to schedule a dropoff time.</p>
