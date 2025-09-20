@@ -157,5 +157,9 @@ export async function checkIsAidWorker(user: User): Promise<boolean> {
 
 // Utilitarian
 export async function addErrorEvent(location: string, error: any): Promise<void> {
-    addEvent({ location: location, error: convertToString(error) });
+    try {
+        await addEvent({ location: location, error: convertToString(error) });
+    } catch (error) {
+        console.log(error);
+    }
 }

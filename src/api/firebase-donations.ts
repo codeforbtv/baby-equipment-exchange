@@ -230,16 +230,16 @@ export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
         const bulkSnapshot = await getDoc(bulkRef);
         if (bulkSnapshot.exists()) {
             const bulkData = bulkSnapshot.data();
-            bulkData.donations.forEach(async (donation: DocumentReference) => {
+            for (const donation of bulkData.donations) {
                 const donationDetails = await getDonationById(donation.id);
                 donations.push(donationDetails);
-            });
+            }
         }
         return donations;
     } catch (error) {
         addErrorEvent('Get donations by bulk id', error);
     }
-    return Promise.reject();
+    return Promise.reject(new Error('Something went wrong fetching donations by bulk ID'));
 }
 
 export async function addDonation(newDonations: DonationBody[]) {

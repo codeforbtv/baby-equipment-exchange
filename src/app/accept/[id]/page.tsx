@@ -27,9 +27,9 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
         try {
             const donationsResult = await getDonationsByBulkId(id);
             setDonations(donationsResult);
-            setIsLoading(false);
         } catch (error) {
             addErrorEvent('Fetch donations by bulk id', error);
+        } finally {
             setIsLoading(false);
         }
     };
@@ -53,11 +53,6 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
         fetchDonationsByBulkId(params.id);
     }, []);
 
-    useEffect(() => {
-        console.log('dontations', donations);
-        console.log('isLoading', isLoading);
-    }, [donations, isLoading]);
-
     return (
         <ProtectedAdminRoute>
             {!isLoading && idToDisplay ? (
@@ -68,13 +63,16 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                         <h3>Review donation</h3>
                     </div>
                     {isLoading && !idToDisplay && <Loader />}
-                    {!isLoading && !idToDisplay && donations === null && <p>Donation collection not found.</p>}
+                    {!isLoading && !idToDisplay && !donations && <p>Donation collection not found.</p>}
                     {!isLoading && !idToDisplay && donations && (
                         <div>
-                            {donations.map((item) => (
-                                <>
-                                    <AcceptRejectCard key={item.id} donation={item} handleAcceptReject={handleAcceptReject} setIdToDisplay={setIdToDisplay} />
-                                </>
+                            {donations.map((donation) => (
+                                <AcceptRejectCard
+                                    key={donation.id}
+                                    donation={donation}
+                                    handleAcceptReject={handleAcceptReject}
+                                    setIdToDisplay={setIdToDisplay}
+                                />
                             ))}
                         </div>
                     )}
