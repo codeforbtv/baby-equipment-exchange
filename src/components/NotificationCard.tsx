@@ -2,6 +2,7 @@
 
 //Hooks
 import { Dispatch, SetStateAction } from 'react';
+import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Card, CardActions, CardContent, CardMedia, Typography, Button } from '@mui/material';
@@ -24,12 +25,14 @@ type NotificationCardProps = {
     donation?: Donation;
     authUser?: AuthUserRecord;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated: Dispatch<SetStateAction<boolean>>;
+    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 //TO-DO: Set up buttons
 const NotificationCard = (props: NotificationCardProps) => {
     const { type, donation, authUser, setIdToDisplay } = props;
+
+    const router = useRouter();
 
     return (
         <ProtectedAdminRoute>
@@ -43,7 +46,9 @@ const NotificationCard = (props: NotificationCardProps) => {
                         </CardContent>
                     </CardActions>
                     <CardActions>
-                        <Button variant="contained">Approve</Button>
+                        <Button variant="contained" onClick={() => router.push(`/accept/${donation.bulkCollection}`)}>
+                            Approve
+                        </Button>
                     </CardActions>
                 </Card>
             )}

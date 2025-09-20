@@ -141,6 +141,15 @@
     color: white;
 }
 
+.card--container {
+    cursor: pointer;
+    max-width: 800px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
 .MuiFilledInput-root {
     overflow: 'hidden';
     border-radius: 4;

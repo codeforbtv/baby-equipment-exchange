@@ -133,10 +133,10 @@ export async function getUsersNotifications(): Promise<AuthUserRecord[]> {
         const usersRef = collection(db, USERS_COLLECTION);
         const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
         const usersNotificationsSnapshot = await getDocs(usersNotificationsQuery);
-        usersNotificationsSnapshot.forEach(async (doc) => {
+        for (const doc of usersNotificationsSnapshot.docs) {
             const authUser = await getAuthUserById(doc.id);
             users.push(authUser);
-        });
+        }
         return users;
     } catch (error) {
         addErrorEvent('Get users notifications', error);

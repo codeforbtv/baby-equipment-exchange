@@ -1,68 +1,48 @@
 'use client';
 
 //Hooks
-import { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+import Loader from '@/components/Loader';
+import Organizations from '@/components/Organizations';
 //API
 import { addErrorEvent, callGetOrganizationNames } from '@/api/firebase';
 //Styles
 import '@/styles/globalStyles.css';
-import Loader from '@/components/Loader';
-import { Button, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
-import OrganizationDetails from '@/components/OrganizationDetails';
-import OrganizationForm from '@/components/OrganizationForm';
 
-type OrganizationsProps = {
-    orgNamesAndIds: { [key: string]: string };
-    setOrgsUpdated: Dispatch<SetStateAction<boolean>>;
-};
-
-const Organizations = (props: OrganizationsProps) => {
-    const { orgNamesAndIds, setOrgsUpdated } = props;
+const OrganizationsPage = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
-    const [showForm, setShowForm] = useState<boolean>(false);
+    const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
+        [key: string]: string;
+    } | null>(null);
 
-    const orgNames = Object.keys(orgNamesAndIds);
-
-    const handleShowForm = () => {
-        //Close details if open
-        setIdToDisplay(null);
-        setShowForm(true);
+    const fetchOrgNames = async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+            const orgNamesResult = await callGetOrganizationNames();
+            setOrgNamesAndIds(orgNamesResult);
+            setIsLoading(false);
+        } catch (error) {
+            addErrorEvent('Could not fetch org names', error);
+            setIsLoading(false);
+        }
+        setIsLoading(false);
     };
+
+    useEffect(() => {
+        fetchOrgNames();
+    }, []);
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && <OrganizationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setOrgsUpdated={setOrgsUpdated} />}
-            {showForm && <OrganizationForm setShowForm={setShowForm} setOrgsUpdated={setOrgsUpdated} />}
-            {!idToDisplay && !showForm && (
-                <>
-                    <div className="page--header">
-                        <h3>Organizations</h3>
-                    </div>
-                    <Button variant="contained" type="button" onClick={handleShowForm}>
-                        Create new
-                    </Button>
-                    <div className="content--container">
-                        {isLoading && <Loader />}
-                        {!isLoading && orgNamesAndIds && (
-                            <List>
-                                {orgNames.map((org) => (
-                                    <ListItem key={org}>
-                                        <ListItemButton component="a" onClick={() => setIdToDisplay(orgNamesAndIds[org])}>
-                                            <ListItemText primary={org} sx={{ color: 'black' }} />
-                                        </ListItemButton>
-                                    </ListItem>
-                                ))}
-                            </List>
-                        )}
-                    </div>
-                </>
-            )}
+            <>
+                {isLoading && <Loader />}
+                {!isLoading && !orgNamesAndIds && <p>No organizations found</p>}
+                {!isLoading && orgNamesAndIds && <Organizations orgNamesAndIds={orgNamesAndIds} />}
+            </>
         </ProtectedAdminRoute>
     );
 };
 
-export default Organizations;
+export default OrganizationsPage;

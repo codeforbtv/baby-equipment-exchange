@@ -223,6 +223,25 @@ export async function getDonationById(id: string): Promise<Donation> {
     return Promise.reject();
 }
 
+export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
+    try {
+        let donations: Donation[] = [];
+        const bulkRef = doc(db, BULK_DONATIONS_COLLECTION, id);
+        const bulkSnapshot = await getDoc(bulkRef);
+        if (bulkSnapshot.exists()) {
+            const bulkData = bulkSnapshot.data();
+            for (const donation of bulkData.donations) {
+                const donationDetails = await getDonationById(donation.id);
+                donations.push(donationDetails);
+            }
+        }
+        return donations;
+    } catch (error) {
+        addErrorEvent('Get donations by bulk id', error);
+    }
+    return Promise.reject(new Error('Something went wrong fetching donations by bulk ID'));
+}
+
 export async function addDonation(newDonations: DonationBody[]) {
     try {
         //All donations are assigned a bulk donatin id to account for multiple items

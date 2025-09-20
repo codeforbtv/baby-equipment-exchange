@@ -122,8 +122,8 @@ export async function callGetOrganizationNames(): Promise<{
 //Multi-collection query
 export async function getNotifications(): Promise<Notification> {
     try {
-        const donationNotifications = await getDonationNotifications();
-        const userNotifications = await getUsersNotifications();
+        const [donationNotifications, userNotifications] = await Promise.all([getDonationNotifications(), getUsersNotifications()]);
+
         return {
             donations: donationNotifications,
             users: userNotifications
@@ -157,5 +157,9 @@ export async function checkIsAidWorker(user: User): Promise<boolean> {
 
 // Utilitarian
 export async function addErrorEvent(location: string, error: any): Promise<void> {
-    addEvent({ location: location, error: convertToString(error) });
+    try {
+        await addEvent({ location: location, error: convertToString(error) });
+    } catch (error) {
+        console.log(error);
+    }
 }
