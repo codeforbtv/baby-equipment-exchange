@@ -27,6 +27,15 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const isDisabled = acceptedDonations && acceptedDonations.length > 0 ? !inviteUrl : false;
 
+    let donorEmail, donorName;
+    if (acceptedDonations && acceptedDonations.length > 0) {
+        donorEmail = acceptedDonations[0].donorEmail;
+        donorName = acceptedDonations[0].donorName;
+    } else if (rejectedDonations && rejectedDonations.length > 0) {
+        donorEmail = rejectedDonations[0].donorEmail;
+        donorName = rejectedDonations[0].donorName;
+    }
+
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
         setInviteUrl(event.target.value);
     };
@@ -46,6 +55,8 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     };
     const message = (
         <>
+            <p>{`Hello ${donorName},`}</p>
+            <p>Thank you for submitting your donation to the Baby Equipment Exchange.</p>
             {acceptedDonations && acceptedDonations.length > 0 && (
                 <>
                     <p>The following items have been accepted:</p>
@@ -82,10 +93,11 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                <h3>Send Scheduling Email</h3>
+                <h3>Send Accept/Reject Email</h3>
             </div>
             <div className="content--container">
                 <Box display={'flex'} flexDirection={'column'}>
+                    <p>{`The following email will be sent to ${donorEmail}`}</p>
                     {acceptedDonations && acceptedDonations.length > 0 && (
                         <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
                             <option value="" disabled>
