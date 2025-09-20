@@ -28,18 +28,20 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditDonation from '@/components/EditDonation';
 import '@/styles/globalStyles.css';
 //Types
-import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, donationStatuses } from '@/models/donation';
+import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, donationStatuses, Donation } from '@/models/donation';
 
 type DonationDetailsProps = {
-    id: string;
+    id: string | null;
+    donation?: Donation;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
     setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const DonationDetails = (props: DonationDetailsProps) => {
-    const { id, setIdToDisplay, setDonationsUpdated } = props;
-    const [donationDetails, setDonationDetails] = useState<IDonation | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const { id, setIdToDisplay, donation, setDonationsUpdated } = props;
+    const intialDonation = donation ? donation : null;
+    const [donationDetails, setDonationDetails] = useState<Donation | null>(intialDonation);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
     const [openImageURL, setOpenImageURL] = useState<string>('');
@@ -56,9 +58,9 @@ const DonationDetails = (props: DonationDetailsProps) => {
         try {
             const donationToView = await getDonationById(id);
             setDonationDetails(donationToView);
-            setIsLoading(false);
         } catch (error: any) {
             addErrorEvent(`Fetch donation by ID`, error);
+        } finally {
             setIsLoading(false);
         }
     }
@@ -84,7 +86,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
     const handleImageClose = () => setIsImageOpen(false);
 
     useEffect(() => {
-        fetchDonation(id);
+        if (id && !donation) fetchDonation(id);
     }, []);
 
     useEffect(() => {
@@ -94,7 +96,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                {!isEditMode ? <h1>Donation Details</h1> : <h1>Edit Donation</h1>}
+                {!isEditMode ? <h3>Donation Details</h3> : <h3>Edit Donation</h3>}
                 {setIdToDisplay && (
                     <IconButton onClick={() => setIdToDisplay(null)}>
                         <ArrowBackIcon />

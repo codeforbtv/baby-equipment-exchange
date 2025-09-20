@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
+import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
 //API
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationsByBulkId } from '@/api/firebase-donations';
@@ -55,29 +56,35 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
 
     return (
         <ProtectedAdminRoute>
-            {!isLoading && idToDisplay ? (
-                <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} />
-            ) : (
-                <div style={{ marginTop: '4em' }}>
-                    <div className="page--header">
-                        <h3>Review donation</h3>
-                    </div>
-                    {isLoading && !idToDisplay && <Loader />}
-                    {!isLoading && !idToDisplay && !donations && <p>Donation collection not found.</p>}
-                    {!isLoading && !idToDisplay && donations && (
-                        <div>
-                            {donations.map((donation) => (
-                                <AcceptRejectCard
-                                    key={donation.id}
-                                    donation={donation}
-                                    handleAcceptReject={handleAcceptReject}
+            <div style={{ marginTop: '4em' }}>
+                <div className="page--header">
+                    <h3>Review donation</h3>
+                </div>
+                {isLoading && !idToDisplay && <Loader />}
+                {!isLoading && !idToDisplay && !donations && <p>Donation collection not found.</p>}
+                {!isLoading && donations && (
+                    <div>
+                        <Dialog open={idToDisplay !== null} onClose={() => setIdToDisplay(null)} fullWidth maxWidth="xl">
+                            <DialogContent>
+                                <DonationDetails
+                                    id={idToDisplay}
+                                    donation={donations.find((donation) => donation.id === idToDisplay)}
                                     setIdToDisplay={setIdToDisplay}
                                 />
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
+                            </DialogContent>
+                            <DialogActions>
+                                <Button variant="contained" onClick={() => setIdToDisplay(null)}>
+                                    Close
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+                        {donations.length > 1 && <p>Several items are included in this donation.</p>}
+                        {donations.map((donation) => (
+                            <AcceptRejectCard key={donation.id} donation={donation} handleAcceptReject={handleAcceptReject} setIdToDisplay={setIdToDisplay} />
+                        ))}
+                    </div>
+                )}
+            </div>
         </ProtectedAdminRoute>
     );
 };
