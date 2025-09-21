@@ -8,6 +8,7 @@
 
 .home--header {
     margin-top: 4rem;
-    width: 100%;
+    max-width: 800px;
     padding: 1rem;
+    text-align: center;
 }

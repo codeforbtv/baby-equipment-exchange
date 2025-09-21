@@ -11,21 +11,21 @@ import PendingDonations from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
 import { Button, Box, TextField, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
+import CustomDialog from '@/components/CustomDialog';
+//Icons
+import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
+import AddIcon from '@mui/icons-material/Add';
 //libs
 import { addDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 import { uploadImages } from '@/api/firebase-images';
+import { loginAnonymousUser } from '@/api/firebase-users';
 //styles
 import '../../styles/globalStyles.css';
 import styles from './Donate.module.css';
 import homeStyles from '../HomeStyles.module.css';
-//Icons
-import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
-import AddIcon from '@mui/icons-material/Add';
 //Types
 import { DonationFormData, DonationBody } from '@/types/DonationTypes';
-import CustomDialog from '@/components/CustomDialog';
-import { loginAnonymousUser } from '@/api/firebase-users';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -37,6 +37,7 @@ export default function Donate() {
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
+    const [showEmailField, setShowEmailFields] = useState<boolean>(false);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -153,7 +154,14 @@ export default function Donate() {
                 <>
                     <div className={homeStyles['home--header']}>
                         <h2>Welcome to the Baby Equipment Exchange!</h2>
+                        <p>
+                            A 100% volunteer led initiative to provide durable equipment to families in need through partner referrals and community donations.
+                        </p>
+                        <Button variant="contained" type="button" aria-label="Make a Donation" onClick={() => setShowEmailFields(true)}>
+                            Make a Donation
+                        </Button>
                     </div>
+
                     <div className="content--container">
                         <Typography variant="body1">
                             A 100% volunteer led initiative to provide durable equipment to families in need through partner referrals and community donations.
@@ -168,50 +176,53 @@ export default function Donate() {
                         </Typography>
                     </div>
                     <hr />
-                    <Box className={styles['donorForm']} component="form" gap={3} display={'flex'} flexDirection={'column'} name="">
-                        <TextField
-                            type="text"
-                            label="Name"
-                            name="donorName"
-                            id="donorName"
-                            placeholder="Your name"
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                setDonorName(event.target.value);
-                            }}
-                            onBlur={() => setIsValidName(donorName.length > 0)}
-                            error={!isValidName}
-                            helperText={!isValidName && 'Name is required'}
-                            value={donorName}
-                            required
-                        />
-                        <TextField
-                            type="text"
-                            label="Email"
-                            name="email"
-                            id="email"
-                            placeholder="Your email"
-                            autoComplete="email"
-                            value={donorEmail}
-                            error={isInvalidEmail}
-                            helperText={isInvalidEmail && 'Please enter a valid email address'}
-                            required
-                            onChange={handleEmailInput}
-                            onBlur={() => validateEmail(donorEmail)}
-                        />
-                        <TextField
-                            type="text"
-                            label="Confirm Email"
-                            name="confirmEmail"
-                            id="confirmEmail"
-                            placeholder="Confirm Email"
-                            value={confirmEmail}
-                            error={emailsDoNotMatch}
-                            helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
-                            required
-                            onChange={handleConfirmEmail}
-                            onBlur={() => handleConfirmEmail}
-                        />
-                    </Box>
+                    {showEmailField && (
+                        <Box className={styles['donorForm']} component="form" gap={3} display={'flex'} flexDirection={'column'} name="">
+                            <TextField
+                                type="text"
+                                label="Name"
+                                name="donorName"
+                                id="donorName"
+                                placeholder="Your name"
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setDonorName(event.target.value);
+                                }}
+                                onBlur={() => setIsValidName(donorName.length > 0)}
+                                error={!isValidName}
+                                helperText={!isValidName && 'Name is required'}
+                                value={donorName}
+                                required
+                            />
+                            <TextField
+                                type="text"
+                                label="Email"
+                                name="email"
+                                id="email"
+                                placeholder="Your email"
+                                autoComplete="email"
+                                value={donorEmail}
+                                error={isInvalidEmail}
+                                helperText={isInvalidEmail && 'Please enter a valid email address'}
+                                required
+                                onChange={handleEmailInput}
+                                onBlur={() => validateEmail(donorEmail)}
+                            />
+                            <TextField
+                                type="text"
+                                label="Confirm Email"
+                                name="confirmEmail"
+                                id="confirmEmail"
+                                placeholder="Confirm Email"
+                                value={confirmEmail}
+                                error={emailsDoNotMatch}
+                                helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
+                                required
+                                onChange={handleConfirmEmail}
+                                onBlur={() => handleConfirmEmail}
+                            />
+                        </Box>
+                    )}
+
                     {pendingDonations.length > 0 && <PendingDonations pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
 
                     <div className={styles['btn--group']}>
