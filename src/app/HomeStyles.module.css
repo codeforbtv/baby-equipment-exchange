@@ -6,6 +6,13 @@
     text-align: center;
 }
 
+.home--wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .home--header {
     margin-top: 4rem;
     max-width: 800px;

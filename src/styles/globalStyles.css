@@ -89,12 +89,12 @@
     padding: 1em;
     display: flex;
     flex-direction: column;
-    align-items: center;
 }
 
 .page--header {
     width: 100%;
     padding: 1rem;
+    margin-top: 2em;
 }
 
 .page--header > p {

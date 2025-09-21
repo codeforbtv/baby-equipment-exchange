@@ -10,18 +10,30 @@ import styles from './PendingDonations.module.css';
 
 //Types
 import { DonationFormData } from '@/types/DonationTypes';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 
-type PendingDonationProps = {
-    pendingDonations: DonationFormData[];
-    removeHandler: (index: number) => void;
-};
+export default function PendingDonations() {
+    const { pendingDonations, removePendingDonation, pendingDonorEmail, pendingDonorName, setPendingDonorEmail, setPendingDonorName } =
+        usePendingDonationsContext();
 
-export default function PendingDonations(props: PendingDonationProps) {
+    const handleEditName = () => {
+        setPendingDonorEmail('');
+        setPendingDonorName('');
+        localStorage.removeItem('donorEmail');
+        localStorage.removeItem('donorName');
+    };
+
     return (
         <Box>
-            <Typography variant="h3">Items to be donated:</Typography>
+            <p>
+                {`Items to be donated by ${pendingDonorName} (${pendingDonorEmail}):`}{' '}
+                <Button variant="text" onClick={handleEditName}>
+                    Edit name
+                </Button>
+            </p>
+
             <Box className={styles['pendingDonation--container']}>
-                {props.pendingDonations.map((donation, i) => {
+                {pendingDonations.map((donation, i) => {
                     if (donation.images)
                         return (
                             <Card key={i} elevation={5} className={styles['pendingDonation--card']}>
@@ -34,7 +46,7 @@ export default function PendingDonations(props: PendingDonationProps) {
                                         {donation.brand}
                                     </Typography>
                                 </div>
-                                <Button variant="outlined" type="button" onClick={() => props.removeHandler(i)}>
+                                <Button variant="outlined" type="button" onClick={() => removePendingDonation(i)}>
                                     <DeleteIcon />
                                 </Button>
                             </Card>

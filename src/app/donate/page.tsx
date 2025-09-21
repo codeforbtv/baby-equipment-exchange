@@ -21,9 +21,9 @@ import { addErrorEvent } from '@/api/firebase';
 import { uploadImages } from '@/api/firebase-images';
 import { loginAnonymousUser } from '@/api/firebase-users';
 //styles
-import '../../styles/globalStyles.css';
+import '@/styles/globalStyles.css';
 import styles from './Donate.module.css';
-import homeStyles from '../HomeStyles.module.css';
+
 //Types
 import { DonationFormData, DonationBody } from '@/types/DonationTypes';
 
@@ -37,29 +37,57 @@ export default function Donate() {
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
     const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
-    const [showEmailField, setShowEmailFields] = useState<boolean>(false);
     const [showForm, setShowForm] = useState<boolean>(false);
-    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const { currentUser } = useUserContext();
-    const { pendingDonations, removePendingDonation, clearPendingDonations, getPendingDonationsFromLocalStorage } = usePendingDonationsContext();
+    const { pendingDonations, removePendingDonation, clearPendingDonations, pendingDonorEmail, setPendingDonorEmail, pendingDonorName, setPendingDonorName } =
+        usePendingDonationsContext();
     const router = useRouter();
 
+    const isDisabled = emailsDoNotMatch || donorName.length === 0;
+
     const handleClose = () => {
-        setIsOpen(false);
+        setIsDialogOpen(false);
+    };
+
+    const handleEditName = () => {
+        setPendingDonorEmail('');
+        setPendingDonorName('');
+        localStorage.removeItem('donorEmail');
+        localStorage.removeItem('donorName');
+    };
+
+    const handleSave = () => {
+        localStorage.setItem('donorName', donorName);
+        localStorage.setItem('donorEmail', donorEmail);
+        setPendingDonorName(donorName);
+        setPendingDonorEmail(donorEmail);
+        //Dont open the donation form unless saving name for first time
+        if (pendingDonations.length === 0) setShowForm(true);
     };
 
     useEffect(() => {
         getDonorFromLocalStorage();
     }, []);
 
+    useEffect(() => {
+        if (pendingDonations.length === 0 && pendingDonorEmail.length > 0) {
+            setShowForm(true);
+        }
+    }, [pendingDonations, pendingDonorEmail]);
+
     function getDonorFromLocalStorage() {
         const donorNameFromLocalStorage = localStorage.getItem('donorName');
-        if (donorNameFromLocalStorage) setDonorName(donorNameFromLocalStorage);
+        if (donorNameFromLocalStorage) {
+            setDonorName(donorNameFromLocalStorage);
+            setPendingDonorName(donorNameFromLocalStorage);
+        }
         const donorEmailFromLocalStorage = localStorage.getItem('donorEmail');
         if (donorEmailFromLocalStorage) {
             setDonorEmail(donorEmailFromLocalStorage);
             setConfirmEmail(donorEmailFromLocalStorage);
+            setPendingDonorEmail(donorEmailFromLocalStorage);
         }
     }
 
@@ -82,19 +110,6 @@ export default function Donate() {
             setEmailsDoNotMatch(true);
         } else {
             setEmailsDoNotMatch(false);
-        }
-    }
-
-    function handleShowForm(event: React.SyntheticEvent) {
-        if (donorEmail.length === 0 || isInvalidEmail || donorName.length === 0) {
-            alert('Name and email are required to add donations.');
-            return;
-        } else if (emailsDoNotMatch) {
-            alert('Please confirm your email address before adding donation.');
-        } else {
-            localStorage.setItem('donorName', donorName);
-            localStorage.setItem('donorEmail', donorEmail);
-            setShowForm(true);
         }
     }
 
@@ -140,7 +155,7 @@ export default function Donate() {
             clearPendingDonations();
             localStorage.clear();
             setSubmitState('idle');
-            setIsOpen(true);
+            setIsDialogOpen(true);
         } catch (error) {
             setSubmitState('error');
             addErrorEvent('Bulk donation', error);
@@ -152,101 +167,90 @@ export default function Donate() {
             {submitState === 'submitting' && <Loader />}
             {(submitState === 'idle' || submitState === 'error') && (
                 <>
-                    <div className={homeStyles['home--header']}>
-                        <h2>Welcome to the Baby Equipment Exchange!</h2>
-                        <p>
-                            A 100% volunteer led initiative to provide durable equipment to families in need through partner referrals and community donations.
-                        </p>
-                        <Button variant="contained" type="button" aria-label="Make a Donation" onClick={() => setShowEmailFields(true)}>
-                            Make a Donation
-                        </Button>
+                    <div className="page--header">
+                        <h2>Donate</h2>
+                        <Typography variant="h4">
+                            For a list of currently accepted items, please see our <a href="/about">about page</a>.
+                        </Typography>
+                        {pendingDonorEmail.length > 0 && pendingDonorName.length > 0 && (
+                            <Typography variant="h4" sx={{ marginTop: '2em' }}>
+                                {`Donor name: ${pendingDonorName} (${pendingDonorEmail}):`}{' '}
+                                <Button variant="text" onClick={handleEditName}>
+                                    Edit
+                                </Button>
+                            </Typography>
+                        )}
                     </div>
 
-                    <div className="content--container">
-                        <Typography variant="body1">
-                            A 100% volunteer led initiative to provide durable equipment to families in need through partner referrals and community donations.
-                        </Typography>
-
-                        <Typography variant="body1">
-                            Please see our <Link href="/about">about page</Link> for a list of currently accepted items.
-                        </Typography>
-
-                        <Typography variant="body1">
-                            Are you an existing partner? Please <Link href="/login">log in</Link> or <Link href="/join">create an account</Link>.
-                        </Typography>
-                    </div>
-                    <hr />
-                    {showEmailField && (
-                        <Box className={styles['donorForm']} component="form" gap={3} display={'flex'} flexDirection={'column'} name="">
-                            <TextField
-                                type="text"
-                                label="Name"
-                                name="donorName"
-                                id="donorName"
-                                placeholder="Your name"
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
-                                    setDonorName(event.target.value);
-                                }}
-                                onBlur={() => setIsValidName(donorName.length > 0)}
-                                error={!isValidName}
-                                helperText={!isValidName && 'Name is required'}
-                                value={donorName}
-                                required
-                            />
-                            <TextField
-                                type="text"
-                                label="Email"
-                                name="email"
-                                id="email"
-                                placeholder="Your email"
-                                autoComplete="email"
-                                value={donorEmail}
-                                error={isInvalidEmail}
-                                helperText={isInvalidEmail && 'Please enter a valid email address'}
-                                required
-                                onChange={handleEmailInput}
-                                onBlur={() => validateEmail(donorEmail)}
-                            />
-                            <TextField
-                                type="text"
-                                label="Confirm Email"
-                                name="confirmEmail"
-                                id="confirmEmail"
-                                placeholder="Confirm Email"
-                                value={confirmEmail}
-                                error={emailsDoNotMatch}
-                                helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
-                                required
-                                onChange={handleConfirmEmail}
-                                onBlur={() => handleConfirmEmail}
-                            />
-                        </Box>
+                    {pendingDonorName.length === 0 && pendingDonorEmail.length === 0 && (
+                        <div className="content--container">
+                            <Box className="form--container" component="form" gap={3} display={'flex'} flexDirection={'column'} name="">
+                                <TextField
+                                    type="text"
+                                    label="Name"
+                                    name="donorName"
+                                    id="donorName"
+                                    placeholder="Your name"
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                        setDonorName(event.target.value);
+                                    }}
+                                    onBlur={() => setIsValidName(donorName.length > 0)}
+                                    error={!isValidName}
+                                    helperText={!isValidName && 'Name is required'}
+                                    value={donorName}
+                                    required
+                                />
+                                <TextField
+                                    type="text"
+                                    label="Email"
+                                    name="email"
+                                    id="email"
+                                    placeholder="Your email"
+                                    autoComplete="email"
+                                    value={donorEmail}
+                                    error={isInvalidEmail}
+                                    helperText={isInvalidEmail && 'Please enter a valid email address'}
+                                    required
+                                    onChange={handleEmailInput}
+                                    onBlur={() => validateEmail(donorEmail)}
+                                />
+                                <TextField
+                                    type="text"
+                                    label="Confirm Email"
+                                    name="confirmEmail"
+                                    id="confirmEmail"
+                                    placeholder="Confirm Email"
+                                    value={confirmEmail}
+                                    error={emailsDoNotMatch}
+                                    helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
+                                    required
+                                    onChange={handleConfirmEmail}
+                                    onBlur={() => handleConfirmEmail}
+                                />
+                                <Button type="button" variant="contained" onClick={handleSave} disabled={isDisabled} sx={{ marginTop: '1em' }}>
+                                    Save
+                                </Button>
+                            </Box>
+                        </div>
                     )}
 
-                    {pendingDonations.length > 0 && <PendingDonations pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
+                    {showForm && <DonationForm setShowForm={setShowForm} />}
 
+                    <hr />
+                    {pendingDonations.length > 0 && <PendingDonations />}
                     <div className={styles['btn--group']}>
-                        {!showForm && (
-                            <Button
-                                type="button"
-                                variant="outlined"
-                                startIcon={<AddIcon />}
-                                onClick={handleShowForm}
-                                disabled={emailsDoNotMatch || donorName.length === 0}
-                            >
-                                {pendingDonations.length > 0 ? 'Add another item' : 'Add item'}
-                            </Button>
-                        )}
-
-                        {showForm && <DonationForm setShowForm={setShowForm} />}
-
                         {!showForm && pendingDonations.length > 0 && (
-                            <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
-                                {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
-                            </Button>
+                            <>
+                                <Button variant="contained" startIcon={<AddIcon />} onClick={() => setShowForm(true)}>
+                                    Add another item
+                                </Button>
+                                <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
+                                    {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
+                                </Button>
+                            </>
                         )}
                     </div>
-                    <div className="content--container">
+                    <div className={styles['info']}>
                         <Typography variant="body2">
                             Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we
                             do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could
@@ -275,7 +279,7 @@ export default function Donate() {
                 </>
             )}
             <CustomDialog
-                isOpen={isOpen}
+                isOpen={isDialogOpen}
                 onClose={handleClose}
                 title="Donation submitted"
                 content={`Your donation has been submitted. An email with next steps will be sent to ${donorEmail} once your donation has been approved.`}

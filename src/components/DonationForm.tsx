@@ -1,19 +1,20 @@
 'use client';
 
+//Hooks
 import { useState, useEffect, ReactElement, SetStateAction, Dispatch } from 'react';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+//Components
 import ImageThumbnail from './ImageThumbnail';
 import InputContainer from '@/components/InputContainer';
 import { Box, Button, NativeSelect, TextField } from '@mui/material';
+//Icons
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-
+//Api
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
 import { categories } from '@/data/html';
-
-import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
-
+//styles
 import styles from './DonationForm.module.css';
 import '../styles/globalStyles.css';
-
 //Types
 import { DonationFormData } from '@/types/DonationTypes';
 import CustomDialog from './CustomDialog';
@@ -34,7 +35,10 @@ export default function DonationForm(props: DonationFormProps) {
     const [imageElements, setImageElements] = useState<ReactElement[]>([]);
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
-    const { addPendingDonation } = usePendingDonationsContext();
+    const { addPendingDonation, pendingDonations } = usePendingDonationsContext();
+
+    const isDisabled =
+        !images || formData.category?.length === 0 || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
 
     useEffect(() => {
         const tempImages = [];
@@ -106,6 +110,7 @@ export default function DonationForm(props: DonationFormProps) {
 
     return (
         <div className="content--container">
+            <p>Enter item details:</p>
             <Box component="form" className={styles['form']}>
                 <Box className={styles['form__section--left']}>
                     <Box display={'flex'} flexDirection={'column'} gap={1}>
@@ -181,12 +186,14 @@ export default function DonationForm(props: DonationFormProps) {
                     </InputContainer>
                 </Box>
                 <Box className={styles['form__section--bottom']}>
-                    <Button variant="contained" fullWidth={false} size="medium" type="button" onClick={handleAddPendingDonation}>
-                        Done
+                    <Button variant="contained" fullWidth={false} size="medium" type="button" onClick={handleAddPendingDonation} disabled={isDisabled}>
+                        Add item
                     </Button>
-                    <Button variant="outlined" fullWidth={false} size="medium" type="button" onClick={handleCancel}>
-                        Cancel
-                    </Button>
+                    {pendingDonations.length > 0 && (
+                        <Button variant="outlined" fullWidth={false} size="medium" type="button" onClick={handleCancel}>
+                            Cancel
+                        </Button>
+                    )}
                 </Box>
             </Box>
             <CustomDialog isOpen={isOpen} onClose={handleClose} title="Image required" content="You must provide at least one image for your donation." />
