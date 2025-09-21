@@ -47,7 +47,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                     </CardActions>
                     <CardActions>
                         <Button variant="contained" onClick={() => router.push(`/accept/${donation.bulkCollection}`)}>
-                            Approve
+                            Review
                         </Button>
                     </CardActions>
                 </Card>
@@ -63,7 +63,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                         </CardContent>
                     </CardActions>
                     <CardActions>
-                        <Button variant="contained">Approve</Button>
+                        <Button variant="contained">Review</Button>
                     </CardActions>
                 </Card>
             )}
@@ -76,7 +76,9 @@ const NotificationCard = (props: NotificationCardProps) => {
                         </CardContent>
                     </CardActions>
                     <CardActions>
-                        <Button variant="contained">Enable User</Button>
+                        <Button variant="contained" onClick={() => setIdToDisplay(authUser.uid)}>
+                            Review
+                        </Button>
                     </CardActions>
                 </Card>
             )}

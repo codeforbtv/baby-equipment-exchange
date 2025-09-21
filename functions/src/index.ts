@@ -77,9 +77,11 @@ export const enableuser = onCall(async (request): Promise<void> => {
             try {
                 //Enabled users are aid-workers by default
                 const docRef = db.collection(USERS_COLLECTION).doc(userId);
-                await docRef.update({ isDisabled: false });
-                await auth.setCustomUserClaims(userId, { 'aid-worker': true });
-                await auth.updateUser(userId, { disabled: false });
+                await Promise.all([
+                    docRef.update({ isDisabled: false }),
+                    auth.setCustomUserClaims(userId, { 'aid-worker': true }),
+                    auth.updateUser(userId, { disabled: false })
+                ]);
             } catch (error) {
                 return Promise.reject(new HttpsError('invalid-argument', 'Unable to update user account.'));
             }
