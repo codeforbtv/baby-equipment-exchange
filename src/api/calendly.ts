@@ -21,13 +21,4 @@ export async function getSchedulingPageLink(): Promise<EventType[]> {
         .then((result) => result.json())
         .then((data) => data.collection)
         .catch((error) => addErrorEvent('Get Calendly scheduling links', error));
-    // try {
-    //     const response = await fetch(`https://api.calendly.com/event_types?organization=${organization_uri}`, options);
-    //     const data = await response.json();
-    //     const collection = data.collection;
-    //     return collection;
-    // } catch (error) {
-    //     addErrorEvent('Get Calendly scheduling links', error);
-    // }
-    // return Promise.reject();
 }
