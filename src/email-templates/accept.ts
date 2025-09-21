@@ -1,17 +1,20 @@
 import { sanitize } from '@/utils/utils';
 import { email } from '@/types/SendgridTypes';
 
-export default function accept(donorEmail: string, inviteUrl: string, notes?: string): email {
-    const sanitizedNotes = notes ? sanitize(notes) : '';
+export default function accept(donorEmail: string, inviteUrl: string, message: string, notes?: string): email {
+    let html = message;
+    const schedulingLink = `<h3><b>*** <a href='${inviteUrl}'>Click here to schedule a dropoff for your accepted items</a>  ***</b></h3>`;
+    html += schedulingLink;
+    if (notes && notes.length > 0) {
+        const sanitizedNotes = sanitize(notes);
+        html += `<p><b>Additional notes</b><br>
+           ${sanitizedNotes}</p>`;
+    }
+
     return {
         to: donorEmail,
-        from: 'info@vermontconnector.org',
+        from: 'bryan.parmelee@gmail.com',
         subject: 'Your Baby Equipment Exchange donation has been reviewed',
-        html: `
-            <p>Your donation(s) to the Baby Equipment Exchange have been accepted!</p>
-            <p>Click <a href='${inviteUrl}'>here</a> to schedule a dropoff time.</p>
-            <p><b>Additional notes</b></p>
-            <p>${sanitizedNotes}</p>
-        `
+        html: html
     };
 }
