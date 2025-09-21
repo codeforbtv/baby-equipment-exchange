@@ -13,7 +13,8 @@ export const donationStatuses = {
     Available: 'available',
     Requested: 'requested',
     Reserved: 'reserved',
-    Distributed: 'distributed'
+    Distributed: 'distributed',
+    Rejected: 'rejected'
 };
 
 export type DonationStatuses = typeof donationStatuses;

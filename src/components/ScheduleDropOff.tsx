@@ -3,6 +3,7 @@
 //Hooks
 import { useState, ChangeEvent, useEffect, Dispatch, SetStateAction } from 'react';
 import { renderToString } from 'react-dom/server';
+import { useRouter } from 'next/navigation';
 //Styles
 import '@/styles/globalStyles.css';
 //types
@@ -17,6 +18,8 @@ import sendMail from '@/api/nodemailer';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';
 import Loader from './Loader';
+import { updateDonationStatus } from '@/api/firebase-donations';
+import CustomDialog from './CustomDialog';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
@@ -30,6 +33,9 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [events, setEvents] = useState<EventType[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, sentNotes] = useState<string>('');
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const router = useRouter();
 
     const isDisabled = acceptedDonations && acceptedDonations.length > 0 ? !inviteUrl : false;
 
@@ -42,6 +48,11 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         donorEmail = rejectedDonations[0].donorEmail;
         donorName = rejectedDonations[0].donorName;
     }
+
+    const handleClose = () => {
+        setIsDialogOpen(false);
+        router.push('/');
+    };
 
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
         setInviteUrl(event.target.value);
@@ -85,14 +96,32 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     );
 
     const handleSubmit = async () => {
-        setIsLoading(true);
         //send email with renderToString(message) and update donation statuses
+        setIsLoading(true);
+        const acceptPromise = async (donations: Donation[]) => {
+            await Promise.all(
+                donations.map(async (donation) => {
+                    await updateDonationStatus(donation.id, 'pending delivery');
+                })
+            );
+        };
+        const rejectPromise = async (donations: Donation[]) => {
+            await Promise.all(
+                donations.map(async (donation) => {
+                    await updateDonationStatus(donation.id, 'rejected');
+                })
+            );
+        };
         const emailMsg =
             acceptedDonations && acceptedDonations.length > 0
                 ? accept(donorEmail, inviteUrl, renderToString(message), notes)
                 : reject(donorEmail, renderToString(message), notes);
         try {
-            await sendMail(emailMsg);
+            await Promise.all([
+                acceptedDonations && acceptPromise(acceptedDonations),
+                rejectedDonations && rejectPromise(rejectedDonations),
+                sendMail(emailMsg)
+            ]);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
         } finally {
@@ -153,7 +182,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
                                 <Button onClick={handleSubmit} disabled={isDisabled} variant="contained">
-                                    Send scheduling Link
+                                    Send Email
                                 </Button>
                                 <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
                                     Cancel
@@ -163,6 +192,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     </div>
                 </>
             )}
+            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${donorEmail}`} />
         </ProtectedAdminRoute>
     );
 };
