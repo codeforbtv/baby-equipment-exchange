@@ -13,7 +13,10 @@ import { addErrorEvent } from '@/api/firebase';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Box, Button, FormControl, NativeSelect, TextField, InputLabel } from '@mui/material';
 import DonationCardSmall from './DonationCardSmall';
-import sendEmail from '@/api/sendgrid';
+import sendMail from '@/api/nodemailer';
+import accept from '@/email-templates/accept';
+import reject from '@/email-templates/reject';
+import Loader from './Loader';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
@@ -23,6 +26,7 @@ type ScheduleDropOffProps = {
 
 const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const { acceptedDonations, rejectedDonations, setOpenScheduler } = props;
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [events, setEvents] = useState<EventType[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, sentNotes] = useState<string>('');
@@ -44,10 +48,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     };
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
-
-    const handleSubmit = () => {
-        //send email with renderToString(message) and update donation statuses
-    };
 
     const fetchEvents = async () => {
         try {
@@ -73,7 +73,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             )}
             {rejectedDonations && rejectedDonations.length > 0 && (
                 <>
-                    <p>The following items have been rejected:</p>
+                    <p>Unfortunately, the following items could not be accepted:</p>
                     <ul>
                         {rejectedDonations.map((donation) => (
                             <DonationCardSmall key={donation.id} donation={donation} />
@@ -84,6 +84,22 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         </>
     );
 
+    const handleSubmit = async () => {
+        setIsLoading(true);
+        //send email with renderToString(message) and update donation statuses
+        const emailMsg =
+            acceptedDonations && acceptedDonations.length > 0
+                ? accept(donorEmail, inviteUrl, renderToString(message), notes)
+                : reject(donorEmail, renderToString(message), notes);
+        try {
+            await sendMail(emailMsg);
+        } catch (error) {
+            addErrorEvent('Error submitting accept/reject email', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchEvents();
     }, []);
@@ -93,54 +109,60 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             <div className="page--header">
                 <h3>Send Accept/Reject Email</h3>
             </div>
-            <p>{`The following email will be sent to ${donorEmail}:`}</p>
-            <div className="content--container">
-                <Box display={'flex'} flexDirection={'column'}>
-                    {message}
-                    <TextField
-                        type="text"
-                        label="Additional notes"
-                        name="notes"
-                        id="notes"
-                        value={notes}
-                        multiline={true}
-                        minRows={8}
-                        maxRows={Infinity}
-                        placeholder="Add any additional notes here"
-                        onChange={handleInputChange}
-                    ></TextField>
-                    {acceptedDonations && acceptedDonations.length > 0 && (
-                        <FormControl fullWidth sx={{ marginTop: '2em' }}>
-                            <InputLabel variant="standard" htmlFor="location" shrink={true}>
-                                Select calendar for accepted donations
-                            </InputLabel>
-                            <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                <option value="" disabled>
-                                    Select Calendar
-                                </option>
-                                {events &&
-                                    events.map((event, index) => {
-                                        if (event.active === true) {
-                                            return (
-                                                <option key={index} value={event.scheduling_url}>
-                                                    {event.name}
-                                                </option>
-                                            );
-                                        }
-                                    })}
-                            </NativeSelect>
-                        </FormControl>
-                    )}
-                    <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                        <Button onClick={handleSubmit} disabled={isDisabled} variant="contained">
-                            Send scheduling Link
-                        </Button>
-                        <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
-                            Cancel
-                        </Button>
-                    </Box>
-                </Box>
-            </div>
+            {isLoading ? (
+                <Loader />
+            ) : (
+                <>
+                    <p>{`The following email will be sent to ${donorEmail}:`}</p>
+                    <div className="content--container">
+                        <Box display={'flex'} flexDirection={'column'}>
+                            {message}
+                            <TextField
+                                type="text"
+                                label="Additional notes"
+                                name="notes"
+                                id="notes"
+                                value={notes}
+                                multiline={true}
+                                minRows={4}
+                                maxRows={Infinity}
+                                placeholder="Add any additional notes here"
+                                onChange={handleInputChange}
+                            ></TextField>
+                            {acceptedDonations && acceptedDonations.length > 0 && (
+                                <FormControl fullWidth sx={{ marginTop: '2em' }}>
+                                    <InputLabel variant="standard" htmlFor="location" shrink={true}>
+                                        Select calendar for accepted donations
+                                    </InputLabel>
+                                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
+                                        <option value="" disabled>
+                                            Select Calendar
+                                        </option>
+                                        {events &&
+                                            events.map((event, index) => {
+                                                if (event.active === true) {
+                                                    return (
+                                                        <option key={index} value={event.scheduling_url}>
+                                                            {event.name}
+                                                        </option>
+                                                    );
+                                                }
+                                            })}
+                                    </NativeSelect>
+                                </FormControl>
+                            )}
+                            <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
+                                <Button onClick={handleSubmit} disabled={isDisabled} variant="contained">
+                                    Send scheduling Link
+                                </Button>
+                                <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
+                                    Cancel
+                                </Button>
+                            </Box>
+                        </Box>
+                    </div>
+                </>
+            )}
         </ProtectedAdminRoute>
     );
 };
