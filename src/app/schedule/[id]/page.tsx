@@ -5,12 +5,10 @@ import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { getDonationById } from '@/api/firebase-donations';
-import sendEmail from '@/api/sendgrid';
 import accept from '@/email-templates/accept';
 import { addErrorEvent } from '@/api/firebase';
 
 import { EventType } from '@/types/CalendlyTypes';
-import { email } from '@/types/SendgridTypes';
 
 import '../../../styles/globalStyles.css';
 
@@ -37,11 +35,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
 
-    const handleSubmit = async () => {
-        //TODO change donation status to 'pending delivery'
-        const message: email = accept(donorEmail, inviteUrl, notes);
-        sendEmail(message).then(() => console.log(`email sent to ${donorEmail}`));
-    };
+    const handleSubmit = async () => {};
 
     useEffect(() => {
         const fetchEvents = async () => {

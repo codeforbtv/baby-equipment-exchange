@@ -13,7 +13,6 @@ import { addErrorEvent } from '@/api/firebase';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Box, Button, FormControl, NativeSelect, TextField, InputLabel } from '@mui/material';
 import DonationCardSmall from './DonationCardSmall';
-import sendEmail from '@/api/sendgrid';
 import sendMail from '@/api/nodemailer';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';

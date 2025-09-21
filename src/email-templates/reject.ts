@@ -1,7 +1,6 @@
 import { sanitize } from '@/utils/utils';
-import { email } from '@/types/SendgridTypes';
 
-export default function reject(donorEmail: string, message: string, notes?: string): email {
+export default function reject(donorEmail: string, message: string, notes?: string) {
     let html = message;
     if (notes && notes.length > 0) {
         const sanitizedNotes = sanitize(notes);

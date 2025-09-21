@@ -1,7 +1,6 @@
 import { sanitize } from '@/utils/utils';
-import { email } from '@/types/SendgridTypes';
 
-export default function accept(donorEmail: string, inviteUrl: string, message: string, notes?: string): email {
+export default function accept(donorEmail: string, inviteUrl: string, message: string, notes?: string) {
     let html = message;
     const schedulingLink = `<h3><b>*** <a href='${inviteUrl}'>Click here to schedule a dropoff for your accepted items</a>  ***</b></h3>`;
     html += schedulingLink;
