@@ -37,6 +37,7 @@ import { deleteObject, ref } from 'firebase/storage';
 
 export const DONATIONS_COLLECTION = 'Donations';
 export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
+export const ORDERS_COLLECTION = 'Orders';
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -399,17 +400,29 @@ export async function deleteDonationById(id: string): Promise<void> {
     }
 }
 
-export async function requestInventoryItems(inventoryItemIds: string[], user: DocumentReference): Promise<void> {
+export async function requestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
     try {
+        const orderRef = doc(collection(db, ORDERS_COLLECTION));
         const batch = writeBatch(db);
+        //Create a new order collection doc
+        batch.set(orderRef, {
+            status: 'open',
+            requestor: user,
+            items: []
+        });
         for (const inventoryItemId of inventoryItemIds) {
             const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
-            await updateDoc(inventoryItemRef, {
+            //Update state of each requested item to 'requested'
+            batch.update(inventoryItemRef, {
                 status: 'requested',
                 requestor: user
             });
-            await batch.commit();
+            //Add donation ref to items array
+            batch.update(orderRef, {
+                items: arrayUnion(inventoryItemRef)
+            });
         }
+        await batch.commit();
     } catch (error) {
         addErrorEvent('Request inventory items', error);
     }
