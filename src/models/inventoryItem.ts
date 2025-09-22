@@ -1,6 +1,6 @@
 import { DocumentReference, Timestamp } from 'firebase/firestore';
 
-import { DonationStatusKeys } from './donation';
+import { DonationStatusValues } from './donation';
 
 export interface IInventoryItem {
     [key: string]:
@@ -26,7 +26,7 @@ export interface IInventoryItem {
     model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    status: DonationStatusKeys;
+    status: DonationStatusValues;
     images: DocumentReference[] | string[];
 }
 
@@ -54,7 +54,7 @@ export class InventoryItem implements IInventoryItem {
     model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    status: DonationStatusKeys;
+    status: DonationStatusValues;
     images: DocumentReference[] | string[];
 
     constructor(args: IInventoryItem) {
@@ -99,7 +99,7 @@ export class InventoryItem implements IInventoryItem {
         return this.tagNumber;
     }
 
-    getStatus(): DonationStatusKeys {
+    getStatus(): DonationStatusValues {
         return this.status;
     }
 

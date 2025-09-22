@@ -126,6 +126,11 @@ const Inventory = (props: InventoryProps) => {
                                     })}
                                 </ImageList>
                             )}
+                            {requestedInventory.length > 0 && (
+                                <Button variant="contained" onClick={() => router.push('/inventory-cart')}>
+                                    Checkout
+                                </Button>
+                            )}
                         </>
                     )}
                 </>

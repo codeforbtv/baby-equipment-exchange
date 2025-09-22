@@ -415,7 +415,8 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
             //Update state of each requested item to 'requested'
             batch.update(inventoryItemRef, {
                 status: 'requested',
-                requestor: user
+                requestor: user,
+                modifiedAt: serverTimestamp()
             });
             //Add donation ref to items array
             batch.update(orderRef, {
