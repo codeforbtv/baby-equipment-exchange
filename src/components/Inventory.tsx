@@ -69,7 +69,7 @@ const Inventory = () => {
             {inventory == null || inventory.length == 0 ? (
                 <p>There is no inventory for you to view. </p>
             ) : (
-                <ImageList className={styles['browse__grid']}>
+                <ImageList className={styles['browse__grid']} rowHeight={200}>
                     {inventory.map((inventoryItem: InventoryItem) => {
                         const props: InventoryItemCardProps = {
                             inventoryItem: inventoryItem,

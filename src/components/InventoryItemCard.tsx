@@ -28,7 +28,7 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
         <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>
             <img
                 src={image}
-                style={{ width: '100%', height: '100%', objectFit: 'fill' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 alt={`${inventoryItem.brand} ${inventoryItem.model}`}
                 onClick={() => console.log(`You clicked ${inventoryItem.id}`)}
             />
