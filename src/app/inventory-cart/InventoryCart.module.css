@@ -2,7 +2,7 @@
     margin-top: 18px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 1em;
 }
 
 .inventoryItem--card {
@@ -28,4 +28,11 @@
 
 .right--column {
     text-align: left;
+}
+
+.btn--group {
+    margin-top: 1em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
 }

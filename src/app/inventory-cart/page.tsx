@@ -40,14 +40,14 @@ const InventoryCart = () => {
     return (
         <>
             <div className="page--header">
-                <h1>Your Cart</h1>
+                <h2>Your Cart</h2>
             </div>
-            <div>
+            <div className="content--container">
                 {requestedInventory == null || requestedInventory.length == 0 ? (
                     <p>There are no items in your cart</p>
                 ) : (
                     <Box>
-                        <Typography variant="h3">Items to be donated:</Typography>
+                        <Typography variant="h3">Items to be requested:</Typography>
                         <Box className={styles['inventoryItem--container']}>
                             {requestedInventory.map((inventoryItem, i) => {
                                 if (inventoryItem.images)
@@ -75,15 +75,17 @@ const InventoryCart = () => {
                                     );
                             })}
                         </Box>
+                        <div className={styles['btn--group']}>
+                            <Button variant="outlined" onClick={() => router.push('/')}>
+                                Continue browsing
+                            </Button>
+                            {requestedInventory.length > 0 && (
+                                <Button variant="contained" onClick={handleRequestItems}>
+                                    Request Items
+                                </Button>
+                            )}
+                        </div>
                     </Box>
-                )}
-                <Button variant="outlined" onClick={() => router.push('/')}>
-                    Continue browsing
-                </Button>
-                {requestedInventory.length > 0 && (
-                    <Button variant="contained" onClick={handleRequestItems}>
-                        Request Items
-                    </Button>
                 )}
             </div>
         </>
