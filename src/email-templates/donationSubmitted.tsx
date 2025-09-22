@@ -16,7 +16,7 @@ export default function donationsSubmitted(donorEmail: string, donorName: string
 
     return {
         to: donorEmail,
-        from: 'bryan.parmelee@gmail.com',
+        from: 'info@vermontconnector.org',
         subject: 'Your Baby Equipment Exchange donation has been submitted.',
         html: html
     };

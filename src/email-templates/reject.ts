@@ -10,7 +10,7 @@ export default function reject(donorEmail: string, message: string, notes?: stri
 
     return {
         to: donorEmail,
-        from: 'bryan.parmelee@gmail.com',
+        from: 'info@vermontconnector.org',
         subject: 'Your Baby Equipment Exchange donation has been reviewed',
         html: html
     };
