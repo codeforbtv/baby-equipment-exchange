@@ -292,7 +292,7 @@ export default function Donate() {
                 isOpen={isDialogOpen}
                 onClose={handleClose}
                 title="Donation submitted"
-                content={`Your donation has been submitted. An email with next steps will be sent to ${donorEmail} once your donation has been approved.`}
+                content={`Your donation request has been submitted, and a confirmation email has been sent to ${donorEmail}.`}
             />
         </>
     );
