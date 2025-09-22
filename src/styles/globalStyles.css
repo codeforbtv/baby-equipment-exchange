@@ -2,7 +2,7 @@
 :root {
     --text-header: #a8351b;
     --primary: #fff;
-    --secondary: #95b8b5;
+    --secondary: #3d9991;
     --bg-gray: #f1f1f1;
     --text-body: #5e5e5e;
     --text-hyperlink: #3d9991;
@@ -86,11 +86,15 @@
 
 .page--wrapper {
     box-sizing: border-box;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
 }
 
 .page--header {
     width: 100%;
     padding: 1rem;
+    margin-top: 2em;
 }
 
 .page--header > p {

@@ -30,6 +30,10 @@
     display: none;
 }
 
+.info {
+    margin-top: 4em;
+}
+
 /* .image-uploader__input label {
     border-radius: 2px;
     border: 1px solid black;

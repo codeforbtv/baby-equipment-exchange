@@ -2,9 +2,8 @@
 
 //Components
 import Dashboard from '@/components/Dashboard';
-import Donate from './donate/page';
+import HomePage from '@/components/HomePage';
 import Inventory from '@/components/Inventory';
-
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
 
@@ -17,6 +16,6 @@ export default function Home() {
     } else if (isAidWorker) {
         return <Inventory />;
     } else {
-        return <Donate />;
+        return <HomePage />;
     }
 }

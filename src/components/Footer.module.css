@@ -1,6 +1,15 @@
 .footer-wrapper {
     /* font-family: 'adobe-garamond-pro'; */
-    background-color: var(--bg-grey);
+    margin-top: auto;
+    background-color: var(--bg-gray);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.footer-links-container {
     width: 100%;
     display: flex;
     align-items: center;
@@ -17,9 +26,8 @@
 }
 
 @media screen and (max-width: 450px) {
-    .footer-wrapper {
+    .footer-links-container {
         display: flex;
-        flex-direction: column;
-        gap: 1em;
+        /* flex-direction: column; */
     }
 }

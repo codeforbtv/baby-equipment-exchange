@@ -3,7 +3,7 @@
 //Hooks
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 //API
-import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims, callUpdateAuthUser } from '@/api/firebase';
+import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims, callUpdateAuthUser, callEnableUser } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 import { updateDbUser } from '@/api/firebase-users';
 //Components
@@ -15,6 +15,8 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import '@/styles/globalStyles.css';
 //Types
 import { UserDetails } from '@/types/UserTypes';
+import sendMail from '@/api/nodemailer';
+import userEnabled from '@/email-templates/userEnabled';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,7 +28,7 @@ type EditUserProps = {
 };
 
 const EditUser = (props: EditUserProps) => {
-    const { uid, email, displayName, metadata, customClaims, phoneNumber, notes, organization } = props.userDetails;
+    const { uid, email, displayName, customClaims, phoneNumber, notes, organization, disabled } = props.userDetails;
     const { setIsEditMode, fetchUserDetails, setUsersUpdated } = props;
 
     let initialRole = '';
@@ -64,14 +66,14 @@ const EditUser = (props: EditUserProps) => {
     const [selectedOrg, setSelectedOrg] = useState<string | null>(initialOrg);
 
     const getOrgNames = async (): Promise<void> => {
+        setIsLoading(true);
         try {
-            setIsLoading(true);
             const organizationNamesResult = await callGetOrganizationNames();
             setOrgNamesAndIds(organizationNamesResult);
-            setIsLoading(false);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Could not fetch org names', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -109,6 +111,16 @@ const EditUser = (props: EditUserProps) => {
         event.preventDefault();
         setIsLoading(true);
         try {
+            //If account is inactive, activate and send confirmation email
+            if (disabled) {
+                try {
+                    await callEnableUser(uid);
+                    const emailMsg = userEnabled(email, displayName);
+                    await sendMail(emailMsg);
+                } catch (error) {
+                    addErrorEvent('Error enable user', error);
+                }
+            }
             //if any fields stored in the firebase auth user have changed, update auth user.
             if (email !== newEmail || displayName !== newDisplayName) {
                 try {
@@ -127,7 +139,6 @@ const EditUser = (props: EditUserProps) => {
                     const claims = { [`${role}`]: true };
                     await callSetClaims(uid, claims);
                 } catch (error) {
-                    setIsLoading(false);
                     addErrorEvent('Error updated custom claims', error);
                 }
             }
@@ -146,15 +157,15 @@ const EditUser = (props: EditUserProps) => {
                         organization: updatedOrganization
                     });
                 } catch (error) {
-                    setIsLoading(false);
                     addErrorEvent('Error updating phone number or organization', error);
                 }
             }
         } catch (error) {
             setIsLoading(false);
             return Promise.reject('Failed to update user');
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
         setIsDialogOpen(true);
     };
 
@@ -224,12 +235,21 @@ const EditUser = (props: EditUserProps) => {
                                 <FormControlLabel value="aid-worker" control={<Radio />} label="Aid Worker" />
                             </RadioGroup>
                         </FormControl>
-                        <Button variant="contained" type="submit">
-                            Update User
-                        </Button>
-                        <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
-                            Cancel
-                        </Button>
+                        <Box display={'flex'} gap={2}>
+                            {!initialOrg ? (
+                                <Button variant="contained" type="submit" disabled={!selectedOrg}>
+                                    Enable User
+                                </Button>
+                            ) : (
+                                <Button variant="contained" type="submit">
+                                    Update User
+                                </Button>
+                            )}
+
+                            <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
+                                Cancel
+                            </Button>
+                        </Box>
                     </Box>
                 )}
             </Paper>

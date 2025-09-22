@@ -164,9 +164,9 @@ export async function getDonationNotifications(): Promise<Donation[]> {
             donationConverter
         );
         const donationsNotificationsSnapshot = await getDocs(donationNotificationsQuery);
-        donationsNotificationsSnapshot.forEach((doc) => {
+        for (const doc of donationsNotificationsSnapshot.docs) {
             donations.push(doc.data());
-        });
+        }
         return donations;
     } catch (error) {
         addErrorEvent('Get donation notifications', error);

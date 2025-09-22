@@ -59,6 +59,9 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                     <Link className={styles['menu__link']} id="contact" href="https://www.vermontconnector.org/contact" target="_blank">
                         <span>Contact</span>
                     </Link>
+                    <Link className={styles['menu__link']} id="join" href="/join">
+                        Sign Up
+                    </Link>
                     <Link
                         className={styles['menu__link']}
                         id="signout"
@@ -68,7 +71,7 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                             if (currentUser) handleSignOut();
                         }}
                     >
-                        {currentUser ? <span>Sign Out</span> : <span>Login</span>}
+                        {currentUser ? <span>Sign Out</span> : <span>Sign In</span>}
                     </Link>
                 </div>
             </Drawer>

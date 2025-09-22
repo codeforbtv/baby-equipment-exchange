@@ -100,7 +100,7 @@ const AdminCreateDonation = (props: CreateAdminDonationProps) => {
                 <Loader />
             ) : (
                 <>
-                    {pendingDonations.length > 0 && <PendingDonations pendingDonations={pendingDonations} removeHandler={removePendingDonation} />}
+                    {pendingDonations.length > 0 && <PendingDonations />}
                     <DonationForm setShowForm={setShowForm} />
                     {pendingDonations.length > 0 && (
                         <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>

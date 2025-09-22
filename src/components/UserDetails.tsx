@@ -43,13 +43,12 @@ export default function UserDetails(props: UserDetailsProps) {
         setIsLoading(true);
         try {
             await callEnableUser(uid);
-            setIsLoading(false);
             setIsDialogOpen(true);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Call enable user', error);
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     async function fetchUserDetails(id: string): Promise<void> {
@@ -72,7 +71,7 @@ export default function UserDetails(props: UserDetailsProps) {
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                {isEditMode ? <h1>Edit User</h1> : <h1>User Details</h1>}
+                {isEditMode ? <h3>Edit User</h3> : <h3>User Details</h3>}
                 {setIdToDisplay && (
                     <IconButton onClick={() => setIdToDisplay(null)}>
                         <ArrowBackIcon />

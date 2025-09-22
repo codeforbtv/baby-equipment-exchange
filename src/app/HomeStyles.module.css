@@ -6,8 +6,35 @@
     text-align: center;
 }
 
+.home--wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .home--header {
     margin-top: 4rem;
-    width: 100%;
+    max-width: 800px;
     padding: 1rem;
+    text-align: center;
+}
+
+.info--box {
+    /* border: 1px solid black; */
+    max-width: 800px;
+    padding: 0.5em 2em;
+    background-color: var(--bg-gray);
+    margin-top: 4em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+}
+
+.btn--group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0em;
 }
