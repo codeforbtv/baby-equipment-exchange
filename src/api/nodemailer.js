@@ -21,3 +21,12 @@ export default async function sendMail(msg) {
         addErrorEvent('Send nodemailer email', error);
     }
 }
+
+export async function verifyMailer() {
+    try {
+        await transporter.verify();
+        console.log('emailer verified');
+    } catch (error) {
+        console.log('emailer NOT verified', error);
+    }
+}

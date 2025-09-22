@@ -32,6 +32,7 @@ import { DonationBody } from '@/types/post-data';
 // Libs
 import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
+import { Order } from '@/types/OrdersTypes';
 
 // Imported constants
 
@@ -147,9 +148,7 @@ export async function getDonationNotifications(): Promise<Donation[]> {
     let donations: Donation[] = [];
     try {
         const donationsRef = collection(db, DONATIONS_COLLECTION);
-        const donationNotificationsQuery = query(donationsRef, or(where('status', '==', 'in processing'), where('status', '==', 'requested'))).withConverter(
-            donationConverter
-        );
+        const donationNotificationsQuery = query(donationsRef, where('status', '==', 'in processing')).withConverter(donationConverter);
         const donationsNotificationsSnapshot = await getDocs(donationNotificationsQuery);
         for (const doc of donationsNotificationsSnapshot.docs) {
             donations.push(doc.data());
@@ -198,8 +197,7 @@ export async function getInventoryByIds(inventoryIds: string[]): Promise<Invento
     try {
         let inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
-        const constraints: QueryConstraint[] = [where(documentId(), 'in', inventoryIds)];
-        const q = query(collectionRef, ...constraints).withConverter(inventoryConverter);
+        const q = query(collectionRef, where(documentId(), 'in', inventoryIds)).withConverter(inventoryConverter);
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((snapshot) => {
             inventory.push(snapshot.data());
@@ -427,4 +425,30 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
     } catch (error) {
         addErrorEvent('Request inventory items', error);
     }
+}
+//Get items requested by aid workers
+export async function getOrdersNotifications() {
+    let orders: Order[] = [];
+    try {
+        const ordersRef = collection(db, ORDERS_COLLECTION);
+        const q = query(ordersRef, where('status', '==', 'open'));
+        const ordersSnapshot = await getDocs(q);
+        for (const doc of ordersSnapshot.docs) {
+            const orderInfo = doc.data();
+            let order: Order = {
+                status: orderInfo.status,
+                requestor: orderInfo.requestor,
+                items: []
+            };
+            for (const donation of orderInfo.items) {
+                const donationDetails = await getDoc(donation);
+                order.items.push(donationDetails.data() as Donation);
+            }
+            orders.push(order);
+        }
+        return orders;
+    } catch (error) {
+        addErrorEvent('Error geting order notifications', error);
+    }
+    return Promise.reject();
 }
