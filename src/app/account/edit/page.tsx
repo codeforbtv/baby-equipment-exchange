@@ -1,6 +1,6 @@
 'use client';
 //Components
-import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedRoute from '@/components/ProtectedAidWorkerRoute';
 import { Box, Button, Divider, Paper, TextField } from '@mui/material';
 import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 //Hooks

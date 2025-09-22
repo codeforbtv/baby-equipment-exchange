@@ -1,15 +1,19 @@
-import { getInventory } from '@/api/firebase-donations';
+'use client';
+
 import { useEffect, useState } from 'react';
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
+import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useRouter } from 'next/navigation';
 //Components
-import { addErrorEvent } from '@/api/firebase';
 import InventoryItemCard from './InventoryItemCard';
 import Loader from './Loader';
 import { IconButton, Badge, ImageList } from '@mui/material';
+//Icons
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-
+//Api
+import { getInventory } from '@/api/firebase-donations';
+import { addErrorEvent } from '@/api/firebase';
 //Types
 import { InventoryItemCardProps } from '@/types/DonationTypes';
 
@@ -17,12 +21,11 @@ import { InventoryItemCardProps } from '@/types/DonationTypes';
 import '../styles/globalStyles.css';
 import styles from './Inventory.module.css';
 import { InventoryItem } from '@/models/inventoryItem';
-import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 
 const Inventory = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
-    const { currentUser, isAidWorker } = useUserContext();
+    const { isAidWorker } = useUserContext();
     const { addRequestedInventoryItem, requestedInventory, removeRequestedInventoryItem } = useRequestedInventoryContext();
     const router = useRouter();
 

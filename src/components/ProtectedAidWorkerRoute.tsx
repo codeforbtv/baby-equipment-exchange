@@ -8,12 +8,12 @@ import { useUserContext } from '@/contexts/UserContext';
 //Styling
 import '../styles/globalStyles.css';
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { currentUser, isLoading } = useUserContext();
+export default function ProtectedAidWorkerRoute({ children }: { children: React.ReactNode }) {
+    const { currentUser, isLoading, isAidWorker, isAdmin } = useUserContext();
     const router = useRouter();
 
     useEffect(() => {
-        if (!isLoading && !currentUser) {
+        if ((!isLoading && !currentUser) || (currentUser && !isAidWorker && !isAdmin)) {
             router.push('/login');
         }
     }, [currentUser, isLoading]);
