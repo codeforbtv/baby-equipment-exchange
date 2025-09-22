@@ -8,10 +8,11 @@ import { useRouter } from 'next/navigation';
 //Components
 import InventoryItemCard from './InventoryItemCard';
 import Loader from './Loader';
-import { IconButton, Badge, ImageList, Tooltip } from '@mui/material';
+import { IconButton, Badge, ImageList, Tooltip, Snackbar, SnackbarCloseReason, Button } from '@mui/material';
 import ProtectedAidWorkerRoute from './ProtectedAidWorkerRoute';
 //Icons
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import CloseIcon from '@mui/icons-material/Close';
 //Api
 import { getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
@@ -31,6 +32,23 @@ const Inventory = (props: InventoryProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [currentInventory, setCurrentInventory] = useState<InventoryItem[]>([]);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
+    const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
+
+    const handleCloseSnackBar = (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setIsSnackBarOpen(false);
+    };
+    //for snackbar notification
+    const action = (
+        <>
+            <IconButton size="small" aria-label="close" color="inherit" onClick={handleCloseSnackBar}>
+                <CloseIcon fontSize="small" />
+            </IconButton>
+        </>
+    );
+
     const { isAidWorker } = useUserContext();
     const { addRequestedInventoryItem, requestedInventory, removeRequestedInventoryItem } = useRequestedInventoryContext();
     const router = useRouter();
@@ -58,6 +76,7 @@ const Inventory = (props: InventoryProps) => {
     const handleRequestInventoryItem = (inventoryItem: InventoryItem) => {
         addRequestedInventoryItem(inventoryItem);
         setCurrentInventory(currentInventory.filter((item) => inventoryItem.id !== item.id));
+        setIsSnackBarOpen(true);
     };
 
     return (
@@ -111,6 +130,7 @@ const Inventory = (props: InventoryProps) => {
                     )}
                 </>
             )}
+            <Snackbar open={isSnackBarOpen} autoHideDuration={6000} onClose={handleCloseSnackBar} message="Item added to order" action={action} />
         </ProtectedAidWorkerRoute>
     );
 };
