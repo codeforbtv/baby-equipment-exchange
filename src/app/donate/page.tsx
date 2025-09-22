@@ -19,24 +19,27 @@ import AddIcon from '@mui/icons-material/Add';
 import { addDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 import { uploadImages } from '@/api/firebase-images';
-import { loginAnonymousUser } from '@/api/firebase-users';
+import { loginAnonymousUser, signOutUser } from '@/api/firebase-users';
 //styles
 import '@/styles/globalStyles.css';
 import styles from './Donate.module.css';
 
 //Types
 import { DonationFormData, DonationBody } from '@/types/DonationTypes';
+import donationsSubmitted from '@/email-templates/donationSubmitted';
+import sendMail from '@/api/nodemailer';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Donate() {
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donorName, setDonorName] = useState<string>('');
     const [isValidName, setIsValidName] = useState<boolean>(true);
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [confirmEmail, setConfirmEmail] = useState<string>('');
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
-    const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
+    // const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
     const [showForm, setShowForm] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
@@ -48,6 +51,8 @@ export default function Donate() {
     const isDisabled = emailsDoNotMatch || donorName.length === 0;
 
     const handleClose = () => {
+        signOutUser();
+        router.push('/');
         setIsDialogOpen(false);
     };
 
@@ -148,39 +153,44 @@ export default function Donate() {
     //Use this to handle passing form data to the database on submission
     async function handleFormSubmit(e: React.SyntheticEvent) {
         e.preventDefault();
-        setSubmitState('submitting');
+        setIsLoading(true);
         try {
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
             await addDonation(donationsToUpload);
             clearPendingDonations();
+            setPendingDonorEmail('');
+            setPendingDonorName('');
             localStorage.clear();
-            setSubmitState('idle');
+            const emailMsg = donationsSubmitted(donorEmail, donorName, donationsToUpload);
+            await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
-            setSubmitState('error');
             addErrorEvent('Bulk donation', error);
+        } finally {
+            setIsLoading(false);
         }
     }
 
     return (
         <>
-            {submitState === 'submitting' && <Loader />}
-            {(submitState === 'idle' || submitState === 'error') && (
-                <>
-                    <div className="page--header">
-                        <h2>Donate</h2>
-                        <Typography variant="h4">
-                            For a list of currently accepted items, please see our <a href="/about">about page</a>.
+            <div className="page--header">
+                <h2>Donate</h2>
+            </div>
+            {isLoading ? (
+                <Loader />
+            ) : (
+                <div className={styles['donate--container']}>
+                    <Typography variant="h4">
+                        For a list of currently accepted items, please see our <a href="/about">about page</a>.
+                    </Typography>
+                    {pendingDonorEmail.length > 0 && pendingDonorName.length > 0 && (
+                        <Typography variant="h4" sx={{ marginTop: '2em' }}>
+                            {`Donor name: ${pendingDonorName} (${pendingDonorEmail}):`}{' '}
+                            <Button variant="text" onClick={handleEditName}>
+                                Edit
+                            </Button>
                         </Typography>
-                        {pendingDonorEmail.length > 0 && pendingDonorName.length > 0 && (
-                            <Typography variant="h4" sx={{ marginTop: '2em' }}>
-                                {`Donor name: ${pendingDonorName} (${pendingDonorEmail}):`}{' '}
-                                <Button variant="text" onClick={handleEditName}>
-                                    Edit
-                                </Button>
-                            </Typography>
-                        )}
-                    </div>
+                    )}
 
                     {pendingDonorName.length === 0 && pendingDonorEmail.length === 0 && (
                         <div className="content--container">
@@ -276,7 +286,7 @@ export default function Donate() {
                             </li>
                         </ul>
                     </div>
-                </>
+                </div>
             )}
             <CustomDialog
                 isOpen={isDialogOpen}

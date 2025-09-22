@@ -2,6 +2,7 @@
 
 // Types
 import { Donation } from '@/models/donation';
+import { DonationBody } from '@/types/post-data';
 
 const thumbnailStyles = {
     width: '80px',
@@ -9,7 +10,7 @@ const thumbnailStyles = {
 };
 
 type DonationCardSmallProps = {
-    donation: Donation;
+    donation: Donation | DonationBody;
 };
 
 export default function DonationCardSmall(props: DonationCardSmallProps) {
