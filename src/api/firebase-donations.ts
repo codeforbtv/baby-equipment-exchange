@@ -102,9 +102,7 @@ const inventoryConverter = {
             model: inventory.getModel(),
             description: inventory.getDescription(),
             tagNumber: inventory.getTagNumber(),
-            notes: inventory.getNotes(),
             status: inventory.getStatus(),
-            bulkCollection: inventory.getBulkCollection(),
             images: inventory.getImages(),
             createdAt: inventory.getCreatedAt(),
             modifiedAt: inventory.getModifiedAt(),
@@ -128,9 +126,7 @@ const inventoryConverter = {
             model: data.model,
             description: data.description,
             tagNumber: data.tagNumber,
-            notes: data.notes,
             status: data.status,
-            bulkCollection: data.bulkCollection,
             images: data.images,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt,
@@ -191,6 +187,22 @@ export async function getInventory(): Promise<InventoryItem[]> {
     return Promise.reject();
 }
 
+export async function getInventoryItemById(id: string): Promise<InventoryItem> {
+    try {
+        const itemRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(inventoryConverter);
+        const itemSnapshot = await getDoc(itemRef);
+        if (itemSnapshot.exists()) {
+            return itemSnapshot.data();
+        } else {
+            return Promise.reject(new Error('Inventory item not found'));
+        }
+    } catch (error) {
+        addErrorEvent('Get inventory item by id', error);
+    }
+    return Promise.reject();
+}
+
+//Get an array of inventory items from array of IDs. For retrieving items from local storage.
 export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
     try {
         let inventory: InventoryItem[] = [];

@@ -21,14 +21,12 @@ export interface IInventoryItem {
         | (() => Timestamp | null | undefined)
         | (() => number | undefined);
     id: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
     status: DonationStatusKeys;
-    bulkCollection: DocumentReference | null;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -56,14 +54,12 @@ export class InventoryItem implements IInventoryItem {
         | (() => Timestamp | null | undefined)
         | (() => number | undefined);
     id: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
     status: DonationStatusKeys;
-    bulkCollection: DocumentReference | null;
     images: DocumentReference[] | string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -79,7 +75,6 @@ export class InventoryItem implements IInventoryItem {
         this.model = args.model;
         this.description = args.description;
         this.tagNumber = args.tagNumber;
-        this.notes = args.notes;
         this.status = args.status;
         this.bulkCollection = args.bulkCollection;
         this.images = args.images;
@@ -94,15 +89,15 @@ export class InventoryItem implements IInventoryItem {
         return this.id;
     }
 
-    getCategory(): string | null | undefined {
+    getCategory(): string {
         return this.category;
     }
 
-    getBrand(): string | null | undefined {
+    getBrand(): string {
         return this.brand;
     }
 
-    getModel(): string | null | undefined {
+    getModel(): string {
         return this.model;
     }
 
@@ -114,16 +109,8 @@ export class InventoryItem implements IInventoryItem {
         return this.tagNumber;
     }
 
-    getNotes(): string | null | undefined {
-        return this.notes;
-    }
-
     getStatus(): DonationStatusKeys {
         return this.status;
-    }
-
-    getBulkCollection(): DocumentReference | null {
-        return this.bulkCollection;
     }
 
     getImages(): string[] | DocumentReference[] {
