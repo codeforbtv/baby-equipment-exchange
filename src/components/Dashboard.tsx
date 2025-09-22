@@ -109,23 +109,6 @@ export default function Dashboard() {
 
     const [orders, setOrders] = useState<Order[] | null>(null);
 
-    const fetchOrders = async () => {
-        try {
-            const orders = await getOrdersNotifications();
-            setOrders(orders);
-        } catch (error) {
-            console.log(error);
-        }
-    };
-
-    useEffect(() => {
-        fetchOrders();
-    }, []);
-
-    useEffect(() => {
-        console.log(orders);
-    }, [orders]);
-
     return (
         <ProtectedAdminRoute>
             <div style={{ marginTop: '4rem' }}>
