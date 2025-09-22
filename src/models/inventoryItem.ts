@@ -28,11 +28,6 @@ export interface IInventoryItem {
     tagNumber: string | null | undefined;
     status: DonationStatusKeys;
     images: DocumentReference[] | string[];
-    createdAt: Timestamp;
-    modifiedAt: Timestamp;
-    dateReceived: Timestamp | null | undefined;
-    dateDistributed: Timestamp | null | undefined;
-    requestor: DocumentReference | null;
 }
 
 export class InventoryItem implements IInventoryItem {
@@ -61,11 +56,6 @@ export class InventoryItem implements IInventoryItem {
     tagNumber: string | null | undefined;
     status: DonationStatusKeys;
     images: DocumentReference[] | string[];
-    createdAt: Timestamp;
-    modifiedAt: Timestamp;
-    dateReceived: Timestamp | null | undefined;
-    dateDistributed: Timestamp | null | undefined;
-    requestor: DocumentReference | null;
 
     constructor(args: IInventoryItem) {
         this.id = args.id;
@@ -115,35 +105,5 @@ export class InventoryItem implements IInventoryItem {
 
     getImages(): string[] | DocumentReference[] {
         return this.images;
-    }
-
-    getCreatedAt(): Timestamp {
-        return this.createdAt;
-    }
-
-    getModifiedAt(): Timestamp {
-        return this.modifiedAt;
-    }
-
-    getDateReceived(): Timestamp | null | undefined {
-        return this.dateReceived;
-    }
-
-    getDateDistributed(): Timestamp | null | undefined {
-        return this.dateDistributed;
-    }
-
-    getRequestor(): DocumentReference | null {
-        return this.requestor;
-    }
-
-    getDaysInStorage(): number | undefined {
-        if (this.dateReceived === undefined) {
-            return undefined;
-        }
-        const dateReceived = this.dateReceived!;
-        const currentTime = Date.now();
-        const daysInStorage = Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
-        return daysInStorage;
     }
 }

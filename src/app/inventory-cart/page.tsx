@@ -18,9 +18,12 @@ import { useRouter } from 'next/navigation';
 import '../HomeStyles.module.css';
 import styles from './InventoryCart.module.css';
 import Image from 'next/image';
+import { useState } from 'react';
 
 const InventoryCart = () => {
     const { requestedInventory, removeRequestedInventoryItem, isLoading } = useRequestedInventoryContext();
+
+    const [loading, setLoading] = useState<boolean>(false);
 
     const router = useRouter();
     const { currentUser } = useUserContext();
@@ -28,10 +31,13 @@ const InventoryCart = () => {
     //TO-DO Get user doc ref from currentUser.uid, clear context & localstorage after submit
     const handleRequestItems = async (event: React.MouseEvent<HTMLElement>): Promise<void> => {
         if (!requestedInventory || requestedInventory.length == 0) return;
+        setLoading(true);
         try {
-            const inventoryItemIDs = requestedInventory.map((item) => item.id);
+            const requestedItemIDs = requestedInventory.map((item) => item.id);
         } catch (error) {
             addErrorEvent('Handle request items', error);
+        } finally {
+            setLoading(false);
         }
     };
 

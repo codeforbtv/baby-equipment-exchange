@@ -103,12 +103,7 @@ const inventoryConverter = {
             description: inventory.getDescription(),
             tagNumber: inventory.getTagNumber(),
             status: inventory.getStatus(),
-            images: inventory.getImages(),
-            createdAt: inventory.getCreatedAt(),
-            modifiedAt: inventory.getModifiedAt(),
-            dateReceived: inventory.getDateReceived(),
-            dateDistributed: inventory.getDateDistributed(),
-            requestor: inventory.getRequestor()
+            images: inventory.getImages()
         };
         for (const key in inventoryData) {
             if (inventoryData[key] === undefined || inventoryData[key] === null) {
@@ -127,12 +122,7 @@ const inventoryConverter = {
             description: data.description,
             tagNumber: data.tagNumber,
             status: data.status,
-            images: data.images,
-            createdAt: data.createdAt,
-            modifiedAt: data.modifiedAt,
-            dateReceived: data.dateReceived,
-            dateDistributed: data.dateDistributed,
-            requestor: data.requestor
+            images: data.images
         };
         return new InventoryItem(inventoryData);
     }
