@@ -21,16 +21,7 @@
         ],
         "baseUrl": ".",
         "paths": {
-            "@/styles/*": ["src/styles/*"],
-            "@/components/*": ["src/components/*"],
-            "@/api/*": ["src/api/*"],
-            "@/contexts/*": ["src/contexts/*"],
-            "@/controllers/*": ["src/controllers/*"],
-            "@/data/*": ["src/data/*"],
-            "@/email-templates/*": ["src/email-templates/*"],
-            "@/models/*": ["src/models/*"],
-            "@/types/*": ["src/types/*"],
-            "@/utils/*": ["src/utils/*"]
+            "@/*": ["./src/*"]
         },
         "types": ["node", "babel__generator", "react"]
     },
