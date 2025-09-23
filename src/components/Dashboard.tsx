@@ -107,8 +107,6 @@ export default function Dashboard() {
         }
     }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
 
-    const [orders, setOrders] = useState<Order[] | null>(null);
-
     return (
         <ProtectedAdminRoute>
             <div style={{ marginTop: '4rem' }}>

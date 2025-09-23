@@ -59,9 +59,11 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                     <Link className={styles['menu__link']} id="contact" href="https://www.vermontconnector.org/contact" target="_blank">
                         <span>Contact</span>
                     </Link>
-                    <Link className={styles['menu__link']} id="join" href="/join">
-                        Sign Up
-                    </Link>
+                    {!currentUser && (
+                        <Link className={styles['menu__link']} id="join" href="/join">
+                            Sign Up
+                        </Link>
+                    )}
                     <Link
                         className={styles['menu__link']}
                         id="signout"
