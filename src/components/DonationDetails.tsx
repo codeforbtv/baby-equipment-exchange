@@ -118,25 +118,13 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             Edit Donation
                         </Button>
                         <Divider sx={{ marginBottom: '1em' }}></Divider>
-                        {donationDetails.status && (
-                            <FormControl fullWidth>
-                                <InputLabel id="donation-status-label">Status</InputLabel>
-                                <Select labelId="donation-status-label" id="donation-status" value={selectedStatus} label="Status" onChange={selectHandler}>
-                                    {statusSelectOptions.map((status) => {
-                                        const value = donationStatuses[status as keyof DonationStatuses];
-                                        return (
-                                            <MenuItem key={status} value={value}>
-                                                {status}
-                                            </MenuItem>
-                                        );
-                                    })}
-                                </Select>
-                            </FormControl>
-                        )}
-                        <h2>
+                        <h3>
+                            <b>Status:</b> {statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donationDetails.status)}
+                        </h3>
+                        <h3>
                             <b>Brand: </b>
                             {donationDetails.brand}
-                        </h2>
+                        </h3>
                         <h3>
                             <b>Model: </b>
                             {donationDetails.model}
