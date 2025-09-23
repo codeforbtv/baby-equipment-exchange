@@ -56,13 +56,15 @@ const NotificationCard = (props: NotificationCardProps) => {
             )}
             {type === 'order' && order && (
                 <Card className={styles['card--container']} elevation={3}>
-                    <CardActions>
+                    <CardActions onClick={() => setIdToDisplay(order.id)}>
                         <CardContent>
                             <Typography variant="h4">{`${order.requestor.name} (${order.requestor.email}) has requested ${order.items.length} items.`}</Typography>
                         </CardContent>
                     </CardActions>
                     <CardActions>
-                        <Button variant="contained">Review</Button>
+                        <Button variant="contained" onClick={() => setIdToDisplay(order.id)}>
+                            Review
+                        </Button>
                     </CardActions>
                 </Card>
             )}

@@ -436,7 +436,7 @@ export async function getOrdersNotifications() {
         for (const doc of ordersSnapshot.docs) {
             const orderInfo = doc.data();
             let order: Order = {
-                id: orderInfo.id,
+                id: doc.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
                 items: []

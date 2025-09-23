@@ -1,10 +1,11 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import UserDetails from '@/components/UserDetails';
 import DonationDetails from '@/components/DonationDetails';
+import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
 //Api
 
@@ -31,11 +32,18 @@ const Notifications = (props: NotificationsProps) => {
     const orders = notifications.orders;
     const usersAwaitingApproval = notifications.users;
 
+    useEffect(() => {
+        console.log(orderIdToDisplay);
+    }, [orderIdToDisplay]);
+
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
             {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
-            {!donationIdToDisplay && !userIdToDisplay && (
+            {orderIdToDisplay && (
+                <ReviewOrder id={orderIdToDisplay} order={orders.find((o) => o.id === orderIdToDisplay)} setIdToDisplay={setOrderIdToDisplay} />
+            )}
+            {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
                     <div className="page--header">
                         <h3>{`You have ${notificationCount} notifications`}</h3>
