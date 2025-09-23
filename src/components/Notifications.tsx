@@ -29,6 +29,8 @@ const Notifications = (props: NotificationsProps) => {
 
     const notificationCount = notifications.donations.length + notifications.users.length;
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
+    const donationsAwaitingDropoff = notifications.donations.filter((donation) => donation.status === 'pending delivery');
+    const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
     const orders = notifications.orders;
     const usersAwaitingApproval = notifications.users;
 
@@ -57,6 +59,34 @@ const Notifications = (props: NotificationsProps) => {
                                     key={donation.id}
                                     donation={donation}
                                     type="pending-donation"
+                                    setIdToDisplay={setDonationIdToDisplay}
+                                    setNotificationsUpdated={setNotificationsUpdated}
+                                />
+                            ))}
+                        </>
+                    )}
+                    {donationsAwaitingDropoff.length > 0 && (
+                        <>
+                            <h4>Donations waiting to be recieved</h4>
+                            {donationsAwaitingDropoff.map((donation) => (
+                                <NotificationCard
+                                    key={donation.id}
+                                    donation={donation}
+                                    type="pending-delivery"
+                                    setIdToDisplay={setDonationIdToDisplay}
+                                    setNotificationsUpdated={setNotificationsUpdated}
+                                />
+                            ))}
+                        </>
+                    )}
+                    {donationsAwaitingPickup.length > 0 && (
+                        <>
+                            <h4>Donations waiting for pickup</h4>
+                            {donationsAwaitingPickup.map((donation) => (
+                                <NotificationCard
+                                    key={donation.id}
+                                    donation={donation}
+                                    type="reserved"
                                     setIdToDisplay={setDonationIdToDisplay}
                                     setNotificationsUpdated={setNotificationsUpdated}
                                 />

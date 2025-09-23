@@ -148,7 +148,10 @@ export async function getDonationNotifications(): Promise<Donation[]> {
     let donations: Donation[] = [];
     try {
         const donationsRef = collection(db, DONATIONS_COLLECTION);
-        const donationNotificationsQuery = query(donationsRef, where('status', '==', 'in processing')).withConverter(donationConverter);
+        const donationNotificationsQuery = query(
+            donationsRef,
+            or(where('status', '==', 'in processing'), where('status', '==', 'pending delivery'), where('status', '==', 'reserved'))
+        ).withConverter(donationConverter);
         const donationsNotificationsSnapshot = await getDocs(donationNotificationsQuery);
         for (const doc of donationsNotificationsSnapshot.docs) {
             donations.push(doc.data());
