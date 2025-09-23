@@ -6,16 +6,16 @@ import { useEffect, useState } from 'react';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
 import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import AcceptRejectCard from '@/components/AcceptRejectCard';
+import DonationDetails from '@/components/DonationDetails';
+import ScheduleDropOff from '@/components/ScheduleDropOff';
 //API
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationsByBulkId } from '@/api/firebase-donations';
 //Styles
 import '@/styles/globalStyles.css';
-//Types
+//types
 import { Donation } from '@/models/donation';
-import AcceptRejectCard from '@/components/AcceptRejectCard';
-import DonationDetails from '@/components/DonationDetails';
-import ScheduleDropOff from '@/components/ScheduleDropOff';
 
 const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
