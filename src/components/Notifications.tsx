@@ -1,10 +1,11 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import UserDetails from '@/components/UserDetails';
 import DonationDetails from '@/components/DonationDetails';
+import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
 //Api
 
@@ -24,17 +25,26 @@ const Notifications = (props: NotificationsProps) => {
 
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
+    const [orderIdToDisplay, setOrderIdToDisplay] = useState<string | null>(null);
 
     const notificationCount = notifications.donations.length + notifications.users.length;
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
-    const requestedDonations = notifications.donations.filter((donation) => donation.status === 'requested');
+    const orders = notifications.orders;
     const usersAwaitingApproval = notifications.users;
 
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
             {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
-            {!donationIdToDisplay && !userIdToDisplay && (
+            {orderIdToDisplay && (
+                <ReviewOrder
+                    id={orderIdToDisplay}
+                    order={orders.find((o) => o.id === orderIdToDisplay)}
+                    setIdToDisplay={setOrderIdToDisplay}
+                    setNotificationsUpdated={setNotificationsUpdated}
+                />
+            )}
+            {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
                     <div className="page--header">
                         <h3>{`You have ${notificationCount} notifications`}</h3>
@@ -53,15 +63,15 @@ const Notifications = (props: NotificationsProps) => {
                             ))}
                         </>
                     )}
-                    {requestedDonations.length > 0 && (
+                    {orders.length > 0 && (
                         <>
                             <h4>Requested Equipment</h4>
-                            {requestedDonations.map((donation) => (
+                            {orders.map((order) => (
                                 <NotificationCard
-                                    key={donation.id}
-                                    type="requested-donation"
-                                    donation={donation}
-                                    setIdToDisplay={setDonationIdToDisplay}
+                                    key={order.id}
+                                    type="order"
+                                    order={order}
+                                    setIdToDisplay={setOrderIdToDisplay}
                                     setNotificationsUpdated={setNotificationsUpdated}
                                 />
                             ))}

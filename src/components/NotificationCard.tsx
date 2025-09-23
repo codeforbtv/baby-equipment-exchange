@@ -19,18 +19,20 @@ const thumbnailStyles = {
 //Types
 import { Donation } from '@/models/donation';
 import { AuthUserRecord } from '@/types/UserTypes';
+import { Order } from '@/types/OrdersTypes';
 
 type NotificationCardProps = {
-    type: 'pending-donation' | 'requested-donation' | 'pending-user';
+    type: 'pending-donation' | 'order' | 'pending-user';
     donation?: Donation;
     authUser?: AuthUserRecord;
+    order?: Order;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 //TO-DO: Set up buttons
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, authUser, setIdToDisplay } = props;
+    const { type, donation, authUser, order, setIdToDisplay } = props;
 
     const router = useRouter();
 
@@ -52,18 +54,17 @@ const NotificationCard = (props: NotificationCardProps) => {
                     </CardActions>
                 </Card>
             )}
-            {type === 'requested-donation' && donation && (
+            {type === 'order' && order && (
                 <Card className={styles['card--container']} elevation={3}>
-                    <CardActions onClick={() => setIdToDisplay(donation.id)} sx={{ cursor: 'pointer' }}>
-                        <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
+                    <CardActions onClick={() => setIdToDisplay(order.id)}>
                         <CardContent>
-                            <Typography variant="h4">{donation.model}</Typography>
-                            <Typography variant="h4">{donation.brand}</Typography>
-                            {donation.requestor && <Typography variant="h4">{`Requested by: ${donation.requestor.name}`}</Typography>}
+                            <Typography variant="h4">{`${order.requestor.name} (${order.requestor.email}) has requested ${order.items.length} items.`}</Typography>
                         </CardContent>
                     </CardActions>
                     <CardActions>
-                        <Button variant="contained">Review</Button>
+                        <Button variant="contained" onClick={() => setIdToDisplay(order.id)}>
+                            Review
+                        </Button>
                     </CardActions>
                 </Card>
             )}

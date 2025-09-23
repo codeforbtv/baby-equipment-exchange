@@ -59,7 +59,7 @@ export interface IDonation {
     modifiedAt: Timestamp;
     dateReceived: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
-    requestor: { id: string; name: string } | null;
+    requestor: { id: string; name: string; email: string } | null;
 }
 
 export class Donation implements IDonation {
@@ -100,7 +100,7 @@ export class Donation implements IDonation {
     modifiedAt: Timestamp;
     dateReceived: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
-    requestor: { id: string; name: string } | null;
+    requestor: { id: string; name: string; email: string } | null;
 
     constructor(args: IDonation) {
         this.id = args.id;
@@ -191,7 +191,7 @@ export class Donation implements IDonation {
         return this.dateDistributed;
     }
 
-    getRequestor(): { id: string; name: string } | null {
+    getRequestor(): { id: string; name: string; email: string } | null {
         return this.requestor;
     }
 

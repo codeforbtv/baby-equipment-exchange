@@ -40,8 +40,3 @@ export type DonationBody = {
     description: string;
     images: string[];
 };
-
-export type InventoryItemCardProps = {
-    inventoryItem: InventoryItem;
-    requestHandler: (inventoryItem: InventoryItem) => void;
-};

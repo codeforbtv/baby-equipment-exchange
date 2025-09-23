@@ -22,13 +22,18 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.token.admin == true;
       }
 
-          // Admin can create, edit or delete users   
+      // Admin can create, edit or delete users   
       match /Users/{document=**} {
         allow read, write: if request.auth != null && request.auth.token.admin == true;
       }
 
-         // Admin can create, edit or delete organizations   
+      // Admin can create, edit or delete organizations   
       match /Organizations/{document=**} {
+        allow read, write: if request.auth != null && request.auth.token.admin == true;
+      }
+
+      // Admin can create, edit or delete orders   
+      match /Orders/{document=**} {
         allow read, write: if request.auth != null && request.auth.token.admin == true;
       }
 
@@ -40,10 +45,15 @@ service cloud.firestore {
         allow read: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available';
       } 
 
-      // aid worker can only update 'requestor' and 'modifiedAt' fields of avilable donations
+      // aid worker can only update 'requestor', 'modifiedAt', 'status' fields of avilable donations
       match /Donations/{document=**} {
-        allow update: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available' && (resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt']))
-      }  
+        allow update: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available' && (resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt', 'status']))
+      }
+
+     //aid worker can create & update new orders (requested items)
+      match /Orders/{document=**} {
+        allow create, update: if request.auth != null && request.auth.token['aid-worker'] == true 
+      }
      
       // Standard user role
 

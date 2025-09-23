@@ -32,11 +32,13 @@ import { DonationBody } from '@/types/post-data';
 // Libs
 import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
+import { Order } from '@/types/OrdersTypes';
 
 // Imported constants
 
 export const DONATIONS_COLLECTION = 'Donations';
 export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
+export const ORDERS_COLLECTION = 'Orders';
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -102,15 +104,8 @@ const inventoryConverter = {
             model: inventory.getModel(),
             description: inventory.getDescription(),
             tagNumber: inventory.getTagNumber(),
-            notes: inventory.getNotes(),
             status: inventory.getStatus(),
-            bulkCollection: inventory.getBulkCollection(),
-            images: inventory.getImages(),
-            createdAt: inventory.getCreatedAt(),
-            modifiedAt: inventory.getModifiedAt(),
-            dateReceived: inventory.getDateReceived(),
-            dateDistributed: inventory.getDateDistributed(),
-            requestor: inventory.getRequestor()
+            images: inventory.getImages()
         };
         for (const key in inventoryData) {
             if (inventoryData[key] === undefined || inventoryData[key] === null) {
@@ -128,15 +123,8 @@ const inventoryConverter = {
             model: data.model,
             description: data.description,
             tagNumber: data.tagNumber,
-            notes: data.notes,
             status: data.status,
-            bulkCollection: data.bulkCollection,
-            images: data.images,
-            createdAt: data.createdAt,
-            modifiedAt: data.modifiedAt,
-            dateReceived: data.dateReceived,
-            dateDistributed: data.dateDistributed,
-            requestor: data.requestor
+            images: data.images
         };
         return new InventoryItem(inventoryData);
     }
@@ -160,9 +148,7 @@ export async function getDonationNotifications(): Promise<Donation[]> {
     let donations: Donation[] = [];
     try {
         const donationsRef = collection(db, DONATIONS_COLLECTION);
-        const donationNotificationsQuery = query(donationsRef, or(where('status', '==', 'in processing'), where('status', '==', 'requested'))).withConverter(
-            donationConverter
-        );
+        const donationNotificationsQuery = query(donationsRef, where('status', '==', 'in processing')).withConverter(donationConverter);
         const donationsNotificationsSnapshot = await getDocs(donationNotificationsQuery);
         for (const doc of donationsNotificationsSnapshot.docs) {
             donations.push(doc.data());
@@ -191,12 +177,27 @@ export async function getInventory(): Promise<InventoryItem[]> {
     return Promise.reject();
 }
 
+export async function getInventoryItemById(id: string): Promise<InventoryItem> {
+    try {
+        const itemRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(inventoryConverter);
+        const itemSnapshot = await getDoc(itemRef);
+        if (itemSnapshot.exists()) {
+            return itemSnapshot.data();
+        } else {
+            return Promise.reject(new Error('Inventory item not found'));
+        }
+    } catch (error) {
+        addErrorEvent('Get inventory item by id', error);
+    }
+    return Promise.reject();
+}
+
+//Get an array of inventory items from array of IDs. For retrieving items from local storage.
 export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
     try {
         let inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
-        const constraints: QueryConstraint[] = [where(documentId(), 'in', inventoryIds)];
-        const q = query(collectionRef, ...constraints).withConverter(inventoryConverter);
+        const q = query(collectionRef, where(documentId(), 'in', inventoryIds)).withConverter(inventoryConverter);
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((snapshot) => {
             inventory.push(snapshot.data());
@@ -397,18 +398,82 @@ export async function deleteDonationById(id: string): Promise<void> {
     }
 }
 
-export async function requestInventoryItems(inventoryItemIds: string[], user: DocumentReference): Promise<void> {
+export async function requestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
     try {
+        const orderRef = doc(collection(db, ORDERS_COLLECTION));
         const batch = writeBatch(db);
+        //Create a new order collection doc
+        batch.set(orderRef, {
+            status: 'open',
+            requestor: user,
+            items: []
+        });
         for (const inventoryItemId of inventoryItemIds) {
             const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
-            await updateDoc(inventoryItemRef, {
+            //Update state of each requested item to 'requested'
+            batch.update(inventoryItemRef, {
                 status: 'requested',
-                requestor: user
+                requestor: user,
+                modifiedAt: serverTimestamp()
             });
-            await batch.commit();
+            //Add donation ref to items array
+            batch.update(orderRef, {
+                items: arrayUnion(inventoryItemRef)
+            });
         }
+        await batch.commit();
     } catch (error) {
         addErrorEvent('Request inventory items', error);
+    }
+}
+//Get items requested by aid workers
+export async function getOrdersNotifications() {
+    let orders: Order[] = [];
+    try {
+        const ordersRef = collection(db, ORDERS_COLLECTION);
+        const q = query(ordersRef, where('status', '==', 'open'));
+        const ordersSnapshot = await getDocs(q);
+        for (const doc of ordersSnapshot.docs) {
+            const orderInfo = doc.data();
+            let order: Order = {
+                id: doc.id,
+                status: orderInfo.status,
+                requestor: orderInfo.requestor,
+                items: []
+            };
+            for (const donation of orderInfo.items) {
+                const donationDetails = await getDoc(donation);
+                order.items.push(donationDetails.data() as Donation);
+            }
+            orders.push(order);
+        }
+        return orders;
+    } catch (error) {
+        addErrorEvent('Error geting order notifications', error);
+    }
+    return Promise.reject();
+}
+
+export async function getOrderById(id: string): Promise<Order> {
+    try {
+        const orderRef = doc(db, `${ORDERS_COLLECTION}/${id}`);
+        const orderSnapShot = await getDoc(orderRef);
+        if (orderSnapShot.exists()) {
+            return orderSnapShot.data() as Order;
+        } else {
+            return Promise.reject(new Error('Order not found'));
+        }
+    } catch (error) {
+        addErrorEvent('Get order by ID', error);
+    }
+    return Promise.reject();
+}
+
+export async function closeOrder(id: string): Promise<void> {
+    try {
+        const orderRef = doc(db, `${ORDERS_COLLECTION}/${id}`);
+        await updateDoc(orderRef, { status: 'closed' });
+    } catch (error) {
+        addErrorEvent('Error closing', error);
     }
 }

@@ -13,11 +13,12 @@ import Notifications from './Notifications';
 import React, { useEffect, useState } from 'react';
 //API
 import { addErrorEvent, callGetOrganizationNames, callListAllUsers, getNotifications } from '@/api/firebase';
-import { getAllDonations } from '@/api/firebase-donations';
+import { getAllDonations, getOrdersNotifications } from '@/api/firebase-donations';
 //Types
 import { Donation } from '@/models/donation';
 import { AuthUserRecord } from '@/types/UserTypes';
 import { Notification } from '@/types/NotificationTypes';
+import { Order } from '@/types/OrdersTypes';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -105,6 +106,8 @@ export default function Dashboard() {
             fetchOrgNames();
         }
     }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
+
+    const [orders, setOrders] = useState<Order[] | null>(null);
 
     return (
         <ProtectedAdminRoute>

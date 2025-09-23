@@ -1,7 +1,7 @@
 'use client';
 //Components
 import Link from 'next/link';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedRoute from '@/components/ProtectedAidWorkerRoute';
 import { Button } from '@mui/material';
 import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 //Hooks

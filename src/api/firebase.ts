@@ -11,7 +11,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
 import { UserRecord } from 'firebase-admin/auth';
-import { getDonationNotifications } from './firebase-donations';
+import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
 import { getUsersNotifications } from './firebase-users';
 import { Notification } from '@/types/NotificationTypes';
 
@@ -122,11 +122,16 @@ export async function callGetOrganizationNames(): Promise<{
 //Multi-collection query
 export async function getNotifications(): Promise<Notification> {
     try {
-        const [donationNotifications, userNotifications] = await Promise.all([getDonationNotifications(), getUsersNotifications()]);
+        const [donationNotifications, userNotifications, orderNotifications] = await Promise.all([
+            getDonationNotifications(),
+            getUsersNotifications(),
+            getOrdersNotifications()
+        ]);
 
         return {
             donations: donationNotifications,
-            users: userNotifications
+            users: userNotifications,
+            orders: orderNotifications
         };
     } catch (error) {
         addErrorEvent('Error getting notifications', error);
