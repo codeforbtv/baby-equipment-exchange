@@ -19,9 +19,9 @@
                 "name": "next"
             }
         ],
-        "baseUrl": ".",
+        "baseUrl": "src",
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./*"]
         },
         "types": ["node", "babel__generator", "react"]
     },
