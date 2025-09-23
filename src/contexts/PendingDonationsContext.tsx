@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from 'react';
 import { addErrorEvent } from '@/api/firebase';
 
 //Utils
@@ -16,6 +16,10 @@ type PendingDonationsContextType = {
     removePendingDonation: (index: number) => void;
     clearPendingDonations: () => void;
     getPendingDonationsFromLocalStorage: () => void;
+    pendingDonorName: string;
+    pendingDonorEmail: string;
+    setPendingDonorName: Dispatch<SetStateAction<string>>;
+    setPendingDonorEmail: Dispatch<SetStateAction<string>>;
 };
 
 type Props = {
@@ -29,11 +33,17 @@ export const PendingDonationsContext = createContext<PendingDonationsContextType
     addPendingDonation: (pendingDonation: DonationFormData) => {},
     removePendingDonation: (index: number) => {},
     clearPendingDonations: () => {},
-    getPendingDonationsFromLocalStorage: () => {}
+    getPendingDonationsFromLocalStorage: () => {},
+    pendingDonorName: '',
+    pendingDonorEmail: '',
+    setPendingDonorName: () => {},
+    setPendingDonorEmail: () => {}
 });
 
 export const PendingDonationsProvider = ({ children }: Props) => {
     const [pendingDonations, setPendingDonations] = useState<DonationFormData[]>(defaultPendingDonations);
+    const [pendingDonorName, setPendingDonorName] = useState<string>('');
+    const [pendingDonorEmail, setPendingDonorEmail] = useState<string>('');
 
     const addPendingDonation = (pendingDonation: DonationFormData) => {
         setPendingDonations((prev) => [...prev, pendingDonation]);
@@ -110,7 +120,11 @@ export const PendingDonationsProvider = ({ children }: Props) => {
         addPendingDonation,
         removePendingDonation,
         clearPendingDonations,
-        getPendingDonationsFromLocalStorage
+        getPendingDonationsFromLocalStorage,
+        pendingDonorEmail,
+        setPendingDonorEmail,
+        pendingDonorName,
+        setPendingDonorName
     };
 
     useEffect(() => {

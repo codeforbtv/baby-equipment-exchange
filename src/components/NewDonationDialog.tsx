@@ -13,7 +13,7 @@ import { categories } from '@/data/html';
 // Styles
 import donationStyles from '@/app/donate/Donate.module.css';
 import ImageThumbnail from './ImageThumbnail';
-import { addBulkDonation } from '@/api/firebase-donations';
+import { addDonation } from '@/api/firebase-donations';
 import { uploadImages } from '@/api/firebase-images';
 import { USERS_COLLECTION } from '@/api/firebase-users';
 import { doc } from 'firebase/firestore';

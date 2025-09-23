@@ -1,6 +1,6 @@
 import { DocumentReference, Timestamp } from 'firebase/firestore';
 
-import { donationStatus } from '@/types/DonationTypes';
+import { DonationStatusValues } from './donation';
 
 export interface IInventoryItem {
     [key: string]:
@@ -21,20 +21,13 @@ export interface IInventoryItem {
         | (() => Timestamp | null | undefined)
         | (() => number | undefined);
     id: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
-    status: donationStatus;
-    bulkCollection: DocumentReference | null;
+    status: DonationStatusValues;
     images: DocumentReference[] | string[];
-    createdAt: Timestamp;
-    modifiedAt: Timestamp;
-    dateReceived: Timestamp | null | undefined;
-    dateDistributed: Timestamp | null | undefined;
-    requestor: DocumentReference | null;
 }
 
 export class InventoryItem implements IInventoryItem {
@@ -56,20 +49,13 @@ export class InventoryItem implements IInventoryItem {
         | (() => Timestamp | null | undefined)
         | (() => number | undefined);
     id: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
-    status: donationStatus;
-    bulkCollection: DocumentReference | null;
+    status: DonationStatusValues;
     images: DocumentReference[] | string[];
-    createdAt: Timestamp;
-    modifiedAt: Timestamp;
-    dateReceived: Timestamp | null | undefined;
-    dateDistributed: Timestamp | null | undefined;
-    requestor: DocumentReference | null;
 
     constructor(args: IInventoryItem) {
         this.id = args.id;
@@ -79,7 +65,6 @@ export class InventoryItem implements IInventoryItem {
         this.model = args.model;
         this.description = args.description;
         this.tagNumber = args.tagNumber;
-        this.notes = args.notes;
         this.status = args.status;
         this.bulkCollection = args.bulkCollection;
         this.images = args.images;
@@ -94,15 +79,15 @@ export class InventoryItem implements IInventoryItem {
         return this.id;
     }
 
-    getCategory(): string | null | undefined {
+    getCategory(): string {
         return this.category;
     }
 
-    getBrand(): string | null | undefined {
+    getBrand(): string {
         return this.brand;
     }
 
-    getModel(): string | null | undefined {
+    getModel(): string {
         return this.model;
     }
 
@@ -114,49 +99,11 @@ export class InventoryItem implements IInventoryItem {
         return this.tagNumber;
     }
 
-    getNotes(): string | null | undefined {
-        return this.notes;
-    }
-
-    getStatus(): donationStatus {
+    getStatus(): DonationStatusValues {
         return this.status;
-    }
-
-    getBulkCollection(): DocumentReference | null {
-        return this.bulkCollection;
     }
 
     getImages(): string[] | DocumentReference[] {
         return this.images;
-    }
-
-    getCreatedAt(): Timestamp {
-        return this.createdAt;
-    }
-
-    getModifiedAt(): Timestamp {
-        return this.modifiedAt;
-    }
-
-    getDateReceived(): Timestamp | null | undefined {
-        return this.dateReceived;
-    }
-
-    getDateDistributed(): Timestamp | null | undefined {
-        return this.dateDistributed;
-    }
-
-    getRequestor(): DocumentReference | null {
-        return this.requestor;
-    }
-
-    getDaysInStorage(): number | undefined {
-        if (this.dateReceived === undefined) {
-            return undefined;
-        }
-        const dateReceived = this.dateReceived!;
-        const currentTime = Date.now();
-        const daysInStorage = Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
-        return daysInStorage;
     }
 }

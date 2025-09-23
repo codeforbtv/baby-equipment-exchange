@@ -1,4 +1,6 @@
-rules_version = '3';
+//Change to rules must be replicated in the Firestore console unless you deploy them
+
+rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -20,18 +22,38 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.token.admin == true;
       }
 
+      // Admin can create, edit or delete users   
+      match /Users/{document=**} {
+        allow read, write: if request.auth != null && request.auth.token.admin == true;
+      }
+
+      // Admin can create, edit or delete organizations   
+      match /Organizations/{document=**} {
+        allow read, write: if request.auth != null && request.auth.token.admin == true;
+      }
+
+      // Admin can create, edit or delete orders   
+      match /Orders/{document=**} {
+        allow read, write: if request.auth != null && request.auth.token.admin == true;
+      }
+
 
       // Aid worker role
 
       // aid worker can only view inventory (donation status = 'available')
       match /Donations/{document=**} {
-        allow read: if request.auth != null && request.auth.token['aid-worker'] == true && request.resource.data.staus == 'available';
+        allow read: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available';
       } 
 
-      // aid worker can only update 'requestor' and 'modifiedAt' fields of avilable donations
+      // aid worker can only update 'requestor', 'modifiedAt', 'status' fields of avilable donations
       match /Donations/{document=**} {
-        allow update: if request.auth != null && request.auth.token['aid-worker'] && request.resource.data.staus == 'available' && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt']))
-      }  
+        allow update: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available' && (resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt', 'status']))
+      }
+
+     //aid worker can create & update new orders (requested items)
+      match /Orders/{document=**} {
+        allow create, update: if request.auth != null && request.auth.token['aid-worker'] == true 
+      }
      
       // Standard user role
 

@@ -1,6 +1,5 @@
 //Firebase types
 import { DocumentReference, Timestamp } from 'firebase/firestore';
-import { donationStatus } from '@/types/DonationTypes';
 
 export interface IDonationCache {
     [key: string]: string | number;
@@ -8,19 +7,36 @@ export interface IDonationCache {
     modifiedAt: number;
 }
 
+export const donationStatuses = {
+    'In Processing': 'in processing',
+    'Pending Delivery': 'pending delivery',
+    Available: 'available',
+    Requested: 'requested',
+    Reserved: 'reserved',
+    Distributed: 'distributed',
+    Rejected: 'rejected'
+};
+
+export type DonationStatuses = typeof donationStatuses;
+export type DonationStatusKeys = keyof DonationStatuses;
+export type DonationStatusValues = DonationStatuses[keyof DonationStatuses];
+
 export interface IDonation {
     [key: string]:
         | boolean
         | string[]
         | DocumentReference[]
         | DocumentReference
+        | { id: string; name: string }
         | Timestamp
         | string
         | null
         | undefined
         | (() => string)
         | (() => string[] | DocumentReference[])
+        | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
+        | (() => { id: string; name: string } | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -30,20 +46,20 @@ export interface IDonation {
     donorEmail: string;
     donorName: string;
     donorId: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
-    status: donationStatus;
-    bulkCollection: DocumentReference | null;
-    images: DocumentReference[] | string[];
+    notes: string[] | null | undefined;
+    status: DonationStatusValues;
+    bulkCollection: string | null;
+    images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
     dateReceived: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
-    requestor: DocumentReference | null;
+    requestor: { id: string; name: string; email: string } | null;
 }
 
 export class Donation implements IDonation {
@@ -53,12 +69,15 @@ export class Donation implements IDonation {
         | string[]
         | DocumentReference[]
         | DocumentReference
+        | { id: string; name: string }
         | Timestamp
         | null
         | undefined
         | (() => string)
         | (() => string[] | DocumentReference[])
+        | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
+        | (() => { id: string; name: string } | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -68,20 +87,20 @@ export class Donation implements IDonation {
     donorEmail: string;
     donorName: string;
     donorId: string;
-    category: string | null | undefined;
-    brand: string | null | undefined;
-    model: string | null | undefined;
+    category: string;
+    brand: string;
+    model: string;
     description: string | null | undefined;
     tagNumber: string | null | undefined;
-    notes: string | null | undefined;
-    status: donationStatus;
-    bulkCollection: DocumentReference | null;
-    images: DocumentReference[] | string[];
+    notes: string[] | null | undefined;
+    status: DonationStatusValues;
+    bulkCollection: string | null;
+    images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
     dateReceived: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
-    requestor: DocumentReference | null;
+    requestor: { id: string; name: string; email: string } | null;
 
     constructor(args: IDonation) {
         this.id = args.id;
@@ -120,15 +139,15 @@ export class Donation implements IDonation {
         return this.donorId;
     }
 
-    getCategory(): string | null | undefined {
+    getCategory(): string {
         return this.category;
     }
 
-    getBrand(): string | null | undefined {
+    getBrand(): string {
         return this.brand;
     }
 
-    getModel(): string | null | undefined {
+    getModel(): string {
         return this.model;
     }
 
@@ -140,19 +159,19 @@ export class Donation implements IDonation {
         return this.tagNumber;
     }
 
-    getNotes(): string | null | undefined {
+    getNotes(): string[] | null | undefined {
         return this.notes;
     }
 
-    getStatus(): donationStatus {
+    getStatus(): DonationStatusValues {
         return this.status;
     }
 
-    getBulkCollection(): DocumentReference | null {
+    getBulkCollection(): string | null {
         return this.bulkCollection;
     }
 
-    getImages(): string[] | DocumentReference[] {
+    getImages(): string[] {
         return this.images;
     }
 
@@ -172,7 +191,7 @@ export class Donation implements IDonation {
         return this.dateDistributed;
     }
 
-    getRequestor(): DocumentReference | null {
+    getRequestor(): { id: string; name: string; email: string } | null {
         return this.requestor;
     }
 

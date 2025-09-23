@@ -1,19 +1,23 @@
 'use client';
 //Components
-import { Box, Button, Paper, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, Paper, TextField } from '@mui/material';
+import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
+import Loader from '@/components/Loader';
 //Hooks
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-//Libs
-import { onAuthStateChangedListener, callIsEmailInUse, createUser, addErrorEvent } from '@/api/firebase';
+import { useRouter } from 'next/navigation';
+//Api
+import { callIsEmailInUse, addErrorEvent, callGetOrganizationNames, callCreateUser } from '@/api/firebase';
+import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
-import Loader from '@/components/Loader';
+//Types
+import { NewUserAccountInfo } from '@/types/UserTypes';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewAccount() {
-    const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('pending');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [displayName, setDisplayName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
@@ -21,8 +25,71 @@ export default function NewAccount() {
     const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState<boolean>(false);
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
+    const [phoneNumber, setPhoneNumber] = useState<string>('');
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [confirmedUserName, setConfirmedUserName] = useState<string>('');
+
+    //List of Org names, ids from Server
+    const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
+        [key: string]: string;
+    }>({});
+
+    const orgNames = Object.keys(orgNamesAndIds);
+
+    //Org Value from existing list
+    const [orgValue, setOrgValue] = useState<string | null>(null);
+
+    //Org value if user entered text
+    const [orgInputValue, setOrgInputValue] = useState<string>('');
 
     const router = useRouter();
+
+    const getOrgNames = async (): Promise<void> => {
+        try {
+            const organizationNames = await callGetOrganizationNames();
+            setOrgNamesAndIds(organizationNames);
+        } catch (error) {
+            addErrorEvent('Could not fetch org names', error);
+        }
+    };
+
+    const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+        event.preventDefault();
+        setIsLoading(true);
+
+        //if user selects existing org, submit org name and id. If not, enter the user suplied org name in the notes field.
+
+        let organization;
+        let notes: string[] = [];
+
+        if (orgValue) {
+            organization = {
+                id: orgNamesAndIds[orgValue],
+                name: orgValue
+            };
+        } else {
+            organization = null;
+            notes = [`User provided organization: ${orgInputValue}`];
+        }
+
+        const accountInfo: NewUserAccountInfo = {
+            displayName: displayName,
+            email: email,
+            password: password,
+            phoneNumber: phoneNumber,
+            organization: organization,
+            notes: notes
+        };
+        try {
+            const newUser = await callCreateUser(accountInfo);
+            newUser.displayName && setConfirmedUserName(newUser.displayName);
+            setIsLoading(false);
+            setOpenDialog(true);
+        } catch (error) {
+            setIsLoading(false);
+            addErrorEvent('handleAccountCreate', error);
+        }
+    };
 
     const validateEmail = (email: string): void => {
         if (email.length === 0 || !emailRegex.test(email)) {
@@ -35,24 +102,6 @@ export default function NewAccount() {
     const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
         setEmail(event.target.value);
         validateEmail(email);
-    };
-
-    useEffect(() => {
-        onAuthStateChangedListener((user) => {
-            if (user) router.push('/');
-            else setLoginState('loggedOut');
-        });
-    }, []);
-
-    const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
-        event.preventDefault();
-        try {
-            createUser(displayName, email, password)
-                .then((user) => user.user.getIdTokenResult(true).then(() => router.push('/')))
-                .catch((error) => addErrorEvent('createUser', error));
-        } catch (error) {
-            addErrorEvent('handleAccountCreate', error);
-        }
     };
 
     const handlePassword = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -81,16 +130,32 @@ export default function NewAccount() {
         }
     };
 
+    const handlePhoneNumberInput: OnValueChange = (values): void => {
+        setPhoneNumber(values.formattedValue);
+    };
+
+    const handleClose = () => {
+        setOpenDialog(false);
+        router.push('/');
+    };
+
+    useEffect(() => {
+        getOrgNames();
+    }, []);
+
     return (
         <>
             <div className="page--header">
                 <h1>Join</h1>
             </div>
+
             <Paper className="content--container" elevation={8} square={false}>
-                {loginState === 'pending' && <Loader />}
-                {loginState === 'loggedOut' && (
+                {isLoading ? (
+                    <Loader />
+                ) : (
                     <>
-                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate}>
+                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate} className="form--container">
+                            <UserConfirmationDialogue open={openDialog} onClose={handleClose} displayName={confirmedUserName} />
                             <TextField
                                 type="text"
                                 label="Display Name"
@@ -117,6 +182,17 @@ export default function NewAccount() {
                                 onChange={handleEmailInput}
                                 onBlur={handleBlur}
                             />
+                            <Autocomplete
+                                sx={{ maxWidth: '580px' }}
+                                freeSolo={true}
+                                value={orgValue}
+                                onChange={(event: any, newValue: string | null) => setOrgValue(newValue)}
+                                inputValue={orgInputValue}
+                                onInputChange={(event, newInputValue) => setOrgInputValue(newInputValue)}
+                                id="organzation-select"
+                                options={orgNames}
+                                renderInput={(params) => <TextField {...params} label="Organization (select or enter a name)" />}
+                            />
                             <TextField
                                 type="password"
                                 label="Password"
@@ -139,6 +215,17 @@ export default function NewAccount() {
                                 helperText={passwordsDoNotMatch ? 'Passwords do not match.' : undefined}
                                 required
                                 onChange={handleConfirmPassword}
+                            />
+                            <PatternFormat
+                                id="phone-number"
+                                format="+1 (###) ###-####"
+                                mask="_"
+                                allowEmptyFormatting
+                                value={phoneNumber}
+                                onValueChange={handlePhoneNumberInput}
+                                type="tel"
+                                displayType="input"
+                                customInput={TextField}
                             />
                             <Button variant="contained" type={'submit'} disabled={isEmailInUse || passwordsDoNotMatch}>
                                 Join

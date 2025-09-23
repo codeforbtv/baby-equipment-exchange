@@ -2,103 +2,79 @@
 import { Timestamp } from 'firebase/firestore';
 //Plain JavaScript objects
 import { IAddress } from '@/models/address';
-import { IContact } from '@/models/contact';
+
+export const orgTags = {
+    'Social Services': 'social-services',
+    'Mutual Aid': 'mutual-aid',
+    'Sustainabilty Reuse': 'sustainabilty-reuse',
+    'Pediatric/Maternal Health': 'pediatric-maternal-health',
+    'Homelessness/Unhoused': 'homelessness-unhoused',
+    'Early Childhood Education': 'early-childhood-education'
+};
+
+export type organizationTags = typeof orgTags;
+export type OrganizationTagKeys = keyof organizationTags;
+export type OrganizationTagValues = organizationTags[keyof organizationTags];
 
 export interface IOrganization {
     [key: string]:
-        | boolean
         | string
+        | string[]
         | IAddress
-        | IContact
+        | undefined
         | Timestamp
-        | (() => boolean)
-        | (() => IAddress)
-        | (() => IContact)
-        | (() => string)
+        | (() => OrganizationTagValues[])
+        | (() => string[])
+        | (() => IAddress | undefined)
+        | (() => string | undefined)
         | (() => Timestamp);
+    id: string;
     name: string;
-    diaperBank: boolean;
-    babyProductExchange: boolean;
-    lowIncome: boolean;
-    criminalJusticeInvolved: boolean;
-    adoptionAndFosterFamilies: boolean;
-    refugeeAndImmigration: boolean;
-    substanceAbuseDisorders: boolean;
-    address: IAddress;
-    pointOfContact: IContact;
-    notes: string;
+    address?: IAddress;
+    county?: string;
+    phoneNumber?: string;
+    tags: OrganizationTagValues[];
+    notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 }
 
 export class Organization implements IOrganization {
     [key: string]:
-        | boolean
         | string
+        | string[]
         | IAddress
-        | IContact
+        | undefined
         | Timestamp
-        | (() => boolean)
-        | (() => IAddress)
-        | (() => IContact)
-        | (() => string)
+        | (() => OrganizationTagValues[])
+        | (() => IAddress | undefined)
+        | (() => string[])
+        | (() => string | undefined)
         | (() => Timestamp);
+    id: string;
     name: string;
-    diaperBank: boolean;
-    babyProductExchange: boolean;
-    lowIncome: boolean;
-    criminalJusticeInvolved: boolean;
-    adoptionAndFosterFamilies: boolean;
-    refugeeAndImmigration: boolean;
-    substanceAbuseDisorders: boolean;
-    address: IAddress;
-    pointOfContact: IContact;
-    notes: string;
+    address?: IAddress;
+    county?: string;
+    phoneNumber?: string;
+    tags: OrganizationTagValues[];
+    notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
 
     constructor(args: IOrganization) {
+        this.id = args.id;
         this.name = args.name;
-        this.diaperBank = args.diaperBank;
-        this.babyProductExchange = args.babyProductExchange;
-        this.lowIncome = args.lowIncome;
-        this.criminalJusticeInvolved = args.criminalJusticeInvolved;
-        this.adoptionAndFosterFamilies = args.adoptionAndFosterFamilies;
-        this.refugeeAndImmigration = args.refugeeAndImmigration;
-        this.substanceAbuseDisorders = args.substanceAbuseDisorders;
         this.address = args.address;
-        this.pointOfContact = args.pointOfContact;
+        this.county = args.county;
+        this.phoneNumber = args.phoneNumber;
+        this.tags = args.tags;
         this.notes = args.notes;
         this.createdAt = args.createdAt as Timestamp;
         this.modifiedAt = args.modifiedAt as Timestamp;
     }
 
-    isDiaperBank() {
-        return this.diaperBank;
-    }
-
-    isBabyProductExchange() {
-        return this.babyProductExchange;
-    }
-
-    isLowIncome() {
-        return this.lowIncome;
-    }
-
-    isCriminalJusticeInvolved() {
-        return this.criminalJusticeInvolved;
-    }
-
-    isAdoptionAndFosterFamilies() {
-        return this.adoptionAndFosterFamilies;
-    }
-
-    isRefugeeAndImmigration() {
-        return this.refugeeAndImmigration;
-    }
-
-    isSubstanceAbuseDisorders() {
-        return this.substanceAbuseDisorders;
+    getId() {
+        return this.id;
     }
 
     getName() {
@@ -109,8 +85,16 @@ export class Organization implements IOrganization {
         return this.address;
     }
 
-    getPointOfContact() {
-        return this.pointOfContact;
+    getCounty() {
+        return this.county;
+    }
+
+    getPhoneNumber() {
+        return this.phoneNumber;
+    }
+
+    getTags() {
+        return this.tags;
     }
 
     getNotes() {

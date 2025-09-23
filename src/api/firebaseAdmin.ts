@@ -9,13 +9,15 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 
 import * as admin from 'firebase-admin';
-import { getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
+import { DecodedIdToken, getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { applicationDefault, initializeApp, ServiceAccount } from 'firebase-admin/app';
 import { UserCardProps } from '@/types/post-data';
 import { convertToString } from '@/utils/utils';
 import { UserInfo } from 'firebase/auth';
+import { IUser, UserCollection } from '@/models/user';
+import { AuthUserRecord } from '@/types/UserTypes';
 
 const region = 'us-east1';
 
@@ -57,6 +59,7 @@ export async function initAdmin() {
 const app = await initAdmin();
 const auth = getAuth(app);
 const storage = getStorage(app);
+const db = getFirestore(app);
 
 export const addEvent = async (request: any) => {
     try {
@@ -77,89 +80,64 @@ export const checkClaims = async (request: any): Promise<any> => {
     throw new HttpsError('internal', 'Internal error');
 };
 
-export const createNewUser = functionsV1
-    .region(region)
-    .auth.user()
-    .onCreate(async (user: UserRecord) => {
-        try {
-            const db = getFirestore(app);
-            await db
-                .runTransaction(async (transaction) => {
-                    const userRef = db.collection(USERS_COLLECTION).doc(user.uid);
-                    if ((await userRef.get()).exists) {
-                        logger.error({ error: `attempt to create an existing user ${user.uid} with https onCall method.`, data: user });
-                        // Return if the user already exists.
-                        return;
-                    }
+//Cloud function to create User in Users collection anytime a new User is created in app.
+// export const createNewUser = functionsV1
+//     .region(region)
+//     .auth.user()
+//     .onCreate(async (user: UserRecord) => {
+//         try {
+//             await db
+//                 .runTransaction(async (transaction) => {
+//                     const userRef = db.collection(USERS_COLLECTION).doc(user.uid);
+//                     if ((await userRef.get()).exists) {
+//                         logger.error({ error: `attempt to create an existing user ${user.uid} with https onCall method.`, data: user });
+//                         // Return if the user already exists.
+//                         return;
+//                     }
 
-                    const userParams = {
-                        name: user.displayName ?? '',
-                        pendingDonations: [],
-                        createdAt: FieldValue.serverTimestamp(),
-                        modifiedAt: FieldValue.serverTimestamp()
-                    };
+//                     const userParams: IUser = {
+//                         uid: user.uid,
+//                         phoneNumber: user.phoneNumber,
+//                         requestedItems: [],
+//                         notes: [],
+//                         organization: null,
+//                         modifiedAt: FieldValue.serverTimestamp()
+//                     };
+//                     transaction.create(userRef, userParams);
+//                 })
+//                 .catch((error) => logger.error({ location: 'createNewUser', error: error }));
+//         } catch (error) {
+//             addErrorEvent('createNewUser', { error: error, data: user });
+//         }
+//     });
 
-                    const userDetailParams = {
-                        user: userRef,
-                        emails: [user.email],
-                        phones: [],
-                        addresses: [],
-                        websites: [],
-                        createdAt: FieldValue.serverTimestamp(),
-                        modifiedAt: FieldValue.serverTimestamp(),
-                        email: user.email
-                    };
+// export const updateUser = async (request: any): Promise<void> => {
+//     try {
+//         const { uid, accountInformation } = request;
+//         await auth.updateUser(uid, accountInformation);
+//     } catch (error) {
+//         addErrorEvent('updateUser', error);
+//     }
+// };
 
-                    const userDetailRef = db.collection(USER_DETAILS_COLLECTION).doc(user.uid);
-
-                    transaction.create(userRef, userParams);
-                    transaction.create(userDetailRef, userDetailParams);
-                })
-                .catch((error) => logger.error({ location: 'createNewUser', error: error }));
-            // Claims may have already been set elsewhere.
-
-            const userRecord = await auth.getUser(user.uid);
-            if (userRecord.customClaims == null || Object.keys(userRecord.customClaims).length == 0) {
-                await auth.setCustomUserClaims(user.uid, {
-                    donor: true,
-                    verified: false
-                });
-            }
-        } catch (error) {
-            addErrorEvent('createNewUser', { error: error, data: user });
-        }
-    });
-
-export const updateUser = async (request: any): Promise<void> => {
-    try {
-        const { uid, accountInformation } = request;
-        console.log(uid, accountInformation);
-        await auth.updateUser(uid, accountInformation);
-    } catch (error) {
-        addErrorEvent('updateUser', error);
-    }
-};
-
-export const listAllUsers = async (): Promise<UserCardProps[]> => {
+export const listAllUsers = async (): Promise<AuthUserRecord[]> => {
     try {
         const usersList = await auth.listUsers(1000);
         const listUsersResult: UserRecord[] = usersList.users;
-        const listUsers: UserCardProps[] = listUsersResult.map((userRecord) => {
-            const userCardProps: UserCardProps = {
-                uid: userRecord.uid,
-                email: userRecord.email,
-                emailVerified: userRecord.emailVerified,
-                displayName: userRecord.displayName,
-                photoURL: userRecord.photoURL,
-                phoneNumber: userRecord.phoneNumber,
-                disabled: userRecord.disabled,
-                metadata: userRecord.metadata,
-                customClaims: userRecord.customClaims
+        const authUsers = listUsersResult.map((user) => {
+            const authUser = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                disabled: user.disabled,
+                metadata: user.metadata,
+                customClaims: user.customClaims
             };
-            //To prevent 'Only plain objects can be passed to Client Components from Server Components' error
-            return JSON.parse(JSON.stringify(userCardProps));
+            return authUser;
         });
-        return listUsers;
+
+        //To prevent 'Only plain objects can be passed to Client Components from Server Components' error
+        return JSON.parse(JSON.stringify(authUsers));
     } catch (error) {
         addErrorEvent('listAllUsers', error);
     }
@@ -167,18 +145,18 @@ export const listAllUsers = async (): Promise<UserCardProps[]> => {
 };
 
 //returns client-side safe UserInfo object
-export async function getUserById(id: string): Promise<UserInfo> {
+export async function getAuthUserById(uid: string): Promise<AuthUserRecord> {
     try {
-        const userRecord = await auth.getUser(id);
-        const user: UserInfo = {
-            displayName: userRecord.displayName || null,
-            email: userRecord.email || null,
-            phoneNumber: userRecord.phoneNumber || null,
-            photoURL: userRecord.photoURL || null,
-            providerId: userRecord.providerData[0].providerId,
-            uid: userRecord.uid
+        const user = await auth.getUser(uid);
+        const authUser = {
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            disabled: user.disabled,
+            metadata: user.metadata,
+            customClaims: user.customClaims
         };
-        return user;
+        return JSON.parse(JSON.stringify(authUser));
     } catch (error) {
         console.log(error);
     }
@@ -244,7 +222,7 @@ export const isEmailInUse = async (request: any) => {
         const email = request.email;
         const userRecord: UserRecord = await auth.getUserByEmail(email);
         if (userRecord !== undefined) {
-            logger.error({ error: `${email} was queried via this onCall method.`, data: request.data });
+            logger.info({ error: `${email} was queried via this onCall method.`, data: request.data });
             return true;
         } else {
             return false;
@@ -648,14 +626,14 @@ async function _setClaim(userId: string, claimName: string, claimValue: any) {
     }
 }
 
-async function _verifyAdmin(request: any) {
-    // const callee = await getAuth(app).getUser(request.userId);
-    // const adminClaimValue = callee.customClaims?.admin;
-    // console.log(callee, 'claimvalue: ', adminClaimValue);
-    // if (adminClaimValue == null || adminClaimValue !== true) {
-    //     throw new HttpsError('internal', 'Internal error');
-    // }
-    auth.verifyIdToken(request.idToken).then((claims) => console.log(claims));
+async function _verifyAdmin(request: any): Promise<boolean> {
+    try {
+        const user = await auth.getUser(request.uid);
+        return user.customClaims?.admin === true;
+    } catch (error) {
+        addErrorEvent('Verify admin', error);
+    }
+    return Promise.reject();
 }
 
 function _verifyAuthenticated(request: any) {

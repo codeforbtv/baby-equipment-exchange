@@ -2,17 +2,14 @@
 
 //Components
 import Link from 'next/link';
-
-//Hooks
-import { useUserContext } from '@/contexts/UserContext';
-import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
-
-//Libs
-import { signOutUser } from '@/api/firebase';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import Drawer from '@mui/material/Drawer';
-
+//Hooks
+import { useUserContext } from '@/contexts/UserContext';
+import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+//Libs
+import { signOutUser } from '@/api/firebase-users';
 //styles
 import styles from './NavMenu.module.css';
 
@@ -62,6 +59,11 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                     <Link className={styles['menu__link']} id="contact" href="https://www.vermontconnector.org/contact" target="_blank">
                         <span>Contact</span>
                     </Link>
+                    {!currentUser && (
+                        <Link className={styles['menu__link']} id="join" href="/join">
+                            Sign Up
+                        </Link>
+                    )}
                     <Link
                         className={styles['menu__link']}
                         id="signout"
@@ -71,7 +73,7 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                             if (currentUser) handleSignOut();
                         }}
                     >
-                        {currentUser ? <span>Sign Out</span> : <span>Login</span>}
+                        {currentUser ? <span>Sign Out</span> : <span>Sign In</span>}
                     </Link>
                 </div>
             </Drawer>

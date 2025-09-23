@@ -1,55 +1,46 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import {
-    UserCredential,
-    signInWithEmailAndPassword,
-    signOut,
-    onAuthStateChanged,
-    NextOrObserver,
-    User,
-    getAuth,
-    sendPasswordResetEmail,
-    createUserWithEmailAndPassword,
-    updateProfile,
-    signInAnonymously
-} from 'firebase/auth';
+import { User, getAuth } from 'firebase/auth';
 
 import { firebaseConfig } from './config';
-import {
-    addEvent,
-    checkClaims,
-    getImageAsSignedUrl,
-    getUidByEmail,
-    isEmailInUse,
-    registerNewUser,
-    listAllUsers,
-    setClaimForAdmin,
-    setClaimForAidWorker,
-    setClaimForDonationReadAccess,
-    setClaimForDonor,
-    setClaimForNewUser,
-    setClaimForVerified,
-    setClaimForVolunteer,
-    setClaims,
-    setUserAccount,
-    toggleCanReadDonations,
-    toggleClaimForAdmin,
-    toggleClaimForAidWorker,
-    toggleClaimForVerified,
-    toggleClaimForVolunteer,
-    updateUser,
-    getUserById
-} from './firebaseAdmin';
+import { addEvent, checkClaims } from './firebaseAdmin';
 
-import { AccountInformation, UserCardProps } from '@/types/post-data';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
+import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
+import { UserRecord } from 'firebase-admin/auth';
+import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
+import { getUsersNotifications } from './firebase-users';
+import { Notification } from '@/types/NotificationTypes';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
+
+//Cloud functions
+const functions = getFunctions(app);
+const createNewUser = httpsCallable(functions, 'createnewuser');
+const enableUser = httpsCallable(functions, 'enableuser');
+const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');
+const isEMailInUse = httpsCallable(functions, 'isemailinuse');
+const listAllUsers = httpsCallable(functions, 'listallusers');
+const setCustomClaims = httpsCallable(functions, 'setcustomclaims');
+const updateAuthUser = httpsCallable(functions, 'updateauthuser');
+
+//Cloud function calls
+export async function callCreateUser(accountInfo: NewUserAccountInfo): Promise<UserRecord> {
+    try {
+        const result = await createNewUser(accountInfo);
+        return result.data as UserRecord;
+    } catch (error) {
+        addErrorEvent('Create user', error);
+    }
+    return Promise.reject();
+}
 
 export async function callCheckClaims(...claimNames: string[]): Promise<any> {
     if (claimNames.length === 0) {
@@ -61,217 +52,94 @@ export async function callCheckClaims(...claimNames: string[]): Promise<any> {
 }
 
 export async function callIsEmailInUse(email: string): Promise<boolean> {
-    const response = await isEmailInUse({ email: email });
-    return response;
+    const response = await isEMailInUse({ email: email });
+    return response.data as boolean;
 }
 
-export async function callSetClaimForNewUser(userId: string): Promise<void> {
-    setClaimForNewUser({ userId: userId });
-}
-
-// Action based claims.
-export async function callSetClaimForDonationReadAccess(userId: string, canReadDonations: boolean): Promise<void> {
-    setClaimForDonationReadAccess({ userId: userId, canReadDonations: canReadDonations });
-}
-
-export async function callToggleCanReadDonations(userId: string): Promise<void> {
-    toggleCanReadDonations({ userId: userId });
-}
-
-// Role based claims.
-export async function canReadDonations(): Promise<boolean> {
-    return checkClaim('can-read-donations');
-}
-
-export async function isAdmin(): Promise<boolean> {
-    return checkClaim('admin');
-}
-
-export async function isAidWorker(): Promise<boolean> {
-    return checkClaim('aid-worker');
-}
-
-export async function isDonor(): Promise<boolean> {
-    return checkClaim('donor');
-}
-
-export async function isVerified(): Promise<boolean> {
-    return checkClaim('verified');
-}
-
-export async function isVolunteer(): Promise<boolean> {
-    return checkClaim('volunteer');
-}
-
-export async function callSetClaimForAdmin(userId: string, isAdmin: boolean): Promise<void> {
-    setClaimForAdmin({ userId: userId, isAdmin: isAdmin });
-}
-
-export async function callSetClaimForAidWorker(userId: string, isAidWorker: boolean): Promise<void> {
-    setClaimForAidWorker({ userId: userId, isAidWorker: isAidWorker });
-}
-
-export async function callSetClaimForDonor(userId: string, isDonor: boolean): Promise<void> {
-    setClaimForDonor({ userId: userId, isDonor: isDonor });
-}
-
-export async function callSetClaimForVerified(userId: string, isVerified: boolean): Promise<void> {
-    setClaimForVerified({ userId: userId, isVerified: isVerified });
-}
-
-export async function callSetClaimForVolunteer(userId: string, isVolunteer: boolean): Promise<void> {
-    setClaimForVolunteer({ userId: userId, isVolunteer: isVolunteer });
-}
-
-export async function callToggleClaimForAdmin(userId: string): Promise<void> {
-    toggleClaimForAdmin({ userId: userId });
-}
-
-export async function callToggleClaimForAidWorker(userId: string): Promise<void> {
-    toggleClaimForAidWorker({ userId: userId });
-}
-
-export async function callToggleClaimForVerified(userId: string): Promise<void> {
-    toggleClaimForVerified({ userId: userId });
-}
-
-export async function callToggleClaimForVolunteer(userId: string): Promise<void> {
-    toggleClaimForVolunteer({ userId: userId });
-}
-
-// Utilitarian
-export async function addErrorEvent(location: string, error: any): Promise<void> {
-    addEvent({ location: location, error: convertToString(error) });
-}
-
-export async function callGetImageAsSignedUrl(url: string): Promise<any> {
+export async function callListAllUsers(): Promise<AuthUserRecord[]> {
     try {
-        const response = await getImageAsSignedUrl({ url: url });
-        const signedUrl: any = response.data;
-        return signedUrl;
+        const listUsersResult = await listAllUsers();
+        const listUsers = listUsersResult.data as UserRecord[];
+        const authUsers = listUsers.map((user) => {
+            const authUser = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                disabled: user.disabled,
+                metadata: user.metadata,
+                customClaims: user.customClaims
+            };
+            return authUser;
+        });
+        return JSON.parse(JSON.stringify(authUsers));
     } catch (error) {
-        await addErrorEvent('getImageAsSignedUrl', error);
-    }
-}
-
-export async function getAccountType(): Promise<string> {
-    let accountType: string = '';
-    const hasAdmin = await isAdmin();
-    const hasVerified = await isVerified();
-    if (hasAdmin) {
-        accountType = 'Administrator';
-    } else {
-        accountType = 'Donor';
-    }
-    if (hasVerified) {
-        accountType += ' (unverified)';
-    }
-    return accountType;
-}
-
-async function checkClaim(claimName: string): Promise<boolean> {
-    await auth.authStateReady();
-    const claims = (await auth.currentUser?.getIdTokenResult(true))?.claims;
-    if (claims === undefined || claims === null) {
-        return Promise.reject();
-    }
-    const claimValue = claims[claimName];
-    return claimValue !== undefined && claimValue === true ? true : false;
-}
-
-export function getUserEmail(): string | null | undefined {
-    return auth.currentUser?.email;
-}
-
-export async function callGetUidByEmail(email: string): Promise<string> {
-    await auth.authStateReady();
-    const options = { email };
-    const uid = await getUidByEmail({ options });
-    return uid;
-}
-
-export async function getUserId(): Promise<string> {
-    await auth.authStateReady();
-    const currentUser = auth.currentUser?.uid;
-    return currentUser ?? Promise.reject();
-}
-
-export async function getUserEmailById(id: string): Promise<string> {
-    try {
-        const user = await getUserById(id);
-        if (user.email) return user.email;
-    } catch (error) {
-        addErrorEvent('Get user email by ID', error);
+        addErrorEvent('Call list all users', error);
     }
     return Promise.reject();
 }
 
-export async function getAllUsers(): Promise<UserCardProps[]> {
+export async function callUpdateAuthUser(uid: string, accountInformation: AccountInformation): Promise<UserRecord> {
     try {
-        const usersList = await listAllUsers();
-        return usersList;
+        const updatedAuthUser = await updateAuthUser({ uid: uid, accountInformation: accountInformation });
+        return updatedAuthUser.data as UserRecord;
     } catch (error) {
-        addErrorEvent('Error getting all users, ', error);
+        addErrorEvent('Error calling update auth user', error);
     }
     return Promise.reject();
 }
 
-export async function callRegisterNewUser(options: any): Promise<any> {
-    const response = await registerNewUser(options);
-    const data: any = response.data;
-    const okResponse = data.ok ?? false;
-    return { ok: okResponse };
+export async function callEnableUser(userId: string): Promise<void> {
+    try {
+        await enableUser({ userId: userId });
+    } catch (error) {
+        addErrorEvent('Could not enable user', error);
+    }
+    return Promise.reject();
 }
 
 export async function callSetClaims(userId: string, claims: any): Promise<void> {
-    await setClaims({ userId: userId, claims: claims });
-    //Reset token so new claims propagate
-    // auth.currentUser?.getIdToken(true);
-}
-
-export async function callSetUserAccount(userId: string, accountInformation: AccountInformation): Promise<void> {
-    await setUserAccount({ userId: userId, accountInformation: accountInformation });
-}
-
-export async function callUpdateUser(uid: string, accountInformation: AccountInformation): Promise<void> {
     try {
-        await updateUser({ uid: uid, accountInformation: accountInformation });
+        await setCustomClaims({ userId: userId, claims: claims });
     } catch (error) {
-        addErrorEvent('error updating user from firebase.ts', error);
+        addErrorEvent('Error calling set claims', error);
     }
 }
 
-export async function createUser(displayName: string, email: string, password: string): Promise<UserCredential> {
+export async function callGetOrganizationNames(): Promise<{
+    [key: string]: string;
+}> {
     try {
-        const newUser = await createUserWithEmailAndPassword(auth, email, password);
-        updateProfile(newUser.user, { displayName: displayName }).then(() => newUser);
+        const orgNames = await getOrganizationNames();
+        return orgNames.data as {
+            [key: string]: string;
+        };
     } catch (error) {
-        console.log(error);
+        addErrorEvent('Could not fetch organization names', error);
     }
     return Promise.reject();
 }
 
-export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
-    if (!email || !password) {
-        return null;
+//Multi-collection query
+export async function getNotifications(): Promise<Notification> {
+    try {
+        const [donationNotifications, userNotifications, orderNotifications] = await Promise.all([
+            getDonationNotifications(),
+            getUsersNotifications(),
+            getOrdersNotifications()
+        ]);
+
+        return {
+            donations: donationNotifications,
+            users: userNotifications,
+            orders: orderNotifications
+        };
+    } catch (error) {
+        addErrorEvent('Error getting notifications', error);
     }
-    const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    return Promise.reject();
 }
 
-export function signOutUser(): void {
-    signOut(auth);
-}
-
-export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
-    onAuthStateChanged(auth, callback);
-}
-
-export async function resetPassword(email: string): Promise<void> {
-    if (!email) Promise.reject();
-    await sendPasswordResetEmail(auth, email);
-}
-
+// Role based claims.
 export async function checkIsAdmin(user: User): Promise<boolean> {
     try {
         const result = await user.getIdTokenResult();
@@ -292,12 +160,11 @@ export async function checkIsAidWorker(user: User): Promise<boolean> {
     return Promise.reject();
 }
 
-export async function loginAnonymousUser(): Promise<User | null> {
+// Utilitarian
+export async function addErrorEvent(location: string, error: any): Promise<void> {
     try {
-        const userCredential = await signInAnonymously(auth);
-        return userCredential.user;
+        await addEvent({ location: location, error: convertToString(error) });
     } catch (error) {
-        addErrorEvent('Login anonymously', error);
+        console.log(error);
     }
-    return Promise.reject();
 }

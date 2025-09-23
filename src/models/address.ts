@@ -4,8 +4,6 @@ export interface IAddress {
     city: string | null | undefined;
     state: string | null | undefined;
     zipcode: string | null | undefined;
-    latitude: number | null | undefined;
-    longitude: number | null | undefined;
 }
 
 export class Address implements IAddress {
@@ -14,8 +12,6 @@ export class Address implements IAddress {
     city: string | null | undefined;
     state: string | null | undefined;
     zipcode: string | null | undefined;
-    latitude: number | null | undefined;
-    longitude: number | null | undefined;
 
     constructor(args: IAddress) {
         this.line_1 = args.line_1;
@@ -23,8 +19,6 @@ export class Address implements IAddress {
         this.city = args.city;
         this.state = args.state;
         this.zipcode = args.zipcode;
-        this.latitude = args.latitude;
-        this.longitude = args.longitude;
     }
 
     getLine_1(): string | null | undefined {
@@ -45,13 +39,5 @@ export class Address implements IAddress {
 
     getZipcode(): string | null | undefined {
         return this.zipcode;
-    }
-
-    getLatitude(): number | null | undefined {
-        return this.latitude;
-    }
-
-    getLongitude(): number | null | undefined {
-        return this.longitude;
     }
 }

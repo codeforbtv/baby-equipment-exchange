@@ -14,11 +14,12 @@ import {
 } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 // Libs
-import { db, getUserId, storage, addErrorEvent } from './firebase';
+import { db, storage, addErrorEvent } from './firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 // Models
-import { IImage, Image, imageFactory } from '@/models/image';
+import { IImage, Image } from '@/models/image';
+import { getUserId } from './firebase-users';
 
 const IMAGES_COLLECTION = 'Images';
 const IMAGE_DETAILS_COLLECTION = 'ImageDetails';

@@ -3,7 +3,7 @@ import { SetStateAction, Dispatch } from 'react';
 import { Timestamp, DocumentReference } from 'firebase/firestore';
 import { InventoryItem } from '@/models/inventoryItem';
 
-export type donationStatus = 'in processing' | 'pending delivery' | 'available' | 'requested' | 'reserved' | 'distributed';
+import { DonationStatusValues } from '@/models/donation';
 
 export type base64ImageObj = {
     base64Image: string;
@@ -17,7 +17,7 @@ export type DonationCardProps = {
     brand: string | null | undefined;
     model: string | null | undefined;
     description: string | null | undefined;
-    status: donationStatus;
+    status: DonationStatusValues;
     images: Array<string>;
 };
 
@@ -30,11 +30,13 @@ export type DonationFormData = {
     base64Images?: base64ImageObj[];
 };
 
-export type DonationFormProps = {
-    setShowForm: Dispatch<SetStateAction<boolean>>;
-};
-
-export type InventoryItemCardProps = {
-    inventoryItem: InventoryItem;
-    requestHandler: (inventoryItem: InventoryItem) => void;
+export type DonationBody = {
+    donorEmail: string;
+    donorName: string;
+    donorId: string;
+    category: string;
+    brand: string;
+    model: string;
+    description: string;
+    images: string[];
 };

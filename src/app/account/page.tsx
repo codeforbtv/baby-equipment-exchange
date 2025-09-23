@@ -1,7 +1,7 @@
 'use client';
 //Components
 import Link from 'next/link';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedRoute from '@/components/ProtectedAidWorkerRoute';
 import { Button } from '@mui/material';
 import PermIdentityOutlinedIcon from '@mui/icons-material/PermIdentityOutlined';
 //Hooks
@@ -12,7 +12,7 @@ import { AccountInformation as AccountInfo } from '@/types/post-data';
 //Styling
 import '../../styles/globalStyles.css';
 import styles from './Account.module.css';
-import { getAccountType } from '@/api/firebase';
+
 // import { getUserAccount } from '@/api/firebase-users';
 import Browse from '@/components/Browse';
 

@@ -2,7 +2,7 @@
 :root {
     --text-header: #a8351b;
     --primary: #fff;
-    --secondary: #95b8b5;
+    --secondary: #3d9991;
     --bg-gray: #f1f1f1;
     --text-body: #5e5e5e;
     --text-hyperlink: #3d9991;
@@ -31,19 +31,17 @@
 
 .body--wrapper *[class*='MuiInput'] {
     box-sizing: content-box;
+    font-family: var(--font-montserrat);
 }
 
-/* .body--wrapper * .MuiTypography-root {
-} */
-
-/* .body--wrapper h1,
+.body--wrapper h1,
 .body--wrapper h2,
 .body--wrapper h3,
 .body--wrapper h4,
 .body--wrapper h5,
 .body--wrapper h6 {
     font-family: var(--font-montserrat);
-} */
+}
 
 .body--wrapper h1 {
     font-weight: 700;
@@ -88,11 +86,15 @@
 
 .page--wrapper {
     box-sizing: border-box;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
 }
 
 .page--header {
     width: 100%;
     padding: 1rem;
+    margin-top: 2em;
 }
 
 .page--header > p {
@@ -127,10 +129,10 @@
     color: var(--text-visited);
 }
 
-.formContainer {
+.form--container {
     flex-grow: 1;
     padding: '10px';
-    max-width: '700px';
+    max-width: 600px;
     margin: '30px auto';
 }
 
@@ -141,6 +143,15 @@
 .body--wrapper a[class*='MuiButton'],
 .body--wrapper a:visited[class*='MuiButton'] {
     color: white;
+}
+
+.card--container {
+    cursor: pointer;
+    max-width: 800px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 8px;
 }
 
 .MuiFilledInput-root {

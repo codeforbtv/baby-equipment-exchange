@@ -20,8 +20,8 @@ export type UserCardProps = {
 export type AccountInformation = {
     displayName?: string;
     email?: string;
-    phoneNunber?: string;
 };
+
 export type DonationBody = {
     donorEmail: string;
     donorName: string;
@@ -38,20 +38,6 @@ export type UserBody = {
     name: string | undefined | null;
     email: string | undefined | null;
     photo: DocumentReference | string | undefined | null; // The Images document id of the user's profile photo.
-};
-
-export type OrganizationBody = {
-    name: string;
-    diaperBank: boolean;
-    babyProductExchange: boolean;
-    lowIncome: boolean;
-    criminalJusticeInvolved: boolean;
-    adoptionAndFosterFamilies: boolean;
-    refugeeAndImmigration: boolean;
-    substanceAbuseDisorders: boolean;
-    address: IAddress;
-    pointOfContact: IContact;
-    notes: string;
 };
 
 export type StorageBody = {

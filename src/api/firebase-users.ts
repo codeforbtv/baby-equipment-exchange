@@ -1,42 +1,53 @@
 // Libs
-import { addErrorEvent, db, getUserId } from './firebase';
+import { addErrorEvent, db, auth } from './firebase';
 import {
-    arrayUnion,
-    collection,
     doc,
     DocumentData,
-    DocumentReference,
-    DocumentSnapshot,
     getDoc,
-    getDocs,
-    query,
     QueryDocumentSnapshot,
-    runTransaction,
     serverTimestamp,
     SnapshotOptions,
-    Timestamp,
-    updateDoc
+    updateDoc,
+    where,
+    collection,
+    query,
+    getDocs
 } from 'firebase/firestore';
 
+//API
+import { getAuthUserById } from './firebaseAdmin';
+
 // Models
-import { IUser, User } from '@/models/user';
-import { IUserDetail, UserDetail } from '@/models/user-detail';
+import { AuthUserRecord, UserDetails } from '@/types/UserTypes';
+import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
 // Types
-import { AccountInformation, UserBody, NoteBody } from '@/types/post-data';
+import { NoteBody } from '@/types/post-data';
 // Utility methods
 import { stripNullUndefined } from '@/utils/utils';
 
+import {
+    NextOrObserver,
+    onAuthStateChanged,
+    sendPasswordResetEmail,
+    signInAnonymously,
+    signInWithEmailAndPassword,
+    signOut,
+    User,
+    UserCredential
+} from 'firebase/auth';
+
 export const USERS_COLLECTION = 'Users';
-export const USER_DETAILS_COLLECTION = 'UserDetails';
 
 export const userConverter = {
-    toFirestore(user: User): DocumentData {
+    toFirestore(user: UserCollection): DocumentData {
         const userData: IUser = {
-            name: user.getName(),
-            pendingDonations: user.getPendingDonations(),
-            photo: user.getPhoto(),
-            createdAt: user.getCreatedAt(),
+            uid: user.getUid(),
+            isDisabled: user.getIsDisabled(),
+            phoneNumber: user.getPhoneNumber(),
+            requestedItems: user.getRequestedItems(),
+            notes: user.getNotes(),
+            organization: user.getOrganization(),
             modifiedAt: user.getModifiedAt()
         };
 
@@ -45,218 +56,144 @@ export const userConverter = {
                 delete userData[key];
             }
         }
-
         return userData;
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {
         const data = snapshot.data(options)!;
         const userData: IUser = {
-            name: data.name,
-            pendingDonations: data.pendingDonations,
-            photo: data.photo,
-            createdAt: data.createdAt,
+            uid: data.uid,
+            isDisabled: data.isDisabled,
+            phoneNumber: data.phoneNumber,
+            requestedItems: data.requestedItems,
+            notes: data.notes,
+            organization: data.organization,
             modifiedAt: data.modifiedAt
         };
-        return new User(userData);
+        return new UserCollection(userData);
     }
 };
 
-const userDetailConverter = {
-    toFirestore(userDetail: UserDetail): DocumentData {
-        const userDetailData: IUserDetail = {
-            user: userDetail.getUser(),
-            emails: userDetail.getEmails(),
-            phones: userDetail.getPhones(),
-            addresses: userDetail.getAddresses(),
-            websites: userDetail.getWebsites(),
-            notes: userDetail.getNotes(),
-            createdAt: userDetail.getCreatedAt(),
-            modifiedAt: userDetail.getModifiedAt(),
-            address: userDetail.getPrimaryAddress(),
-            email: userDetail.getPrimaryEmail(),
-            phone: userDetail.getPrimaryPhone(),
-            website: userDetail.getPrimaryWebsite()
-        };
-
-        for (const key in userDetailData) {
-            if (userDetailData[key] === undefined || userDetailData[key] === null) {
-                delete userDetailData[key];
-            }
+export async function getDbUser(uid: string): Promise<IUser> {
+    try {
+        const userRef = doc(db, `${USERS_COLLECTION}/${uid}`).withConverter(userConverter);
+        const snapshot = await getDoc(userRef);
+        if (snapshot.exists()) {
+            return snapshot.data();
+        } else {
+            Promise.reject('User not found');
         }
-
-        return userDetailData;
-    },
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): UserDetail {
-        const data = snapshot.data(options)!;
-        const userDetailData: IUserDetail = {
-            user: data.user,
-            emails: data.emails,
-            phones: data.phones,
-            addresses: data.addresses,
-            websites: data.websites,
-            notes: data.notes,
-            createdAt: data.createdAt,
-            modifiedAt: data.modifiedAt,
-            address: data.address,
-            email: data.email,
-            phone: data.phone,
-            website: data.website
-        };
-        return new UserDetail(userDetailData);
+    } catch (error) {
+        addErrorEvent('Error getting db User', error);
     }
-};
+    return Promise.reject();
+}
 
-// export async function getUserAccount(): Promise<AccountInformation> {
-//     try {
-//         const userId: string = await getUserId();
-//         return _getUserAccount(userId);
-//     } catch (error) {
-//         // eslint-disable-line no-empty
-//     }
-//     return Promise.reject();
-// }
+export async function updateDbUser(uid: string, accountInformation: any): Promise<void> {
+    if (!auth.currentUser) {
+        return Promise.reject(new Error('Must be logged in to update db user'));
+    }
+    try {
+        const userRef = doc(db, USERS_COLLECTION, uid).withConverter(userConverter);
+        await updateDoc(userRef, {
+            ...accountInformation,
+            modifiedAt: serverTimestamp()
+        });
+    } catch (error) {
+        addErrorEvent('Error updating db user', error);
+    }
+}
 
-// export async function getAllUserAccounts() {
-//     const q = query(collection(db, USERS_COLLECTION));
-//     const snapshot = await getDocs(q);
-//     const userIds: string[] = snapshot.docs.map((doc) => doc.id);
-//     const userAccounts: AccountInformation[] = [];
-//     for (const id of userIds) {
-//         try {
-//             userAccounts.push(await _getUserAccount(id));
-//         } catch (error) {
-//             // eslint-disable-line no-empty
-//         }
-//     }
-//     return userAccounts;
-// }
+//returns Auth User and db User details combined
+export async function getUserDetails(uid: string): Promise<UserDetails> {
+    try {
+        const [authUser, dbUser] = await Promise.all([getAuthUserById(uid), getDbUser(uid)]);
+        const userDetails: UserDetails = {
+            uid: authUser.uid,
+            email: authUser.email,
+            displayName: authUser.displayName,
+            disabled: authUser.disabled,
+            metadata: authUser.metadata,
+            customClaims: authUser.customClaims,
+            phoneNumber: dbUser.phoneNumber,
+            requestedItems: dbUser.requestedItems,
+            notes: dbUser.notes,
+            organization: dbUser.organization,
+            modifiedAt: dbUser.modifiedAt
+        };
+        return userDetails;
+    } catch (error) {
+        addErrorEvent('Get User Details', error);
+    }
+    return Promise.reject();
+}
 
-// async function _getUserAccount(userId: string): Promise<AccountInformation> {
-//     const userRef = doc(db, `${USERS_COLLECTION}/${userId}`).withConverter(userConverter);
-//     const userDocument: DocumentSnapshot<User> = await getDoc(userRef);
-//     const userDetailsRef = doc(db, USER_DETAILS_COLLECTION, userId).withConverter(userDetailConverter);
-//     const userDetailDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef);
-//     let accountInformation: AccountInformation = {
-//         name: '',
-//         contact: {
-//             user: undefined,
-//             name: undefined,
-//             email: undefined,
-//             phone: undefined,
-//             website: undefined,
-//             notes: undefined
-//         },
-//         location: {
-//             line_1: undefined,
-//             line_2: undefined,
-//             city: undefined,
-//             state: undefined,
-//             zipcode: undefined,
-//             latitude: undefined,
-//             longitude: undefined
-//         },
-//         photo: undefined
-//     };
+export async function getUsersNotifications(): Promise<AuthUserRecord[]> {
+    let users: AuthUserRecord[] = [];
+    try {
+        const usersRef = collection(db, USERS_COLLECTION);
+        const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
+        const usersNotificationsSnapshot = await getDocs(usersNotificationsQuery);
+        for (const doc of usersNotificationsSnapshot.docs) {
+            const authUser = await getAuthUserById(doc.id);
+            users.push(authUser);
+        }
+        return users;
+    } catch (error) {
+        addErrorEvent('Get users notifications', error);
+    }
+    return Promise.reject();
+}
 
-//     if (userDocument.exists() && userDetailDocument.exists()) {
-//         const user: User = userDocument.data();
-//         const userDetail: UserDetail = userDetailDocument.data();
-//         accountInformation = {
-//             name: user.getName(),
-//             contact: {
-//                 user: userRef,
-//                 name: user.getName(),
-//                 email: userDetail.getPrimaryEmail(),
-//                 phone: userDetail.getPrimaryPhone(),
-//                 website: userDetail.getPrimaryWebsite(),
-//                 notes: userDetail.getNotes()
-//             },
-//             location: userDetail.getPrimaryAddress(),
-//             photo: user.getPhoto()
-//         };
-//     } else {
-//         return Promise.reject();
-//     }
+export function getUserEmail(): string | null | undefined {
+    return auth.currentUser?.email;
+}
 
-//     return accountInformation;
-// }
+export async function getUserId(): Promise<string> {
+    await auth.authStateReady();
+    const currentUser = auth.currentUser?.uid;
+    return currentUser ?? Promise.reject();
+}
 
-// export async function setUserAccount(accountInformation: AccountInformation) {
-//     try {
-//         const userId: string = await getUserId();
-//         const userRef = doc(db, `${USERS_COLLECTION}/${userId}`).withConverter(userConverter);
-//         const userDocument: DocumentSnapshot<User> = await getDoc(userRef);
-//         const userDetailsRef = doc(db, `${USER_DETAILS_COLLECTION}/${userId}`).withConverter(userDetailConverter);
-//         const userDetailsDocument: DocumentSnapshot<UserDetail> = await getDoc(userDetailsRef);
-//         if (userDocument.exists() && userDetailsDocument.exists()) {
-//             const userChanges: any = {};
-//             const userDetailChanges: any = {};
-//             const name: any = accountInformation.name;
-//             const photo: any = accountInformation.photo;
-//             const primaryContact: any = stripNullUndefined(accountInformation.contact);
-//             const primaryLocation: any = stripNullUndefined(accountInformation.location);
+export async function getUserEmailById(id: string): Promise<string> {
+    try {
+        const user = await getAuthUserById(id);
+        if (user.email) return user.email;
+    } catch (error) {
+        addErrorEvent('Get user email by ID', error);
+    }
+    return Promise.reject();
+}
 
-//             if (name !== null && name !== undefined) {
-//                 userChanges['name'] = name;
-//             }
+export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
+    if (!email || !password) {
+        return null;
+    }
+    const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+}
 
-//             if (photo !== null && photo !== undefined) {
-//                 userChanges['photo'] = photo;
-//             }
+export function signOutUser(): void {
+    signOut(auth);
+}
 
-//             if (primaryContact !== null && primaryContact !== undefined) {
-//                 for (const key in primaryContact) {
-//                     if (primaryContact[key] !== null && primaryContact[key] !== undefined) {
-//                         userDetailChanges[key] = primaryContact[key];
-//                     }
-//                 }
+export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
+    onAuthStateChanged(auth, callback);
+}
 
-//                 if (userDetailChanges.email !== null && userDetailChanges.email !== undefined) {
-//                     userDetailChanges.emails = arrayUnion(userDetailChanges.email);
-//                 }
+export async function resetPassword(email: string): Promise<void> {
+    if (!email) Promise.reject();
+    await sendPasswordResetEmail(auth, email);
+}
 
-//                 if (userDetailChanges.phone !== null && userDetailChanges.phone !== undefined) {
-//                     userDetailChanges.phones = arrayUnion(userDetailChanges.phone);
-//                 }
-
-//                 if (userDetailChanges.website !== null && userDetailChanges.website !== undefined) {
-//                     userDetailChanges.websites = arrayUnion(userDetailChanges.website);
-//                 }
-//             }
-
-//             if (primaryLocation !== null && primaryLocation !== undefined) {
-//                 if (userDetailChanges.address === null || userDetailChanges.address === undefined) {
-//                     userDetailChanges.address = {};
-//                 }
-
-//                 for (const key in primaryLocation) {
-//                     if (primaryLocation[key] !== null && primaryLocation[key] !== undefined) {
-//                         userDetailChanges['address'][key] = primaryLocation[key];
-//                     }
-//                 }
-
-//                 userDetailChanges.addresses = arrayUnion(userDetailChanges.address);
-//             }
-
-//             if (Object.keys(userChanges).length > 0) {
-//                 userChanges['modifiedAt'] = serverTimestamp();
-//                 stripNullUndefined(userChanges);
-//             }
-
-//             if (Object.keys(userDetailChanges).length > 0) {
-//                 userDetailChanges['modifiedAt'] = serverTimestamp();
-//                 stripNullUndefined(userDetailChanges);
-//             }
-
-//             runTransaction(db, async (transaction) => {
-//                 transaction.set(userRef, userChanges);
-//                 transaction.set(userDetailsRef, userDetailChanges);
-//             });
-//         }
-//     } catch (error) {
-//         // eslint-disable-line no-empty
-//     }
-// }
+export async function loginAnonymousUser(): Promise<User | null> {
+    try {
+        const userCredential = await signInAnonymously(auth);
+        return userCredential.user;
+    } catch (error) {
+        addErrorEvent('Login anonymously', error);
+    }
+    return Promise.reject();
+}
 
 export async function addNote(note: NoteBody) {
     try {
@@ -271,13 +208,6 @@ export async function addNote(note: NoteBody) {
             modifiedAt: currentTimeString
         };
         const event = new Event(eventParams);
-
-        if (note.destinationCollection === USERS_COLLECTION) {
-            const userDetailsRef = doc(db, USER_DETAILS_COLLECTION, note.destinationId).withConverter(userDetailConverter);
-            await updateDoc(userDetailsRef, {
-                notes: arrayUnion(event)
-            });
-        }
     } catch (error) {
         addErrorEvent('addNote', { error: error, note: note });
     }
