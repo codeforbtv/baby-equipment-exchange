@@ -12,7 +12,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import '@/styles/globalStyles.css';
 //Types
 import { Order } from '@/types/OrdersTypes';
-import { IconButton } from '@mui/material';
+import { Button, IconButton } from '@mui/material';
+import DonationCardMed from './DonationCardMed';
+import DonationDetails from './DonationDetails';
 
 type ReviewOrderProps = {
     id: string;
@@ -25,27 +27,39 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const intialOrder = order ? order : null;
     const [currentOrder, setCurrentOrder] = useState<Order | null>(intialOrder);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
 
     return (
         <ProtectedAdminRoute>
-            <div className="page--header">
-                <h2>Review Order</h2>
-                {setIdToDisplay && (
-                    <IconButton onClick={() => setIdToDisplay(null)}>
-                        <ArrowBackIcon />
-                    </IconButton>
-                )}
-            </div>
-            {isLoading && <Loader />}
-            {!isLoading && !currentOrder && <p>Order not found.</p>}
-            {!isLoading && currentOrder && (
+            {donationIdToDisplay ? (
+                <DonationDetails
+                    id={donationIdToDisplay}
+                    donation={currentOrder?.items.find((i) => i.id === donationIdToDisplay)}
+                    setIdToDisplay={setDonationIdToDisplay}
+                />
+            ) : (
                 <>
-                    <h3>
-                        <b>Requested by:</b> {currentOrder.requestor.name} ({currentOrder.requestor.email})
-                    </h3>
-                    {currentOrder.items.map((item) => (
-                        <DonationCard key={item.id} donation={item} setIdToDisplay={setIdToDisplay} />
-                    ))}
+                    <div className="page--header">
+                        <h2>Review Order</h2>
+                        {setIdToDisplay && (
+                            <IconButton onClick={() => setIdToDisplay(null)}>
+                                <ArrowBackIcon />
+                            </IconButton>
+                        )}
+                    </div>
+                    {isLoading && <Loader />}
+                    {!isLoading && !currentOrder && <p>Order not found.</p>}
+                    {!isLoading && currentOrder && (
+                        <div className="content--container">
+                            <h3>
+                                <b>Requested by:</b> {currentOrder.requestor.name} ({currentOrder.requestor.email})
+                            </h3>
+                            {currentOrder.items.map((item) => (
+                                <DonationCardMed key={item.id} donation={item} setIdToDisplay={setDonationIdToDisplay} />
+                            ))}
+                            <Button variant="contained">Schedule Pickup</Button>
+                        </div>
+                    )}
                 </>
             )}
         </ProtectedAdminRoute>

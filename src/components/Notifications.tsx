@@ -32,10 +32,6 @@ const Notifications = (props: NotificationsProps) => {
     const orders = notifications.orders;
     const usersAwaitingApproval = notifications.users;
 
-    useEffect(() => {
-        console.log(orderIdToDisplay);
-    }, [orderIdToDisplay]);
-
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
