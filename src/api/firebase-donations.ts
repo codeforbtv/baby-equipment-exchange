@@ -453,3 +453,27 @@ export async function getOrdersNotifications() {
     }
     return Promise.reject();
 }
+
+export async function getOrderById(id: string): Promise<Order> {
+    try {
+        const orderRef = doc(db, `${ORDERS_COLLECTION}/${id}`);
+        const orderSnapShot = await getDoc(orderRef);
+        if (orderSnapShot.exists()) {
+            return orderSnapShot.data() as Order;
+        } else {
+            return Promise.reject(new Error('Order not found'));
+        }
+    } catch (error) {
+        addErrorEvent('Get order by ID', error);
+    }
+    return Promise.reject();
+}
+
+export async function closeOrder(id: string): Promise<void> {
+    try {
+        const orderRef = doc(db, `${ORDERS_COLLECTION}/${id}`);
+        await updateDoc(orderRef, { status: 'closed' });
+    } catch (error) {
+        addErrorEvent('Error closing', error);
+    }
+}

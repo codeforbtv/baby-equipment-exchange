@@ -4,22 +4,24 @@
 import { useState, ChangeEvent, useEffect, Dispatch, SetStateAction } from 'react';
 import { renderToString } from 'react-dom/server';
 import { useRouter } from 'next/navigation';
+//Components
+import ProtectedAdminRoute from './ProtectedAdminRoute';
+import { Box, Button, FormControl, NativeSelect, TextField, InputLabel } from '@mui/material';
+import DonationCardSmall from './DonationCardSmall';
+import Loader from './Loader';
+import CustomDialog from './CustomDialog';
+//Api
+import { getSchedulingPageLink } from '@/api/calendly';
+import { addErrorEvent } from '@/api/firebase';
+import sendMail from '@/api/nodemailer';
+import accept from '@/email-templates/accept';
+import reject from '@/email-templates/reject';
+import { updateDonationStatus } from '@/api/firebase-donations';
 //Styles
 import '@/styles/globalStyles.css';
 //types
 import { EventType } from '@/types/CalendlyTypes';
 import { Donation } from '@/models/donation';
-import { getSchedulingPageLink } from '@/api/calendly';
-import { addErrorEvent } from '@/api/firebase';
-import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Box, Button, FormControl, NativeSelect, TextField, InputLabel } from '@mui/material';
-import DonationCardSmall from './DonationCardSmall';
-import sendMail from '@/api/nodemailer';
-import accept from '@/email-templates/accept';
-import reject from '@/email-templates/reject';
-import Loader from './Loader';
-import { updateDonationStatus } from '@/api/firebase-donations';
-import CustomDialog from './CustomDialog';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
@@ -32,7 +34,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [events, setEvents] = useState<EventType[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
-    const [notes, sentNotes] = useState<string>('');
+    const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const router = useRouter();
@@ -58,7 +60,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         setInviteUrl(event.target.value);
     };
 
-    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
+    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
     const fetchEvents = async () => {
         try {
@@ -68,6 +70,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             addErrorEvent('Fetch Calendly Scheduling Links', error);
         }
     };
+
     const message = (
         <>
             <p>{`Hello ${donorName},`}</p>
@@ -122,6 +125,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 rejectedDonations && rejectPromise(rejectedDonations),
                 sendMail(emailMsg)
             ]);
+            setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
         } finally {

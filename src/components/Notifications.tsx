@@ -37,7 +37,12 @@ const Notifications = (props: NotificationsProps) => {
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
             {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
             {orderIdToDisplay && (
-                <ReviewOrder id={orderIdToDisplay} order={orders.find((o) => o.id === orderIdToDisplay)} setIdToDisplay={setOrderIdToDisplay} />
+                <ReviewOrder
+                    id={orderIdToDisplay}
+                    order={orders.find((o) => o.id === orderIdToDisplay)}
+                    setIdToDisplay={setOrderIdToDisplay}
+                    setNotificationsUpdated={setNotificationsUpdated}
+                />
             )}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
