@@ -26,12 +26,6 @@ export const categories: CategoryType[] = [
         active: true
     },
     {
-        innerText: 'Bassinets_Sheets',
-        value: 'Bassinets_Sheets',
-        currentTag: 'BASH 05',
-        active: true
-    },
-    {
         innerText: 'Bassinets_Portable',
         value: 'Bassinets_Portable',
         currentTag: 'BASP 10',
@@ -41,6 +35,12 @@ export const categories: CategoryType[] = [
         innerText: 'Bathtubs_Seats',
         value: 'Bathtubs_Seats',
         currentTag: 'BAT 60',
+        active: true
+    },
+    {
+        innerText: 'Bassinets_Sheets',
+        value: 'Bassinets_Sheets',
+        currentTag: 'BASH 05',
         active: true
     },
     {
