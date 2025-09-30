@@ -88,8 +88,8 @@ const EditDonation = (props: EditDonationProps) => {
                             <InputLabel id="category-label">Category</InputLabel>
                             <Select labelId="category-label" id="category" value={newCategory} label="Category" onChange={handleCategoryChange}>
                                 {categories.map((category) => (
-                                    <MenuItem key={category.value} value={category.value}>
-                                        {category.innerText}
+                                    <MenuItem key={category.name} value={category.name}>
+                                        {category.name}
                                     </MenuItem>
                                 ))}
                             </Select>

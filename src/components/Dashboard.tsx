@@ -1,7 +1,7 @@
 'use client';
 
 //Components
-import { Button, Tab, Tabs } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';

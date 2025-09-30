@@ -122,10 +122,6 @@ export default function DonationForm(props: DonationFormProps) {
         props.setShowForm(false);
     }
 
-    useEffect(() => {
-        console.log(formData);
-    }, [formData]);
-
     return (
         <div className="content--container">
             <p>Enter item details:</p>
