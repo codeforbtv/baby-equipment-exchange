@@ -122,6 +122,14 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             <b>Status:</b> {statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donationDetails.status)}
                         </h3>
                         <h3>
+                            <b>Category:</b> {donationDetails.category}
+                        </h3>
+                        {donationDetails.status !== 'rejected' && (
+                            <h3>
+                                <b>Tag Number</b>: {donationDetails.tagNumber}
+                            </h3>
+                        )}
+                        <h3>
                             <b>Brand: </b>
                             {donationDetails.brand}
                         </h3>

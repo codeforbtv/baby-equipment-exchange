@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //API
 import { updateDonation } from '@/api/firebase-donations';
 //Components
@@ -16,6 +16,7 @@ import '@/styles/globalStyles.css';
 import { DonationStatusValues, donationStatuses, IDonation, DonationStatuses } from '@/models/donation';
 import CustomDialog from './CustomDialog';
 import { addErrorEvent } from '@/api/firebase';
+import { getTagNumber } from '@/api/firebase-categories';
 
 type EditDonationProps = {
     donationDetails: IDonation;
@@ -25,11 +26,12 @@ type EditDonationProps = {
 };
 
 const EditDonation = (props: EditDonationProps) => {
-    const { id, category, brand, model, description, status, requestor } = props.donationDetails;
+    const { id, category, brand, model, description, status, tagNumber, requestor } = props.donationDetails;
     const { setIsEditMode, fetchDonation, setDonationsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newCategory, setNewCategory] = useState<string>(category);
+    const [newTagNumber, setNewTagnumber] = useState<string | undefined | null>(tagNumber);
     const [newBrand, setNewBrand] = useState<string>(brand);
     const [newModel, setNewModel] = useState<string>(model);
     const [newDescription, setNewDescription] = useState<string>(description ?? '');
@@ -60,9 +62,11 @@ const EditDonation = (props: EditDonationProps) => {
     const handleSubmitUpdatedDonation = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
+
         try {
             const updatedDonation = {
                 category: newCategory,
+                tagNumber: newTagNumber,
                 brand: newBrand,
                 model: newModel,
                 description: newDescription,
@@ -76,6 +80,15 @@ const EditDonation = (props: EditDonationProps) => {
         setIsLoading(false);
         setIsDialogOpen(true);
     };
+
+    const assignTagNumber = async () => {
+        const assignedTagNumber = await getTagNumber(category);
+        setNewTagnumber(assignedTagNumber);
+    };
+
+    useEffect(() => {
+        if (!tagNumber) assignTagNumber();
+    }, []);
 
     return (
         <ProtectedAdminRoute>
@@ -94,6 +107,17 @@ const EditDonation = (props: EditDonationProps) => {
                                 ))}
                             </Select>
                         </FormControl>
+                        {selectedStatus !== 'rejected' && (
+                            <TextField
+                                type="text"
+                                label="Tag Number"
+                                name="tagNumber"
+                                id="tagNumber"
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewTagnumber(event.target.value)}
+                                value={newTagNumber}
+                            />
+                        )}
+
                         <TextField
                             type="text"
                             label="Brand"
