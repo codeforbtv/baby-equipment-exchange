@@ -42,6 +42,9 @@ export default function NewAccount() {
     //Org value if user entered text
     const [orgInputValue, setOrgInputValue] = useState<string>('');
 
+    const isDisabled =
+        displayName.length < 1 || email.length < 1 || password.length < 1 || isInvalidEmail || isEmailInUse || passwordsDoNotMatch || phoneNumber.includes('_');
+
     const router = useRouter();
 
     const getOrgNames = async (): Promise<void> => {
@@ -226,8 +229,10 @@ export default function NewAccount() {
                                 type="tel"
                                 displayType="input"
                                 customInput={TextField}
+                                required
+                                error={phoneNumber.includes('_')}
                             />
-                            <Button variant="contained" type={'submit'} disabled={isEmailInUse || passwordsDoNotMatch}>
+                            <Button variant="contained" type={'submit'} disabled={isDisabled}>
                                 Join
                             </Button>
                         </Box>

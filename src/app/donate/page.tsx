@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //components
-import Link from 'next/link';
 import PendingDonations from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
 import { Button, Box, TextField, Typography } from '@mui/material';

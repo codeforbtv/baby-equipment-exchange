@@ -37,6 +37,11 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.token.admin == true;
       }
 
+         // Admin can create, edit or delete categories   
+      match /Categories/{document=**} {
+        allow read, write: if request.auth != null && request.auth.token.admin == true;
+      }
+
 
       // Aid worker role
 
@@ -72,6 +77,11 @@ service cloud.firestore {
       
       match /BulkDonations/{document=**} {
         allow read: if request.auth != null && request.auth.uid == resource.data.donorId;
-      }        
+      }
+
+      //Anyone can read categories
+      match /Categories/{document=**} {
+        allow read: if true
+      }      
   }
 }

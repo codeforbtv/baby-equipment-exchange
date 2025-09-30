@@ -94,7 +94,6 @@ export async function callEnableUser(userId: string): Promise<void> {
     } catch (error) {
         addErrorEvent('Could not enable user', error);
     }
-    return Promise.reject();
 }
 
 export async function callSetClaims(userId: string, claims: any): Promise<void> {

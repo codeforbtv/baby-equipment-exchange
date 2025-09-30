@@ -1,178 +1,382 @@
-export const categories = [
+import { CategoryType } from '@/types/CategoryTypes';
+
+export const categories: CategoryType[] = [
     {
-        innerText: 'Baby Gates',
-        value: 'Baby Gates'
+        name: 'Accessories',
+        tagPrefix: 'ACC',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Backpack',
-        value: 'Backpack'
+        name: 'Baby Proofing_Child Safety Locks',
+        tagPrefix: 'BABP',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Bassinets',
-        value: 'Bassinets'
+        name: 'Backpack',
+        tagPrefix: 'BACK',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Bathtubs_Seats',
-        value: 'Bathtubs_Seats'
+        name: 'Bassinets',
+        tagPrefix: 'BAS',
+        tagCount: 40,
+        active: true
     },
     {
-        innerText: 'Bibs',
-        value: 'Bibs'
+        name: 'Bassinets_Portable',
+        tagPrefix: 'BASP',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Booster Seats',
-        value: 'Booster Seats'
+        name: 'Bathtubs_Seats',
+        tagPrefix: 'BAT',
+        tagCount: 60,
+        active: true
     },
     {
-        innerText: 'Bottles',
-        value: 'Bottles'
+        name: 'Bassinets_Sheets',
+        tagPrefix: 'BASH',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Bouncer Chairs',
-        value: 'Bouncer Chairs'
+        name: 'Bibs (Silicon only)',
+        tagPrefix: 'BIB',
+        tagCount: 20,
+        active: true
     },
     {
-        innerText: 'Carriers and Slings',
-        value: 'Carriers and Slings'
+        name: 'Booster Seat (Chair)',
+        tagPrefix: 'BOOS',
+        tagCount: 40,
+        active: true
     },
     {
-        innerText: 'Changing Pad Sheets',
-        value: 'Changing Pad Sheets'
+        name: 'Bottles',
+        tagPrefix: 'BOT',
+        tagCount: 50,
+        active: false
     },
     {
-        innerText: 'Changing Pads and Cover',
-        value: 'Changing Pads and Cover'
+        name: 'Bottle Drying Rack',
+        tagPrefix: 'BTLR',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Changing Station',
-        value: 'Changing Station'
+        name: 'Bottle Sterilizer',
+        tagPrefix: 'BTLS',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Child Safety Locks',
-        value: 'Child Safety Locks'
+        name: 'Bottle Warmer',
+        tagPrefix: 'BOTW',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Compression Vest',
-        value: 'Compression Vest'
+        name: 'Bouncer Chairs',
+        tagPrefix: 'BOU',
+        tagCount: 40,
+        active: true
     },
     {
-        innerText: 'Crib Gates ',
-        value: 'Crib Gates '
+        name: 'Car Seat Adaptor',
+        tagPrefix: 'CSA',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Crib Sheets',
-        value: 'Crib Sheets'
+        name: 'Car Seat Cover',
+        tagPrefix: 'CSC',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Curtain, Black-out',
-        value: 'Curtain, Black-out'
+        name: 'Car Seat Mirrors',
+        tagPrefix: 'MIR',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Diaper Bag',
-        value: 'Diaper Bag'
+        name: 'Carriers and Slings',
+        tagPrefix: 'CAR',
+        tagCount: 900,
+        active: true
     },
     {
-        innerText: 'Diaper Changing Pad ',
-        value: 'Diaper Changing Pad '
+        name: 'Changing Pads and Cover',
+        tagPrefix: 'CPC',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Diaper Changing Pad (Portable)',
-        value: 'Diaper Changing Pad (Portable)'
+        name: 'Compression Vest',
+        tagPrefix: 'CPV',
+        tagCount: 10,
+        active: false
     },
     {
-        innerText: 'Diaper Changing Pad Cover',
-        value: 'Diaper Changing Pad Cover'
+        name: 'Crib',
+        tagPrefix: 'CRI',
+        tagCount: 10,
+        active: false
     },
     {
-        innerText: 'Diaper Changing Station',
-        value: 'Diaper Changing Station'
+        name: 'Crib Gates',
+        tagPrefix: 'CRGT',
+        tagCount: 20,
+        active: true
     },
     {
-        innerText: 'Diaper Pail',
-        value: 'Diaper Pail'
+        name: 'Crib Mattress',
+        tagPrefix: 'CRBM',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Docker',
-        value: 'Docker'
+        name: 'Crib Mattress Protector',
+        tagPrefix: 'CRBMP',
+        tagCount: 20,
+        active: true
     },
     {
-        innerText: 'Floor Seats ',
-        value: 'Floor Seats '
+        name: 'Crib Sheets',
+        tagPrefix: 'CRBS',
+        tagCount: 10,
+        active: false
     },
     {
-        innerText: 'High Chairs',
-        value: 'High Chairs'
+        name: 'Curtain, Black-out',
+        tagPrefix: 'CUR',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'High Chairs (Table Attachment)',
-        value: 'High Chairs (Table Attachment)'
+        name: 'Diaper Bag',
+        tagPrefix: 'DB',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Maternity Pillow',
-        value: 'Maternity Pillow'
+        name: 'Diaper Changing Pad',
+        tagPrefix: 'CP',
+        tagCount: 20,
+        active: true
     },
     {
-        innerText: 'Nursing Pillows',
-        value: 'Nursing Pillows'
+        name: 'Diaper Changing Pad (Portable)',
+        tagPrefix: 'CPP',
+        tagCount: 20,
+        active: true
     },
     {
-        innerText: 'Pack n Play Accessory ',
-        value: 'Pack n Play Accessory '
+        name: 'Diaper Changing Pad Cover',
+        tagPrefix: 'CPC',
+        tagCount: 20,
+        active: true
     },
     {
-        innerText: 'Pack n Play Mattress',
-        value: 'Pack n Play Mattress'
+        name: 'Diaper Changing Pad Sheets',
+        tagPrefix: 'DCPS',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Pack n Play Mattress Covers',
-        value: 'Pack n Play Mattress Covers'
+        name: 'Diaper Changing Table',
+        tagPrefix: 'DCS',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Pack n Play Mattress Sheets',
-        value: 'Pack n Play Mattress Sheets'
+        name: 'Diaper Pail',
+        tagPrefix: 'DIA',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Pack n Plays',
-        value: 'Pack n Plays'
+        name: 'Docker',
+        tagPrefix: 'DOC',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Pillow',
-        value: 'Pillow'
+        name: 'Floor Seats ',
+        tagPrefix: 'FLO',
+        tagCount: 30,
+        active: true
     },
     {
-        innerText: 'Potty Training Seat',
-        value: 'Potty Training Seat'
+        name: 'Gates',
+        tagPrefix: 'GAT',
+        tagCount: 30,
+        active: true
     },
     {
-        innerText: 'Stroller, Double',
-        value: 'Stroller, Double'
+        name: 'High Chairs',
+        tagPrefix: 'HIG',
+        tagCount: 40,
+        active: true
     },
     {
-        innerText: 'Stroller, Single ',
-        value: 'Stroller, Single '
+        name: 'High Chairs (Tabletop)',
+        tagPrefix: 'HIGTA',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Swaddlers Sleep Sacks',
-        value: 'Swaddlers Sleep Sacks'
+        name: 'Maternity Pillow',
+        tagPrefix: 'MAT',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Swings',
-        value: 'Swings'
+        name: 'Monitor',
+        tagPrefix: 'MON',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Tent',
-        value: 'Tent'
+        name: 'Nap Mats',
+        tagPrefix: 'NP MAT',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Wagon',
-        value: 'Wagon'
+        name: 'Nursing Pillows',
+        tagPrefix: 'NURP',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Winter Bundler',
-        value: 'Winter Bundler'
+        name: 'Nursing Pillows_Cover',
+        tagPrefix: 'NURC',
+        tagCount: 10,
+        active: true
     },
     {
-        innerText: 'Pack N Play Bed Pad',
-        value: 'Pack N Play Bed Pad'
+        name: 'Pacifiers',
+        tagPrefix: 'PAC',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Pack n Play Accessory',
+        tagPrefix: 'PNP AC',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Pack n Play Bed Pad',
+        tagPrefix: 'PNP BMP',
+        tagCount: 10,
+        active: false
+    },
+    {
+        name: 'Pack n Play Mattress',
+        tagPrefix: 'PNPM',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Pack n Play Mattress Covers',
+        tagPrefix: 'PNPC',
+        tagCount: 10,
+        active: false
+    },
+    {
+        name: 'Pack n Play Mattress Sheets',
+        tagPrefix: 'PNPS',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Pack n Plays',
+        tagPrefix: 'PNP',
+        tagCount: 30,
+        active: true
+    },
+    {
+        name: 'Play Mat',
+        tagPrefix: 'PLM',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Play Pen',
+        tagPrefix: 'PLYP',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Potty Training Seat',
+        tagPrefix: 'POT',
+        tagCount: 20,
+        active: true
+    },
+    {
+        name: 'Sound Machine',
+        tagPrefix: 'SOU',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Step Stool',
+        tagPrefix: 'STP',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Stroller, Double',
+        tagPrefix: 'STRD',
+        tagCount: 60,
+        active: true
+    },
+    {
+        name: 'Stroller, Single ',
+        tagPrefix: 'STRS',
+        tagCount: 60,
+        active: true
+    },
+    {
+        name: 'Swaddlers_Sleep Sacks',
+        tagPrefix: 'SWA',
+        tagCount: 30,
+        active: true
+    },
+    {
+        name: 'Swings',
+        tagPrefix: 'SWI',
+        tagCount: 30,
+        active: true
+    },
+    {
+        name: 'Tent_Shade Cover',
+        tagPrefix: 'TEN',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Wagon',
+        tagPrefix: 'WAG',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Winter Bundler',
+        tagPrefix: 'BUN',
+        tagCount: 10,
+        active: true
+    },
+    {
+        name: 'Wipe Warmer',
+        tagPrefix: 'WPW',
+        tagCount: 10,
+        active: true
     }
 ];

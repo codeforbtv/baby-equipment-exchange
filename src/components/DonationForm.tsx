@@ -6,7 +6,7 @@ import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //Components
 import ImageThumbnail from './ImageThumbnail';
 import InputContainer from '@/components/InputContainer';
-import { Box, Button, NativeSelect, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, NativeSelect, TextField } from '@mui/material';
 //Icons
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 //Api
@@ -25,7 +25,7 @@ export type DonationFormProps = {
 
 export default function DonationForm(props: DonationFormProps) {
     const [formData, setFormData] = useState<DonationFormData>({
-        category: '',
+        category: null,
         brand: '',
         model: '',
         description: '',
@@ -39,6 +39,11 @@ export default function DonationForm(props: DonationFormProps) {
 
     const isDisabled =
         !images || formData.category?.length === 0 || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
+
+    const isCategoryActive = (category: string) => {
+        const currentCategory = categories.find((cat) => cat.name === category);
+        return !currentCategory?.active;
+    };
 
     useEffect(() => {
         const tempImages = [];
@@ -64,6 +69,15 @@ export default function DonationForm(props: DonationFormProps) {
     function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLTextAreaElement>) {
         setFormData((prev) => {
             return { ...prev, [e.target.name]: e.target.value };
+        });
+    }
+
+    function handleCategoryChange(e: any, newValue: string | null) {
+        setFormData((prev) => {
+            return {
+                ...prev,
+                category: newValue
+            };
         });
     }
 
@@ -114,7 +128,7 @@ export default function DonationForm(props: DonationFormProps) {
             <Box component="form" className={styles['form']}>
                 <Box className={styles['form__section--left']}>
                     <Box display={'flex'} flexDirection={'column'} gap={1}>
-                        <NativeSelect
+                        {/* <NativeSelect
                             variant="outlined"
                             style={{ padding: '.25rem .5rem' }}
                             name="category"
@@ -132,7 +146,17 @@ export default function DonationForm(props: DonationFormProps) {
                                     </option>
                                 );
                             })}
-                        </NativeSelect>
+                        </NativeSelect> */}
+                        <Autocomplete
+                            sx={{ maxWidth: '88%' }}
+                            disablePortal
+                            options={categories.map((option) => option.name)}
+                            getOptionDisabled={isCategoryActive}
+                            renderInput={(params) => <TextField {...params} label="Category" />}
+                            value={formData.category}
+                            onChange={handleCategoryChange}
+                            aria-label="Category"
+                        />
                         <TextField
                             type="text"
                             label="Brand"
