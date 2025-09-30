@@ -44,7 +44,7 @@ const Donations = (props: DonationsProps) => {
                     <Button variant="contained" type="button" onClick={handleShowForm}>
                         Add donation
                     </Button>
-                    <ImageList className={styles['browse__grid']} rowHeight={200}>
+                    <ImageList className={styles['browse__grid']} rowHeight={300} gap={4}>
                         {donations.map((donation) => (
                             <DonationCard key={donation.id} donation={donation} setIdToDisplay={setIdToDisplay} />
                         ))}

@@ -16,7 +16,8 @@ import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';
-import { updateDonationStatus } from '@/api/firebase-donations';
+import { updateDonation, updateDonationStatus } from '@/api/firebase-donations';
+import { getTagNumber } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
 //types
@@ -99,12 +100,20 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     );
 
     const handleSubmit = async () => {
-        //send email with renderToString(message) and update donation statuses
+        //send email with renderToString(message) and update donation statuses. If donation is accepted, assign a tagNumber
         setIsLoading(true);
         const acceptPromise = async (donations: Donation[]) => {
             await Promise.all(
                 donations.map(async (donation) => {
-                    await updateDonationStatus(donation.id, 'pending delivery');
+                    try {
+                        const newTagNumber = await getTagNumber(donation.category);
+                        await updateDonation(donation.id, {
+                            status: 'pending delivery',
+                            tagNumber: newTagNumber
+                        });
+                    } catch (error) {
+                        addErrorEvent('Error accepting donation', error);
+                    }
                 })
             );
         };
@@ -120,11 +129,9 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 ? accept(donorEmail, inviteUrl, renderToString(message), notes)
                 : reject(donorEmail, renderToString(message), notes);
         try {
-            await Promise.all([
-                acceptedDonations && acceptPromise(acceptedDonations),
-                rejectedDonations && rejectPromise(rejectedDonations),
-                sendMail(emailMsg)
-            ]);
+            if (acceptedDonations) await acceptPromise(acceptedDonations);
+            if (rejectedDonations) await rejectPromise(rejectedDonations);
+            await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
