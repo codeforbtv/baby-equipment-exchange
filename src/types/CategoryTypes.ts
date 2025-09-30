@@ -1,6 +1,7 @@
 export type CategoryType = {
-    innerText: string;
-    value: string;
-    currentTag: string;
+    name: string;
+    tagPrefix: string;
+    tagCount: number;
     active: boolean;
+    description?: string;
 };

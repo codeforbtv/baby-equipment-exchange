@@ -41,7 +41,7 @@ export default function DonationForm(props: DonationFormProps) {
         !images || formData.category?.length === 0 || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
 
     const isCategoryActive = (category: string) => {
-        const currentCategory = categories.find((cat) => cat.innerText === category);
+        const currentCategory = categories.find((cat) => cat.name === category);
         return !currentCategory?.active;
     };
 
@@ -154,7 +154,7 @@ export default function DonationForm(props: DonationFormProps) {
                         <Autocomplete
                             sx={{ maxWidth: '88%' }}
                             disablePortal
-                            options={categories.map((option) => option.innerText)}
+                            options={categories.map((option) => option.name)}
                             getOptionDisabled={isCategoryActive}
                             renderInput={(params) => <TextField {...params} label="Category" />}
                             value={formData.category}
