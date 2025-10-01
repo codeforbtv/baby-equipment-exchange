@@ -64,9 +64,15 @@ const EditDonation = (props: EditDonationProps) => {
         setIsLoading(true);
 
         try {
+            //If category has changed, updated Tag Number accordingly.
+            let newCategoryTagNumber = '';
+            if (newCategory !== category) {
+                newCategoryTagNumber = await getTagNumber(newCategory);
+            }
+
             const updatedDonation = {
                 category: newCategory,
-                tagNumber: newTagNumber,
+                tagNumber: newCategoryTagNumber.length ? newCategoryTagNumber : newTagNumber,
                 brand: newBrand,
                 model: newModel,
                 description: newDescription,
