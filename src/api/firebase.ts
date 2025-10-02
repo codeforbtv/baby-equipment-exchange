@@ -60,17 +60,20 @@ export async function callListAllUsers(): Promise<AuthUserRecord[]> {
     try {
         const listUsersResult = await listAllUsers();
         const listUsers = listUsersResult.data as UserRecord[];
-        const authUsers = listUsers.map((user) => {
-            const authUser = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                disabled: user.disabled,
-                metadata: user.metadata,
-                customClaims: user.customClaims
-            };
-            return authUser;
-        });
+        //Filter out anonymous users
+        const authUsers = listUsers
+            .filter((user) => user.providerData.length !== 0)
+            .map((user) => {
+                const authUser = {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    disabled: user.disabled,
+                    metadata: user.metadata,
+                    customClaims: user.customClaims
+                };
+                return authUser;
+            });
         return JSON.parse(JSON.stringify(authUsers));
     } catch (error) {
         addErrorEvent('Call list all users', error);
