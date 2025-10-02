@@ -11,7 +11,8 @@ import {
     serverTimestamp,
     Timestamp,
     getDoc,
-    updateDoc
+    updateDoc,
+    writeBatch
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 // Models
@@ -125,3 +126,18 @@ export async function getOrganizationById(id: string): Promise<IOrganization> {
     }
     return Promise.reject();
 }
+
+// export async function transferOrgs(): Promise<void> {
+//     try {
+//         const batch = writeBatch(db)
+//         const collectionRef = collection(db, 'imported_orgs_5')
+//         const orgsRef = collection(db, ORGANIZATIONS_COLLECTION).withConverter(organizationConverter)
+//         const docsSnapshot = await getDocs(collectionRef)
+//         for (const doc of docsSnapshot.docs) {
+//             const data = doc.data()
+//             batch.set(orgsRef, data)
+//         }
+//     } catch (error) {
+//         console.log(error)
+//     }
+// }
