@@ -19,6 +19,9 @@ export interface IUser {
         | (() => Timestamp | FieldValue)
         | (() => boolean | undefined);
     readonly uid: string;
+    email: string;
+    displayName: string;
+    customClaims?: { [key: string]: any };
     isDisabled?: boolean;
     phoneNumber: string;
     requestedItems: { id: string; model: string }[] | null | undefined;
@@ -45,6 +48,9 @@ export class UserCollection implements IUser {
         | (() => Timestamp | FieldValue)
         | (() => boolean | undefined);
     readonly uid: string;
+    email: string;
+    displayName: string;
+    customClaims?: { [key: string]: any };
     isDisabled?: boolean;
     phoneNumber: string;
     requestedItems: { id: string; model: string }[] | null | undefined;
@@ -54,6 +60,8 @@ export class UserCollection implements IUser {
 
     constructor(args: IUser) {
         this.uid = args.uid;
+        this.email = args.email;
+        this.displayName = args.displayName;
         this.isDisabled;
         this.phoneNumber = args.phoneNumber;
         this.requestedItems = args.requestedItems;
@@ -64,6 +72,18 @@ export class UserCollection implements IUser {
 
     getUid(): string {
         return this.uid;
+    }
+
+    getEmail(): string {
+        return this.email;
+    }
+
+    getDisplayName(): string {
+        return this.displayName;
+    }
+
+    getCustomClaims(): { [key: string]: any } | undefined {
+        return this.customClaims;
     }
 
     getIsDisabled(): boolean | undefined {

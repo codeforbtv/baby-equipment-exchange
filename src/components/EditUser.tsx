@@ -14,14 +14,15 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
-import { UserDetails } from '@/types/UserTypes';
+
 import sendMail from '@/api/nodemailer';
 import userEnabled from '@/email-templates/userEnabled';
+import { IUser } from '@/models/user';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type EditUserProps = {
-    userDetails: UserDetails;
+    userDetails: IUser;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
     fetchUserDetails: (id: string) => void;
     setUsersUpdated?: Dispatch<SetStateAction<boolean>>;

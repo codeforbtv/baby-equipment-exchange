@@ -18,7 +18,7 @@ import {
 import { getAuthUserById } from './firebaseAdmin';
 
 // Models
-import { AuthUserRecord, UserDetails } from '@/types/UserTypes';
+import { AuthUserRecord } from '@/types/UserTypes';
 import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
 // Types
@@ -43,6 +43,9 @@ export const userConverter = {
     toFirestore(user: UserCollection): DocumentData {
         const userData: IUser = {
             uid: user.getUid(),
+            email: user.getEmail(),
+            displayName: user.getDisplayName(),
+            customClaims: user.getCustomClaims(),
             isDisabled: user.getIsDisabled(),
             phoneNumber: user.getPhoneNumber(),
             requestedItems: user.getRequestedItems(),
@@ -62,6 +65,9 @@ export const userConverter = {
         const data = snapshot.data(options)!;
         const userData: IUser = {
             uid: data.uid,
+            email: data.email,
+            displayName: data.displayName,
+            customClaims: data.customClaims,
             isDisabled: data.isDisabled,
             phoneNumber: data.phoneNumber,
             requestedItems: data.requestedItems,
@@ -104,10 +110,10 @@ export async function updateDbUser(uid: string, accountInformation: any): Promis
 }
 
 //returns Auth User and db User details combined
-export async function getUserDetails(uid: string): Promise<UserDetails> {
+export async function getUserDetails(uid: string): Promise<IUser> {
     try {
         const [authUser, dbUser] = await Promise.all([getAuthUserById(uid), getDbUser(uid)]);
-        const userDetails: UserDetails = {
+        const userDetails: IUser = {
             uid: authUser.uid,
             email: authUser.email,
             displayName: authUser.displayName,

@@ -15,8 +15,9 @@ import { getUserDetails } from '@/api/firebase-users';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles
 import '@/styles/globalStyles.css';
+import { IUser } from '@/models/user';
 //Types
-import type { UserDetails } from '@/types/UserTypes';
+
 type UserDetailsProps = {
     id: string;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
@@ -26,7 +27,7 @@ type UserDetailsProps = {
 export default function UserDetails(props: UserDetailsProps) {
     const { id, setIdToDisplay, setUsersUpdated } = props;
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+    const [userDetails, setUserDetails] = useState<IUser | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
@@ -54,7 +55,7 @@ export default function UserDetails(props: UserDetailsProps) {
     async function fetchUserDetails(id: string): Promise<void> {
         setIsLoading(true);
         try {
-            const userDetailsResult: UserDetails = await getUserDetails(id);
+            const userDetailsResult: IUser = await getUserDetails(id);
             setUserDetails(userDetailsResult);
             setIsLoading(false);
         } catch (error) {
