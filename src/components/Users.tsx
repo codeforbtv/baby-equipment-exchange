@@ -17,9 +17,10 @@ import styles from '@/components/Browse.module.css';
 import '@/styles/globalStyles.css';
 // Types
 import { AuthUserRecord } from '@/types/UserTypes';
+import { IUser } from '@/models/user';
 
 type UserListProps = {
-    users: AuthUserRecord[];
+    users: IUser[];
     setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
@@ -59,7 +60,7 @@ export default function Users(props: UserListProps) {
                     {isFilterVisible && <Filter />}
                     <div className="content--container">
                         <List className={styles['browse__grid']}>
-                            {users.map((userRecord: AuthUserRecord) => {
+                            {users.map((userRecord: IUser) => {
                                 return <UserCard key={userRecord.uid} authUser={userRecord} setIdToDisplay={setIdToDisplay} />;
                             })}
                         </List>

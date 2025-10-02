@@ -79,6 +79,18 @@ export const userConverter = {
     }
 };
 
+export async function getAllDbUsers(): Promise<IUser[]> {
+    try {
+        let users: IUser[] = [];
+        const usersSnapshot = await getDocs(collection(db, USERS_COLLECTION).withConverter(userConverter));
+        usersSnapshot.forEach((doc) => users.push(doc.data()));
+        return users;
+    } catch (error) {
+        addErrorEvent('Error fetching all db users', error);
+    }
+    return Promise.reject();
+}
+
 export async function getDbUser(uid: string): Promise<IUser> {
     try {
         const userRef = doc(db, `${USERS_COLLECTION}/${uid}`).withConverter(userConverter);

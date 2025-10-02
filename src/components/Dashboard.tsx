@@ -12,18 +12,20 @@ import Notifications from './Notifications';
 //Hooks
 import React, { useEffect, useState } from 'react';
 //API
-import { addErrorEvent, callGetOrganizationNames, callListAllUsers, getNotifications } from '@/api/firebase';
+import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
 import { getAllDonations } from '@/api/firebase-donations';
 //Types
 import { Donation } from '@/models/donation';
-import { AuthUserRecord } from '@/types/UserTypes';
 import { Notification } from '@/types/NotificationTypes';
+import { IUser } from '@/models/user';
+import { getAllDbUsers } from '@/api/firebase-users';
+import { user } from 'firebase-functions/v1/auth';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [currentTab, setCurrentTab] = useState<number>(0);
     const [donations, setDonations] = useState<Donation[] | null>(null);
-    const [users, setUsers] = useState<AuthUserRecord[] | null>(null);
+    const [users, setUsers] = useState<IUser[] | null>(null);
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
         [key: string]: string;
     } | null>(null);
@@ -45,10 +47,10 @@ export default function Dashboard() {
             const notificationsResult = await getNotifications();
             setNotifications(notificationsResult);
             setNotificationsUpdated(false);
-            setIsLoading(false);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Fetch notifications', error);
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -58,23 +60,23 @@ export default function Dashboard() {
             const donationsResult = await getAllDonations();
             setDonations(donationsResult);
             setDonationsUpdated(false);
-            setIsLoading(false);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Error fetching all donations', error);
+        } finally {
+            setIsLoading(false);
         }
     }
 
     const fetchUsers = async (): Promise<void> => {
         setIsLoading(true);
         try {
-            const usersResult = await callListAllUsers();
+            const usersResult = await getAllDbUsers();
             setUsers(usersResult);
             setUsersUpdated(false);
-            setIsLoading(false);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Error fetching all users', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -84,12 +86,11 @@ export default function Dashboard() {
             const orgNamesResult = await callGetOrganizationNames();
             setOrgNamesAndIds(orgNamesResult);
             setOrgsUpdated(false);
-            setIsLoading(false);
         } catch (error) {
             addErrorEvent('Could not fetch org names', error);
+        } finally {
             setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     // Only fetch collections once when selected unless there's been an update
@@ -105,6 +106,10 @@ export default function Dashboard() {
             fetchOrgNames();
         }
     }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
+
+    useEffect(() => {
+        console.log(users);
+    }, [users]);
 
     return (
         <ProtectedAdminRoute>

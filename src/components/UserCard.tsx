@@ -32,7 +32,7 @@ import { IUser } from '@/models/user';
 import { useRouter } from 'next/navigation';
 
 type UserCardProps = {
-    authUser: AuthUserRecord;
+    authUser: IUser;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
 };
 
