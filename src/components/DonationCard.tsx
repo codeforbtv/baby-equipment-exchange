@@ -32,7 +32,7 @@ export default function DonationCard(props: DonationCardProps) {
                 onClick={() => setIdToDisplay(donation.id)}
             />
             <ImageListItemBar
-                title={`${donation.brand} - ${donation.tagNumber}`}
+                title={`${donation.brand} - ${donation.tagNumber ?? 'No Tag Number'}`}
                 subtitle={`Status: ${statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donation.status)}`}
                 actionIcon={
                     <IconButton

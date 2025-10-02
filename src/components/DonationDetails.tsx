@@ -126,7 +126,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                         </h3>
                         {donationDetails.status !== 'rejected' && (
                             <h3>
-                                <b>Tag Number</b>: {donationDetails.tagNumber}
+                                <b>Tag Number</b>: {donationDetails.tagNumber ?? 'No Tag Number'}
                             </h3>
                         )}
                         <h3>
