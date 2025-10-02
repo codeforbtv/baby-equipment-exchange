@@ -10,7 +10,7 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
 //APIs
 import { addErrorEvent, callEnableUser } from '@/api/firebase';
-import { getUserDetails } from '@/api/firebase-users';
+import { getDbUser, getUserDetails } from '@/api/firebase-users';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles
@@ -20,12 +20,13 @@ import { IUser } from '@/models/user';
 
 type UserDetailsProps = {
     id: string;
+    user?: IUser;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
     setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function UserDetails(props: UserDetailsProps) {
-    const { id, setIdToDisplay, setUsersUpdated } = props;
+    const { id, setIdToDisplay, setUsersUpdated, user } = props;
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userDetails, setUserDetails] = useState<IUser | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -55,18 +56,21 @@ export default function UserDetails(props: UserDetailsProps) {
     async function fetchUserDetails(id: string): Promise<void> {
         setIsLoading(true);
         try {
-            const userDetailsResult: IUser = await getUserDetails(id);
+            const userDetailsResult: IUser = await getDbUser(id);
             setUserDetails(userDetailsResult);
-            setIsLoading(false);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Fetch user details', error);
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     }
 
     useEffect(() => {
-        fetchUserDetails(id);
+        if (user) {
+            setUserDetails(user);
+        } else {
+            fetchUserDetails(id);
+        }
     }, []);
 
     return (
@@ -85,7 +89,7 @@ export default function UserDetails(props: UserDetailsProps) {
                         <h3>{userDetails.displayName}</h3>
                         <h4>{userDetails.email}</h4>
                         <p>{userDetails.phoneNumber}</p>
-                        {userDetails.organization === null && (
+                        {userDetails.organization === null ? (
                             <p style={{ color: 'red' }}>
                                 You must{' '}
                                 <Button variant="text" onClick={() => setIsEditMode(true)}>
@@ -93,6 +97,22 @@ export default function UserDetails(props: UserDetailsProps) {
                                 </Button>{' '}
                                 before you can enable this user.
                             </p>
+                        ) : (
+                            <p>
+                                <b>Organization:</b> {userDetails.organization.name}
+                            </p>
+                        )}
+                        {userDetails.notes && userDetails.notes.length > 0 && (
+                            <>
+                                <p>
+                                    <b>Notes:</b>
+                                </p>
+                                <List>
+                                    {userDetails.notes.map((note, i) => (
+                                        <ListItem key={i}>{note}</ListItem>
+                                    ))}
+                                </List>
+                            </>
                         )}
                         {userDetails.disabled && (
                             <Button
@@ -107,12 +127,6 @@ export default function UserDetails(props: UserDetailsProps) {
                         <Button variant="contained" type="button" onClick={() => setIsEditMode(true)}>
                             Edit User
                         </Button>
-                        <Divider></Divider>
-                        <Typography variant="overline">Organization:</Typography>
-                        <Typography>{userDetails.organization?.name}</Typography>
-                        <Typography variant="h4"></Typography>
-                        <Typography variant="overline">Notes:</Typography>
-                        <List>{userDetails.notes && userDetails.notes.map((note, i) => <ListItem key={i}>{note}</ListItem>)}</List>
                     </div>
                 )}
                 {!isLoading && userDetails && isEditMode && (

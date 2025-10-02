@@ -29,7 +29,7 @@ type EditUserProps = {
 };
 
 const EditUser = (props: EditUserProps) => {
-    const { uid, email, displayName, customClaims, phoneNumber, notes, organization, disabled } = props.userDetails;
+    const { uid, email, displayName, customClaims, phoneNumber, notes, organization, isDisabled } = props.userDetails;
     const { setIsEditMode, fetchUserDetails, setUsersUpdated } = props;
 
     let initialRole = '';
@@ -113,7 +113,7 @@ const EditUser = (props: EditUserProps) => {
         setIsLoading(true);
         try {
             //If account is inactive, activate and send confirmation email
-            if (disabled) {
+            if (isDisabled) {
                 try {
                     await callEnableUser(uid);
                     const emailMsg = userEnabled(email, displayName);
@@ -144,7 +144,7 @@ const EditUser = (props: EditUserProps) => {
                 }
             }
             //If any fields in User collection in DB, update db user
-            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg) {
+            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || email !== newEmail || displayName !== newDisplayName) {
                 try {
                     const updatedOrganization = selectedOrg
                         ? {
@@ -153,12 +153,18 @@ const EditUser = (props: EditUserProps) => {
                           }
                         : null;
 
+                    //If claims have changed, also update in DB
+                    const claims = role !== initialRole ? { [`${role}`]: true } : customClaims;
+
                     await updateDbUser(uid, {
                         phoneNumber: newPhoneNumber,
-                        organization: updatedOrganization
+                        organization: updatedOrganization,
+                        email: newEmail,
+                        displayName: newDisplayName,
+                        customClaims: claims
                     });
                 } catch (error) {
-                    addErrorEvent('Error updating phone number or organization', error);
+                    addErrorEvent('Error updating DB user', error);
                 }
             }
         } catch (error) {
