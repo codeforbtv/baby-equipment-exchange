@@ -61,7 +61,7 @@ export default function Users(props: UserListProps) {
                     <div className="content--container">
                         <List className={styles['browse__grid']}>
                             {users.map((userRecord: IUser) => {
-                                return <UserCard key={userRecord.uid} authUser={userRecord} setIdToDisplay={setIdToDisplay} />;
+                                return <UserCard key={userRecord.uid} user={userRecord} setIdToDisplay={setIdToDisplay} />;
                             })}
                         </List>
                     </div>
