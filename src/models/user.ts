@@ -62,7 +62,7 @@ export class UserCollection implements IUser {
         this.uid = args.uid;
         this.email = args.email;
         this.displayName = args.displayName;
-        this.isDisabled;
+        this.isDisabled = args.isDisabled;
         this.phoneNumber = args.phoneNumber;
         this.requestedItems = args.requestedItems;
         this.notes = args.notes;

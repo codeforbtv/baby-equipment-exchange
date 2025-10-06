@@ -10,9 +10,10 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
 //APIs
 import { addErrorEvent, callEnableUser } from '@/api/firebase';
-import { getDbUser, getUserDetails } from '@/api/firebase-users';
+import { getDbUser } from '@/api/firebase-users';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 //styles
 import '@/styles/globalStyles.css';
 import { IUser } from '@/models/user';
@@ -114,9 +115,9 @@ export default function UserDetails(props: UserDetailsProps) {
                                 </ul>
                             </>
                         )}
-                        {userDetails.disabled && (
+                        {userDetails.isDisabled && (
                             <Button
-                                variant="contained"
+                                variant="outlined"
                                 type="button"
                                 onClick={() => handleEnableUser(userDetails.uid)}
                                 disabled={userDetails.organization === null}

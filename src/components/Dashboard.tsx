@@ -14,12 +14,11 @@ import React, { useEffect, useState } from 'react';
 //API
 import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
 import { getAllDonations } from '@/api/firebase-donations';
+import { getAllDbUsers } from '@/api/firebase-users';
 //Types
 import { Donation } from '@/models/donation';
 import { Notification } from '@/types/NotificationTypes';
 import { IUser } from '@/models/user';
-import { getAllDbUsers } from '@/api/firebase-users';
-import { user } from 'firebase-functions/v1/auth';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -71,6 +70,7 @@ export default function Dashboard() {
         setIsLoading(true);
         try {
             const usersResult = await getAllDbUsers();
+            console.log(usersResult);
             setUsers(usersResult);
             setUsersUpdated(false);
         } catch (error) {

@@ -2,7 +2,7 @@
 //Hooks
 import React, { Dispatch, SetStateAction } from 'react';
 //Components
-import { ListItem, ListItemButton, ListItemText } from '@mui/material';
+import { ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
 
 //Styles
 import '@/styles/globalStyles.css';
@@ -19,22 +19,22 @@ export default function UserCard(props: UserCardProps) {
     const setIdToDisplay = props.setIdToDisplay;
 
     return (
-        <ListItem key={uid!} sx={{ background: 'white', border: '1px solid black' }}>
-            <ListItemButton component="a" onClick={() => setIdToDisplay(uid)}>
+        <ListItem key={uid!} sx={!isDisabled ? { background: 'white', border: '1px solid black' } : { background: 'white', border: '1px solid red' }}>
+            <ListItemButton component="a" onClick={() => setIdToDisplay(uid)} sx={{}}>
                 <ListItemText
                     primary={
                         <p>
-                            {displayName} ({email})
+                            <b>{displayName}</b> ({email})
                         </p>
                     }
                     secondary={
-                        <p>
-                            <b>Organization:</b> {organization?.name ?? 'None assigned'}
-                        </p>
+                        <>
+                            <i>{organization?.name ?? 'None assigned'}</i>
+                        </>
                     }
                     sx={{ color: 'black' }}
                 />
-                {isDisabled && <ListItemText primary={'This user requires approval'} sx={{ color: 'red' }}></ListItemText>}
+                {isDisabled && <ListItemText primary={<p>This user requires approval</p>} sx={{ color: 'red' }}></ListItemText>}
             </ListItemButton>
         </ListItem>
     );

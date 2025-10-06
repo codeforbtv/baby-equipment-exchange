@@ -22,11 +22,12 @@ import { Donation } from '@/models/donation';
 import { AuthUserRecord } from '@/types/UserTypes';
 import { Order } from '@/types/OrdersTypes';
 import { addErrorEvent } from '@/api/firebase';
+import { IUser } from '@/models/user';
 
 type NotificationCardProps = {
     type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
     donation?: Donation;
-    authUser?: AuthUserRecord;
+    user?: IUser;
     order?: Order;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
@@ -34,7 +35,7 @@ type NotificationCardProps = {
 
 //TO-DO: Set up buttons
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, authUser, order, setIdToDisplay, setNotificationsUpdated } = props;
+    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const router = useRouter();
@@ -142,16 +143,16 @@ const NotificationCard = (props: NotificationCardProps) => {
                     </CardActions>
                 </Card>
             )}
-            {type === 'pending-user' && authUser && (
+            {type === 'pending-user' && user && (
                 <Card className={styles['card--container']} elevation={3}>
-                    <CardActions onClick={() => setIdToDisplay(authUser.uid)} sx={{ width: '100%' }}>
+                    <CardActions onClick={() => setIdToDisplay(user.uid)} sx={{ width: '100%' }}>
                         <CardContent>
-                            <Typography variant="h4">{authUser.displayName}</Typography>
-                            <Typography variant="h4">{authUser.email}</Typography>
+                            <Typography variant="h4">{user.displayName}</Typography>
+                            <Typography variant="h4">{user.email}</Typography>
                         </CardContent>
                     </CardActions>
                     <CardActions>
-                        <Button variant="contained" onClick={() => setIdToDisplay(authUser.uid)}>
+                        <Button variant="contained" onClick={() => setIdToDisplay(user.uid)}>
                             Review
                         </Button>
                     </CardActions>

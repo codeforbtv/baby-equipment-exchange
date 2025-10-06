@@ -145,15 +145,14 @@ export async function getUserDetails(uid: string): Promise<IUser> {
     return Promise.reject();
 }
 
-export async function getUsersNotifications(): Promise<AuthUserRecord[]> {
-    let users: AuthUserRecord[] = [];
+export async function getUsersNotifications(): Promise<IUser[]> {
+    let users: IUser[] = [];
     try {
         const usersRef = collection(db, USERS_COLLECTION);
         const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
         const usersNotificationsSnapshot = await getDocs(usersNotificationsQuery);
         for (const doc of usersNotificationsSnapshot.docs) {
-            const authUser = await getAuthUserById(doc.id);
-            users.push(authUser);
+            users.push(doc.data());
         }
         return users;
     } catch (error) {

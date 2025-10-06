@@ -114,7 +114,7 @@ const Notifications = (props: NotificationsProps) => {
                                 <NotificationCard
                                     key={user.uid}
                                     type="pending-user"
-                                    authUser={user}
+                                    user={user}
                                     setIdToDisplay={setUserIdToDisplay}
                                     setNotificationsUpdated={setNotificationsUpdated}
                                 />
