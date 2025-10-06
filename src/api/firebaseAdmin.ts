@@ -10,7 +10,7 @@ import * as logger from 'firebase-functions/logger';
 
 import * as admin from 'firebase-admin';
 import { DecodedIdToken, getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
-import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { FieldValue, getFirestore, WriteBatch } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { applicationDefault, initializeApp, ServiceAccount } from 'firebase-admin/app';
 import { UserCardProps } from '@/types/post-data';
@@ -18,6 +18,7 @@ import { convertToString } from '@/utils/utils';
 import { UserInfo } from 'firebase/auth';
 import { IUser, UserCollection } from '@/models/user';
 import { AuthUserRecord } from '@/types/UserTypes';
+import { writeBatch } from 'firebase/firestore';
 
 const region = 'us-east1';
 
@@ -143,6 +144,30 @@ export const listAllUsers = async (): Promise<AuthUserRecord[]> => {
     }
     return Promise.reject();
 };
+
+//Sync data from firebase auth users to the DB user collection
+export async function syncUsers(): Promise<void> {
+    try {
+        const batch = db.batch();
+        const usersList = await auth.listUsers(1000);
+        const listUsersResult: UserRecord[] = usersList.users.filter((user) => user.providerData && user.providerData.length > 0);
+        for (const user of listUsersResult) {
+            const userParams = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                customClaims: user.customClaims,
+                isDisabled: user.disabled
+            };
+            const docRef = db.collection(USERS_COLLECTION).doc(user.uid);
+            docRef.set(userParams, { merge: true });
+        }
+        await batch.commit();
+        console.log('Sync completed');
+    } catch (error) {
+        addErrorEvent('Error syncing users', error);
+    }
+}
 
 //returns client-side safe UserInfo object
 export async function getAuthUserById(uid: string): Promise<AuthUserRecord> {

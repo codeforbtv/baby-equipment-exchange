@@ -88,7 +88,7 @@ export default function UserDetails(props: UserDetailsProps) {
                     <div className="content--container">
                         <h3>{userDetails.displayName}</h3>
                         <h4>{userDetails.email}</h4>
-                        <p>{userDetails.phoneNumber}</p>
+                        <h4>{userDetails.phoneNumber}</h4>
                         {userDetails.organization === null ? (
                             <p style={{ color: 'red' }}>
                                 You must{' '}
@@ -107,11 +107,11 @@ export default function UserDetails(props: UserDetailsProps) {
                                 <p>
                                     <b>Notes:</b>
                                 </p>
-                                <List>
+                                <ul>
                                     {userDetails.notes.map((note, i) => (
                                         <ListItem key={i}>{note}</ListItem>
                                     ))}
-                                </List>
+                                </ul>
                             </>
                         )}
                         {userDetails.disabled && (
