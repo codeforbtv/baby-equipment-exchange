@@ -42,18 +42,6 @@ export default function UserDetails(props: UserDetailsProps) {
         setIsDialogOpen(false);
     };
 
-    const handleEnableUser = async (uid: string): Promise<void> => {
-        setIsLoading(true);
-        try {
-            await callEnableUser(uid);
-            setIsDialogOpen(true);
-        } catch (error) {
-            addErrorEvent('Call enable user', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     async function fetchUserDetails(id: string): Promise<void> {
         setIsLoading(true);
         try {
@@ -91,13 +79,7 @@ export default function UserDetails(props: UserDetailsProps) {
                         <h4>{userDetails.email}</h4>
                         <h4>{userDetails.phoneNumber}</h4>
                         {userDetails.organization === null ? (
-                            <p style={{ color: 'red' }}>
-                                You must{' '}
-                                <Button variant="text" onClick={() => setIsEditMode(true)}>
-                                    select an organzation
-                                </Button>{' '}
-                                before you can enable this user.
-                            </p>
+                            <p style={{ color: 'red' }}>This user is missing an organization. Click edit user to assign one.</p>
                         ) : (
                             <p>
                                 <b>Organization:</b> {userDetails.organization.name}
@@ -114,16 +96,6 @@ export default function UserDetails(props: UserDetailsProps) {
                                     ))}
                                 </ul>
                             </>
-                        )}
-                        {userDetails.isDisabled && (
-                            <Button
-                                variant="outlined"
-                                type="button"
-                                onClick={() => handleEnableUser(userDetails.uid)}
-                                disabled={userDetails.organization === null}
-                            >
-                                Enable User
-                            </Button>
                         )}
                         <Button variant="contained" type="button" onClick={() => setIsEditMode(true)}>
                             Edit User
