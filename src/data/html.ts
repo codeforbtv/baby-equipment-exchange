@@ -164,7 +164,7 @@ export const categories: CategoryType[] = [
         active: true
     },
     {
-        name: 'Diaper Changing Pad',
+        name: 'Diaper Changing Pad (Tabletop)',
         tagPrefix: 'CP',
         tagCount: 20,
         active: true
