@@ -37,6 +37,8 @@ import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { IUser } from '@/models/user';
 import CustomDialog from './CustomDialog';
 import { deleteDbUser } from '@/api/firebase-users';
+import rejectUser from '@/email-templates/rejectUser';
+import sendMail from '@/api/nodemailer';
 
 type NotificationCardProps = {
     type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
@@ -110,10 +112,12 @@ const NotificationCard = (props: NotificationCardProps) => {
         }
     };
 
-    const handleDeleteUser = async (uid: string, userName: string): Promise<void> => {
+    const handleDeleteUser = async (uid: string, userName: string, userEmail: string): Promise<void> => {
         setIsLoading(true);
         try {
             await Promise.all([callDeleteUser(uid), deleteDbUser(uid)]);
+            const msg = rejectUser(userEmail, userName);
+            await sendMail(msg);
             setIsDeleteDialogOpen(false);
             setDialogTitle('User deleted');
             setDialogContent(`The user ${userName} has been deleted.`);
@@ -237,9 +241,9 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <Dialog open={isDeleteDialogOpen} aria-labelledby="dialog-title" aria-describedby="dialog-description">
                                 <DialogTitle id="dialog-title">Reject pending user?</DialogTitle>
                                 <DialogContent>
-                                    <DialogContentText id="dialog-description">This will delete the user {user.displayName}. Are you sure?</DialogContentText>
+                                    <DialogContentText id="dialog-description">This will delete the user "{user.displayName}." Are you sure?</DialogContentText>
                                     <DialogActions>
-                                        <Button variant="contained" onClick={() => handleDeleteUser(user.uid, user.displayName)}>
+                                        <Button variant="contained" onClick={() => handleDeleteUser(user.uid, user.displayName, user.email)}>
                                             Confirm
                                         </Button>
                                         <Button variant="outlined" onClick={handleDeleteDialogClose}>
