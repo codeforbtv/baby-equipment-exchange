@@ -77,8 +77,27 @@ export const enableuser = onCall(async (request): Promise<void> => {
             const docRef = db.collection(USERS_COLLECTION).doc(userId);
             auth.updateUser(userId, { disabled: false })
                 .then((user) => auth.setCustomUserClaims(user.uid, { 'aid-worker': true }))
-                .then(() => docRef.update({ isDisabled: false }))
+                .then(() => docRef.update({ isDisabled: false, customClaims: { 'aid-worker': true } }))
                 .catch((error) => Promise.reject(new HttpsError('invalid-argument', 'Unable to update user account.')));
+        }
+    }
+});
+
+//Deletes firebase auth user
+export const deleteuser = onCall(async (request): Promise<void> => {
+    if (!request.auth) {
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to delete user account.'));
+    }
+    if (request.auth && request.auth.token.admin != true) {
+        return Promise.reject(new HttpsError('permission-denied', 'Only admins can delete user accounts.'));
+    } else if (request.auth && request.auth.token.admin == true) {
+        const userId = request.data.userId;
+        if (!userId) {
+            return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to delete a user account.'));
+        } else {
+            auth.deleteUser(userId)
+                .then(() => console.log(`User with ID: ${userId} deleted`))
+                .catch((error) => Promise.reject(new HttpsError('invalid-argument', 'Unable to delete user account.')));
         }
     }
 });

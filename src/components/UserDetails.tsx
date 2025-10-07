@@ -10,23 +10,26 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
 //APIs
 import { addErrorEvent, callEnableUser } from '@/api/firebase';
-import { getUserDetails } from '@/api/firebase-users';
+import { getDbUser } from '@/api/firebase-users';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 //styles
 import '@/styles/globalStyles.css';
+import { IUser } from '@/models/user';
 //Types
-import type { UserDetails } from '@/types/UserTypes';
+
 type UserDetailsProps = {
     id: string;
+    user?: IUser;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
     setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function UserDetails(props: UserDetailsProps) {
-    const { id, setIdToDisplay, setUsersUpdated } = props;
+    const { id, setIdToDisplay, setUsersUpdated, user } = props;
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+    const [userDetails, setUserDetails] = useState<IUser | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
@@ -39,33 +42,24 @@ export default function UserDetails(props: UserDetailsProps) {
         setIsDialogOpen(false);
     };
 
-    const handleEnableUser = async (uid: string): Promise<void> => {
-        setIsLoading(true);
-        try {
-            await callEnableUser(uid);
-            setIsDialogOpen(true);
-        } catch (error) {
-            addErrorEvent('Call enable user', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     async function fetchUserDetails(id: string): Promise<void> {
         setIsLoading(true);
         try {
-            const userDetailsResult: UserDetails = await getUserDetails(id);
+            const userDetailsResult: IUser = await getDbUser(id);
             setUserDetails(userDetailsResult);
-            setIsLoading(false);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Fetch user details', error);
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     }
 
     useEffect(() => {
-        fetchUserDetails(id);
+        if (user) {
+            setUserDetails(user);
+        } else {
+            fetchUserDetails(id);
+        }
     }, []);
 
     return (
@@ -83,35 +77,29 @@ export default function UserDetails(props: UserDetailsProps) {
                     <div className="content--container">
                         <h3>{userDetails.displayName}</h3>
                         <h4>{userDetails.email}</h4>
-                        <p>{userDetails.phoneNumber}</p>
-                        {userDetails.organization === null && (
-                            <p style={{ color: 'red' }}>
-                                You must{' '}
-                                <Button variant="text" onClick={() => setIsEditMode(true)}>
-                                    select an organzation
-                                </Button>{' '}
-                                before you can enable this user.
+                        <h4>{userDetails.phoneNumber}</h4>
+                        {userDetails.organization === null ? (
+                            <p style={{ color: 'red' }}>This user is missing an organization. Click edit user to assign one.</p>
+                        ) : (
+                            <p>
+                                <b>Organization:</b> {userDetails.organization.name}
                             </p>
                         )}
-                        {userDetails.disabled && (
-                            <Button
-                                variant="contained"
-                                type="button"
-                                onClick={() => handleEnableUser(userDetails.uid)}
-                                disabled={userDetails.organization === null}
-                            >
-                                Enable User
-                            </Button>
+                        {userDetails.notes && userDetails.notes.length > 0 && (
+                            <>
+                                <p>
+                                    <b>Notes:</b>
+                                </p>
+                                <ul>
+                                    {userDetails.notes.map((note, i) => (
+                                        <ListItem key={i}>{note}</ListItem>
+                                    ))}
+                                </ul>
+                            </>
                         )}
                         <Button variant="contained" type="button" onClick={() => setIsEditMode(true)}>
                             Edit User
                         </Button>
-                        <Divider></Divider>
-                        <Typography variant="overline">Organization:</Typography>
-                        <Typography>{userDetails.organization?.name}</Typography>
-                        <Typography variant="h4"></Typography>
-                        <Typography variant="overline">Notes:</Typography>
-                        <List>{userDetails.notes && userDetails.notes.map((note, i) => <ListItem key={i}>{note}</ListItem>)}</List>
                     </div>
                 )}
                 {!isLoading && userDetails && isEditMode && (
