@@ -169,6 +169,32 @@ export async function syncUsers(): Promise<void> {
     }
 }
 
+export async function syncOrgs(): Promise<void> {
+    try {
+        const srcCollectionRef = db.collection('imported_orgs_5');
+        const destCollectionRef = db.collection('Organizations');
+        const srcSnapshot = await srcCollectionRef.get();
+        const batch = db.batch();
+        srcSnapshot.forEach((doc) => {
+            const docData = doc.data();
+            batch.set(
+                destCollectionRef.doc(doc.id),
+                {
+                    name: docData.Organization,
+                    county: docData.County,
+                    emailFooter: docData['Email Footer'],
+                    tags: ['social-services'],
+                    notes: []
+                },
+                { merge: true }
+            );
+        });
+        await batch.commit();
+    } catch (error) {
+        console.log('Error syncing orgs', error);
+    }
+}
+
 //returns client-side safe UserInfo object
 export async function getAuthUserById(uid: string): Promise<AuthUserRecord> {
     try {
