@@ -11,16 +11,17 @@ import { addErrorEvent, callListAllUsers } from '@/api/firebase';
 //Styles
 import '@/styles/globalStyles.css';
 // Types
-import { AuthUserRecord } from '@/types/UserTypes';
+import { IUser } from '@/models/user';
+import { getAllDbUsers } from '@/api/firebase-users';
 
 export default function UsersPage() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [users, setUsers] = useState<AuthUserRecord[] | null>(null);
+    const [users, setUsers] = useState<IUser[] | null>(null);
 
     const fetchUsers = async (): Promise<void> => {
         setIsLoading(true);
         try {
-            const usersResult = await callListAllUsers();
+            const usersResult = await getAllDbUsers();
             setUsers(usersResult);
         } catch (error) {
             addErrorEvent('Error fetching all users', error);

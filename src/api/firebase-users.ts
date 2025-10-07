@@ -11,14 +11,14 @@ import {
     where,
     collection,
     query,
-    getDocs
+    getDocs,
+    deleteDoc
 } from 'firebase/firestore';
 
 //API
 import { getAuthUserById } from './firebaseAdmin';
 
 // Models
-import { AuthUserRecord, UserDetails } from '@/types/UserTypes';
 import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
 // Types
@@ -36,6 +36,7 @@ import {
     User,
     UserCredential
 } from 'firebase/auth';
+import { error } from 'console';
 
 export const USERS_COLLECTION = 'Users';
 
@@ -43,6 +44,9 @@ export const userConverter = {
     toFirestore(user: UserCollection): DocumentData {
         const userData: IUser = {
             uid: user.getUid(),
+            email: user.getEmail(),
+            displayName: user.getDisplayName(),
+            customClaims: user.getCustomClaims(),
             isDisabled: user.getIsDisabled(),
             phoneNumber: user.getPhoneNumber(),
             requestedItems: user.getRequestedItems(),
@@ -62,6 +66,9 @@ export const userConverter = {
         const data = snapshot.data(options)!;
         const userData: IUser = {
             uid: data.uid,
+            email: data.email,
+            displayName: data.displayName,
+            customClaims: data.customClaims,
             isDisabled: data.isDisabled,
             phoneNumber: data.phoneNumber,
             requestedItems: data.requestedItems,
@@ -72,6 +79,18 @@ export const userConverter = {
         return new UserCollection(userData);
     }
 };
+
+export async function getAllDbUsers(): Promise<IUser[]> {
+    try {
+        let users: IUser[] = [];
+        const usersSnapshot = await getDocs(collection(db, USERS_COLLECTION).withConverter(userConverter));
+        usersSnapshot.forEach((doc) => users.push(doc.data()));
+        return users;
+    } catch (error) {
+        addErrorEvent('Error fetching all db users', error);
+    }
+    return Promise.reject();
+}
 
 export async function getDbUser(uid: string): Promise<IUser> {
     try {
@@ -103,11 +122,19 @@ export async function updateDbUser(uid: string, accountInformation: any): Promis
     }
 }
 
+export async function deleteDbUser(uid: string): Promise<void> {
+    try {
+        await deleteDoc(doc(db, USERS_COLLECTION, uid));
+    } catch (error) {
+        addErrorEvent('Error deleting db User', error);
+    }
+}
+
 //returns Auth User and db User details combined
-export async function getUserDetails(uid: string): Promise<UserDetails> {
+export async function getUserDetails(uid: string): Promise<IUser> {
     try {
         const [authUser, dbUser] = await Promise.all([getAuthUserById(uid), getDbUser(uid)]);
-        const userDetails: UserDetails = {
+        const userDetails: IUser = {
             uid: authUser.uid,
             email: authUser.email,
             displayName: authUser.displayName,
@@ -127,15 +154,14 @@ export async function getUserDetails(uid: string): Promise<UserDetails> {
     return Promise.reject();
 }
 
-export async function getUsersNotifications(): Promise<AuthUserRecord[]> {
-    let users: AuthUserRecord[] = [];
+export async function getUsersNotifications(): Promise<IUser[]> {
+    let users: IUser[] = [];
     try {
         const usersRef = collection(db, USERS_COLLECTION);
         const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
         const usersNotificationsSnapshot = await getDocs(usersNotificationsQuery);
         for (const doc of usersNotificationsSnapshot.docs) {
-            const authUser = await getAuthUserById(doc.id);
-            users.push(authUser);
+            users.push(doc.data());
         }
         return users;
     } catch (error) {

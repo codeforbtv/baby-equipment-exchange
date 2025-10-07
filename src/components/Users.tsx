@@ -16,10 +16,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import styles from '@/components/Browse.module.css';
 import '@/styles/globalStyles.css';
 // Types
-import { AuthUserRecord } from '@/types/UserTypes';
+import { IUser } from '@/models/user';
 
 type UserListProps = {
-    users: AuthUserRecord[];
+    users: IUser[];
     setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
@@ -28,7 +28,6 @@ export default function Users(props: UserListProps) {
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
-    const [showForm, setShowForm] = useState<boolean>(false);
 
     function toggleSearchBar() {
         setIsSearchVisible((prev: any) => !prev);
@@ -42,7 +41,7 @@ export default function Users(props: UserListProps) {
         <ProtectedAdminRoute>
             {idToDisplay && <UserDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setUsersUpdated={setUsersUpdated} />}
 
-            {!idToDisplay && !showForm && (
+            {!idToDisplay && (
                 <>
                     <div className={'page--header'}>
                         <h1>Users</h1>
@@ -59,8 +58,8 @@ export default function Users(props: UserListProps) {
                     {isFilterVisible && <Filter />}
                     <div className="content--container">
                         <List className={styles['browse__grid']}>
-                            {users.map((userRecord: AuthUserRecord) => {
-                                return <UserCard key={userRecord.uid} authUser={userRecord} setIdToDisplay={setIdToDisplay} />;
+                            {users.map((userRecord: IUser) => {
+                                return <UserCard key={userRecord.uid} user={userRecord} setIdToDisplay={setIdToDisplay} />;
                             })}
                         </List>
                     </div>

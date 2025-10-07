@@ -30,6 +30,7 @@ const isEMailInUse = httpsCallable(functions, 'isemailinuse');
 const listAllUsers = httpsCallable(functions, 'listallusers');
 const setCustomClaims = httpsCallable(functions, 'setcustomclaims');
 const updateAuthUser = httpsCallable(functions, 'updateauthuser');
+const deleteUser = httpsCallable(functions, 'deleteuser');
 
 //Cloud function calls
 export async function callCreateUser(accountInfo: NewUserAccountInfo): Promise<UserRecord> {
@@ -60,17 +61,20 @@ export async function callListAllUsers(): Promise<AuthUserRecord[]> {
     try {
         const listUsersResult = await listAllUsers();
         const listUsers = listUsersResult.data as UserRecord[];
-        const authUsers = listUsers.map((user) => {
-            const authUser = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                disabled: user.disabled,
-                metadata: user.metadata,
-                customClaims: user.customClaims
-            };
-            return authUser;
-        });
+        //Filter out anonymous users
+        const authUsers = listUsers
+            .filter((user) => user.providerData.length !== 0)
+            .map((user) => {
+                const authUser = {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    disabled: user.disabled,
+                    metadata: user.metadata,
+                    customClaims: user.customClaims
+                };
+                return authUser;
+            });
         return JSON.parse(JSON.stringify(authUsers));
     } catch (error) {
         addErrorEvent('Call list all users', error);
@@ -93,6 +97,14 @@ export async function callEnableUser(userId: string): Promise<void> {
         await enableUser({ userId: userId });
     } catch (error) {
         addErrorEvent('Could not enable user', error);
+    }
+}
+
+export async function callDeleteUser(userId: string): Promise<void> {
+    try {
+        await deleteUser({ userId: userId });
+    } catch (error) {
+        addErrorEvent('Error deleting user', error);
     }
 }
 

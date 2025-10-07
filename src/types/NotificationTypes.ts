@@ -1,9 +1,9 @@
 import { Donation } from '@/models/donation';
-import { AuthUserRecord } from './UserTypes';
+import { IUser } from '@/models/user';
 import { Order } from './OrdersTypes';
 
 export type Notification = {
     donations: Donation[];
-    users: AuthUserRecord[];
+    users: IUser[];
     orders: Order[];
 };

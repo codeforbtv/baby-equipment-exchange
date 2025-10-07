@@ -21,8 +21,6 @@ export interface AuthUserRecord {
     };
 }
 
-export interface UserDetails extends AuthUserRecord, IUser {}
-
 //Type for updating auth user accounts
 export type AccountInformation = {
     displayName?: string;
