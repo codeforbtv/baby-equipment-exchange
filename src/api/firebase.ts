@@ -30,6 +30,7 @@ const isEMailInUse = httpsCallable(functions, 'isemailinuse');
 const listAllUsers = httpsCallable(functions, 'listallusers');
 const setCustomClaims = httpsCallable(functions, 'setcustomclaims');
 const updateAuthUser = httpsCallable(functions, 'updateauthuser');
+const deleteUser = httpsCallable(functions, 'deleteuser');
 
 //Cloud function calls
 export async function callCreateUser(accountInfo: NewUserAccountInfo): Promise<UserRecord> {
@@ -96,6 +97,14 @@ export async function callEnableUser(userId: string): Promise<void> {
         await enableUser({ userId: userId });
     } catch (error) {
         addErrorEvent('Could not enable user', error);
+    }
+}
+
+export async function callDeleteUser(userId: string): Promise<void> {
+    try {
+        await deleteUser({ userId: userId });
+    } catch (error) {
+        addErrorEvent('Error deleting user', error);
     }
 }
 

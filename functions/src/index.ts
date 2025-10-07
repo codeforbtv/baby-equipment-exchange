@@ -83,7 +83,7 @@ export const enableuser = onCall(async (request): Promise<void> => {
     }
 });
 
-//Deletes firebase auth user and db user
+//Deletes firebase auth user
 export const deleteuser = onCall(async (request): Promise<void> => {
     if (!request.auth) {
         return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to delete user account.'));
@@ -95,9 +95,8 @@ export const deleteuser = onCall(async (request): Promise<void> => {
         if (!userId) {
             return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to delete a user account.'));
         } else {
-            const docRef = db.collection(USERS_COLLECTION).doc(userId);
             auth.deleteUser(userId)
-                .then(() => docRef.delete())
+                .then(() => console.log(`User with ID: ${userId} deleted`))
                 .catch((error) => Promise.reject(new HttpsError('invalid-argument', 'Unable to delete user account.')));
         }
     }

@@ -11,14 +11,14 @@ import {
     where,
     collection,
     query,
-    getDocs
+    getDocs,
+    deleteDoc
 } from 'firebase/firestore';
 
 //API
 import { getAuthUserById } from './firebaseAdmin';
 
 // Models
-import { AuthUserRecord } from '@/types/UserTypes';
 import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
 // Types
@@ -36,6 +36,7 @@ import {
     User,
     UserCredential
 } from 'firebase/auth';
+import { error } from 'console';
 
 export const USERS_COLLECTION = 'Users';
 
@@ -118,6 +119,14 @@ export async function updateDbUser(uid: string, accountInformation: any): Promis
         });
     } catch (error) {
         addErrorEvent('Error updating db user', error);
+    }
+}
+
+export async function deleteDbUser(uid: string): Promise<void> {
+    try {
+        await deleteDoc(doc(db, USERS_COLLECTION, uid));
+    } catch (error) {
+        addErrorEvent('Error deleting db User', error);
     }
 }
 

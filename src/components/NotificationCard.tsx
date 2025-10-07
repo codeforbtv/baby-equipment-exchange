@@ -5,7 +5,19 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Card, CardActions, CardContent, CardMedia, Typography, Button } from '@mui/material';
+import {
+    Card,
+    CardActions,
+    CardContent,
+    CardMedia,
+    Typography,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions
+} from '@mui/material';
 import Loader from './Loader';
 //Api
 import { updateDonationStatus } from '@/api/firebase-donations';
@@ -19,11 +31,12 @@ const thumbnailStyles = {
 };
 //Types
 import { Donation } from '@/models/donation';
-import { AuthUserRecord } from '@/types/UserTypes';
+import type { DialogProps } from '@mui/material';
 import { Order } from '@/types/OrdersTypes';
-import { addErrorEvent, callEnableUser } from '@/api/firebase';
+import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { IUser } from '@/models/user';
 import CustomDialog from './CustomDialog';
+import { deleteDbUser } from '@/api/firebase-users';
 
 type NotificationCardProps = {
     type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
@@ -42,11 +55,18 @@ const NotificationCard = (props: NotificationCardProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogTitle, setDialogTitle] = useState<string>('');
     const [dialogContent, setDialogContent] = useState<string>('');
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
 
     const router = useRouter();
 
     const handleClose = () => {
         setIsDialogOpen(false);
+        setDialogTitle('');
+        setDialogContent('');
+    };
+
+    const handleDeleteDialogClose = () => {
+        setIsDeleteDialogOpen(false);
     };
 
     const markAsRecieved = async (id: string) => {
@@ -85,6 +105,21 @@ const NotificationCard = (props: NotificationCardProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Call enable user', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDeleteUser = async (uid: string, userName: string): Promise<void> => {
+        setIsLoading(true);
+        try {
+            await Promise.all([callDeleteUser(uid), deleteDbUser(uid)]);
+            setIsDeleteDialogOpen(false);
+            setDialogTitle('User deleted');
+            setDialogContent(`The user ${userName} has been deleted.`);
+            setIsDialogOpen(true);
+        } catch (error) {
+            addErrorEvent('Call delete user', error);
         } finally {
             setIsLoading(false);
         }
@@ -171,35 +206,53 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card className={styles['card--container']} elevation={3}>
-                            <CardActions onClick={() => setIdToDisplay(user.uid)} sx={{ width: '100%' }}>
-                                <CardContent>
-                                    <p>
-                                        <b>{user.displayName}</b> ({user.email})
-                                    </p>
-                                    {user.organization ? (
+                        <>
+                            <Card className={styles['card--container']} elevation={3}>
+                                <CardActions onClick={() => setIdToDisplay(user.uid)} sx={{ width: '100%' }}>
+                                    <CardContent>
                                         <p>
-                                            <em>{user.organization.name}</em>
+                                            <b>{user.displayName}</b> ({user.email})
                                         </p>
-                                    ) : (
-                                        <p style={{ color: 'red' }}>
-                                            <em>No organization assigned.</em>
-                                        </p>
-                                    )}
-                                </CardContent>
-                            </CardActions>
-                            <CardActions>
-                                <Button variant="contained" onClick={() => handleEnableUser(user.uid, user.displayName)} disabled={!user.organization}>
-                                    Approve
-                                </Button>
-                                <Button variant="contained" color="error" onClick={() => setIdToDisplay(user.uid)}>
-                                    Reject
-                                </Button>
-                            </CardActions>
-                        </Card>
+                                        {user.organization ? (
+                                            <p>
+                                                <em>{user.organization.name}</em>
+                                            </p>
+                                        ) : (
+                                            <p style={{ color: 'red' }}>
+                                                <em>No organization assigned.</em>
+                                            </p>
+                                        )}
+                                    </CardContent>
+                                </CardActions>
+                                <CardActions>
+                                    <Button variant="contained" onClick={() => handleEnableUser(user.uid, user.displayName)} disabled={!user.organization}>
+                                        Approve
+                                    </Button>
+                                    <Button variant="contained" color="error" onClick={() => setIsDeleteDialogOpen(true)}>
+                                        Reject
+                                    </Button>
+                                </CardActions>
+                            </Card>
+                            {/* Dialog for rejecting user */}
+                            <Dialog open={isDeleteDialogOpen} aria-labelledby="dialog-title" aria-describedby="dialog-description">
+                                <DialogTitle id="dialog-title">Reject pending user?</DialogTitle>
+                                <DialogContent>
+                                    <DialogContentText id="dialog-description">This will delete the user {user.displayName}. Are you sure?</DialogContentText>
+                                    <DialogActions>
+                                        <Button variant="contained" onClick={() => handleDeleteUser(user.uid, user.displayName)}>
+                                            Confirm
+                                        </Button>
+                                        <Button variant="outlined" onClick={handleDeleteDialogClose}>
+                                            Cancel
+                                        </Button>
+                                    </DialogActions>
+                                </DialogContent>
+                            </Dialog>
+                        </>
                     )}
                 </>
             )}
+            {/* Confirmation dialog */}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title={dialogTitle} content={dialogContent} />
         </ProtectedAdminRoute>
     );

@@ -32,7 +32,7 @@ const Notifications = (props: NotificationsProps) => {
     const donationsAwaitingDropoff = notifications.donations.filter((donation) => donation.status === 'pending delivery');
     const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
     const orders = notifications.orders;
-    const usersAwaitingApproval = notifications.users;
+    const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted); //Filters out recently deleted users
 
     return (
         <ProtectedAdminRoute>

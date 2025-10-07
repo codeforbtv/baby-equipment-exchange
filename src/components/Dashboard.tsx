@@ -70,8 +70,7 @@ export default function Dashboard() {
         setIsLoading(true);
         try {
             const usersResult = await getAllDbUsers();
-            console.log(usersResult);
-            setUsers(usersResult);
+            setUsers(usersResult.filter((user) => !user.isDeleted));
             setUsersUpdated(false);
         } catch (error) {
             addErrorEvent('Error fetching all users', error);
