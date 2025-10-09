@@ -19,6 +19,7 @@ import { getAllDbUsers } from '@/api/firebase-users';
 import { Donation } from '@/models/donation';
 import { Notification } from '@/types/NotificationTypes';
 import { IUser } from '@/models/user';
+import { user } from 'firebase-functions/v1/auth';
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -105,6 +106,10 @@ export default function Dashboard() {
             fetchOrgNames();
         }
     }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
+
+    useEffect(() => {
+        console.log(users);
+    }, [users]);
 
     return (
         <ProtectedAdminRoute>

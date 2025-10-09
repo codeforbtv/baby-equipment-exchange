@@ -36,7 +36,6 @@ import {
     User,
     UserCredential
 } from 'firebase/auth';
-import { error } from 'console';
 
 export const USERS_COLLECTION = 'Users';
 
@@ -55,11 +54,11 @@ export const userConverter = {
             modifiedAt: user.getModifiedAt()
         };
 
-        for (const key in userData) {
-            if (userData[key] === undefined || userData[key] === null) {
-                delete userData[key];
-            }
-        }
+        // for (const key in userData) {
+        //     if (userData[key] === undefined || userData[key] === null) {
+        //         delete userData[key];
+        //     }
+        // }
         return userData;
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {

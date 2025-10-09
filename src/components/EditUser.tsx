@@ -178,6 +178,8 @@ const EditUser = (props: EditUserProps) => {
 
     useEffect(() => {
         getOrgNames();
+        console.log('user deets', props.userDetails);
+        console.log('intial role:', initialRole);
     }, []);
 
     return (
