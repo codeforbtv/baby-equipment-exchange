@@ -36,7 +36,6 @@ import {
     User,
     UserCredential
 } from 'firebase/auth';
-import { error } from 'console';
 
 export const USERS_COLLECTION = 'Users';
 
@@ -127,6 +126,15 @@ export async function deleteDbUser(uid: string): Promise<void> {
         await deleteDoc(doc(db, USERS_COLLECTION, uid));
     } catch (error) {
         addErrorEvent('Error deleting db User', error);
+    }
+}
+
+export async function enableDbUser(uid: string): Promise<void> {
+    try {
+        const docRef = doc(db, USERS_COLLECTION, uid);
+        await updateDoc(docRef, { isDisabled: false, customClaims: { 'aid-worker': true } });
+    } catch (error) {
+        addErrorEvent('Error enabling db User', error);
     }
 }
 

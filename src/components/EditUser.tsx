@@ -5,7 +5,7 @@ import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 //API
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims, callUpdateAuthUser, callEnableUser } from '@/api/firebase';
 import { PatternFormat, OnValueChange } from 'react-number-format';
-import { updateDbUser } from '@/api/firebase-users';
+import { enableDbUser, updateDbUser } from '@/api/firebase-users';
 //Components
 import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import Loader from '@/components/Loader';
@@ -115,7 +115,7 @@ const EditUser = (props: EditUserProps) => {
             //If account is inactive, activate and send confirmation email
             if (isDisabled) {
                 try {
-                    await callEnableUser(uid);
+                    await Promise.all([callEnableUser(uid), enableDbUser(uid)]);
                     const emailMsg = userEnabled(email, displayName);
                     await sendMail(emailMsg);
                 } catch (error) {
@@ -130,7 +130,6 @@ const EditUser = (props: EditUserProps) => {
                         displayName: newDisplayName
                     });
                 } catch (error) {
-                    setIsLoading(false);
                     addErrorEvent('Error updating email or display name', error);
                 }
             }
@@ -138,7 +137,7 @@ const EditUser = (props: EditUserProps) => {
             if (role !== initialRole) {
                 try {
                     const claims = { [`${role}`]: true };
-                    await callSetClaims(uid, claims);
+                    await Promise.all([callSetClaims(uid, claims), updateDbUser(uid, { customClaims: claims })]);
                 } catch (error) {
                     addErrorEvent('Error updated custom claims', error);
                 }
@@ -153,27 +152,22 @@ const EditUser = (props: EditUserProps) => {
                           }
                         : null;
 
-                    //If claims have changed, also update in DB
-                    const claims = role !== initialRole ? { [`${role}`]: true } : customClaims;
-
                     await updateDbUser(uid, {
                         phoneNumber: newPhoneNumber,
                         organization: updatedOrganization,
                         email: newEmail,
-                        displayName: newDisplayName,
-                        customClaims: claims
+                        displayName: newDisplayName
                     });
                 } catch (error) {
                     addErrorEvent('Error updating DB user', error);
                 }
             }
+            setIsDialogOpen(true);
         } catch (error) {
-            setIsLoading(false);
             return Promise.reject('Failed to update user');
         } finally {
             setIsLoading(false);
         }
-        setIsDialogOpen(true);
     };
 
     useEffect(() => {
