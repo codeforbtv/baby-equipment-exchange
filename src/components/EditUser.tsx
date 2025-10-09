@@ -130,7 +130,6 @@ const EditUser = (props: EditUserProps) => {
                         displayName: newDisplayName
                     });
                 } catch (error) {
-                    setIsLoading(false);
                     addErrorEvent('Error updating email or display name', error);
                 }
             }
@@ -144,7 +143,7 @@ const EditUser = (props: EditUserProps) => {
                 }
             }
             //If any fields in User collection in DB, update db user
-            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || email !== newEmail || displayName !== newDisplayName) {
+            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || email !== newEmail || displayName !== newDisplayName || role !== initialRole) {
                 try {
                     const updatedOrganization = selectedOrg
                         ? {
@@ -167,13 +166,13 @@ const EditUser = (props: EditUserProps) => {
                     addErrorEvent('Error updating DB user', error);
                 }
             }
+            setIsDialogOpen(true);
         } catch (error) {
             setIsLoading(false);
             return Promise.reject('Failed to update user');
         } finally {
             setIsLoading(false);
         }
-        setIsDialogOpen(true);
     };
 
     useEffect(() => {
