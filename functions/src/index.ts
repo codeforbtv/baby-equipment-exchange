@@ -74,10 +74,9 @@ export const enableuser = onCall(async (request): Promise<void> => {
         if (!userId) {
             return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to enable a user account.'));
         } else {
-            const docRef = db.collection(USERS_COLLECTION).doc(userId);
             auth.updateUser(userId, { disabled: false })
                 .then((user) => auth.setCustomUserClaims(user.uid, { 'aid-worker': true }))
-                .then(() => docRef.update({ isDisabled: false, customClaims: { 'aid-worker': true } }))
+                .then(() => console.log(`User ${userId} enabled`))
                 .catch((error) => Promise.reject(new HttpsError('invalid-argument', 'Unable to update user account.')));
         }
     }

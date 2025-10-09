@@ -107,10 +107,6 @@ export default function Dashboard() {
         }
     }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
 
-    useEffect(() => {
-        console.log(users);
-    }, [users]);
-
     return (
         <ProtectedAdminRoute>
             <div style={{ marginTop: '4rem' }}>

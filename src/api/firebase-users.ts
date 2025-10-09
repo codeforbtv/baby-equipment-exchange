@@ -54,11 +54,11 @@ export const userConverter = {
             modifiedAt: user.getModifiedAt()
         };
 
-        // for (const key in userData) {
-        //     if (userData[key] === undefined || userData[key] === null) {
-        //         delete userData[key];
-        //     }
-        // }
+        for (const key in userData) {
+            if (userData[key] === undefined || userData[key] === null) {
+                delete userData[key];
+            }
+        }
         return userData;
     },
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions) {
@@ -126,6 +126,15 @@ export async function deleteDbUser(uid: string): Promise<void> {
         await deleteDoc(doc(db, USERS_COLLECTION, uid));
     } catch (error) {
         addErrorEvent('Error deleting db User', error);
+    }
+}
+
+export async function enableDbUser(uid: string): Promise<void> {
+    try {
+        const docRef = doc(db, USERS_COLLECTION, uid);
+        await updateDoc(docRef, { isDisabled: false, customClaims: { 'aid-worker': true } });
+    } catch (error) {
+        addErrorEvent('Error enabling db User', error);
     }
 }
 

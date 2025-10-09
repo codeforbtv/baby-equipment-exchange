@@ -36,9 +36,10 @@ import { Order } from '@/types/OrdersTypes';
 import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { IUser } from '@/models/user';
 import CustomDialog from './CustomDialog';
-import { deleteDbUser } from '@/api/firebase-users';
+import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
 import rejectUser from '@/email-templates/rejectUser';
 import sendMail from '@/api/nodemailer';
+import userEnabled from '@/email-templates/userEnabled';
 
 type NotificationCardProps = {
     type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
@@ -98,10 +99,12 @@ const NotificationCard = (props: NotificationCardProps) => {
         }
     };
 
-    const handleEnableUser = async (uid: string, userName: string): Promise<void> => {
+    const handleEnableUser = async (uid: string, userName: string, userEmail: string): Promise<void> => {
         setIsLoading(true);
         try {
-            await callEnableUser(uid);
+            await Promise.all([callEnableUser(uid), enableDbUser(uid)]);
+            const msg = userEnabled(userEmail, userName);
+            await sendMail(msg);
             setDialogTitle('User enabled');
             setDialogContent(`The user ${userName} has been enabled.`);
             setIsDialogOpen(true);
@@ -229,7 +232,11 @@ const NotificationCard = (props: NotificationCardProps) => {
                                     </CardContent>
                                 </CardActions>
                                 <CardActions>
-                                    <Button variant="contained" onClick={() => handleEnableUser(user.uid, user.displayName)} disabled={!user.organization}>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => handleEnableUser(user.uid, user.displayName, user.email)}
+                                        disabled={!user.organization}
+                                    >
                                         Approve
                                     </Button>
                                     <Button variant="contained" color="error" onClick={() => setIsDeleteDialogOpen(true)}>
