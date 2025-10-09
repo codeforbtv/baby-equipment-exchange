@@ -181,7 +181,7 @@ export const getorganizationnames = onCall(
             const orgNames: {
                 [key: string]: string;
             } = {};
-            const snapshot = await db.collection(ORGANIZATIONS_COLLECTION).get();
+            const snapshot = await db.collection(ORGANIZATIONS_COLLECTION).orderBy('name', 'asc').get();
             snapshot.forEach((snap) => {
                 const { name } = snap.data();
                 orgNames[name] = snap.id;
