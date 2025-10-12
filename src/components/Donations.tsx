@@ -2,10 +2,11 @@
 
 //Hooks
 import { SetStateAction, useState, Dispatch } from 'react';
-
 //Components
-import { Button, ImageList } from '@mui/material';
+import { Button, IconButton, ImageList } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
+//Icons
+import RefreshIcon from '@mui/icons-material/Refresh';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Browse.module.css';
@@ -19,10 +20,11 @@ import AdminCreateDonation from '@/components/AdminCreateDonation';
 type DonationsProps = {
     donations: Donation[];
     setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    handleRefresh?: () => void;
 };
 
 const Donations = (props: DonationsProps) => {
-    const { donations, setDonationsUpdated } = props;
+    const { donations, setDonationsUpdated, handleRefresh } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
 
@@ -40,6 +42,11 @@ const Donations = (props: DonationsProps) => {
                 <>
                     <div className="page--header">
                         <h1>Donations</h1>
+                        {handleRefresh && (
+                            <IconButton onClick={handleRefresh}>
+                                <RefreshIcon />
+                            </IconButton>
+                        )}
                     </div>
                     <Button variant="contained" type="button" onClick={handleShowForm}>
                         Add donation
