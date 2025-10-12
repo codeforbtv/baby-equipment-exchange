@@ -3,7 +3,7 @@
 // Hooks
 import React, { Dispatch, SetStateAction, useState } from 'react';
 // Components
-import { List } from '@mui/material';
+import { IconButton, List } from '@mui/material';
 import SearchBar from '@/components/SearchBar';
 import Filter from '@/components/Filter';
 import UserCard from '@/components/UserCard';
@@ -12,6 +12,7 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 // Icons
 import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import RefreshIcon from '@mui/icons-material/Refresh';
 // Styles
 import styles from '@/components/Browse.module.css';
 import '@/styles/globalStyles.css';
@@ -21,10 +22,11 @@ import { IUser } from '@/models/user';
 type UserListProps = {
     users: IUser[];
     setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
+    handleRefresh?: () => void;
 };
 
 export default function Users(props: UserListProps) {
-    const { users, setUsersUpdated } = props;
+    const { users, setUsersUpdated, handleRefresh } = props;
     const [isSearchVisible, setIsSearchVisible] = useState<boolean>(false);
     const [isFilterVisible, setIsFilterVisible] = useState<boolean>(false);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
@@ -45,6 +47,11 @@ export default function Users(props: UserListProps) {
                 <>
                     <div className={'page--header'}>
                         <h1>Users</h1>
+                        {handleRefresh && (
+                            <IconButton onClick={handleRefresh}>
+                                <RefreshIcon />
+                            </IconButton>
+                        )}
                         <div className={styles['header__icons']}>
                             <div onClick={toggleSearchBar}>
                                 <FontAwesomeIcon icon={faMagnifyingGlass} />
