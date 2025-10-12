@@ -12,18 +12,16 @@ import {
     Timestamp,
     getDoc,
     updateDoc,
-    writeBatch
+    deleteDoc
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 // Models
 import { IOrganization, Organization } from '@/models/organization';
 import { OrganizationBody } from '@/types/OrganizationTypes';
 // Libs
-import { addErrorEvent, db, checkIsAdmin } from './firebase';
+import { addErrorEvent, db } from './firebase';
 //Constants
 export const ORGANIZATIONS_COLLECTION = 'Organizations';
-
-const auth = getAuth();
 
 export const organizationConverter = {
     toFirestore(organization: Organization): DocumentData {
@@ -92,6 +90,15 @@ export async function updateOrganization(id: string, organizationDetails: any): 
         });
     } catch (error) {
         addErrorEvent('Error updating organization', error);
+    }
+}
+
+export async function deleteOrganization(id: string): Promise<void> {
+    try {
+        const docRef = doc(db, ORGANIZATIONS_COLLECTION, id);
+        await deleteDoc(docRef);
+    } catch (error) {
+        addErrorEvent('Error deleting organization', error);
     }
 }
 
