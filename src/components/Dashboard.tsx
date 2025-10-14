@@ -46,7 +46,6 @@ export default function Dashboard() {
             const notificationsResult = await getNotifications();
             setNotifications(notificationsResult);
             setNotificationsUpdated(false);
-            console.log('notifications fetched!');
         } catch (error) {
             addErrorEvent('Fetch notifications', error);
         } finally {
@@ -117,7 +116,7 @@ export default function Dashboard() {
         } else if ((currentTab === 3 && !orgNamesAndIds) || orgsUpdated) {
             fetchOrgNames();
         }
-    }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
+    }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated, notificationsUpdated]);
 
     return (
         <ProtectedAdminRoute>

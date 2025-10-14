@@ -20,7 +20,8 @@ import {
     writeBatch,
     documentId,
     DocumentReference,
-    FieldValue
+    FieldValue,
+    arrayRemove
 } from 'firebase/firestore';
 
 // Models
@@ -409,7 +410,8 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
         batch.set(orderRef, {
             status: 'open',
             requestor: user,
-            items: []
+            items: [],
+            createdAt: serverTimestamp()
         });
         for (const inventoryItemId of inventoryItemIds) {
             const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
@@ -421,7 +423,8 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
             });
             //Add donation ref to items array
             batch.update(orderRef, {
-                items: arrayUnion(inventoryItemRef)
+                items: arrayUnion(inventoryItemRef),
+                modifiedAt: serverTimestamp()
             });
         }
         await batch.commit();
@@ -475,8 +478,28 @@ export async function getOrderById(id: string): Promise<Order> {
 export async function closeOrder(id: string): Promise<void> {
     try {
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${id}`);
-        await updateDoc(orderRef, { status: 'closed' });
+        await updateDoc(orderRef, { status: 'closed', modifiedAt: serverTimestamp() });
     } catch (error) {
         addErrorEvent('Error closing', error);
+    }
+}
+
+//Removes rejected donation from order and returns donation to inventory.
+export async function removeDonationFromOrder(orderId: string, donation: Donation): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        const orderRef = doc(db, `${ORDERS_COLLECTION}/${orderId}`);
+        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
+        batch.update(orderRef, {
+            items: arrayRemove(donationRef),
+            modifiedAt: serverTimestamp()
+        });
+        batch.update(donationRef, {
+            status: 'available',
+            modifiedAt: serverTimestamp()
+        });
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('Error removing donation from order', error);
     }
 }
