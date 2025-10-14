@@ -37,7 +37,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [tagNumbers, setTagNumbers] = useState<string[]>([]);
 
     const router = useRouter();
 
@@ -73,6 +72,32 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         }
     };
 
+    const acceptPromise = async (donations: Donation[]): Promise<string[]> => {
+        const tagNumbers: string[] = [];
+        await Promise.all(
+            donations.map(async (donation) => {
+                try {
+                    const newTagNumber = await getTagNumber(donation.category);
+                    tagNumbers.push(newTagNumber);
+                    await updateDonation(donation.id, {
+                        status: 'pending delivery',
+                        tagNumber: newTagNumber
+                    });
+                } catch (error) {
+                    addErrorEvent('Error accepting donation', error);
+                }
+            })
+        );
+        return tagNumbers;
+    };
+    const rejectPromise = async (donations: Donation[]) => {
+        await Promise.all(
+            donations.map(async (donation) => {
+                await updateDonationStatus(donation.id, 'rejected');
+            })
+        );
+    };
+
     const message = (
         <>
             <p>{`Hello ${donorName},`}</p>
@@ -103,35 +128,14 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const handleSubmit = async () => {
         //send email with renderToString(message) and update donation statuses. If donation is accepted, assign a tagNumber
         setIsLoading(true);
-        const acceptPromise = async (donations: Donation[]) => {
-            await Promise.all(
-                donations.map(async (donation) => {
-                    try {
-                        const newTagNumber = await getTagNumber(donation.category);
-                        await updateDonation(donation.id, {
-                            status: 'pending delivery',
-                            tagNumber: newTagNumber
-                        });
-                    } catch (error) {
-                        addErrorEvent('Error accepting donation', error);
-                    }
-                })
-            );
-        };
-        const rejectPromise = async (donations: Donation[]) => {
-            await Promise.all(
-                donations.map(async (donation) => {
-                    await updateDonationStatus(donation.id, 'rejected');
-                })
-            );
-        };
-        const emailMsg =
-            acceptedDonations && acceptedDonations.length > 0
-                ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
-                : reject(donorEmail, renderToString(message), notes);
         try {
-            if (acceptedDonations) await acceptPromise(acceptedDonations);
+            let tagNumbers: string[] = [];
+            if (acceptedDonations) tagNumbers = await acceptPromise(acceptedDonations);
             if (rejectedDonations) await rejectPromise(rejectedDonations);
+            const emailMsg =
+                acceptedDonations && acceptedDonations.length > 0
+                    ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
+                    : reject(donorEmail, renderToString(message), notes);
             await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
