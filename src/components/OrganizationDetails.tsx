@@ -5,12 +5,14 @@ import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
 import EditOrganization from '@/components/EditOrganization';
-import { Button, IconButton } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
+import CustomDialog from './CustomDialog';
 //Api
-import { getOrganizationById } from '@/api/firebase-organizations';
+import { getOrganizationById, deleteOrganization } from '@/api/firebase-organizations';
 import { addErrorEvent } from '@/api/firebase';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DeleteIcon from '@mui/icons-material/Delete';
 //Styles
 //Styling
 import '@/styles/globalStyles.css';
@@ -31,6 +33,27 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [organizationDetails, setOrganizationDetails] = useState<IOrganization | null>(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const handleDeleteOrganization = async (id: string): Promise<void> => {
+        setShowDeleteDialog(false);
+        setIsLoading(true);
+        try {
+            await deleteOrganization(id);
+            setIsDialogOpen(true);
+        } catch (error) {
+            addErrorEvent('Error deleting organization', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleClose = () => {
+        if (setIdToDisplay) setIdToDisplay(null);
+        if (setOrgsUpdated) setOrgsUpdated(true);
+        setIsDialogOpen(false);
+    };
 
     const fetchOrganizationById = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -105,9 +128,35 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
                                 </ul>
                             </>
                         )}
-                        <Button type="button" variant="contained" onClick={() => setIsEditMode(true)}>
-                            Edit Organization
-                        </Button>
+                        <Box display="flex" gap={2}>
+                            <Button type="button" variant="contained" onClick={() => setIsEditMode(true)}>
+                                Edit Organization
+                            </Button>
+                            <Button type="button" variant="contained" color="error" startIcon={<DeleteIcon />} onClick={() => setShowDeleteDialog(true)}>
+                                Delete Organiztion
+                            </Button>
+                        </Box>
+                        <Dialog open={showDeleteDialog} aria-labelledby="dialog-title" aria-describedby="dialog-description">
+                            <DialogTitle id="dialog-title">Delete Organization</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText>This will permanently delete the organization {organizationDetails.name}. Are you sure?</DialogContentText>
+                                <DialogActions>
+                                    <Button variant="contained" onClick={() => handleDeleteOrganization(organizationDetails.id)}>
+                                        Confirm
+                                    </Button>
+                                    <Button variant="outlined" onClick={() => setShowDeleteDialog(false)}>
+                                        Cancel
+                                    </Button>
+                                </DialogActions>
+                            </DialogContent>
+                        </Dialog>
+                        {/* delete confirmation dialog */}
+                        <CustomDialog
+                            isOpen={isDialogOpen}
+                            onClose={handleClose}
+                            title={'Organization deleted.'}
+                            content={`${organizationDetails.name} has been deleted.`}
+                        />
                     </div>
                 )}
                 {!isLoading && organizationDetails && isEditMode && (

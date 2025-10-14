@@ -7,21 +7,23 @@ import UserDetails from '@/components/UserDetails';
 import DonationDetails from '@/components/DonationDetails';
 import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
-//Api
-
+//Icons
+import RefreshIcon from '@mui/icons-material/Refresh';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Browse.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
+import { IconButton } from '@mui/material';
 
 type NotificationsProps = {
     notifications: Notification;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    handleRefresh?: () => void;
 };
 
 const Notifications = (props: NotificationsProps) => {
-    const { notifications, setNotificationsUpdated } = props;
+    const { notifications, setNotificationsUpdated, handleRefresh } = props;
 
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
@@ -50,6 +52,11 @@ const Notifications = (props: NotificationsProps) => {
                 <>
                     <div className="page--header">
                         <h3>{`You have ${notificationCount} notifications`}</h3>
+                        {handleRefresh && (
+                            <IconButton onClick={handleRefresh}>
+                                <RefreshIcon />
+                            </IconButton>
+                        )}
                     </div>
                     {donationsAwaitingApproval.length > 0 && (
                         <>

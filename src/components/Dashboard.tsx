@@ -66,7 +66,7 @@ export default function Dashboard() {
         }
     }
 
-    const fetchUsers = async (): Promise<void> => {
+    async function fetchUsers(): Promise<void> {
         setIsLoading(true);
         try {
             const usersResult = await getAllDbUsers();
@@ -77,9 +77,9 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }
 
-    const fetchOrgNames = async (): Promise<void> => {
+    async function fetchOrgNames(): Promise<void> {
         setIsLoading(true);
         try {
             const orgNamesResult = await callGetOrganizationNames();
@@ -90,21 +90,33 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }
+
+    async function handleRefresh(): Promise<void> {
+        if (currentTab === 0) {
+            fetchNotifications();
+        } else if (currentTab === 1) {
+            fetchDonations();
+        } else if (currentTab === 2) {
+            fetchUsers();
+        } else if (currentTab === 3) {
+            fetchOrgNames();
+        }
+    }
 
     // Only fetch collections once when selected unless there's been an update
     useEffect(() => {
-        if ((currentTab === 0 && !notifications) || (currentTab === 0 && notificationsUpdated)) {
+        if ((currentTab === 0 && !notifications) || notificationsUpdated || donationsUpdated || usersUpdated) {
             fetchNotifications();
         }
-        if ((currentTab === 1 && !donations) || (currentTab === 1 && donationsUpdated)) {
+        if ((currentTab === 1 && !donations) || donationsUpdated) {
             fetchDonations();
-        } else if ((currentTab === 2 && !users) || (currentTab === 2 && usersUpdated)) {
+        } else if ((currentTab === 2 && !users) || usersUpdated) {
             fetchUsers();
-        } else if ((currentTab === 3 && !orgNamesAndIds) || (currentTab === 3 && orgsUpdated)) {
+        } else if ((currentTab === 3 && !orgNamesAndIds) || orgsUpdated) {
             fetchOrgNames();
         }
-    }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated]);
+    }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated, notificationsUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -121,20 +133,24 @@ export default function Dashboard() {
                     <>
                         <CustomTabPanel value={currentTab} index={0}>
                             {notifications ? (
-                                <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
+                                <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} handleRefresh={handleRefresh} />
                             ) : (
                                 <p>No notifications at this time.</p>
                             )}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={1}>
-                            {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
+                            {donations ? (
+                                <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} handleRefresh={handleRefresh} />
+                            ) : (
+                                <p>No donations found.</p>
+                            )}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={2}>
-                            {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
+                            {users ? <Users users={users} setUsersUpdated={setUsersUpdated} handleRefresh={handleRefresh} /> : <p>No users found.</p>}
                         </CustomTabPanel>
                         <CustomTabPanel value={currentTab} index={3}>
                             {orgNamesAndIds ? (
-                                <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} />
+                                <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} handleRefresh={handleRefresh} />
                             ) : (
                                 <p>No organizations found.</p>
                             )}
