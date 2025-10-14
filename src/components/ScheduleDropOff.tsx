@@ -37,6 +37,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [tagNumbers, setTagNumbers] = useState<string[]>([]);
 
     const router = useRouter();
 
@@ -126,7 +127,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         };
         const emailMsg =
             acceptedDonations && acceptedDonations.length > 0
-                ? accept(donorEmail, inviteUrl, renderToString(message), notes)
+                ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
                 : reject(donorEmail, renderToString(message), notes);
         try {
             if (acceptedDonations) await acceptPromise(acceptedDonations);
