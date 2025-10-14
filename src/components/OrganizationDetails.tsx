@@ -139,7 +139,7 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
                         <Dialog open={showDeleteDialog} aria-labelledby="dialog-title" aria-describedby="dialog-description">
                             <DialogTitle id="dialog-title">Delete Organization</DialogTitle>
                             <DialogContent>
-                                <DialogContentText>This will permanently delete the organizaiotn {organizationDetails.name}. Are you sure?</DialogContentText>
+                                <DialogContentText>This will permanently delete the organization {organizationDetails.name}. Are you sure?</DialogContentText>
                                 <DialogActions>
                                     <Button variant="contained" onClick={() => handleDeleteOrganization(organizationDetails.id)}>
                                         Confirm
