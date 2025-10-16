@@ -49,7 +49,7 @@ export default function Footer() {
                     </Link>
                 )}
             </div>
-            <Typography variant="body2">{`© ${new Date().getFullYear()} Baby Equipment Exchange`}</Typography>
+            <Typography variant="body2">{`© ${new Date().getFullYear()} Baby Product Exchange`}</Typography>
         </footer>
     );
 }

@@ -61,7 +61,7 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                     </Link>
                     {!currentUser && (
                         <Link className={styles['menu__link']} id="join" href="/join">
-                            Sign Up
+                            Join
                         </Link>
                     )}
                     <Link
@@ -73,7 +73,7 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                             if (currentUser) handleSignOut();
                         }}
                     >
-                        {currentUser ? <span>Sign Out</span> : <span>Sign In</span>}
+                        {currentUser ? <span>Log Out</span> : <span>Login</span>}
                     </Link>
                 </div>
             </Drawer>
