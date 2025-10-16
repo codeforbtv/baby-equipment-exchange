@@ -495,7 +495,7 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
             modifiedAt: serverTimestamp()
         });
         batch.update(donationRef, {
-            status: 'available',
+            status: 'unavailable',
             modifiedAt: serverTimestamp()
         });
         await batch.commit();
