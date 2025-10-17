@@ -30,12 +30,13 @@ type ReviewOrderProps = {
 
 const ReviewOrder = (props: ReviewOrderProps) => {
     const { order, setIdToDisplay, id, setNotificationsUpdated } = props;
-    const intialOrder = order ? order : null;
-    const [currentOrder, setCurrentOrder] = useState<Order | null>(intialOrder);
+    const initialOrder = order ? order : null;
+    const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [isOrderUpdated, setIsOrderUpdated] = useState<boolean>(false);
 
     const fetchOrder = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -56,7 +57,8 @@ const ReviewOrder = (props: ReviewOrderProps) => {
             if (currentOrder) {
                 const updatedOrder: Order = {
                     ...currentOrder,
-                    items: currentOrder.items.filter((item) => item.id !== donation.id)
+                    items: currentOrder.items.filter((item) => item.id !== donation.id),
+                    rejectedItems: !currentOrder.rejectedItems ? [donation] : [...currentOrder.rejectedItems, donation]
                 };
                 setCurrentOrder(updatedOrder);
                 setIsDialogOpen(true);
@@ -68,14 +70,23 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         }
     };
 
-    const handleClose = () => {
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
+    const handleClose = async (): Promise<void> => {
+        // if (setNotificationsUpdated) setNotificationsUpdated(true);
+        setIsOrderUpdated(true);
         setIsDialogOpen(false);
     };
 
     useEffect(() => {
-        if (!intialOrder) fetchOrder(id);
+        if (!initialOrder || isOrderUpdated) {
+            fetchOrder(id);
+        } else {
+            setCurrentOrder(initialOrder);
+        }
     }, []);
+
+    useEffect(() => {
+        console.log(currentOrder);
+    }, [currentOrder]);
 
     return (
         <ProtectedAdminRoute>
@@ -90,34 +101,53 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                 <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
             )}
 
-            <div className="page--header">
-                <h2>Review Order</h2>
-                {setIdToDisplay && (
-                    <IconButton onClick={() => setIdToDisplay(null)}>
-                        <ArrowBackIcon />
-                    </IconButton>
-                )}
-            </div>
-            {isLoading && <Loader />}
-            {!isLoading && !currentOrder && <p>Order not found.</p>}
-            {!isLoading && currentOrder && (
-                <div className="content--container">
-                    <h3>
-                        <b>Requested by:</b> {currentOrder.requestor.name} ({currentOrder.requestor.email})
-                    </h3>
-                    {currentOrder.items.map((item) => (
-                        <DonationCardMed
-                            key={item.id}
-                            orderId={id}
-                            donation={item}
-                            setIdToDisplay={setDonationIdToDisplay}
-                            handleRemoveFromOrder={handleRemoveFromOrder}
-                        />
-                    ))}
-                    <Button variant="contained" onClick={() => setShowScheduler(true)}>
-                        Schedule Pickup
-                    </Button>
-                </div>
+            {!showScheduler && currentOrder && !donationIdToDisplay && (
+                <>
+                    <div className="page--header">
+                        <h2>Review Order</h2>
+                        {setIdToDisplay && (
+                            <IconButton onClick={() => setIdToDisplay(null)}>
+                                <ArrowBackIcon />
+                            </IconButton>
+                        )}
+                    </div>
+                    {isLoading && <Loader />}
+                    {!isLoading && !currentOrder && <p>Order not found.</p>}
+                    {!isLoading && currentOrder && (
+                        <div className="content--container">
+                            <h3>
+                                <b>Requested by:</b> {currentOrder.requestor.name} ({currentOrder.requestor.email})
+                            </h3>
+                            <h4>Items ready for pickup</h4>
+                            {currentOrder.items.map((item) => (
+                                <DonationCardMed
+                                    key={item.id}
+                                    orderId={id}
+                                    donation={item}
+                                    setIdToDisplay={setDonationIdToDisplay}
+                                    handleRemoveFromOrder={handleRemoveFromOrder}
+                                />
+                            ))}
+                            {currentOrder.rejectedItems && currentOrder.rejectedItems.length > 1 && (
+                                <>
+                                    <h4>Rejected items</h4>
+                                    {currentOrder.rejectedItems.map((item) => (
+                                        <DonationCardMed
+                                            key={item.id}
+                                            orderId={item.id}
+                                            donation={item}
+                                            setIdToDisplay={setDonationIdToDisplay}
+                                            handleRemoveFromOrder={handleRemoveFromOrder}
+                                        />
+                                    ))}
+                                </>
+                            )}
+                            <Button variant="contained" onClick={() => setShowScheduler(true)}>
+                                Schedule Pickup
+                            </Button>
+                        </div>
+                    )}
+                </>
             )}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content="Donation successfully removed from order" />
         </ProtectedAdminRoute>
