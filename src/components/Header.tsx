@@ -28,7 +28,7 @@ export default function Header() {
                 <Link className={styles['header__logo']} href="/">
                     <StrollerOutlinedIcon />
                     <h4 id="headerTitle" className={styles['header__title']}>
-                        Baby Equipment Exchange
+                        Baby Product Exchange
                     </h4>
                 </Link>
             </header>

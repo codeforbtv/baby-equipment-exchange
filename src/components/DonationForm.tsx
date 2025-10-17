@@ -179,7 +179,7 @@ export default function DonationForm(props: DonationFormProps) {
                             name="description"
                             label="Description"
                             rows={12}
-                            placeholder="Provide details about the item"
+                            placeholder="Key details might include: special features, accessories, how the item works, ease of cleaning, size, and/or information about missing or damaged parts"
                             id="description"
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                             value={formData.description ? formData.description : ''}

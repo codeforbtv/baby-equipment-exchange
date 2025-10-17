@@ -63,10 +63,10 @@ export default function About() {
             <div className="content--container">
                 <h2>The Project</h2>
                 <p>
-                    Vermont Connector has launched the Baby & Child Product Exchange in partnership with twenty-five social services and mutual aid
-                    organizations{' '}
+                    The Exchange is a community-driven program that provides free, gently used baby gear to Vermont families in need. We work with a statewide network of social service and mutual aid partners and we’ve already supported more than 700 families.{' '}
                 </p>
-                <p>The exchange provides durable equipment to families in need through partner referrals and community donations.</p>
+                <p>The Exchange eases financial stress for parents, promotes reuse and sustainability, and builds a caring community around families. Every item is thoughtfully repurposed and shared with those who need it most.</p>
+                <p>Want to help? You <b>can donate items, volunteer, or make a charitable gift</b> to keep this community-driven service growing.  Contact us to get involved!</p>
                 <h4 className={styles['about__heading']}>Learn More:</h4>
                 <p className={styles['about__paragraph']}>
                     <a href="https://www.vermontconnector.org/baby-and-child-product-exchange" target="_blank">
