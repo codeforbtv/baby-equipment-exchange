@@ -79,10 +79,6 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         fetchOrder(id);
     }, []);
 
-    useEffect(() => {
-        console.log(currentOrder);
-    }, [currentOrder]);
-
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && currentOrder && (
