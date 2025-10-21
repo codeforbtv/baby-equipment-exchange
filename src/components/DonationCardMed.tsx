@@ -49,25 +49,29 @@ const DonationCardMed = (props: DonationCardMedProps) => {
         <ProtectedAdminRoute>
             <Card className="card--container">
                 <CardActions onClick={() => setIdToDisplay(donation.id)}>
-                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
+                    {donation.images && donation.images.length > 0 && (
+                        <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
+                    )}
                     <CardContent>
                         <Typography variant="h3">{donation.model}</Typography>
                         <Typography variant="h4">{donation.brand}</Typography>
                         <Typography variant="h5">Description: {donation.description}</Typography>
                     </CardContent>
                 </CardActions>
-                <CardActions>
-                    <Button variant="contained" startIcon={<RemoveShoppingCartIcon />} color="error" onClick={() => setShowRemoveDialog(true)}>
-                        Remove
-                    </Button>
-                </CardActions>
+                {donation.status !== 'unavailable' && (
+                    <CardActions>
+                        <Button variant="contained" startIcon={<RemoveShoppingCartIcon />} color="error" onClick={() => setShowRemoveDialog(true)}>
+                            Remove
+                        </Button>
+                    </CardActions>
+                )}
             </Card>
             {/* confirm remove dialog */}
             <Dialog open={showRemoveDialog} aria-labelledby="dialog-title" aria-describedby="dialog-description">
                 <DialogTitle id="dialog-title">Remove Donation?</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        This will remove {donation.model + ' ' + donation.brand} from this order and return it to inventory. Are you sure?
+                        This will remove {donation.model + ' ' + donation.brand} from this order and change its status to 'unavailable.' Are you sure?
                     </DialogContentText>
                     <DialogActions>
                         <Button variant="contained" onClick={() => handleRemove(orderId, donation)}>
