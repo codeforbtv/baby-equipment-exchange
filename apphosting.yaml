@@ -24,7 +24,7 @@ env:
       secret: projects/375825360663/secrets/CALENDLY_API_KEY
 
     - variable: GOOGLE_APP_PASSWORD
-      secret: projects/375825360663/secrets/GOOGLE_APP_PASSWORD/versions/2
+      secret: projects/375825360663/secrets/GOOGLE_APP_PASSWORD
 
     - variable: ALGOLIA_API_KEY
       secret: projects/375825360663/secrets/ALGOLIA_API_KEY
