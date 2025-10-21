@@ -1,12 +1,12 @@
 'use client';
 
 //Hooks
-import { useState, useEffect, Dispatch, SetStateAction } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Dispatch, SetStateAction } from 'react';
+
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import OrganizationDetails from '@/components/OrganizationDetails';
-import OrganizationForm from '@/components/OrganizationForm'; //AP
+import OrganizationForm from '@/components/OrganizationForm';
 //Styles
 import '@/styles/globalStyles.css';
 import Loader from '@/components/Loader';

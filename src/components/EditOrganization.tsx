@@ -2,7 +2,7 @@
 
 //Hooks
 import { useState, Dispatch, SetStateAction } from 'react';
-import { useUserContext } from '@/contexts/UserContext';
+
 //Components
 import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox, Button, FormHelperText } from '@mui/material';
 import { PatternFormat, OnValueChange } from 'react-number-format';
@@ -11,11 +11,10 @@ import CustomDialog from '@/components/CustomDialog';
 import Loader from '@/components/Loader';
 //API
 import { addErrorEvent } from '@/api/firebase';
-import { addOrganization, updateOrganization } from '@/api/firebase-organizations';
+import { updateOrganization } from '@/api/firebase-organizations';
 //Types
 import { orgTags, OrganizationTagKeys, OrganizationTagValues, organizationTags, IOrganization } from '@/models/organization';
 import { IAddress } from '@/models/address';
-import { OrganizationBody } from '@/types/OrganizationTypes';
 //Styles
 import '@/styles/globalStyles.css';
 
