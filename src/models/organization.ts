@@ -33,6 +33,7 @@ export interface IOrganization {
     address?: IAddress;
     county?: string;
     phoneNumber?: string;
+    emailFooter?: string;
     tags: OrganizationTagValues[];
     notes: string[];
     createdAt: Timestamp;
@@ -56,6 +57,7 @@ export class Organization implements IOrganization {
     address?: IAddress;
     county?: string;
     phoneNumber?: string;
+    emailFooter?: string;
     tags: OrganizationTagValues[];
     notes: string[];
     createdAt: Timestamp;
@@ -67,6 +69,7 @@ export class Organization implements IOrganization {
         this.address = args.address;
         this.county = args.county;
         this.phoneNumber = args.phoneNumber;
+        this.emailFooter = args.emailFooter;
         this.tags = args.tags;
         this.notes = args.notes;
         this.createdAt = args.createdAt as Timestamp;
@@ -91,6 +94,10 @@ export class Organization implements IOrganization {
 
     getPhoneNumber() {
         return this.phoneNumber;
+    }
+
+    getEmailFooter() {
+        return this.emailFooter;
     }
 
     getTags() {
