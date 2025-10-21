@@ -6,6 +6,7 @@ export type OrganizationBody = {
     address?: IAddress;
     county?: string;
     phoneNumber?: string;
+    emailFooter?: string;
     tags: OrganizationTagValues[];
     notes: string[];
 };

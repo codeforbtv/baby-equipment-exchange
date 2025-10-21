@@ -12,9 +12,11 @@ import {
     Timestamp,
     getDoc,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    writeBatch,
+    deleteField
 } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+
 // Models
 import { IOrganization, Organization } from '@/models/organization';
 import { OrganizationBody } from '@/types/OrganizationTypes';
@@ -31,6 +33,7 @@ export const organizationConverter = {
             address: organization.getAddress(),
             county: organization.getCounty(),
             phoneNumber: organization.getPhoneNumber(),
+            emailFooter: organization.getEmailFooter(),
             tags: organization.getTags(),
             notes: organization.getNotes(),
             createdAt: organization.getCreatedAt(),
@@ -51,6 +54,7 @@ export const organizationConverter = {
             address: data.address,
             county: data.county,
             phoneNumber: data.phoneNumber,
+            emailFooter: data.emailFooter,
             tags: data.tags,
             notes: data.notes,
             createdAt: data.createdAt,
@@ -68,6 +72,7 @@ export async function addOrganization(newOrganization: OrganizationBody): Promis
         address: newOrganization.address,
         county: newOrganization.county,
         phoneNumber: newOrganization.phoneNumber,
+        emailFooter: newOrganization.emailFooter,
         tags: newOrganization.tags,
         notes: newOrganization.notes,
         createdAt: serverTimestamp() as Timestamp,
@@ -132,4 +137,54 @@ export async function getOrganizationById(id: string): Promise<IOrganization> {
         addErrorEvent('Get organization by id', error);
     }
     return Promise.reject();
+}
+
+export async function setOrgIds(): Promise<void> {
+    try {
+        const orgsSnapShot = await getDocs(collection(db, ORGANIZATIONS_COLLECTION));
+        const batch = writeBatch(db);
+        orgsSnapShot.forEach((doc) => {
+            batch.update(doc.ref, {
+                id: doc.id
+            });
+        });
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('Error adding ID to orgs', error);
+    }
+}
+
+export async function removeUnusedOrgFields(): Promise<void> {
+    try {
+        const orgsSnapShot = await getDocs(collection(db, ORGANIZATIONS_COLLECTION));
+        const batch = writeBatch(db);
+        orgsSnapShot.forEach((doc) => {
+            if (doc.data()['County'] !== undefined) {
+                batch.update(doc.ref, {
+                    ['County']: deleteField()
+                });
+            }
+            if (doc.data()['Email Footer'] !== undefined) {
+                batch.update(doc.ref, {
+                    ['Email Footer']: deleteField()
+                });
+            }
+            if (doc.data()['Organization'] !== undefined) {
+                batch.update(doc.ref, {
+                    ['Organization']: deleteField()
+                });
+            }
+            if (doc.data()['Town'] !== undefined) {
+                batch.update(doc.ref, {
+                    address: { ...doc.data()['address'], town: doc.data()['Town'] }
+                });
+                batch.update(doc.ref, {
+                    ['Town']: deleteField()
+                });
+            }
+        });
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('Error cleaning up orgs', error);
+    }
 }
