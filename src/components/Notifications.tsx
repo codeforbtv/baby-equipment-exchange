@@ -43,7 +43,7 @@ const Notifications = (props: NotificationsProps) => {
             {orderIdToDisplay && (
                 <ReviewOrder
                     id={orderIdToDisplay}
-                    order={orders.find((o) => o.id === orderIdToDisplay)}
+                    // order={orders.find((o) => o.id === orderIdToDisplay)}
                     setIdToDisplay={setOrderIdToDisplay}
                     setNotificationsUpdated={setNotificationsUpdated}
                 />

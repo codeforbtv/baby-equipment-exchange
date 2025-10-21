@@ -445,12 +445,20 @@ export async function getOrdersNotifications() {
                 id: doc.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
-                items: []
+                items: [],
+                rejectedItems: []
             };
             for (const donation of orderInfo.items) {
                 const donationDetails = await getDoc(donation);
                 order.items.push(donationDetails.data() as Donation);
             }
+            if (orderInfo.rejectedItems) {
+                for (const donation of orderInfo.rejectedItems) {
+                    const donationDetails = await getDoc(donation);
+                    order.rejectedItems?.push(donationDetails.data() as Donation);
+                }
+            }
+
             orders.push(order);
         }
         return orders;
@@ -465,7 +473,25 @@ export async function getOrderById(id: string): Promise<Order> {
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${id}`);
         const orderSnapShot = await getDoc(orderRef);
         if (orderSnapShot.exists()) {
-            return orderSnapShot.data() as Order;
+            const orderInfo = orderSnapShot.data();
+            let order: Order = {
+                id: orderRef.id,
+                status: orderInfo.status,
+                requestor: orderInfo.requestor,
+                items: [],
+                rejectedItems: []
+            };
+            for (const donation of orderInfo.items) {
+                const donationDetails = await getDoc(donation);
+                order.items.push(donationDetails.data() as Donation);
+            }
+            if (orderInfo.rejectedItems) {
+                for (const donation of orderInfo.rejectedItems) {
+                    const donationDetails = await getDoc(donation);
+                    order.rejectedItems?.push(donationDetails.data() as Donation);
+                }
+            }
+            return order;
         } else {
             return Promise.reject(new Error('Order not found'));
         }

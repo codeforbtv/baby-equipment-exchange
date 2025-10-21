@@ -30,7 +30,6 @@ type ReviewOrderProps = {
 
 const ReviewOrder = (props: ReviewOrderProps) => {
     const { order, setIdToDisplay, id, setNotificationsUpdated } = props;
-    const initialOrder = order ? order : null;
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
@@ -77,16 +76,8 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     };
 
     useEffect(() => {
-        if (!initialOrder || isOrderUpdated) {
-            fetchOrder(id);
-        } else {
-            setCurrentOrder(initialOrder);
-        }
+        fetchOrder(id);
     }, []);
-
-    useEffect(() => {
-        console.log(currentOrder);
-    }, [currentOrder]);
 
     return (
         <ProtectedAdminRoute>
@@ -101,7 +92,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                 <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
             )}
 
-            {!showScheduler && currentOrder && !donationIdToDisplay && (
+            {!showScheduler && !donationIdToDisplay && (
                 <>
                     <div className="page--header">
                         <h2>Review Order</h2>
@@ -118,17 +109,21 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                             <h3>
                                 <b>Requested by:</b> {currentOrder.requestor.name} ({currentOrder.requestor.email})
                             </h3>
-                            <h4>Items ready for pickup</h4>
-                            {currentOrder.items.map((item) => (
-                                <DonationCardMed
-                                    key={item.id}
-                                    orderId={id}
-                                    donation={item}
-                                    setIdToDisplay={setDonationIdToDisplay}
-                                    handleRemoveFromOrder={handleRemoveFromOrder}
-                                />
-                            ))}
-                            {currentOrder.rejectedItems && currentOrder.rejectedItems.length > 1 && (
+                            {currentOrder.items && currentOrder.items.length > 0 && (
+                                <>
+                                    <h4>Items ready for pickup</h4>
+                                    {currentOrder.items.map((item) => (
+                                        <DonationCardMed
+                                            key={item.id}
+                                            orderId={id}
+                                            donation={item}
+                                            setIdToDisplay={setDonationIdToDisplay}
+                                            handleRemoveFromOrder={handleRemoveFromOrder}
+                                        />
+                                    ))}
+                                </>
+                            )}
+                            {currentOrder.rejectedItems && currentOrder.rejectedItems.length > 0 && (
                                 <>
                                     <h4>Rejected items</h4>
                                     {currentOrder.rejectedItems.map((item) => (
