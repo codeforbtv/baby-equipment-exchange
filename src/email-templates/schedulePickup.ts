@@ -1,8 +1,16 @@
 import { sanitize } from '@/utils/utils';
 
-export default function schedulePickup(email: string, inviteUrl: string, message: string, notes?: string) {
+export default function schedulePickup(email: string, inviteUrl: string, message: string, tagNumbers: string[], notes?: string) {
     let html = message;
-    const schedulingLink = `<h3><b>*** <a href='${inviteUrl}'>Click here to schedule a pickup of your requested items</a>  ***</b></h3>`;
+    let tagsList = '';
+    for (let i = 0; i < tagNumbers.length; i++) {
+        if (i < tagNumbers.length - 1) {
+            tagsList += tagNumbers[i] + ', ';
+        } else if (i === tagNumbers.length - 1) {
+            tagsList += tagNumbers[i];
+        }
+    }
+    const schedulingLink = `<h3><b>*** <a href='${inviteUrl}'>Click here to schedule a pickup of your requested items</a>  ***</b><br>Please reference the following tag numbers: ${tagsList}</h3>`;
     html += schedulingLink;
     if (notes && notes.length > 0) {
         const sanitizedNotes = sanitize(notes);
