@@ -3,6 +3,7 @@
 import DonationCardSmall from '@/components/DonationCardSmall';
 import { DonationBody } from '@/types/DonationTypes';
 import { renderToString } from 'react-dom/server';
+import { emailSender } from '@/data/emailSender';
 
 export default function donationsSubmitted(donorEmail: string, donorName: string, donations: DonationBody[]) {
     const donationCards = donations.map((donation) => <DonationCardSmall donation={donation} />);
@@ -16,7 +17,7 @@ export default function donationsSubmitted(donorEmail: string, donorName: string
 
     return {
         to: donorEmail,
-        from: 'info@vermontconnector.org',
+        from: emailSender,
         subject: 'Your Baby Equipment Exchange donation has been submitted.',
         html: html
     };
