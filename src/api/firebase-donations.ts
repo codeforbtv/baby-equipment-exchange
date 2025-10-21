@@ -484,7 +484,7 @@ export async function closeOrder(id: string): Promise<void> {
     }
 }
 
-//Removes rejected donation from order and returns donation to inventory.
+//Removes rejected donation from order, add to rejectedItems array, and changes status to 'unavailable'.
 export async function removeDonationFromOrder(orderId: string, donation: Donation): Promise<void> {
     try {
         const batch = writeBatch(db);
@@ -492,10 +492,11 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
         batch.update(orderRef, {
             items: arrayRemove(donationRef),
+            rejectedItems: arrayUnion(donationRef),
             modifiedAt: serverTimestamp()
         });
         batch.update(donationRef, {
-            status: 'available',
+            status: 'unavailable',
             modifiedAt: serverTimestamp()
         });
         await batch.commit();

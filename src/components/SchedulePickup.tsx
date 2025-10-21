@@ -30,7 +30,7 @@ type SchedulePickupProps = {
 
 const SchedulePickup = (props: SchedulePickupProps) => {
     const { order, setShowScheduler, setNotificationsUpdated } = props;
-    const { requestor, id, items } = order;
+    const { requestor, id, items, rejectedItems } = order;
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -51,7 +51,11 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), notes);
+        let tagNumbers: string[] = [];
+        items.map((item) => {
+            if (item.tagNumber) tagNumbers.push(item.tagNumber);
+        });
+        const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), tagNumbers, notes);
         try {
             await Promise.all(
                 items.map(async (item) => {
@@ -84,6 +88,14 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             {items.map((item) => (
                 <DonationCardSmall key={item.id} donation={item} />
             ))}
+            {rejectedItems && rejectedItems.length > 0 && (
+                <>
+                    <p>Unfortunately, the following items you requested are no longer available:</p>
+                    {rejectedItems?.map((item) => (
+                        <DonationCardSmall key={item.id} donation={item} />
+                    ))}
+                </>
+            )}
         </>
     );
 
