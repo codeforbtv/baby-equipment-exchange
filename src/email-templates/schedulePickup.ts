@@ -1,4 +1,5 @@
 import { sanitize } from '@/utils/utils';
+import { emailSender } from '@/data/emailSender';
 
 export default function schedulePickup(email: string, inviteUrl: string, message: string, tagNumbers: string[], notes?: string) {
     let html = message;
@@ -19,7 +20,7 @@ export default function schedulePickup(email: string, inviteUrl: string, message
     }
     return {
         to: email,
-        from: 'info@vermontconnector.org',
+        from: emailSender,
         subject: 'Your Baby Equipment Exchange order has been fufilled',
         html: html
     };
