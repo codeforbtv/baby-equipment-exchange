@@ -1,7 +1,7 @@
 'use client';
 
 //Components
-import { Tab, Tabs } from '@mui/material';
+import { Button, Menu, MenuItem, Tab, Tabs, useMediaQuery } from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';
@@ -15,10 +15,14 @@ import React, { useEffect, useState } from 'react';
 import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
 import { getAllDonations } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
+//Icons
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 //Types
 import { Donation } from '@/models/donation';
 import { Notification } from '@/types/NotificationTypes';
 import { IUser } from '@/models/user';
+
+const tabOptions = ['Notifications', 'Donations', 'Users', 'Organizations'];
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -35,6 +39,24 @@ export default function Dashboard() {
     const [donationsUpdated, setDonationsUpdated] = useState<boolean>(false);
     const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
     const [orgsUpdated, setOrgsUpdated] = useState<boolean>(false);
+
+    //for mobile tab menu
+    const matches = useMediaQuery('(min-width:600px)');
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
+
+    const handleClickListItem = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuItemClick = (event: React.MouseEvent<HTMLElement>, index: number) => {
+        setCurrentTab(index);
+        setAnchorEl(null);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
     const handleCurrentTab = (event: React.SyntheticEvent, target: number) => {
         setCurrentTab(target);
@@ -121,12 +143,27 @@ export default function Dashboard() {
     return (
         <ProtectedAdminRoute>
             <div style={{ marginTop: '4rem' }}>
-                <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
-                    <Tab label="Notifications" />
-                    <Tab label="Donations" />
-                    <Tab label="Users" />
-                    <Tab label="Organizations" />
-                </Tabs>
+                {matches ? (
+                    <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard" variant="scrollable" scrollButtons="auto">
+                        {tabOptions.map((tab) => (
+                            <Tab key={tab} label={tab} />
+                        ))}
+                    </Tabs>
+                ) : (
+                    <>
+                        <Button endIcon={<ArrowDropDownIcon />} onClick={handleClickListItem}>
+                            {tabOptions[currentTab]}
+                        </Button>
+                        <Menu id="selected-tab" anchorEl={anchorEl} open={open} onClose={handleClose}>
+                            {tabOptions.map((tab, i) => (
+                                <MenuItem key={tab} selected={i === currentTab} onClick={(event) => handleMenuItemClick(event, i)}>
+                                    {tab}
+                                </MenuItem>
+                            ))}
+                        </Menu>
+                    </>
+                )}
+
                 {isLoading ? (
                     <Loader />
                 ) : (
