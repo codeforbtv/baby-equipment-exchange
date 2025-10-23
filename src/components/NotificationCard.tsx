@@ -141,6 +141,10 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <CardContent>
                             <Typography variant="h4">{donation.model}</Typography>
                             <Typography variant="h4">{donation.brand}</Typography>
+                            <Typography variant="h4">{donation.tagNumber}</Typography>
+                            <Typography variant="h4">
+                                {donation.donorName} ({donation.donorEmail})
+                            </Typography>
                         </CardContent>
                     </CardActions>
                     <CardActions>
@@ -159,8 +163,13 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <CardActions onClick={() => setIdToDisplay(donation.id)}>
                                 <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
                                 <CardContent>
-                                    <Typography variant="h4">{donation.model}</Typography>
-                                    <Typography variant="h4">{donation.brand}</Typography>
+                                    <Typography variant="h4">
+                                        {donation.model} - {donation.brand}
+                                    </Typography>
+                                    <Typography variant="h4">{donation.tagNumber}</Typography>
+                                    <Typography variant="h4">
+                                        {donation.donorName} ({donation.donorEmail})
+                                    </Typography>
                                 </CardContent>
                             </CardActions>
                             <CardActions>
@@ -181,8 +190,14 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <CardActions onClick={() => setIdToDisplay(donation.id)}>
                                 <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
                                 <CardContent>
-                                    <Typography variant="h4">{donation.model}</Typography>
-                                    <Typography variant="h4">{donation.brand}</Typography>
+                                    <Typography variant="h4">
+                                        {donation.model} - {donation.brand}
+                                    </Typography>
+
+                                    <Typography variant="h4">{donation.tagNumber}</Typography>
+                                    <Typography variant="h4">
+                                        {donation.requestor?.name} ({donation.requestor?.email})
+                                    </Typography>
                                 </CardContent>
                             </CardActions>
                             <CardActions>
@@ -198,7 +213,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                 <Card className={styles['card--container']} elevation={3}>
                     <CardActions onClick={() => setIdToDisplay(order.id)}>
                         <CardContent>
-                            <Typography variant="h4">{`${order.requestor.name} (${order.requestor.email}) has requested ${order.items.length} items.`}</Typography>
+                            <Typography variant="h4">{`${order.requestor.name} (${order.requestor.email}) has requested items.`}</Typography>
                         </CardContent>
                     </CardActions>
                     <CardActions>
