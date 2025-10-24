@@ -31,7 +31,6 @@ const thumbnailStyles = {
 };
 //Types
 import { Donation } from '@/models/donation';
-import type { DialogProps } from '@mui/material';
 import { Order } from '@/types/OrdersTypes';
 import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { IUser } from '@/models/user';
@@ -135,7 +134,7 @@ const NotificationCard = (props: NotificationCardProps) => {
     return (
         <ProtectedAdminRoute>
             {type === 'pending-donation' && donation && (
-                <Card className={styles['card--container']} elevation={3}>
+                <Card className={styles['notification-card']} variant="outlined">
                     <CardActions onClick={() => setIdToDisplay(donation.id)}>
                         <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
                         <CardContent>
@@ -159,7 +158,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card className={styles['card--container']} elevation={3}>
+                        <Card className={styles['notification-card']}>
                             <CardActions onClick={() => setIdToDisplay(donation.id)}>
                                 <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
                                 <CardContent>
@@ -186,7 +185,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card className={styles['card--container']} elevation={3}>
+                        <Card className={styles['notification-card']}>
                             <CardActions onClick={() => setIdToDisplay(donation.id)}>
                                 <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
                                 <CardContent>
@@ -210,7 +209,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                 </>
             )}
             {type === 'order' && order && (
-                <Card className={styles['card--container']} elevation={3}>
+                <Card className={styles['notification-card']}>
                     <CardActions onClick={() => setIdToDisplay(order.id)}>
                         <CardContent>
                             <Typography variant="h4">{`${order.requestor.name} (${order.requestor.email}) has requested items.`}</Typography>
@@ -229,7 +228,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <Loader />
                     ) : (
                         <>
-                            <Card className={styles['card--container']} elevation={3}>
+                            <Card className={styles['notification-card']}>
                                 <CardActions onClick={() => setIdToDisplay(user.uid)} sx={{ width: '100%' }}>
                                     <CardContent>
                                         <p>

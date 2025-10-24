@@ -1,8 +1,13 @@
-.card--container {
+.notification-card {
     cursor: pointer;
     max-width: 800px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     margin-bottom: 8px;
+}
+
+.notification-card--container {
+    padding: 1em;
+    border: 1px solid black;
 }

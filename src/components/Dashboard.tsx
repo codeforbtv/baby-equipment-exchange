@@ -1,7 +1,7 @@
 'use client';
 
 //Components
-import { Button, Menu, MenuItem, Tab, Tabs, useMediaQuery } from '@mui/material';
+import { Button, IconButton, Menu, MenuItem, Tab, Tabs, useMediaQuery } from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';
@@ -17,6 +17,10 @@ import { getAllDonations } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
 //Icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import RefreshIcon from '@mui/icons-material/Refresh';
+//Styles
+import '@/styles/globalStyles.css';
+import styles from '@/components/Dashboard.module.css';
 //Types
 import { Donation } from '@/models/donation';
 import { Notification } from '@/types/NotificationTypes';
@@ -142,7 +146,7 @@ export default function Dashboard() {
 
     return (
         <ProtectedAdminRoute>
-            <div style={{ marginTop: '4rem' }}>
+            <div className={styles['navbar']}>
                 {matches ? (
                     <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard" variant="scrollable" scrollButtons="auto">
                         {tabOptions.map((tab) => (
@@ -157,44 +161,38 @@ export default function Dashboard() {
                         <Menu id="selected-tab" anchorEl={anchorEl} open={open} onClose={handleClose}>
                             {tabOptions.map((tab, i) => (
                                 <MenuItem key={tab} selected={i === currentTab} onClick={(event) => handleMenuItemClick(event, i)}>
-                                    {tab}
+                                    <p>{tab}</p>
                                 </MenuItem>
                             ))}
                         </Menu>
                     </>
                 )}
-
-                {isLoading ? (
-                    <Loader />
-                ) : (
-                    <>
-                        <CustomTabPanel value={currentTab} index={0}>
-                            {notifications ? (
-                                <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} handleRefresh={handleRefresh} />
-                            ) : (
-                                <p>No notifications at this time.</p>
-                            )}
-                        </CustomTabPanel>
-                        <CustomTabPanel value={currentTab} index={1}>
-                            {donations ? (
-                                <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} handleRefresh={handleRefresh} />
-                            ) : (
-                                <p>No donations found.</p>
-                            )}
-                        </CustomTabPanel>
-                        <CustomTabPanel value={currentTab} index={2}>
-                            {users ? <Users users={users} setUsersUpdated={setUsersUpdated} handleRefresh={handleRefresh} /> : <p>No users found.</p>}
-                        </CustomTabPanel>
-                        <CustomTabPanel value={currentTab} index={3}>
-                            {orgNamesAndIds ? (
-                                <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} handleRefresh={handleRefresh} />
-                            ) : (
-                                <p>No organizations found.</p>
-                            )}
-                        </CustomTabPanel>
-                    </>
-                )}
+                <IconButton onClick={handleRefresh}>
+                    <RefreshIcon />
+                </IconButton>
             </div>
+            {isLoading ? (
+                <Loader />
+            ) : (
+                <>
+                    <CustomTabPanel value={currentTab} index={0}>
+                        {notifications ? (
+                            <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
+                        ) : (
+                            <p>No notifications at this time.</p>
+                        )}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={1}>
+                        {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={2}>
+                        {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={3}>
+                        {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} /> : <p>No organizations found.</p>}
+                    </CustomTabPanel>
+                </>
+            )}
         </ProtectedAdminRoute>
     );
 }
