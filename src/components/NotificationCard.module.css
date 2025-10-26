@@ -1,6 +1,6 @@
 .notification-card {
     cursor: pointer;
-    max-width: 800px;
+    max-width: 600px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -10,4 +10,30 @@
 .notification-card--container {
     padding: 1em;
     border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-card--container--btn {
+    align-self: flex-end;
+}
+
+.notification-card--image {
+    max-width: 200px;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border: 1px solid green;
+}
+
+.notification-card--info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border: 1px solid red;
+}
+
+@media screen and (max-width: 600px) {
+    .notification-card {
+        flex-direction: column;
+    }
 }

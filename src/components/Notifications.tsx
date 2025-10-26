@@ -1,13 +1,14 @@
 'use client';
 //Hooks
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import UserDetails from '@/components/UserDetails';
 import DonationDetails from '@/components/DonationDetails';
 import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
-import { Paper } from '@mui/material';
+import { Button, Paper } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
@@ -66,6 +67,8 @@ const Notifications = (props: NotificationsProps) => {
     const orders = notifications.orders;
     const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted); //Filters out recently deleted users
 
+    const router = useRouter();
+
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
@@ -97,6 +100,13 @@ const Notifications = (props: NotificationsProps) => {
                                             setNotificationsUpdated={setNotificationsUpdated}
                                         />
                                     ))}
+                                    <Button
+                                        className={styles['notification-card--container--btn']}
+                                        variant="contained"
+                                        onClick={() => router.push(`/accept/${donationArray[0].bulkCollection}`)}
+                                    >
+                                        Review
+                                    </Button>
                                 </Paper>
                             ))}
                         </>
