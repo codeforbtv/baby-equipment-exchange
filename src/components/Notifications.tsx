@@ -8,7 +8,7 @@ import UserDetails from '@/components/UserDetails';
 import DonationDetails from '@/components/DonationDetails';
 import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
-import { Button, Paper } from '@mui/material';
+import { Button, Paper, Typography } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
@@ -88,7 +88,9 @@ const Notifications = (props: NotificationsProps) => {
                     </div> */}
                     {sortedDonationsWaitingApproval.length > 0 && (
                         <>
-                            <h4>Donations requiring approval</h4>
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Donations requiring approval
+                            </Typography>
                             {sortedDonationsWaitingApproval.map((donationArray, i) => (
                                 <Paper className={styles['notification-card--container']} key={i} elevation={3}>
                                     {donationArray.map((donation) => (
@@ -113,7 +115,9 @@ const Notifications = (props: NotificationsProps) => {
                     )}
                     {sortedDonationsAwaitingDropoff.length > 0 && (
                         <>
-                            <h4>Donations waiting to be recieved</h4>
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Donations waiting to be recieved
+                            </Typography>
                             {sortedDonationsAwaitingDropoff.map((donationArray, i) => (
                                 <Paper className={styles['notification-card--container']} key={i} elevation={3}>
                                     {donationArray.map((donation) => (
@@ -131,7 +135,9 @@ const Notifications = (props: NotificationsProps) => {
                     )}
                     {sortedDonationsAwaitingPickup.length > 0 && (
                         <>
-                            <h4>Donations waiting for pickup</h4>
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Donations waiting for pickup
+                            </Typography>
                             {sortedDonationsAwaitingPickup.map((donationArray, i) => (
                                 <Paper className={styles['notification-card--container']} key={i} elevation={3}>
                                     {donationArray.map((donation) => (
@@ -149,21 +155,37 @@ const Notifications = (props: NotificationsProps) => {
                     )}
                     {orders.length > 0 && (
                         <>
-                            <h4>Requested Equipment</h4>
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Requested Equipment
+                            </Typography>
                             {orders.map((order) => (
-                                <NotificationCard
-                                    key={order.id}
-                                    type="order"
-                                    order={order}
-                                    setIdToDisplay={setOrderIdToDisplay}
-                                    setNotificationsUpdated={setNotificationsUpdated}
-                                />
+                                <Paper className={styles['notification-card--container']} key={order.id} elevation={3}>
+                                    <Typography variant="h6">{`${order.requestor.name} has requested the follwing items:`}</Typography>
+                                    {order.items.map((item) => (
+                                        <NotificationCard
+                                            key={item.id}
+                                            type="order"
+                                            donation={item}
+                                            setIdToDisplay={setOrderIdToDisplay}
+                                            setNotificationsUpdated={setNotificationsUpdated}
+                                        />
+                                    ))}
+                                    <Button
+                                        className={styles['notification-card--container--btn']}
+                                        variant="contained"
+                                        onClick={() => setOrderIdToDisplay(order.id)}
+                                    >
+                                        Review
+                                    </Button>
+                                </Paper>
                             ))}
                         </>
                     )}
                     {usersAwaitingApproval.length > 0 && (
                         <>
-                            <h4>Users awaiting approval</h4>
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Users awaiting approval
+                            </Typography>
                             {usersAwaitingApproval.map((user) => (
                                 <NotificationCard
                                     key={user.uid}

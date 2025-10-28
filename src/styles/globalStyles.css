@@ -43,7 +43,7 @@
     font-family: var(--font-montserrat);
 }
 
-.body--wrapper h1 {
+/* .body--wrapper h1 {
     font-weight: 700;
     font-size: 68px;
 }
@@ -78,7 +78,7 @@
 .body--wrapper p,
 .body--wrapper footer {
     font-weight: 600;
-}
+} */
 
 .body--wrapper li {
     font-weight: 400;
@@ -152,6 +152,20 @@
     flex-direction: row;
     justify-content: space-between;
     margin-bottom: 8px;
+}
+
+.card--container-image {
+    width: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card--container-image > img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    cursor: pointer;
 }
 
 .MuiFilledInput-root {
