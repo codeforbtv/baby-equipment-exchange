@@ -1,5 +1,4 @@
 .notification-card {
-    /* max-width: 600px; */
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -74,12 +73,5 @@
 
     .notification-card {
         flex-direction: column;
-    }
-
-    .notification-card--image {
-    }
-
-    .notification-card--info {
-        width: 100%;
     }
 }

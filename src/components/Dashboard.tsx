@@ -148,11 +148,13 @@ export default function Dashboard() {
         <ProtectedAdminRoute>
             <div className={styles['navbar']}>
                 {matches ? (
-                    <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard" variant="scrollable" scrollButtons="auto">
-                        {tabOptions.map((tab) => (
-                            <Tab key={tab} label={tab} />
-                        ))}
-                    </Tabs>
+                    <>
+                        <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard" variant="scrollable" scrollButtons="auto">
+                            {tabOptions.map((tab) => (
+                                <Tab key={tab} label={tab} sx={{ color: 'black' }} />
+                            ))}
+                        </Tabs>
+                    </>
                 ) : (
                     <>
                         <Button endIcon={<ArrowDropDownIcon />} onClick={handleClickListItem}>
@@ -167,14 +169,14 @@ export default function Dashboard() {
                         </Menu>
                     </>
                 )}
-                <IconButton onClick={handleRefresh}>
-                    <RefreshIcon />
-                </IconButton>
             </div>
             {isLoading ? (
                 <Loader />
             ) : (
                 <>
+                    <IconButton onClick={handleRefresh} size="large" sx={{ marginRight: 'auto', backgroundColor: '#f1f1f1', marginTop: '1rem' }}>
+                        <RefreshIcon />
+                    </IconButton>
                     <CustomTabPanel value={currentTab} index={0}>
                         {notifications ? (
                             <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
