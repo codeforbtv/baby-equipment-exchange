@@ -1,8 +1,77 @@
-.card--container {
-    cursor: pointer;
-    max-width: 800px;
+.notification-card {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     margin-bottom: 8px;
+    border-radius: 25px;
+}
+
+.notification-card--no-btn {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 8px;
+    border-radius: 25px;
+}
+
+.notification-card--container {
+    width: auto;
+    padding: 1rem;
+    border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-card--group {
+    display: flex;
+}
+
+.notification-card--image {
+    width: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.notification-card--image > img {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.notification-card--info {
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.notification-card--container--btn {
+    margin-top: auto;
+    align-self: flex-end;
+}
+
+.notification-card--thumbnail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.notification-card--thumbnail > img {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+.MuiCardActions-root > button {
+    align-self: flex-end;
+}
+
+@media screen and (max-width: 600px) {
+    .notification-card--container {
+        max-width: 400px;
+    }
+
+    .notification-card {
+        flex-direction: column;
+    }
 }

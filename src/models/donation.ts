@@ -54,7 +54,7 @@ export interface IDonation {
     tagNumber: string | null | undefined;
     notes: string[] | null | undefined;
     status: DonationStatusValues;
-    bulkCollection: string | null;
+    bulkCollection: string;
     images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -95,7 +95,7 @@ export class Donation implements IDonation {
     tagNumber: string | null | undefined;
     notes: string[] | null | undefined;
     status: DonationStatusValues;
-    bulkCollection: string | null;
+    bulkCollection: string;
     images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -168,7 +168,7 @@ export class Donation implements IDonation {
         return this.status;
     }
 
-    getBulkCollection(): string | null {
+    getBulkCollection(): string {
         return this.bulkCollection;
     }
 

@@ -1,7 +1,7 @@
 'use client';
 
 //Components
-import { Tab, Tabs } from '@mui/material';
+import { Button, IconButton, Menu, MenuItem, Tab, Tabs, useMediaQuery } from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';
@@ -15,10 +15,18 @@ import React, { useEffect, useState } from 'react';
 import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
 import { getAllDonations } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
+//Icons
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import RefreshIcon from '@mui/icons-material/Refresh';
+//Styles
+import '@/styles/globalStyles.css';
+import styles from '@/components/Dashboard.module.css';
 //Types
 import { Donation } from '@/models/donation';
 import { Notification } from '@/types/NotificationTypes';
 import { IUser } from '@/models/user';
+
+const tabOptions = ['Notifications', 'Donations', 'Users', 'Organizations'];
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -35,6 +43,24 @@ export default function Dashboard() {
     const [donationsUpdated, setDonationsUpdated] = useState<boolean>(false);
     const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
     const [orgsUpdated, setOrgsUpdated] = useState<boolean>(false);
+
+    //for mobile tab menu
+    const matches = useMediaQuery('(min-width:600px)');
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
+
+    const handleClickListItem = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuItemClick = (event: React.MouseEvent<HTMLElement>, index: number) => {
+        setCurrentTab(index);
+        setAnchorEl(null);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
     const handleCurrentTab = (event: React.SyntheticEvent, target: number) => {
         setCurrentTab(target);
@@ -120,44 +146,55 @@ export default function Dashboard() {
 
     return (
         <ProtectedAdminRoute>
-            <div style={{ marginTop: '4rem' }}>
-                <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard">
-                    <Tab label="Notifications" />
-                    <Tab label="Donations" />
-                    <Tab label="Users" />
-                    <Tab label="Organizations" />
-                </Tabs>
-                {isLoading ? (
-                    <Loader />
+            <div className={styles['navbar']}>
+                {matches ? (
+                    <>
+                        <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard" variant="scrollable" scrollButtons="auto">
+                            {tabOptions.map((tab) => (
+                                <Tab key={tab} label={tab} sx={{ color: 'black' }} />
+                            ))}
+                        </Tabs>
+                    </>
                 ) : (
                     <>
-                        <CustomTabPanel value={currentTab} index={0}>
-                            {notifications ? (
-                                <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} handleRefresh={handleRefresh} />
-                            ) : (
-                                <p>No notifications at this time.</p>
-                            )}
-                        </CustomTabPanel>
-                        <CustomTabPanel value={currentTab} index={1}>
-                            {donations ? (
-                                <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} handleRefresh={handleRefresh} />
-                            ) : (
-                                <p>No donations found.</p>
-                            )}
-                        </CustomTabPanel>
-                        <CustomTabPanel value={currentTab} index={2}>
-                            {users ? <Users users={users} setUsersUpdated={setUsersUpdated} handleRefresh={handleRefresh} /> : <p>No users found.</p>}
-                        </CustomTabPanel>
-                        <CustomTabPanel value={currentTab} index={3}>
-                            {orgNamesAndIds ? (
-                                <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} handleRefresh={handleRefresh} />
-                            ) : (
-                                <p>No organizations found.</p>
-                            )}
-                        </CustomTabPanel>
+                        <Button endIcon={<ArrowDropDownIcon />} onClick={handleClickListItem}>
+                            {tabOptions[currentTab]}
+                        </Button>
+                        <Menu id="selected-tab" anchorEl={anchorEl} open={open} onClose={handleClose}>
+                            {tabOptions.map((tab, i) => (
+                                <MenuItem key={tab} selected={i === currentTab} onClick={(event) => handleMenuItemClick(event, i)}>
+                                    <p>{tab}</p>
+                                </MenuItem>
+                            ))}
+                        </Menu>
                     </>
                 )}
             </div>
+            {isLoading ? (
+                <Loader />
+            ) : (
+                <>
+                    <IconButton onClick={handleRefresh} size="large" sx={{ marginRight: 'auto', backgroundColor: '#f1f1f1', marginTop: '1rem' }}>
+                        <RefreshIcon />
+                    </IconButton>
+                    <CustomTabPanel value={currentTab} index={0}>
+                        {notifications ? (
+                            <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
+                        ) : (
+                            <p>No notifications at this time.</p>
+                        )}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={1}>
+                        {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={2}>
+                        {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={3}>
+                        {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} /> : <p>No organizations found.</p>}
+                    </CustomTabPanel>
+                </>
+            )}
         </ProtectedAdminRoute>
     );
 }

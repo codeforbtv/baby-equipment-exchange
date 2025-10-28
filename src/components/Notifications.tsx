@@ -1,40 +1,73 @@
 'use client';
 //Hooks
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import UserDetails from '@/components/UserDetails';
 import DonationDetails from '@/components/DonationDetails';
 import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
-//Icons
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Button, Paper, Typography } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
-import styles from '@/components/Browse.module.css';
+import styles from '@/components/NotificationCard.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
-import { IconButton } from '@mui/material';
+import { Donation } from '@/models/donation';
 
 type NotificationsProps = {
     notifications: Notification;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
-    handleRefresh?: () => void;
+};
+
+const sortArrayByBulkId = (array: Donation[]): Donation[][] => {
+    const groupedByField = array.reduce(
+        (acc, item) => {
+            const sortByField = item.bulkCollection;
+            if (!acc[sortByField]) {
+                acc[sortByField] = [];
+            }
+            acc[sortByField].push(item);
+            return acc;
+        },
+        {} as Record<string, Donation[]>
+    );
+    return Object.values(groupedByField);
+};
+
+const sortArrayByRequestor = (array: Donation[]): Donation[][] => {
+    const groupedByField = array.reduce(
+        (acc, item) => {
+            const sortByField = item.requestor ? item.requestor.id : '';
+            if (!acc[sortByField]) {
+                acc[sortByField] = [];
+            }
+            acc[sortByField].push(item);
+            return acc;
+        },
+        {} as Record<string, Donation[]>
+    );
+    return Object.values(groupedByField);
 };
 
 const Notifications = (props: NotificationsProps) => {
-    const { notifications, setNotificationsUpdated, handleRefresh } = props;
+    const { notifications, setNotificationsUpdated } = props;
 
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
     const [orderIdToDisplay, setOrderIdToDisplay] = useState<string | null>(null);
 
-    const notificationCount = notifications.donations.length + notifications.users.length;
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
+    const sortedDonationsWaitingApproval = sortArrayByBulkId(donationsAwaitingApproval);
     const donationsAwaitingDropoff = notifications.donations.filter((donation) => donation.status === 'pending delivery');
+    const sortedDonationsAwaitingDropoff = sortArrayByBulkId(donationsAwaitingDropoff);
     const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
+    const sortedDonationsAwaitingPickup = sortArrayByRequestor(donationsAwaitingPickup);
     const orders = notifications.orders;
     const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted); //Filters out recently deleted users
+
+    const router = useRouter();
 
     return (
         <ProtectedAdminRoute>
@@ -50,73 +83,109 @@ const Notifications = (props: NotificationsProps) => {
             )}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
-                    <div className="page--header">
+                    {/* <div className="page--header">
                         <h3>{`You have ${notificationCount} notifications`}</h3>
-                        {handleRefresh && (
-                            <IconButton onClick={handleRefresh}>
-                                <RefreshIcon />
-                            </IconButton>
-                        )}
-                    </div>
-                    {donationsAwaitingApproval.length > 0 && (
+                    </div> */}
+                    {sortedDonationsWaitingApproval.length > 0 && (
                         <>
-                            <h4>Donations requiring approval</h4>
-                            {donationsAwaitingApproval.map((donation) => (
-                                <NotificationCard
-                                    key={donation.id}
-                                    donation={donation}
-                                    type="pending-donation"
-                                    setIdToDisplay={setDonationIdToDisplay}
-                                    setNotificationsUpdated={setNotificationsUpdated}
-                                />
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Donations requiring approval
+                            </Typography>
+                            {sortedDonationsWaitingApproval.map((donationArray, i) => (
+                                <Paper className={styles['notification-card--container']} key={i} elevation={3}>
+                                    {donationArray.map((donation) => (
+                                        <NotificationCard
+                                            key={donation.id}
+                                            donation={donation}
+                                            type="pending-donation"
+                                            setIdToDisplay={setDonationIdToDisplay}
+                                            setNotificationsUpdated={setNotificationsUpdated}
+                                        />
+                                    ))}
+                                    <Button
+                                        className={styles['notification-card--container--btn']}
+                                        variant="contained"
+                                        onClick={() => router.push(`/accept/${donationArray[0].bulkCollection}`)}
+                                    >
+                                        Review
+                                    </Button>
+                                </Paper>
                             ))}
                         </>
                     )}
-                    {donationsAwaitingDropoff.length > 0 && (
+                    {sortedDonationsAwaitingDropoff.length > 0 && (
                         <>
-                            <h4>Donations waiting to be recieved</h4>
-                            {donationsAwaitingDropoff.map((donation) => (
-                                <NotificationCard
-                                    key={donation.id}
-                                    donation={donation}
-                                    type="pending-delivery"
-                                    setIdToDisplay={setDonationIdToDisplay}
-                                    setNotificationsUpdated={setNotificationsUpdated}
-                                />
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Donations waiting to be recieved
+                            </Typography>
+                            {sortedDonationsAwaitingDropoff.map((donationArray, i) => (
+                                <Paper className={styles['notification-card--container']} key={i} elevation={3}>
+                                    {donationArray.map((donation) => (
+                                        <NotificationCard
+                                            key={donation.id}
+                                            donation={donation}
+                                            type="pending-delivery"
+                                            setIdToDisplay={setDonationIdToDisplay}
+                                            setNotificationsUpdated={setNotificationsUpdated}
+                                        />
+                                    ))}
+                                </Paper>
                             ))}
                         </>
                     )}
-                    {donationsAwaitingPickup.length > 0 && (
+                    {sortedDonationsAwaitingPickup.length > 0 && (
                         <>
-                            <h4>Donations waiting for pickup</h4>
-                            {donationsAwaitingPickup.map((donation) => (
-                                <NotificationCard
-                                    key={donation.id}
-                                    donation={donation}
-                                    type="reserved"
-                                    setIdToDisplay={setDonationIdToDisplay}
-                                    setNotificationsUpdated={setNotificationsUpdated}
-                                />
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Donations waiting for pickup
+                            </Typography>
+                            {sortedDonationsAwaitingPickup.map((donationArray, i) => (
+                                <Paper className={styles['notification-card--container']} key={i} elevation={3}>
+                                    {donationArray.map((donation) => (
+                                        <NotificationCard
+                                            key={donation.id}
+                                            donation={donation}
+                                            type="reserved"
+                                            setIdToDisplay={setDonationIdToDisplay}
+                                            setNotificationsUpdated={setNotificationsUpdated}
+                                        />
+                                    ))}
+                                </Paper>
                             ))}
                         </>
                     )}
                     {orders.length > 0 && (
                         <>
-                            <h4>Requested Equipment</h4>
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Requested Equipment
+                            </Typography>
                             {orders.map((order) => (
-                                <NotificationCard
-                                    key={order.id}
-                                    type="order"
-                                    order={order}
-                                    setIdToDisplay={setOrderIdToDisplay}
-                                    setNotificationsUpdated={setNotificationsUpdated}
-                                />
+                                <Paper className={styles['notification-card--container']} key={order.id} elevation={3}>
+                                    <Typography variant="h6">{`${order.requestor.name} has requested the follwing items:`}</Typography>
+                                    {order.items.map((item) => (
+                                        <NotificationCard
+                                            key={item.id}
+                                            type="order"
+                                            donation={item}
+                                            setIdToDisplay={setOrderIdToDisplay}
+                                            setNotificationsUpdated={setNotificationsUpdated}
+                                        />
+                                    ))}
+                                    <Button
+                                        className={styles['notification-card--container--btn']}
+                                        variant="contained"
+                                        onClick={() => setOrderIdToDisplay(order.id)}
+                                    >
+                                        Review
+                                    </Button>
+                                </Paper>
                             ))}
                         </>
                     )}
                     {usersAwaitingApproval.length > 0 && (
                         <>
-                            <h4>Users awaiting approval</h4>
+                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                                Users awaiting approval
+                            </Typography>
                             {usersAwaitingApproval.map((user) => (
                                 <NotificationCard
                                     key={user.uid}

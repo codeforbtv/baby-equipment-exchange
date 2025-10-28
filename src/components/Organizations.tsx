@@ -42,11 +42,6 @@ const Organizations = (props: OrganizationsProps) => {
                 <>
                     <div className="page--header">
                         <h3>Organizations</h3>
-                        {handleRefresh && (
-                            <IconButton onClick={handleRefresh}>
-                                <RefreshIcon />
-                            </IconButton>
-                        )}
                     </div>
                     <Button variant="contained" type="button" onClick={handleShowForm}>
                         Create new

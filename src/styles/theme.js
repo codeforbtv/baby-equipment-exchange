@@ -20,14 +20,37 @@ const theme = createTheme({
             fontFamily: montserrat.style.fontFamily
         },
         h4: {
-            fontFamily: montserrat.style.fontFamily
+            fontFamily: montserrat.style.fontFamily,
+            fontWeight: 600
+        },
+        h5: {
+            fontFamily: montserrat.style.fontFamily,
+            fontWeight: 500,
+            '@media (max-width:600px)': {
+                fontSize: '1.2rem'
+            }
+        },
+        h6: {
+            fontFamily: montserrat.style.fontFamily,
+            fontWeight: 600,
+            color: '#5e5e5e',
+            '@media (max-width:600px)': {
+                fontSize: '1rem'
+            }
         },
         body1: {
-            fontFamily: garamond.style.fontFamily
+            fontFamily: montserrat.style.fontFamily,
+            fontWeight: 500
         },
         body2: {
             fontFamily: garamond.style.fontFamily,
             fontStyle: 'italic'
+        },
+        subtitle1: {
+            fontWeight: 500,
+            '@media (max-width:600px)': {
+                fontSize: '0.8rem'
+            }
         }
     }
 });
