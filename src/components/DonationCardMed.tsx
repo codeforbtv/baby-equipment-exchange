@@ -21,11 +21,6 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';
 //Styles
 import '@/styles/globalStyles.css';
-const thumbnailStyles = {
-    width: '15%',
-    objectFit: 'cover',
-    aspectRatio: '1 / 1'
-};
 //types
 import { Donation } from '@/models/donation';
 
@@ -47,17 +42,17 @@ const DonationCardMed = (props: DonationCardMedProps) => {
 
     return (
         <ProtectedAdminRoute>
-            <Card className="card--container">
-                <CardActions onClick={() => setIdToDisplay(donation.id)}>
-                    {donation.images && donation.images.length > 0 && (
-                        <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
-                    )}
-                    <CardContent>
-                        <Typography variant="h3">{donation.model}</Typography>
-                        <Typography variant="h4">{donation.brand}</Typography>
-                        <Typography variant="h5">Description: {donation.description}</Typography>
-                    </CardContent>
+            <Card className="card--container" raised>
+                <CardActions className="card--container-image" onClick={() => setIdToDisplay(donation.id)}>
+                    {donation.images && donation.images.length > 0 && <CardMedia component="img" alt={donation.model} image={donation.images[0]} />}
                 </CardActions>
+                <CardContent>
+                    <Typography variant="h5">
+                        {donation.brand} - {donation.model}
+                    </Typography>
+                    <Typography variant="h6">{donation.tagNumber}</Typography>
+                </CardContent>
+
                 {donation.status !== 'unavailable' && (
                     <CardActions>
                         <Button variant="contained" startIcon={<RemoveShoppingCartIcon />} color="error" onClick={() => setShowRemoveDialog(true)}>

@@ -62,7 +62,7 @@ const InventoryCart = () => {
     return (
         <>
             <div className="page--header">
-                <h2>Your Cart</h2>
+                <Typography variant="h2">Your Cart</Typography>
             </div>
             {loading ? (
                 <Loader />
@@ -72,27 +72,25 @@ const InventoryCart = () => {
                         <p>There are no items in your cart</p>
                     ) : (
                         <Box>
-                            <Typography variant="h3">Items to be requested:</Typography>
+                            <Typography variant="h5">Items to be requested:</Typography>
                             <Box className={styles['inventoryItem--container']}>
                                 {requestedInventory.map((inventoryItem, i) => {
                                     if (inventoryItem.images)
                                         return (
                                             <Card key={i} elevation={5} className={styles['inventoryItem--card']}>
-                                                <Image
-                                                    src={inventoryItem.images[0] as string}
-                                                    alt={`${inventoryItem.brand} ${inventoryItem.model}`}
-                                                    width={60}
-                                                    height={60}
-                                                    style={{ objectFit: 'cover' }}
-                                                />
-                                                <div className={styles['text--group']}>
-                                                    <Typography variant="h4" className={styles['left--column']}>
-                                                        {inventoryItem.model}
-                                                    </Typography>
-                                                    <Typography variant="h4" className={styles['right--column']}>
-                                                        {inventoryItem.brand}
+                                                <div className={styles['inventoryItem--card-content']}>
+                                                    <Image
+                                                        src={inventoryItem.images[0] as string}
+                                                        alt={`${inventoryItem.brand} ${inventoryItem.model}`}
+                                                        width={80}
+                                                        height={80}
+                                                        style={{ objectFit: 'cover', aspectRatio: '1/1' }}
+                                                    />
+                                                    <Typography variant="body1">
+                                                        {inventoryItem.brand} - {inventoryItem.model}
                                                     </Typography>
                                                 </div>
+
                                                 <Button variant="outlined" type="button" onClick={() => removeRequestedInventoryItem(i)}>
                                                     <DeleteIcon />
                                                 </Button>

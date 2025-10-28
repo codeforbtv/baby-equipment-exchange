@@ -1,5 +1,5 @@
 import { sanitize } from '@/utils/utils';
-import { emailSender } from '@/data/emailSender';
+import { emailSender, emailCc } from '@/data/emailSender';
 
 export default function reject(donorEmail: string, message: string, notes?: string) {
     let html = message;
@@ -11,6 +11,7 @@ export default function reject(donorEmail: string, message: string, notes?: stri
 
     return {
         to: donorEmail,
+        cc: emailCc,
         from: emailSender,
         subject: 'Your Baby Equipment Exchange donation has been reviewed',
         html: html

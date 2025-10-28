@@ -6,7 +6,8 @@
 }
 
 .inventoryItem--card {
-    max-width: 600px;
+    /* max-width: 600px; */
+    width: 100%;
     padding: 8px;
     display: flex;
     flex-direction: row;
@@ -15,19 +16,11 @@
     gap: 8px;
 }
 
-.text--group {
-    min-width: 50%;
+.inventoryItem--card-content {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
     align-items: center;
-}
-
-.left--column {
-    text-align: left;
-}
-
-.right--column {
-    text-align: left;
+    gap: 1em;
 }
 
 .btn--group {
