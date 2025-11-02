@@ -3,17 +3,18 @@
 //Hooks
 import { SetStateAction, useState, Dispatch } from 'react';
 //Components
-import { Button, ImageList } from '@mui/material';
+import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
+import DonationDetails from '@/components/DonationDetails';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+import AdminCreateDonation from '@/components/AdminCreateDonation';
+//API
+import { categories } from '@/data/html';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Browse.module.css';
 //Types
 import { Donation } from '@/models/donation';
-
-import DonationDetails from '@/components/DonationDetails';
-import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
-import AdminCreateDonation from '@/components/AdminCreateDonation';
 
 type DonationsProps = {
     donations: Donation[];
@@ -38,11 +39,19 @@ const Donations = (props: DonationsProps) => {
             {!idToDisplay && !showForm && (
                 <>
                     <div className="page--header">
-                        <h1>Donations</h1>
+                        <Typography variant="h5">Donations</Typography>
                     </div>
                     <Button variant="contained" type="button" onClick={handleShowForm}>
                         Add donation
                     </Button>
+                    <Autocomplete
+                        multiple
+                        id="category-filter"
+                        options={categories.map((category) => category.name)}
+                        renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
+                        renderTags={(value, getTagProps) => value.map((option, index) => <Chip label={option} {...getTagProps({ index })} />)}
+                    />
+
                     <ImageList className={styles['browse__grid']} rowHeight={300} gap={4}>
                         {donations.map((donation) => (
                             <DonationCard key={donation.id} donation={donation} setIdToDisplay={setIdToDisplay} />
