@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { SetStateAction, useState, Dispatch } from 'react';
+import { SetStateAction, useState, Dispatch, useEffect } from 'react';
 //Components
 import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
@@ -23,14 +23,28 @@ type DonationsProps = {
 
 const Donations = (props: DonationsProps) => {
     const { donations, setDonationsUpdated } = props;
+    const [donationsToDisplay, setDonationsToDisplay] = useState<Donation[]>(donations);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
+    const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
 
     const handleShowForm = () => {
         //Close details if open
         setIdToDisplay(null);
         setShowForm(true);
     };
+
+    useEffect(() => {
+        if (categoryFilter && categoryFilter.length > 0) {
+            setDonationsToDisplay(donations.filter((d) => categoryFilter?.includes(d.category)));
+        } else {
+            setDonationsToDisplay(donations);
+        }
+    }, [categoryFilter]);
+
+    useEffect(() => {
+        console.log(donationsToDisplay);
+    }, [donationsToDisplay]);
 
     return (
         <ProtectedAdminRoute>
@@ -48,15 +62,25 @@ const Donations = (props: DonationsProps) => {
                         multiple
                         id="category-filter"
                         options={categories.map((category) => category.name)}
+                        value={categoryFilter}
+                        onChange={(event, newValue) => setCategoryFilter(newValue)}
                         renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
-                        renderTags={(value, getTagProps) => value.map((option, index) => <Chip label={option} {...getTagProps({ index })} />)}
+                        renderTags={(value, getTagProps) =>
+                            value.map((option, index) => {
+                                const { key, ...tagProps } = getTagProps({ index });
+                                return <Chip key={key} label={option} {...tagProps} />;
+                            })
+                        }
                     />
-
-                    <ImageList className={styles['browse__grid']} rowHeight={300} gap={4}>
-                        {donations.map((donation) => (
-                            <DonationCard key={donation.id} donation={donation} setIdToDisplay={setIdToDisplay} />
-                        ))}
-                    </ImageList>
+                    {donationsToDisplay.length === 0 ? (
+                        <Typography variant="body1">No donations found.</Typography>
+                    ) : (
+                        <ImageList className={styles['browse__grid']} rowHeight={300} gap={4}>
+                            {donationsToDisplay.map((donation) => (
+                                <DonationCard key={donation.id} donation={donation} setIdToDisplay={setIdToDisplay} />
+                            ))}
+                        </ImageList>
+                    )}
                 </>
             )}
         </ProtectedAdminRoute>
