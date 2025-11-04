@@ -8,18 +8,20 @@ import DonationCard from '@/components/DonationCard';
 import DonationDetails from '@/components/DonationDetails';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import AdminCreateDonation from '@/components/AdminCreateDonation';
-//API
+//Constants
 import { categories } from '@/data/html';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Browse.module.css';
 //Types
-import { Donation } from '@/models/donation';
+import { Donation, DonationStatuses, donationStatuses } from '@/models/donation';
 
 type DonationsProps = {
     donations: Donation[];
     setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
+
+const statusSelectOptions = Object.keys(donationStatuses);
 
 const Donations = (props: DonationsProps) => {
     const { donations, setDonationsUpdated } = props;
@@ -27,6 +29,7 @@ const Donations = (props: DonationsProps) => {
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
+    const [statusFilter, setStatusFilter] = useState<string[] | undefined>([]);
 
     const handleShowForm = () => {
         //Close details if open
@@ -35,16 +38,16 @@ const Donations = (props: DonationsProps) => {
     };
 
     useEffect(() => {
-        if (categoryFilter && categoryFilter.length > 0) {
-            setDonationsToDisplay(donations.filter((d) => categoryFilter?.includes(d.category)));
-        } else {
+        if ((!categoryFilter || categoryFilter.length === 0) && (!statusFilter || statusFilter.length === 0)) {
             setDonationsToDisplay(donations);
+        } else {
+            setDonationsToDisplay(
+                donations.filter(
+                    (d) => categoryFilter?.includes(d.category) || statusFilter?.some((f) => donationStatuses[f as keyof DonationStatuses] === d.status)
+                )
+            );
         }
-    }, [categoryFilter]);
-
-    useEffect(() => {
-        console.log(donationsToDisplay);
-    }, [donationsToDisplay]);
+    }, [categoryFilter, statusFilter]);
 
     return (
         <ProtectedAdminRoute>
@@ -69,6 +72,27 @@ const Donations = (props: DonationsProps) => {
                             value.map((option, index) => {
                                 const { key, ...tagProps } = getTagProps({ index });
                                 return <Chip key={key} label={option} {...tagProps} />;
+                            })
+                        }
+                    />
+                    <Autocomplete
+                        multiple
+                        id="status-filter"
+                        options={statusSelectOptions}
+                        value={statusFilter}
+                        onChange={(event, newValues) => setStatusFilter(newValues)}
+                        renderInput={(params) => <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" />}
+                        renderTags={(value, getTagProps) =>
+                            value.map((option, index) => {
+                                const { key, ...tagProps } = getTagProps({ index });
+                                return (
+                                    <Chip
+                                        key={key}
+                                        // label={statusSelectOptions.find((o) => donationStatuses[o as keyof DonationStatuses] === option)}
+                                        label={option}
+                                        {...tagProps}
+                                    />
+                                );
                             })
                         }
                     />
