@@ -3,13 +3,15 @@
 //Hooks
 import { SetStateAction, useState, Dispatch, useEffect } from 'react';
 //Components
-import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography } from '@mui/material';
+import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography, Box } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
 import DonationDetails from '@/components/DonationDetails';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import AdminCreateDonation from '@/components/AdminCreateDonation';
 //Constants
 import { categories } from '@/data/html';
+//Icons
+import AddIcon from '@mui/icons-material/Add';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Browse.module.css';
@@ -55,13 +57,15 @@ const Donations = (props: DonationsProps) => {
             {showForm && <AdminCreateDonation setShowForm={setShowForm} setDonationsUpdated={setDonationsUpdated} />}
             {!idToDisplay && !showForm && (
                 <>
-                    <div className="page--header">
+                    <div className="page--header" style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="h5">Donations</Typography>
+                        <Button startIcon={<AddIcon />} variant="contained" type="button" onClick={handleShowForm}>
+                            Add New
+                        </Button>
                     </div>
-                    <Button variant="contained" type="button" onClick={handleShowForm}>
-                        Add donation
-                    </Button>
+
                     <Autocomplete
+                        sx={{ maxWidth: '85vw', paddingLeft: '1em' }}
                         multiple
                         id="category-filter"
                         options={categories.map((category) => category.name)}
@@ -76,6 +80,7 @@ const Donations = (props: DonationsProps) => {
                         }
                     />
                     <Autocomplete
+                        sx={{ maxWidth: '85vw', paddingLeft: '1em' }}
                         multiple
                         id="status-filter"
                         options={statusSelectOptions}

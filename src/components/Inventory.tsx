@@ -126,7 +126,9 @@ const Inventory = (props: InventoryProps) => {
                                     </Badge>
                                 )}
                             </div>
+
                             <Autocomplete
+                                sx={{ maxWidth: '85vw', paddingLeft: '1em' }}
                                 multiple
                                 id="category-filter"
                                 options={categories.map((category) => category.name)}
