@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 //Components
 import InventoryItemCard from './InventoryItemCard';
 import Loader from './Loader';
-import { IconButton, Badge, ImageList, Tooltip, Snackbar, SnackbarCloseReason, Button } from '@mui/material';
+import { IconButton, Badge, ImageList, Tooltip, Snackbar, SnackbarCloseReason, Button, Typography, Autocomplete, TextField, Chip } from '@mui/material';
 import ProtectedAidWorkerRoute from './ProtectedAidWorkerRoute';
 //Icons
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -16,6 +16,8 @@ import CloseIcon from '@mui/icons-material/Close';
 //Api
 import { getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
+//Constants
+import { categories } from '@/data/html';
 //Styles
 import '../styles/globalStyles.css';
 import styles from './Inventory.module.css';
@@ -30,7 +32,9 @@ type InventoryProps = {
 const Inventory = (props: InventoryProps) => {
     const { inventory, setInventoryUpdated } = props;
     const [isLoading, setIsLoading] = useState(false);
-    const [currentInventory, setCurrentInventory] = useState<InventoryItem[]>([]);
+    const [currentInventory, setCurrentInventory] = useState<InventoryItem[]>(inventory ?? []);
+    const [inventoryToDisplay, setInventoryToDisplay] = useState<InventoryItem[]>(inventory ?? []);
+    const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
 
@@ -59,6 +63,7 @@ const Inventory = (props: InventoryProps) => {
             try {
                 const inventoryResult = await getInventory();
                 setCurrentInventory(inventoryResult);
+                setInventoryToDisplay(inventoryResult);
             } catch (error) {
                 addErrorEvent('Fetch inventory', error);
             } finally {
@@ -66,6 +71,16 @@ const Inventory = (props: InventoryProps) => {
             }
         }
     }
+
+    //Applies category filter and prevents items in cart from appearing in inventory list
+    useEffect(() => {
+        const requestedInventoryIds = requestedInventory.map((i) => i.id);
+        if (!categoryFilter || categoryFilter.length === 0) {
+            setInventoryToDisplay(currentInventory.filter((item) => !requestedInventoryIds.includes(item.id)));
+        } else {
+            setInventoryToDisplay(currentInventory.filter((item) => categoryFilter?.includes(item.category) && !requestedInventoryIds.includes(item.id)));
+        }
+    }, [requestedInventory, currentInventory, categoryFilter]);
 
     useEffect(() => {
         if (!inventory) fetchInventory();
@@ -75,7 +90,6 @@ const Inventory = (props: InventoryProps) => {
 
     const handleRequestInventoryItem = (inventoryItem: InventoryItem) => {
         addRequestedInventoryItem(inventoryItem);
-        setCurrentInventory(currentInventory.filter((item) => inventoryItem.id !== item.id));
         setIsSnackBarOpen(true);
     };
 
@@ -93,7 +107,9 @@ const Inventory = (props: InventoryProps) => {
             {!idToDisplay && (
                 <>
                     <div className="page--header">
-                        <h3>Inventory</h3>
+                        <Typography variant="h5" sx={{ marginTop: '2em' }}>
+                            Inventory
+                        </Typography>
                     </div>
                     {isLoading ? (
                         <Loader />
@@ -110,11 +126,25 @@ const Inventory = (props: InventoryProps) => {
                                     </Badge>
                                 )}
                             </div>
-                            {currentInventory == null || currentInventory.length == 0 ? (
-                                <p>There is no inventory for you to view. </p>
+                            <Autocomplete
+                                multiple
+                                id="category-filter"
+                                options={categories.map((category) => category.name)}
+                                value={categoryFilter}
+                                onChange={(event, newValue) => setCategoryFilter(newValue)}
+                                renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
+                                renderTags={(value, getTagProps) =>
+                                    value.map((option, index) => {
+                                        const { key, ...tagProps } = getTagProps({ index });
+                                        return <Chip key={key} label={option} {...tagProps} />;
+                                    })
+                                }
+                            />
+                            {inventoryToDisplay == null || inventoryToDisplay.length == 0 ? (
+                                <p>No products found.</p>
                             ) : (
                                 <ImageList className={styles['browse__grid']} rowHeight={200}>
-                                    {currentInventory.map((inventoryItem: InventoryItem) => {
+                                    {inventoryToDisplay.map((inventoryItem: InventoryItem) => {
                                         return (
                                             <InventoryItemCard
                                                 key={inventoryItem.id}

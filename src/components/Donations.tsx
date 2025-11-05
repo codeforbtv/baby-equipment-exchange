@@ -85,14 +85,7 @@ const Donations = (props: DonationsProps) => {
                         renderTags={(value, getTagProps) =>
                             value.map((option, index) => {
                                 const { key, ...tagProps } = getTagProps({ index });
-                                return (
-                                    <Chip
-                                        key={key}
-                                        // label={statusSelectOptions.find((o) => donationStatuses[o as keyof DonationStatuses] === option)}
-                                        label={option}
-                                        {...tagProps}
-                                    />
-                                );
+                                return <Chip key={key} label={option} {...tagProps} />;
                             })
                         }
                     />
