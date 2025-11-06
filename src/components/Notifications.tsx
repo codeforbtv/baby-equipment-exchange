@@ -166,7 +166,7 @@ const Notifications = (props: NotificationsProps) => {
                                             key={item.id}
                                             type="order"
                                             donation={item}
-                                            setIdToDisplay={setOrderIdToDisplay}
+                                            setIdToDisplay={setDonationIdToDisplay}
                                             setNotificationsUpdated={setNotificationsUpdated}
                                         />
                                     ))}

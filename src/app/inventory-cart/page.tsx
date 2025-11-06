@@ -5,7 +5,7 @@ import { requestInventoryItems } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 
 //Components
-import { Card, Button, Box, Typography } from '@mui/material';
+import { Card, Button, Box, Typography, Stack } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Loader from '@/components/Loader';
 
@@ -62,14 +62,21 @@ const InventoryCart = () => {
     return (
         <>
             <div className="page--header">
-                <Typography variant="h2">Your Cart</Typography>
+                <Typography variant="h5" sx={{ marginTop: '2em' }}>
+                    Your Cart
+                </Typography>
             </div>
             {loading ? (
                 <Loader />
             ) : (
                 <div className="content--container">
                     {requestedInventory == null || requestedInventory.length == 0 ? (
-                        <p>There are no items in your cart</p>
+                        <Stack spacing={2}>
+                            <Typography variant="body1">There are no items in your cart</Typography>
+                            <Button variant="outlined" onClick={() => router.push('/')}>
+                                Back to browsing
+                            </Button>
+                        </Stack>
                     ) : (
                         <Box>
                             <Typography variant="h5">Items to be requested:</Typography>
