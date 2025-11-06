@@ -128,25 +128,6 @@ export default function DonationForm(props: DonationFormProps) {
             <Box component="form" className={styles['form']}>
                 <Box className={styles['form__section--left']}>
                     <Box display={'flex'} flexDirection={'column'} gap={1}>
-                        {/* <NativeSelect
-                            variant="outlined"
-                            style={{ padding: '.25rem .5rem' }}
-                            name="category"
-                            id="category"
-                            placeholder="Category"
-                            onChange={handleInputChange}
-                            value={formData.category ? formData.category : ''}
-                            required
-                        >
-                            <option value="">Select Category</option>
-                            {categories.map((category) => {
-                                return (
-                                    <option key={category.value} value={category.value}>
-                                        {category.innerText}
-                                    </option>
-                                );
-                            })}
-                        </NativeSelect> */}
                         <Autocomplete
                             sx={{ maxWidth: '88%' }}
                             disablePortal

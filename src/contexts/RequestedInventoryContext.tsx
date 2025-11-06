@@ -5,6 +5,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 import { InventoryItem } from '@/models/inventoryItem';
 import { getInventoryByIds } from '@/api/firebase-donations';
+import Loader from '@/components/Loader';
 
 type RequestedInventoryContextType = {
     requestedInventory: InventoryItem[];
@@ -79,6 +80,10 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
             addRequestedInventoryToLocalStorage(requestedInventory);
         }
     }, [requestedInventory]);
+
+    if (isLoading) {
+        return <Loader />;
+    }
 
     return <RequestedInventoryContext.Provider value={value}>{children}</RequestedInventoryContext.Provider>;
 };
