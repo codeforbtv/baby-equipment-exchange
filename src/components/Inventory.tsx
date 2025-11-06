@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -8,11 +8,26 @@ import { useRouter } from 'next/navigation';
 //Components
 import InventoryItemCard from './InventoryItemCard';
 import Loader from './Loader';
-import { IconButton, Badge, ImageList, Tooltip, Snackbar, SnackbarCloseReason, Button, Typography, Autocomplete, TextField, Chip } from '@mui/material';
+import {
+    IconButton,
+    Badge,
+    ImageList,
+    Tooltip,
+    Snackbar,
+    SnackbarCloseReason,
+    Button,
+    Typography,
+    Autocomplete,
+    TextField,
+    Chip,
+    Stack,
+    InputAdornment
+} from '@mui/material';
 import ProtectedAidWorkerRoute from './ProtectedAidWorkerRoute';
 //Icons
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
 //Api
 import { getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
@@ -33,7 +48,7 @@ const Inventory = (props: InventoryProps) => {
     const { inventory, setInventoryUpdated } = props;
     const [isLoading, setIsLoading] = useState(false);
     const [currentInventory, setCurrentInventory] = useState<InventoryItem[]>(inventory ?? []);
-    const [inventoryToDisplay, setInventoryToDisplay] = useState<InventoryItem[]>(inventory ?? []);
+    const [searchInput, setSearchInput] = useState<string>('');
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
@@ -44,6 +59,7 @@ const Inventory = (props: InventoryProps) => {
         }
         setIsSnackBarOpen(false);
     };
+
     //for snackbar notification
     const action = (
         <>
@@ -54,7 +70,7 @@ const Inventory = (props: InventoryProps) => {
     );
 
     const { isAidWorker } = useUserContext();
-    const { addRequestedInventoryItem, requestedInventory, removeRequestedInventoryItem } = useRequestedInventoryContext();
+    const { addRequestedInventoryItem, requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
 
     async function fetchInventory(): Promise<void> {
@@ -63,7 +79,6 @@ const Inventory = (props: InventoryProps) => {
             try {
                 const inventoryResult = await getInventory();
                 setCurrentInventory(inventoryResult);
-                setInventoryToDisplay(inventoryResult);
             } catch (error) {
                 addErrorEvent('Fetch inventory', error);
             } finally {
@@ -72,15 +87,21 @@ const Inventory = (props: InventoryProps) => {
         }
     }
 
-    //Applies category filter and prevents items in cart from appearing in inventory list
-    useEffect(() => {
+    //Filters by category and search input and prevents items in cart from appearing in inventory list
+    const inventoryToDisplay = useMemo(() => {
         const requestedInventoryIds = requestedInventory.map((i) => i.id);
-        if (!categoryFilter || categoryFilter.length === 0) {
-            setInventoryToDisplay(currentInventory.filter((item) => !requestedInventoryIds.includes(item.id)));
-        } else {
-            setInventoryToDisplay(currentInventory.filter((item) => categoryFilter?.includes(item.category) && !requestedInventoryIds.includes(item.id)));
+        let filteredInventory = currentInventory.filter((item) => !requestedInventoryIds.includes(item.id));
+
+        if (searchInput.length > 0) {
+            filteredInventory = filteredInventory.filter((item) =>
+                Object.values(item).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))
+            );
         }
-    }, [requestedInventory, currentInventory, categoryFilter]);
+        if (categoryFilter && categoryFilter.length > 0) {
+            filteredInventory = filteredInventory.filter((item) => categoryFilter.includes(item.category));
+        }
+        return filteredInventory;
+    }, [requestedInventory, currentInventory, categoryFilter, searchInput]);
 
     useEffect(() => {
         if (!inventory) fetchInventory();
@@ -106,42 +127,54 @@ const Inventory = (props: InventoryProps) => {
             )}
             {!idToDisplay && (
                 <>
-                    <div className="page--header">
-                        <Typography variant="h5" sx={{ marginTop: '2em' }}>
-                            Inventory
-                        </Typography>
+                    <div className="page--header" style={{ marginTop: '4em', display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="h5">Inventory</Typography>
+                        <div>
+                            {requestedInventory.length > 0 && (
+                                <Badge badgeContent={requestedInventory.length} color="primary">
+                                    <Tooltip title="View order">
+                                        <IconButton color="inherit" onClick={() => router.push('/inventory-cart')}>
+                                            <ShoppingCartIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Badge>
+                            )}
+                        </div>
                     </div>
                     {isLoading ? (
                         <Loader />
                     ) : (
                         <>
-                            <div>
-                                {requestedInventory.length > 0 && (
-                                    <Badge badgeContent={requestedInventory.length} color="primary">
-                                        <Tooltip title="View order">
-                                            <IconButton color="inherit" onClick={() => router.push('/inventory-cart')}>
-                                                <ShoppingCartIcon />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </Badge>
-                                )}
-                            </div>
-
-                            <Autocomplete
-                                sx={{ maxWidth: '85vw', paddingLeft: '1em' }}
-                                multiple
-                                id="category-filter"
-                                options={categories.map((category) => category.name)}
-                                value={categoryFilter}
-                                onChange={(event, newValue) => setCategoryFilter(newValue)}
-                                renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
-                                renderTags={(value, getTagProps) =>
-                                    value.map((option, index) => {
-                                        const { key, ...tagProps } = getTagProps({ index });
-                                        return <Chip key={key} label={option} {...tagProps} />;
-                                    })
-                                }
-                            />
+                            <Stack spacing={2} sx={{ paddingLeft: '1em', marginTop: '1em' }}>
+                                <TextField
+                                    label="Search"
+                                    id="search-field"
+                                    value={searchInput}
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <SearchIcon />
+                                            </InputAdornment>
+                                        )
+                                    }}
+                                />
+                                <Autocomplete
+                                    sx={{ maxWidth: '83vw' }}
+                                    multiple
+                                    id="category-filter"
+                                    options={categories.map((category) => category.name)}
+                                    value={categoryFilter}
+                                    onChange={(event, newValue) => setCategoryFilter(newValue)}
+                                    renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
+                                    renderTags={(value, getTagProps) =>
+                                        value.map((option, index) => {
+                                            const { key, ...tagProps } = getTagProps({ index });
+                                            return <Chip key={key} label={option} {...tagProps} />;
+                                        })
+                                    }
+                                />
+                            </Stack>
                             {inventoryToDisplay == null || inventoryToDisplay.length == 0 ? (
                                 <p>No products found.</p>
                             ) : (
