@@ -9,11 +9,12 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
 import Notifications from './Notifications';
+import Inventory from './Inventory';
 //Hooks
 import React, { useEffect, useState } from 'react';
 //API
 import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
-import { getAllDonations } from '@/api/firebase-donations';
+import { getAllDonations, getInventory } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
 //Icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -25,13 +26,15 @@ import styles from '@/components/Dashboard.module.css';
 import { Donation } from '@/models/donation';
 import { Notification } from '@/types/NotificationTypes';
 import { IUser } from '@/models/user';
+import { InventoryItem } from '@/models/inventoryItem';
 
-const tabOptions = ['Notifications', 'Donations', 'Users', 'Organizations'];
+const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations'];
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [currentTab, setCurrentTab] = useState<number>(0);
     const [donations, setDonations] = useState<Donation[] | null>(null);
+    const [inventory, setInventory] = useState<InventoryItem[] | null>(null);
     const [users, setUsers] = useState<IUser[] | null>(null);
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
         [key: string]: string;
@@ -41,6 +44,7 @@ export default function Dashboard() {
     //Track whether updates have been made
     const [notificationsUpdated, setNotificationsUpdated] = useState<boolean>(false);
     const [donationsUpdated, setDonationsUpdated] = useState<boolean>(false);
+    const [inventoryUpdated, setInventoryUpdated] = useState<boolean>(false);
     const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
     const [orgsUpdated, setOrgsUpdated] = useState<boolean>(false);
 
@@ -92,6 +96,18 @@ export default function Dashboard() {
         }
     }
 
+    async function fetchInventory(): Promise<void> {
+        setIsLoading(true);
+        try {
+            const inventoryResult = await getInventory();
+            setInventory(inventoryResult);
+        } catch (error) {
+            addErrorEvent('Could not fetch inventory', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     async function fetchUsers(): Promise<void> {
         setIsLoading(true);
         try {
@@ -124,8 +140,10 @@ export default function Dashboard() {
         } else if (currentTab === 1) {
             fetchDonations();
         } else if (currentTab === 2) {
-            fetchUsers();
+            fetchInventory();
         } else if (currentTab === 3) {
+            fetchUsers();
+        } else if (currentTab === 4) {
             fetchOrgNames();
         }
     }
@@ -137,12 +155,14 @@ export default function Dashboard() {
         }
         if ((currentTab === 1 && !donations) || donationsUpdated) {
             fetchDonations();
-        } else if ((currentTab === 2 && !users) || usersUpdated) {
+        } else if ((currentTab === 2 && !inventory) || inventoryUpdated) {
+            fetchInventory();
+        } else if ((currentTab === 3 && !users) || usersUpdated) {
             fetchUsers();
-        } else if ((currentTab === 3 && !orgNamesAndIds) || orgsUpdated) {
+        } else if ((currentTab === 4 && !orgNamesAndIds) || orgsUpdated) {
             fetchOrgNames();
         }
-    }, [currentTab, donationsUpdated, usersUpdated, orgsUpdated, notificationsUpdated]);
+    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -188,9 +208,12 @@ export default function Dashboard() {
                         {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={2}>
-                        {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
+                        {inventory ? <Inventory inventory={inventory} setInventoryUpdated={setInventoryUpdated} /> : <p>No inventory found.</p>}
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={3}>
+                        {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={4}>
                         {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} /> : <p>No organizations found.</p>}
                     </CustomTabPanel>
                 </>
