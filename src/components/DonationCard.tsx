@@ -7,6 +7,7 @@ import { Box, IconButton, ImageListItem, ImageListItemBar } from '@mui/material'
 import Loader from './Loader';
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 // Styles
 import styles from './Card.module.css';
 // Types
@@ -35,13 +36,15 @@ export default function DonationCard(props: DonationCardProps) {
                 title={`${donation.brand} - ${donation.tagNumber ?? 'No Tag Number'}`}
                 subtitle={`Status: ${statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donation.status)}`}
                 actionIcon={
-                    <IconButton
-                        sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                        aria-label={`details about ${donation.brand} ${donation.model}`}
-                        onClick={() => setIdToDisplay(donation.id)}
-                    >
-                        <InfoIcon />
-                    </IconButton>
+                    donation.status === 'available' && (
+                        <IconButton
+                            sx={{ color: 'white' }}
+                            aria-label={`details about ${donation.brand} ${donation.model}`}
+                            onClick={() => setIdToDisplay(donation.id)}
+                        >
+                            <AddShoppingCartIcon />
+                        </IconButton>
+                    )
                 }
             />
         </ImageListItem>
