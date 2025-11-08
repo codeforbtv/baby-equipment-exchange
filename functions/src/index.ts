@@ -10,6 +10,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 //Collections
 const USERS_COLLECTION = 'Users';
 const ORGANIZATIONS_COLLECTION = 'Organizations';
+const DONATIONS_COLLECTION = 'Donations';
 
 admin.initializeApp();
 const auth = admin.auth();
@@ -192,6 +193,29 @@ export const getorganizationnames = onCall(
         }
     }
 );
+
+export const aredonationsavailable = onCall(async (request): Promise<string[]> => {
+    if (!request.auth) {
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to check if donations are available.'));
+    }
+    try {
+        let unavailableDonations = [];
+        const requestedDonationIds = request.data;
+        for (const requestedDonationId of requestedDonationIds) {
+            const docRef = db.collection(DONATIONS_COLLECTION).doc(requestedDonationId);
+            const donationDoc = await docRef.get();
+            if (donationDoc.exists) {
+                const donationDocData = donationDoc.data();
+                if (donationDocData && donationDocData.status !== 'available') {
+                    unavailableDonations.push(requestedDonationId);
+                }
+            }
+        }
+        return unavailableDonations;
+    } catch (error) {
+        return Promise.reject(new HttpsError('unavailable', 'Error checking if requested donations are still available.'));
+    }
+});
 
 // async function _addEvent(object: any) {
 //     try {

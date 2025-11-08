@@ -432,6 +432,7 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
         addErrorEvent('Request inventory items', error);
     }
 }
+
 //Get items requested by aid workers
 export async function getOrdersNotifications() {
     let orders: Order[] = [];

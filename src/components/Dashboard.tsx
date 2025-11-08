@@ -1,7 +1,7 @@
 'use client';
 
 //Components
-import { Button, IconButton, Menu, MenuItem, Tab, Tabs, useMediaQuery } from '@mui/material';
+import { Badge, Button, IconButton, Menu, MenuItem, Tab, Tabs, Tooltip, useMediaQuery } from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';
@@ -12,6 +12,8 @@ import Notifications from './Notifications';
 import Inventory from './Inventory';
 //Hooks
 import React, { useEffect, useState } from 'react';
+import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
+import { useRouter } from 'next/navigation';
 //API
 import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
 import { getAllDonations, getInventory } from '@/api/firebase-donations';
@@ -19,6 +21,7 @@ import { getAllDbUsers } from '@/api/firebase-users';
 //Icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Dashboard.module.css';
@@ -40,6 +43,9 @@ export default function Dashboard() {
         [key: string]: string;
     } | null>(null);
     const [notifications, setNotifications] = useState<Notification | null>(null);
+
+    const { requestedInventory } = useRequestedInventoryContext();
+    const router = useRouter();
 
     //Track whether updates have been made
     const [notificationsUpdated, setNotificationsUpdated] = useState<boolean>(false);
@@ -197,6 +203,7 @@ export default function Dashboard() {
                     <IconButton onClick={handleRefresh} size="large" sx={{ marginRight: 'auto', backgroundColor: '#f1f1f1', marginTop: '1rem' }}>
                         <RefreshIcon />
                     </IconButton>
+
                     <CustomTabPanel value={currentTab} index={0}>
                         {notifications ? (
                             <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
