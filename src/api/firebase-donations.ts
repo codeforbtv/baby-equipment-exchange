@@ -402,6 +402,24 @@ export async function deleteDonationById(id: string): Promise<void> {
     }
 }
 
+export async function adminAreDonationsAvailable(ids: string[]): Promise<string[]> {
+    try {
+        let unavailableDonations = [];
+        for (const id of ids) {
+            const donationref = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
+            const donationSnapshot = await getDoc(donationref);
+            const donation = donationSnapshot.data();
+            if (donation && donation.status !== 'available') {
+                unavailableDonations.push(donation.id);
+            }
+            return unavailableDonations;
+        }
+    } catch (error) {
+        addErrorEvent('Admin are donations available', error);
+    }
+    return Promise.reject();
+}
+
 export async function requestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
     try {
         const orderRef = doc(collection(db, ORDERS_COLLECTION));
