@@ -388,14 +388,16 @@ export async function deleteDonationById(id: string): Promise<void> {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
         const donationSnapshot = await getDoc(donationRef);
         const donation = donationSnapshot.data();
-        donation?.images.forEach(async (image) => {
-            try {
-                const imageRef = ref(storage, image as string);
-                await deleteObject(imageRef);
-            } catch (error) {
-                addErrorEvent('Delete images in deleteDonationById', error);
+        if (donation?.images) {
+            for (const image of donation.images) {
+                try {
+                    const imageRef = ref(storage, image as string);
+                    await deleteObject(imageRef);
+                } catch (error) {
+                    addErrorEvent('Delete images in deleteDonationById', error);
+                }
             }
-        });
+        }
         await deleteDoc(donationRef);
     } catch (error) {
         addErrorEvent('Delete donation by id', error);
