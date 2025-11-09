@@ -15,7 +15,7 @@ import CustomDialog from '@/components/CustomDialog';
 import { requestInventoryItems } from '@/api/firebase-donations';
 import { addErrorEvent, callAreDonationsAvailable } from '@/api/firebase';
 //Styles
-import '../HomeStyles.module.css';
+import '@/styles/globalStyles.css';
 import styles from './InventoryCart.module.css';
 import { InventoryItem } from '@/models/inventoryItem';
 

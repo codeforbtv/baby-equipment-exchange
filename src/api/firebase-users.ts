@@ -87,8 +87,21 @@ export async function getAllDbUsers(): Promise<IUser[]> {
         return users;
     } catch (error) {
         addErrorEvent('Error fetching all db users', error);
+        throw error;
     }
-    return Promise.reject();
+}
+
+export async function getAllActiveDbUsers(): Promise<IUser[]> {
+    try {
+        let users: IUser[] = [];
+        const q = query(collection(db, USERS_COLLECTION), where('isDisabled', '==', false)).withConverter(userConverter);
+        const activeUsersSnapshot = await getDocs(q);
+        activeUsersSnapshot.forEach((doc) => users.push(doc.data()));
+        return users;
+    } catch (error) {
+        addErrorEvent('Error fetching active users', error);
+        throw error;
+    }
 }
 
 export async function getDbUser(uid: string): Promise<IUser> {
