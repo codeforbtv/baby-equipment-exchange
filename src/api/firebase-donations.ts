@@ -23,17 +23,15 @@ import {
     FieldValue,
     arrayRemove
 } from 'firebase/firestore';
-
 // Models
 import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
 import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
-
+import { Order } from '@/types/OrdersTypes';
 // Libs
 import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
-import { Order } from '@/types/OrdersTypes';
 
 // Imported constants
 
@@ -198,6 +196,7 @@ export async function getInventoryItemById(id: string): Promise<InventoryItem> {
 
 //Get an array of inventory items from array of IDs. For retrieving items from local storage.
 export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
+    if (inventoryIds.length === 0) return [];
     try {
         let inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
@@ -453,13 +452,13 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
     }
 }
 
-export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
+export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<Order> {
     try {
         const orderRef = doc(collection(db, ORDERS_COLLECTION));
         const batch = writeBatch(db);
         //Create and close order
         batch.set(orderRef, {
-            status: 'closed',
+            status: 'open',
             requestor: user,
             items: [],
             createdAt: serverTimestamp()
@@ -479,8 +478,11 @@ export async function adminRequestInventoryItems(inventoryItemIds: string[], use
             });
         }
         await batch.commit();
+        const order = await getOrderById(orderRef.id);
+        return order;
     } catch (error) {
         addErrorEvent('Admin request inventory items', error);
+        throw error;
     }
 }
 
