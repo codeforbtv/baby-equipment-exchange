@@ -453,6 +453,37 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
     }
 }
 
+export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
+    try {
+        const orderRef = doc(collection(db, ORDERS_COLLECTION));
+        const batch = writeBatch(db);
+        //Create and close order
+        batch.set(orderRef, {
+            status: 'closed',
+            requestor: user,
+            items: [],
+            createdAt: serverTimestamp()
+        });
+        for (const inventoryItemId of inventoryItemIds) {
+            const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
+            //Update state of each requested item to 'requested'
+            batch.update(inventoryItemRef, {
+                status: 'requested',
+                requestor: user,
+                modifiedAt: serverTimestamp()
+            });
+            //Add donation ref to items array
+            batch.update(orderRef, {
+                items: arrayUnion(inventoryItemRef),
+                modifiedAt: serverTimestamp()
+            });
+        }
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('Admin request inventory items', error);
+    }
+}
+
 //Get items requested by aid workers
 export async function getOrdersNotifications() {
     let orders: Order[] = [];
