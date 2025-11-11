@@ -18,7 +18,8 @@ import {
     SelectChangeEvent,
     Button,
     Divider,
-    IconButton
+    IconButton,
+    Typography
 } from '@mui/material';
 import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -118,51 +119,56 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             Edit Donation
                         </Button>
                         <Divider sx={{ marginBottom: '1em' }}></Divider>
-                        <h3>
-                            <b>Status:</b> {statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donationDetails.status)}
-                        </h3>
-                        <h3>
-                            <b>Category:</b> {donationDetails.category}
-                        </h3>
-                        {donationDetails.status !== 'rejected' && (
-                            <h3>
-                                <b>Tag Number</b>: {donationDetails.tagNumber ?? 'No Tag Number'}
-                            </h3>
-                        )}
-                        <h3>
-                            <b>Brand: </b>
-                            {donationDetails.brand}
-                        </h3>
-                        <h3>
-                            <b>Model: </b>
-                            {donationDetails.model}
-                        </h3>
-                        <p>
+                        <Typography variant="h5">
+                            {donationDetails.brand} - {donationDetails.model}
+                        </Typography>
+                        {donationDetails.status !== 'rejected' && <Typography variant="h6">{donationDetails.tagNumber ?? 'No tag number'}</Typography>}
+                        <Typography variant="body1">
+                            <b>Status: </b>
+                            {statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donationDetails.status)}
+                        </Typography>
+
+                        <Typography variant="body1" sx={{ marginTop: '1em' }}>
+                            <b>Category: </b> {donationDetails.category}
+                        </Typography>
+
+                        <Typography variant="body1">
                             <b>Description: </b>
                             {donationDetails.description}
-                        </p>
-
-                        <p>
+                        </Typography>
+                        {donationDetails.dateAccepted && (
+                            <Typography variant="body1">
+                                <b>Accepted on: </b>
+                                {donationDetails.dateAccepted.toDate().toDateString()}
+                            </Typography>
+                        )}
+                        <Typography variant="body1">
                             <b>Donated by: </b>
                             {donationDetails.donorEmail}
-                        </p>
-                        {donationDetails.requestor && (
-                            <p>
-                                <b>Requested by:</b>
-                                {donationDetails.requestor.name}
-                            </p>
-                        )}
+                        </Typography>
                         {donationDetails.dateReceived && (
-                            <p>
-                                <b>Date recieved: </b>
+                            <Typography variant="body1">
+                                <b>Recieved on: </b>
                                 {donationDetails.dateReceived.toDate().toDateString()}
-                            </p>
+                            </Typography>
+                        )}
+                        {donationDetails.requestor && (
+                            <Typography variant="body1">
+                                <b>Requested by: </b>
+                                {donationDetails.requestor.name}
+                            </Typography>
+                        )}
+                        {donationDetails.dateRequested && (
+                            <Typography variant="body1">
+                                <b>Requested on: </b>
+                                {donationDetails.dateRequested.toDate().toDateString()}
+                            </Typography>
                         )}
                         {donationDetails.dateDistributed && (
-                            <p>
+                            <Typography variant="body1">
                                 <b>Date distributed: </b>
                                 {donationDetails.dateDistributed.toDate().toDateString()}
-                            </p>
+                            </Typography>
                         )}
                         <Dialog open={isImageOpen} onClose={handleImageClose} sx={{ width: '100%' }}>
                             <img src={openImageURL} alt={openImageURL} style={{ maxWidth: '100%' }} />

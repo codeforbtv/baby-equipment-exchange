@@ -7,20 +7,21 @@ import { useRouter } from 'next/navigation';
 //Components
 import DonationCardSmall from './DonationCardSmall';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
+import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@mui/material';
+import CustomDialog from './CustomDialog';
 //Api
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
+import sendMail from '@/api/nodemailer';
+import { closeOrder, updateDonationStatus } from '@/api/firebase-donations';
 //styles
 import '@/styles/globalStyles.css';
 //types
 import { Order } from '@/types/OrdersTypes';
 import { EventType } from '@/types/CalendlyTypes';
 import Loader from './Loader';
-import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@mui/material';
+
 import schedulePickup from '@/email-templates/schedulePickup';
-import { closeOrder, updateDonationStatus } from '@/api/firebase-donations';
-import sendMail from '@/api/nodemailer';
-import CustomDialog from './CustomDialog';
 
 type SchedulePickupProps = {
     order: Order;
@@ -41,6 +42,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleClose = () => {
         setIsDialogOpen(false);
+        router.push('/');
         window.location.reload();
     };
 

@@ -23,17 +23,15 @@ import {
     FieldValue,
     arrayRemove
 } from 'firebase/firestore';
-
 // Models
 import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
 import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
-
+import { Order } from '@/types/OrdersTypes';
 // Libs
 import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
-import { Order } from '@/types/OrdersTypes';
 
 // Imported constants
 
@@ -59,7 +57,9 @@ const donationConverter = {
             images: donation.getImages(),
             createdAt: donation.getCreatedAt(),
             modifiedAt: donation.getModifiedAt(),
+            dateAccepted: donation.getDateAccepted(),
             dateReceived: donation.getDateReceived(),
+            dateRequested: donation.getDateRequested(),
             dateDistributed: donation.getDateDistributed(),
             requestor: donation.getRequestor()
         };
@@ -88,7 +88,9 @@ const donationConverter = {
             images: data.images,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt,
+            dateAccepted: data.dateAccepted,
             dateReceived: data.dateReceived,
+            dateRequested: data.dateRequested,
             dateDistributed: data.dateDistributed,
             requestor: data.requestor
         };
@@ -198,6 +200,7 @@ export async function getInventoryItemById(id: string): Promise<InventoryItem> {
 
 //Get an array of inventory items from array of IDs. For retrieving items from local storage.
 export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
+    if (inventoryIds.length === 0) return [];
     try {
         let inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
@@ -276,7 +279,9 @@ export async function addDonation(newDonations: DonationBody[]) {
                 images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp,
+                dateAccepted: null,
                 dateReceived: null,
+                dateRequested: null,
                 dateDistributed: null,
                 requestor: null
             };
@@ -322,7 +327,9 @@ export async function addAdminDonation(newDonations: DonationBody[]): Promise<vo
                 images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp,
-                dateReceived: null,
+                dateAccepted: serverTimestamp() as Timestamp,
+                dateReceived: serverTimestamp() as Timestamp,
+                dateRequested: null,
                 dateDistributed: null,
                 requestor: null
             };
@@ -388,18 +395,38 @@ export async function deleteDonationById(id: string): Promise<void> {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
         const donationSnapshot = await getDoc(donationRef);
         const donation = donationSnapshot.data();
-        donation?.images.forEach(async (image) => {
-            try {
-                const imageRef = ref(storage, image as string);
-                await deleteObject(imageRef);
-            } catch (error) {
-                addErrorEvent('Delete images in deleteDonationById', error);
+        if (donation?.images) {
+            for (const image of donation.images) {
+                try {
+                    const imageRef = ref(storage, image as string);
+                    await deleteObject(imageRef);
+                } catch (error) {
+                    addErrorEvent('Delete images in deleteDonationById', error);
+                }
             }
-        });
+        }
         await deleteDoc(donationRef);
     } catch (error) {
         addErrorEvent('Delete donation by id', error);
     }
+}
+
+export async function adminAreDonationsAvailable(ids: string[]): Promise<string[]> {
+    try {
+        let unavailableDonations = [];
+        for (const id of ids) {
+            const donationref = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
+            const donationSnapshot = await getDoc(donationref);
+            const donation = donationSnapshot.data();
+            if (donation && donation.status !== 'available') {
+                unavailableDonations.push(donation.id);
+            }
+            return unavailableDonations;
+        }
+    } catch (error) {
+        addErrorEvent('Admin are donations available', error);
+    }
+    return Promise.reject();
 }
 
 export async function requestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
@@ -419,6 +446,7 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
             batch.update(inventoryItemRef, {
                 status: 'requested',
                 requestor: user,
+                dateRequested: serverTimestamp(),
                 modifiedAt: serverTimestamp()
             });
             //Add donation ref to items array
@@ -432,6 +460,42 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
         addErrorEvent('Request inventory items', error);
     }
 }
+
+export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<Order> {
+    try {
+        const orderRef = doc(collection(db, ORDERS_COLLECTION));
+        const batch = writeBatch(db);
+        //Create and close order
+        batch.set(orderRef, {
+            status: 'open',
+            requestor: user,
+            items: [],
+            createdAt: serverTimestamp()
+        });
+        for (const inventoryItemId of inventoryItemIds) {
+            const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
+            //Update state of each requested item to 'requested'
+            batch.update(inventoryItemRef, {
+                status: 'requested',
+                requestor: user,
+                dateRequested: serverTimestamp(),
+                modifiedAt: serverTimestamp()
+            });
+            //Add donation ref to items array
+            batch.update(orderRef, {
+                items: arrayUnion(inventoryItemRef),
+                modifiedAt: serverTimestamp()
+            });
+        }
+        await batch.commit();
+        const order = await getOrderById(orderRef.id);
+        return order;
+    } catch (error) {
+        addErrorEvent('Admin request inventory items', error);
+        throw error;
+    }
+}
+
 //Get items requested by aid workers
 export async function getOrdersNotifications() {
     let orders: Order[] = [];

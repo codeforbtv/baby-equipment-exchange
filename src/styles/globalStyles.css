@@ -97,13 +97,13 @@
     margin-top: 2em;
 }
 
-.page--header > p {
+/* .page--header > p {
     font-family: var(--font-garamond);
 }
 
 .page--header > a {
     font-family: var(--font-garamond);
-}
+} */
 
 .page--list > li {
     font-family: var(--font-garamond);
@@ -120,9 +120,9 @@
     padding: 1rem;
 }
 
-.content--container > p {
+/* .content--container > p {
     font-family: var(--font-garamond);
-}
+} */
 
 .body--wrapper a,
 .body--wrapper a:visited {

@@ -7,7 +7,7 @@ import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaim
 import { PatternFormat, OnValueChange } from 'react-number-format';
 import { enableDbUser, updateDbUser } from '@/api/firebase-users';
 //Components
-import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from './CustomDialog';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -216,7 +216,7 @@ const EditUser = (props: EditUserProps) => {
                                 renderInput={(params) => <TextField {...params} label="Organization" />}
                             />
                         ) : (
-                            <p>Could not load list of organizations</p>
+                            <Typography variant="body1">Could not load list of organizations</Typography>
                         )}
                         <PatternFormat
                             id="phone-number"

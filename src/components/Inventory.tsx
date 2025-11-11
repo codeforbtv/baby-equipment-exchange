@@ -69,7 +69,7 @@ const Inventory = (props: InventoryProps) => {
         </>
     );
 
-    const { isAidWorker } = useUserContext();
+    const { isAidWorker, isAdmin } = useUserContext();
     const { addRequestedInventoryItem, requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
 
@@ -86,6 +86,14 @@ const Inventory = (props: InventoryProps) => {
             }
         }
     }
+
+    const handleOpenCart = () => {
+        if (isAdmin) {
+            router.push('/admin-cart');
+        } else if (isAidWorker) {
+            router.push('/inventory-cart');
+        }
+    };
 
     //Filters by category and search input and prevents items in cart from appearing in inventory list
     const inventoryToDisplay = useMemo(() => {
@@ -133,7 +141,7 @@ const Inventory = (props: InventoryProps) => {
                             {requestedInventory.length > 0 && (
                                 <Badge badgeContent={requestedInventory.length} color="primary">
                                     <Tooltip title="View order">
-                                        <IconButton color="inherit" onClick={() => router.push('/inventory-cart')}>
+                                        <IconButton color="inherit" onClick={handleOpenCart}>
                                             <ShoppingCartIcon />
                                         </IconButton>
                                     </Tooltip>
@@ -192,7 +200,7 @@ const Inventory = (props: InventoryProps) => {
                                 </ImageList>
                             )}
                             {requestedInventory.length > 0 && (
-                                <Button variant="contained" onClick={() => router.push('/inventory-cart')}>
+                                <Button variant="contained" onClick={handleOpenCart}>
                                     Checkout
                                 </Button>
                             )}
