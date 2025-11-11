@@ -31,6 +31,7 @@ const listAllUsers = httpsCallable(functions, 'listallusers');
 const setCustomClaims = httpsCallable(functions, 'setcustomclaims');
 const updateAuthUser = httpsCallable(functions, 'updateauthuser');
 const deleteUser = httpsCallable(functions, 'deleteuser');
+const areDonationsAvailable = httpsCallable(functions, 'aredonationsavailable');
 
 //Cloud function calls
 export async function callCreateUser(accountInfo: NewUserAccountInfo): Promise<UserRecord> {
@@ -128,6 +129,16 @@ export async function callGetOrganizationNames(): Promise<{
         addErrorEvent('Could not fetch organization names', error);
     }
     return Promise.reject();
+}
+
+export async function callAreDonationsAvailable(ids: string[]): Promise<string[]> {
+    try {
+        const unavailableDonations = await areDonationsAvailable(ids);
+        return unavailableDonations.data as string[];
+    } catch (error) {
+        addErrorEvent('Error calling are donations available', error);
+        throw error;
+    }
 }
 
 //Multi-collection query

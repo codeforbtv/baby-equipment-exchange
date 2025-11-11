@@ -23,6 +23,7 @@ import '@/styles/globalStyles.css';
 //types
 import { EventType } from '@/types/CalendlyTypes';
 import { Donation } from '@/models/donation';
+import { serverTimestamp } from 'firebase/firestore';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
@@ -81,6 +82,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     tagNumbers.push(newTagNumber);
                     await updateDonation(donation.id, {
                         status: 'pending delivery',
+                        dateAccepted: serverTimestamp(),
                         tagNumber: newTagNumber
                     });
                 } catch (error) {

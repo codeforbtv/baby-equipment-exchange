@@ -88,3 +88,7 @@ export function sanitize(string: string) {
     const reg = /[&<>"'/]/gi;
     return string.replace(reg, (match) => map[match]);
 }
+
+export function extractEmail(text: string) {
+    return text.match(/([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+}

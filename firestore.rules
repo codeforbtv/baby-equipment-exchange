@@ -52,7 +52,7 @@ service cloud.firestore {
 
       // aid worker can only update 'requestor', 'modifiedAt', 'status' fields of avilable donations
       match /Donations/{document=**} {
-        allow update: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available' && (resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt', 'status']))
+        allow update: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available' && (resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt', 'status', 'dateRequested']))
       }
 
      //aid worker can create & update new orders (requested items)

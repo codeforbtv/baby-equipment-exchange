@@ -34,7 +34,7 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
                 onClick={() => setIdToDisplay(inventoryItem.id)}
             />
             <ImageListItemBar
-                title={inventoryItem.brand}
+                title={`${inventoryItem.brand} - ${inventoryItem.model}`}
                 subtitle={inventoryItem.category}
                 actionIcon={
                     <Tooltip title="Add to order">

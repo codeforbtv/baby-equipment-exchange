@@ -1,55 +1,76 @@
 'use client';
 
-//Libs
-import { requestInventoryItems } from '@/api/firebase-donations';
-import { addErrorEvent } from '@/api/firebase';
-
-//Components
-import { Card, Button, Box, Typography, Stack } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Loader from '@/components/Loader';
-
 //Hooks
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useUserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
-
-//Styles
-import '../HomeStyles.module.css';
-import styles from './InventoryCart.module.css';
-import Image from 'next/image';
 import { useState } from 'react';
+//Components
+import { Card, Button, Box, Typography, Stack } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Loader from '@/components/Loader';
+import Image from 'next/image';
 import CustomDialog from '@/components/CustomDialog';
+//Libs
+import { requestInventoryItems } from '@/api/firebase-donations';
+import { addErrorEvent, callAreDonationsAvailable } from '@/api/firebase';
+//Styles
+import '@/styles/globalStyles.css';
+import styles from './InventoryCart.module.css';
+import { InventoryItem } from '@/models/inventoryItem';
 
 const InventoryCart = () => {
     const { requestedInventory, removeRequestedInventoryItem, isLoading, clearRequestedInventory } = useRequestedInventoryContext();
 
     const [loading, setLoading] = useState<boolean>(false);
-    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState<boolean>(false);
+    const [isUnavailableDialogOpen, setIsUnavailableDialogOpen] = useState<boolean>(false);
+    const [unavailableDialogContent, setUnavailableDialogContent] = useState<string>('');
 
     const router = useRouter();
     const { currentUser } = useUserContext();
 
-    const handleClose = () => {
-        setIsDialogOpen(false);
+    const handleSuccessDialogClose = () => {
+        setIsSuccessDialogOpen(false);
         router.push('/');
+    };
+
+    const handleUnavailableDialogClose = () => {
+        setUnavailableDialogContent('');
+        setIsUnavailableDialogOpen(false);
     };
 
     const handleRequestItems = async (event: React.MouseEvent<HTMLElement>): Promise<void> => {
         if (!requestedInventory || requestedInventory.length == 0 || !currentUser) return;
         setLoading(true);
         try {
-            const requestedItemIDs = requestedInventory.map((item) => item.id);
+            const requestedItemIds = requestedInventory.map((item) => item.id);
+
+            //Make sure requested items are still available
+            const unavailableItemIds = await callAreDonationsAvailable(requestedItemIds);
+
+            if (unavailableItemIds.length > 0) {
+                const unavailableItems: InventoryItem[] = requestedInventory.filter((item) => unavailableItemIds.includes(item.id));
+                let dialogContent = 'The following items are no longer available: ';
+                unavailableItems.map((item, i) => {
+                    dialogContent += i < unavailableItems.length - 1 ? `"${item.brand} ${item.model}," ` : `"${item.brand} ${item.model}." `;
+                });
+                dialogContent += 'Please remove them from your cart and try again.';
+                setUnavailableDialogContent(dialogContent);
+                setIsUnavailableDialogOpen(true);
+                return;
+            }
+
             const user = {
                 id: currentUser.uid,
                 name: currentUser.displayName ?? '',
                 email: currentUser.email ?? ''
             };
 
-            await requestInventoryItems(requestedItemIDs, user);
+            await requestInventoryItems(requestedItemIds, user);
             clearRequestedInventory();
             localStorage.removeItem('requestedInventory');
-            setIsDialogOpen(true);
+            setIsSuccessDialogOpen(true);
         } catch (error) {
             addErrorEvent('Handle request items', error);
         } finally {
@@ -121,8 +142,15 @@ const InventoryCart = () => {
             )}
 
             <CustomDialog
-                isOpen={isDialogOpen}
-                onClose={handleClose}
+                isOpen={isUnavailableDialogOpen}
+                onClose={handleUnavailableDialogClose}
+                title="Item(s) no longer available."
+                content={unavailableDialogContent}
+            />
+
+            <CustomDialog
+                isOpen={isSuccessDialogOpen}
+                onClose={handleSuccessDialogClose}
                 title="Your request has been submitted."
                 content="Your requested items have been submitted. You will recieve an email with next steps once your order has been processed."
             />

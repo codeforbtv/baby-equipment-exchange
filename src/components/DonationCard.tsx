@@ -36,7 +36,7 @@ export default function DonationCard(props: DonationCardProps) {
                 subtitle={`Status: ${statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donation.status)}`}
                 actionIcon={
                     <IconButton
-                        sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                        sx={{ color: 'white' }}
                         aria-label={`details about ${donation.brand} ${donation.model}`}
                         onClick={() => setIdToDisplay(donation.id)}
                     >
