@@ -173,17 +173,19 @@ export default function Donate() {
     return (
         <>
             <div className="page--header">
-                <h2>Donate</h2>
+                <Typography variant="h4" sx={{ marginTop: '1em' }}>
+                    Donate
+                </Typography>
             </div>
             {isLoading ? (
                 <Loader />
             ) : (
                 <div className={styles['donate--container']}>
-                    <Typography variant="h4">
+                    <Typography variant="body1">
                         For a list of currently accepted items, please see our <a href="/about">about page</a>.
                     </Typography>
                     {pendingDonorEmail.length > 0 && pendingDonorName.length > 0 && (
-                        <Typography variant="h4" sx={{ marginTop: '2em' }}>
+                        <Typography variant="h5" sx={{ marginTop: '2em' }}>
                             {`Donor name: ${pendingDonorName} (${pendingDonorEmail}):`}{' '}
                             <Button variant="text" onClick={handleEditName}>
                                 Edit

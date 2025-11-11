@@ -31,10 +31,10 @@ export default function PendingDonations() {
                         <Card key={i} elevation={5} className={styles['pendingDonation--card']}>
                             <ImageThumbnail file={donation.images[0]} width={'10%'} margin={'.66%'} />
                             <div className={styles['text--group']}>
-                                <Typography variant="h4" className={styles['left--column']}>
+                                <Typography variant="h5" className={styles['left--column']}>
                                     {donation.model}
                                 </Typography>
-                                <Typography variant="h4" className={styles['right--column']}>
+                                <Typography variant="h5" className={styles['right--column']}>
                                     {donation.brand}
                                 </Typography>
                             </div>

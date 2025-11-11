@@ -165,7 +165,10 @@ const NotificationCard = (props: NotificationCardProps) => {
                                     </Typography>
                                     <Typography variant="h6">{donation.tagNumber}</Typography>
                                     {donation.dateAccepted && (
-                                        <Typography variant="body1">Accepted on {donation.dateAccepted.toDate().toDateString()}</Typography>
+                                        <>
+                                            <Typography variant="caption">Accepted on:</Typography>
+                                            <Typography variant="body1"> {donation.dateAccepted.toDate().toDateString()}</Typography>
+                                        </>
                                     )}
                                     <Typography variant="caption">Donated by:</Typography>
                                     <Typography variant="subtitle1">
@@ -198,7 +201,10 @@ const NotificationCard = (props: NotificationCardProps) => {
                                     </Typography>
                                     <Typography variant="h6">{donation.tagNumber}</Typography>
                                     {donation.dateRequested && (
-                                        <Typography variant="body1">Requested on {donation.dateRequested.toDate().toDateString()}</Typography>
+                                        <>
+                                            <Typography variant="caption">Requested on:</Typography>
+                                            <Typography variant="body1">{donation.dateRequested.toDate().toDateString()}</Typography>
+                                        </>
                                     )}
                                     <Typography variant="caption">Requested by:</Typography>
                                     <Typography variant="subtitle1">
