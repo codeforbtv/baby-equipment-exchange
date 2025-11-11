@@ -57,7 +57,9 @@ const donationConverter = {
             images: donation.getImages(),
             createdAt: donation.getCreatedAt(),
             modifiedAt: donation.getModifiedAt(),
+            dateAccepted: donation.getDateAccepted(),
             dateReceived: donation.getDateReceived(),
+            dateRequested: donation.getDateRequested(),
             dateDistributed: donation.getDateDistributed(),
             requestor: donation.getRequestor()
         };
@@ -86,7 +88,9 @@ const donationConverter = {
             images: data.images,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt,
+            dateAccepted: data.dateAccepted,
             dateReceived: data.dateReceived,
+            dateRequested: data.dateRequested,
             dateDistributed: data.dateDistributed,
             requestor: data.requestor
         };
@@ -275,7 +279,9 @@ export async function addDonation(newDonations: DonationBody[]) {
                 images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp,
+                dateAccepted: null,
                 dateReceived: null,
+                dateRequested: null,
                 dateDistributed: null,
                 requestor: null
             };
@@ -321,7 +327,9 @@ export async function addAdminDonation(newDonations: DonationBody[]): Promise<vo
                 images: newDonation.images,
                 createdAt: serverTimestamp() as Timestamp,
                 modifiedAt: serverTimestamp() as Timestamp,
-                dateReceived: null,
+                dateAccepted: serverTimestamp() as Timestamp,
+                dateReceived: serverTimestamp() as Timestamp,
+                dateRequested: null,
                 dateDistributed: null,
                 requestor: null
             };
@@ -438,6 +446,7 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
             batch.update(inventoryItemRef, {
                 status: 'requested',
                 requestor: user,
+                dateRequested: serverTimestamp(),
                 modifiedAt: serverTimestamp()
             });
             //Add donation ref to items array
@@ -469,6 +478,7 @@ export async function adminRequestInventoryItems(inventoryItemIds: string[], use
             batch.update(inventoryItemRef, {
                 status: 'requested',
                 requestor: user,
+                dateRequested: serverTimestamp(),
                 modifiedAt: serverTimestamp()
             });
             //Add donation ref to items array

@@ -58,7 +58,9 @@ export interface IDonation {
     images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
+    dateAccepted: Timestamp | null | undefined;
     dateReceived: Timestamp | null | undefined;
+    dateRequested: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
     requestor: { id: string; name: string; email: string } | null;
 }
@@ -99,7 +101,9 @@ export class Donation implements IDonation {
     images: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
+    dateAccepted: Timestamp | null | undefined;
     dateReceived: Timestamp | null | undefined;
+    dateRequested: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
     requestor: { id: string; name: string; email: string } | null;
 
@@ -119,7 +123,9 @@ export class Donation implements IDonation {
         this.images = args.images;
         this.createdAt = args.createdAt as Timestamp;
         this.modifiedAt = args.modifiedAt as Timestamp;
+        this.dateAccepted = args.dateAccepted as Timestamp;
         this.dateReceived = args.dateReceived as Timestamp;
+        this.dateRequested = args.dateRequested as Timestamp;
         this.dateDistributed = args.dateDistributed as Timestamp;
         this.requestor = args.requestor;
     }
@@ -184,8 +190,16 @@ export class Donation implements IDonation {
         return this.modifiedAt;
     }
 
+    getDateAccepted(): Timestamp | null | undefined {
+        return this.dateAccepted;
+    }
+
     getDateReceived(): Timestamp | null | undefined {
         return this.dateReceived;
+    }
+
+    getDateRequested(): Timestamp | null | undefined {
+        return this.dateRequested;
     }
 
     getDateDistributed(): Timestamp | null | undefined {
