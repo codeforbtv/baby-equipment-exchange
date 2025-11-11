@@ -80,7 +80,7 @@ export default function About() {
                 <p className={styles['about__paragraph--list-label']}>List of items not accepted:</p>
                 <ul className={styles['about__list']}>{itemTypesNotAcceptedList}</ul>
                 <p>
-                    <a href="https://docs.google.com/document/d/198EiN4I1h1X2L46-kAJ5rS2iPGV9aBwt_mQC2eBIl-c" target="_blank">
+                    <a href="https://docs.google.com/document/d/1q1AzYXozRm0-kp7NlUJqNBLhHKfE72xxVXq0WBntfK8/edit?tab=t.0" target="_blank">
                         Read the full FAQ documents.
                     </a>
                 </p>
