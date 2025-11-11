@@ -138,7 +138,8 @@ const DonationDetails = (props: DonationDetailsProps) => {
                         </Typography>
                         {donationDetails.dateAccepted && (
                             <Typography variant="body1">
-                                <b>Accepted on: {donationDetails.dateAccepted.toDate().toDateString()}</b>
+                                <b>Accepted on: </b>
+                                {donationDetails.dateAccepted.toDate().toDateString()}
                             </Typography>
                         )}
                         <Typography variant="body1">
@@ -158,7 +159,10 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             </Typography>
                         )}
                         {donationDetails.dateRequested && (
-                            <Typography variant="body1">Requested on: {donationDetails.dateRequested.toDate().toDateString()}</Typography>
+                            <Typography variant="body1">
+                                <b>Requested on: </b>
+                                {donationDetails.dateRequested.toDate().toDateString()}
+                            </Typography>
                         )}
                         {donationDetails.dateDistributed && (
                             <Typography variant="body1">
