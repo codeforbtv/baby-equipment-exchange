@@ -25,7 +25,7 @@ const theme = createTheme({
         },
         h5: {
             fontFamily: montserrat.style.fontFamily,
-            fontWeight: 500,
+            fontWeight: 600,
             '@media (max-width:600px)': {
                 fontSize: '1.2rem'
             }
