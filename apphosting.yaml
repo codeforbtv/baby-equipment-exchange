@@ -6,10 +6,10 @@ env:
       secret: projects/265793921799/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
 
     - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-      value: 'baby-equipment-exchange.firebaseapp.com'
+      value: 'baby-equipment-exchange-test.firebaseapp.com'
 
     - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-      value: 'baby-equipment-exchange'
+      value: 'baby-equipment-exchange-test'
 
     - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
       value: 'baby-equipment-exchange.appspot.com'
