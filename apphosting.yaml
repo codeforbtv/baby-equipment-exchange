@@ -3,28 +3,28 @@ env:
     #   value: 'production'
 
     - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-      secret: projects/265793921799/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
+      secret: projects/1061954053347/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
 
     - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-      value: 'baby-equipment-exchange-test.firebaseapp.com'
+      value: 'baby-product-exchange-dev.firebaseapp.com'
 
     - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-      value: 'baby-equipment-exchange-test'
+      value: 'baby-product-exchange-dev'
 
     - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
       value: 'baby-equipment-exchange.appspot.com'
 
     - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-      value: '265793921799'
+      value: '1061954053347'
 
     - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-      value: '1:265793921799:web:2307ccd57b31bf1d74b952'
+      value: '1:1061954053347:web:b72c8f0678fbab642b91d6'
 
     - variable: CALENDLY_API_KEY
-      secret: projects/265793921799/secrets/CALENDLY_API_KEY
+      secret: projects/1061954053347/secrets/CALENDLY_API_KEY
 
     - variable: GOOGLE_APP_PASSWORD
-      secret: projects/265793921799/secrets/GOOGLE_APP_PASSWORD
+      secret: projects/1061954053347/secrets/GOOGLE_APP_PASSWORD
 
     - variable: ALGOLIA_API_KEY
-      secret: projects/265793921799/secrets/ALGOLIA_API_KEY
+      secret: projects/1061954053347/secrets/ALGOLIA_API_KEY
