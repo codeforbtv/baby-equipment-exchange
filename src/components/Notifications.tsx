@@ -16,6 +16,8 @@ import styles from '@/components/NotificationCard.module.css';
 import { Notification } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
 
+import { convertImportedDonations } from '@/api/firebase-donations';
+
 type NotificationsProps = {
     notifications: Notification;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
@@ -69,6 +71,10 @@ const Notifications = (props: NotificationsProps) => {
 
     const router = useRouter();
 
+    const handleClick = async () => {
+        await convertImportedDonations();
+    };
+
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
@@ -83,9 +89,9 @@ const Notifications = (props: NotificationsProps) => {
             )}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
-                    {/* <div className="page--header">
-                        <h3>{`You have ${notificationCount} notifications`}</h3>
-                    </div> */}
+                    {/* <Button variant="contained" onClick={handleClick}>
+                        Get paths
+                    </Button> */}
                     {sortedDonationsWaitingApproval.length > 0 && (
                         <>
                             <Typography sx={{ marginTop: '1rem' }} variant="h6">

@@ -56,3 +56,6 @@ serviceAccount.json
 .vscode
 
 .env
+
+#images to import
+/src/data/imports/tagged_images
