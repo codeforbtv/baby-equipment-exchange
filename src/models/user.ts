@@ -1,5 +1,6 @@
 // Firebase types
 import { DocumentReference, FieldValue, Timestamp } from 'firebase/firestore';
+import { Donation } from './donation';
 
 export interface IUser {
     [key: string]:
@@ -25,6 +26,7 @@ export interface IUser {
     isDisabled?: boolean;
     phoneNumber: string;
     requestedItems: { id: string; model: string }[] | null | undefined;
+    distributedItems: Donation[] | null;
     notes: string[] | null | undefined;
     organization: { id: string; name: string } | null;
     modifiedAt: Timestamp | FieldValue;
@@ -54,6 +56,7 @@ export class UserCollection implements IUser {
     isDisabled?: boolean;
     phoneNumber: string;
     requestedItems: { id: string; model: string }[] | null | undefined;
+    distributedItems: Donation[] | null;
     notes: string[] | null | undefined;
     organization: { id: string; name: string } | null;
     modifiedAt: Timestamp | FieldValue;
@@ -66,6 +69,7 @@ export class UserCollection implements IUser {
         this.isDisabled = args.isDisabled;
         this.phoneNumber = args.phoneNumber;
         this.requestedItems = args.requestedItems;
+        this.distributedItems = args.distributedItems;
         this.notes = args.notes;
         this.organization = args.organization;
         this.modifiedAt = args.modifiedAt;
@@ -97,6 +101,10 @@ export class UserCollection implements IUser {
 
     getRequestedItems(): { id: string; model: string }[] | null | undefined {
         return this.requestedItems;
+    }
+
+    getDistributedItems(): Donation[] | null {
+        return this.distributedItems;
     }
 
     getNotes(): string[] | null | undefined {
