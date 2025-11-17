@@ -3,28 +3,20 @@
 import 'server-only';
 
 // Libs
-import * as functionsV1 from 'firebase-functions/v1';
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 import fs from 'fs';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-
 import * as admin from 'firebase-admin';
-import { DecodedIdToken, getAuth, ListUsersResult, UserRecord } from 'firebase-admin/auth';
-import { FieldValue, getFirestore, WriteBatch } from 'firebase-admin/firestore';
-import { getStorage, getDownloadURL } from 'firebase-admin/storage';
-import { applicationDefault, initializeApp, ServiceAccount } from 'firebase-admin/app';
-import { UserCardProps } from '@/types/post-data';
-import { convertToString } from '@/utils/utils';
-import { UserInfo } from 'firebase/auth';
-import { IUser, UserCollection } from '@/models/user';
-import { AuthUserRecord } from '@/types/UserTypes';
-import { writeBatch } from 'firebase/firestore';
+import { getAuth, UserRecord } from 'firebase-admin/auth';
+import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
+import { initializeApp, ServiceAccount } from 'firebase-admin/app';
 
+import { convertToString } from '@/utils/utils';
+import { AuthUserRecord } from '@/types/UserTypes';
 import { imageImports } from '@/data/imports/tag_image_map';
-import { Blob, File } from 'buffer';
 
 const region = 'us-east1';
 
@@ -68,9 +60,10 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const db = getFirestore(app);
 
+//Used for importing images from spreadsheet
 function findPaths(fileNames: string[]): string[] {
     let filePaths = [];
-    const directoryPath = '/Users/bryan/repos/baby-equipment-exchange/src/data/imports/tagged_images';
+    const directoryPath = process.env.IMPORT_DIRECTORY ? process.env.IMPORT_DIRECTORY : '';
     const files = fs.readdirSync(directoryPath, { withFileTypes: true });
     for (const file of files) {
         const filePath = path.join(directoryPath, file.name);
@@ -79,6 +72,7 @@ function findPaths(fileNames: string[]): string[] {
     return filePaths;
 }
 
+//Used for importing images from spreadsheet
 export async function getBase64ImagesFromTagnumber(tagNumber: string) {
     const fileNames: string[] = imageImports[tagNumber];
     const filePaths: string[] = findPaths(fileNames);

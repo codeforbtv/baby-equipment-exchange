@@ -600,6 +600,7 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
     }
 }
 
+//The below functions are for uploading images for donations imported from the original spreadsheet
 export async function uploadImagesFromTagNumber(tagNumber: string) {
     try {
         const base64Images: base64ImageObj[] = await getBase64ImagesFromTagnumber(tagNumber);

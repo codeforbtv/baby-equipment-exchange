@@ -1,6 +1,6 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -15,8 +15,6 @@ import styles from '@/components/NotificationCard.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
-
-import { convertImportedDonations } from '@/api/firebase-donations';
 
 type NotificationsProps = {
     notifications: Notification;
@@ -71,10 +69,6 @@ const Notifications = (props: NotificationsProps) => {
 
     const router = useRouter();
 
-    const handleClick = async () => {
-        await convertImportedDonations();
-    };
-
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
@@ -89,9 +83,6 @@ const Notifications = (props: NotificationsProps) => {
             )}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
-                    {/* <Button variant="contained" onClick={handleClick}>
-                        Get paths
-                    </Button> */}
                     {sortedDonationsWaitingApproval.length > 0 && (
                         <>
                             <Typography sx={{ marginTop: '1rem' }} variant="h6">
