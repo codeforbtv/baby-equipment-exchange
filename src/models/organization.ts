@@ -2,6 +2,7 @@
 import { Timestamp } from 'firebase/firestore';
 //Plain JavaScript objects
 import { IAddress } from '@/models/address';
+import { Donation } from './donation';
 
 export const orgTags = {
     'Social Services': 'social-services',
@@ -23,10 +24,13 @@ export interface IOrganization {
         | IAddress
         | undefined
         | Timestamp
+        | Donation[]
+        | null
         | (() => OrganizationTagValues[])
         | (() => string[])
         | (() => IAddress | undefined)
         | (() => string | undefined)
+        | (() => Donation[] | null)
         | (() => Timestamp);
     id: string;
     name: string;
@@ -35,6 +39,7 @@ export interface IOrganization {
     phoneNumber?: string;
     emailFooter?: string;
     tags: OrganizationTagValues[];
+    distributedItems: Donation[] | null;
     notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -47,10 +52,13 @@ export class Organization implements IOrganization {
         | IAddress
         | undefined
         | Timestamp
+        | Donation[]
+        | null
         | (() => OrganizationTagValues[])
         | (() => IAddress | undefined)
         | (() => string[])
         | (() => string | undefined)
+        | (() => Donation[] | null)
         | (() => Timestamp);
     id: string;
     name: string;
@@ -59,6 +67,7 @@ export class Organization implements IOrganization {
     phoneNumber?: string;
     emailFooter?: string;
     tags: OrganizationTagValues[];
+    distributedItems: Donation[] | null;
     notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -71,6 +80,7 @@ export class Organization implements IOrganization {
         this.phoneNumber = args.phoneNumber;
         this.emailFooter = args.emailFooter;
         this.tags = args.tags;
+        this.distributedItems = args.distributedItems;
         this.notes = args.notes;
         this.createdAt = args.createdAt as Timestamp;
         this.modifiedAt = args.modifiedAt as Timestamp;
@@ -102,6 +112,10 @@ export class Organization implements IOrganization {
 
     getTags() {
         return this.tags;
+    }
+
+    getDistributedItems(): Donation[] | null {
+        return this.distributedItems;
     }
 
     getNotes() {

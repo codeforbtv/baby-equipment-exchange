@@ -35,6 +35,7 @@ export const organizationConverter = {
             phoneNumber: organization.getPhoneNumber(),
             emailFooter: organization.getEmailFooter(),
             tags: organization.getTags(),
+            distributedItems: organization.getDistributedItems(),
             notes: organization.getNotes(),
             createdAt: organization.getCreatedAt(),
             modifiedAt: organization.getModifiedAt()
@@ -56,6 +57,7 @@ export const organizationConverter = {
             phoneNumber: data.phoneNumber,
             emailFooter: data.emailFooter,
             tags: data.tags,
+            distributedItems: data.distributedItems,
             notes: data.notes,
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
@@ -74,6 +76,7 @@ export async function addOrganization(newOrganization: OrganizationBody): Promis
         phoneNumber: newOrganization.phoneNumber,
         emailFooter: newOrganization.emailFooter,
         tags: newOrganization.tags,
+        distributedItems: [],
         notes: newOrganization.notes,
         createdAt: serverTimestamp() as Timestamp,
         modifiedAt: serverTimestamp() as Timestamp
