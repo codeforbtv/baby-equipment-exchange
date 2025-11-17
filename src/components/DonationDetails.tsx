@@ -86,7 +86,6 @@ const DonationDetails = (props: DonationDetailsProps) => {
 
     const handleClose = async (): Promise<void> => {
         if (donationDetails) await fetchDonation(donationDetails.id);
-        if (setDonationsUpdated) setDonationsUpdated(true);
         setDialogContent('');
         setIsDialogOpen(false);
     };
