@@ -19,17 +19,21 @@ import {
     Button,
     Divider,
     IconButton,
-    Typography
+    Typography,
+    Stack
 } from '@mui/material';
 import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 //Styles
 import EditDonation from '@/components/EditDonation';
 import '@/styles/globalStyles.css';
 //Types
 import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, donationStatuses, Donation } from '@/models/donation';
+import CustomDialog from './CustomDialog';
 
 type DonationDetailsProps = {
     id: string | null;
@@ -46,6 +50,8 @@ const DonationDetails = (props: DonationDetailsProps) => {
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
     const [openImageURL, setOpenImageURL] = useState<string>('');
+    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [dialogContent, setDialogContent] = useState<string>('');
 
     const initialStatus: DonationStatusValues = donationDetails ? donationDetails.status : 'in processing';
 
@@ -66,17 +72,25 @@ const DonationDetails = (props: DonationDetailsProps) => {
         }
     }
 
-    const selectHandler = async (event: SelectChangeEvent) => {
+    const removeFromInventory = async (): Promise<void> => {
+        setIsLoading(true);
         try {
-            if (!donationDetails) return;
-            const updatedStatus = event.target.value;
-            const result = await updateDonationStatus(donationDetails.id, updatedStatus);
-            setSelectedStatus(result);
-            //Fetch latest details
-            fetchDonation(donationDetails.id);
+            if (donationDetails) {
+                await updateDonationStatus(donationDetails.id, 'unavailable');
+                setDialogContent(`${donationDetails.brand} - ${donationDetails.model} has been removed from inventory.`);
+                setIsDialogOpen(true);
+            }
         } catch (error) {
-            addErrorEvent('Error updating donation status', error);
+            addErrorEvent('Error removing donation from inventory', error);
+        } finally {
+            setIsLoading(false);
         }
+    };
+
+    const handleClose = async (): Promise<void> => {
+        if (donationDetails) await fetchDonation(donationDetails.id);
+        setDialogContent('');
+        setIsDialogOpen(false);
     };
 
     const handleImageClick: MouseEventHandler<HTMLImageElement> = (event) => {
@@ -115,9 +129,17 @@ const DonationDetails = (props: DonationDetailsProps) => {
                                 </ImageListItem>
                             ))}
                         </ImageList>
-                        <Button variant="contained" type="button" onClick={() => setIsEditMode(true)} sx={{ marginBottom: '1em' }}>
-                            Edit Donation
-                        </Button>
+                        <Stack direction="row" spacing={2} sx={{ marginBottom: '1em' }}>
+                            <Button variant="contained" type="button" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
+                                Edit Donation
+                            </Button>
+                            {donationDetails.status === 'available' && (
+                                <Button variant="contained" startIcon={<RemoveCircleOutlineIcon />} color="error" onClick={removeFromInventory}>
+                                    Remove from inventory
+                                </Button>
+                            )}
+                        </Stack>
+
                         <Divider sx={{ marginBottom: '1em' }}></Divider>
                         <Typography variant="h5">
                             {donationDetails.brand} - {donationDetails.model}
@@ -178,6 +200,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                                 </Button>
                             </DialogActions>
                         </Dialog>
+                        <CustomDialog isOpen={isDialogOpen} title="Donation updated" content={dialogContent} onClose={handleClose} />
                     </div>
                 )}
                 {!isLoading && donationDetails && isEditMode && (
