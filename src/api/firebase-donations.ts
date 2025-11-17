@@ -32,6 +32,11 @@ import { Order } from '@/types/OrdersTypes';
 // Libs
 import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
+import { getBase64ImagesFromTagnumber } from './firebaseAdmin';
+import { base64ImageObj } from '@/types/DonationTypes';
+import { base64ObjToFile } from '@/utils/utils';
+import { uploadImages } from './firebase-images';
+import { imageImports } from '@/data/imports/tag_image_map';
 
 // Imported constants
 
@@ -592,5 +597,57 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
         await batch.commit();
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);
+    }
+}
+
+//The below functions are for uploading images for donations imported from the original spreadsheet
+export async function uploadImagesFromTagNumber(tagNumber: string) {
+    try {
+        const base64Images: base64ImageObj[] = await getBase64ImagesFromTagnumber(tagNumber);
+        let imageFiles: File[] = [];
+        for (const base64Image of base64Images) {
+            const imageFile = await base64ObjToFile(base64Image);
+            imageFiles.push(imageFile);
+        }
+        const imageUrls = await uploadImages(imageFiles);
+        return imageUrls;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function convertImportedDonations(): Promise<void> {
+    try {
+        const importsSnapshot = await getDocs(collection(db, 'BPE_Test_Data_Updated_Donors_v2'));
+        const batch = writeBatch(db);
+        for (const doc of importsSnapshot.docs) {
+            const docData = doc.data();
+            const images = await uploadImagesFromTagNumber(docData['tagNumber']);
+            batch.update(doc.ref, {
+                images: images,
+                dateAccepted: null,
+                dateReceived: null,
+                dateRequested: null,
+                dateDistributed: null,
+                requestor: null,
+                notes: null,
+                modifiedAt: serverTimestamp()
+            });
+            if (docData['donorEmail'] === undefined) {
+                batch.update(doc.ref, {
+                    donorEmail: ''
+                });
+            }
+            if (docData['donorName'] === undefined) {
+                batch.update(doc.ref, {
+                    donorName: ''
+                });
+            }
+        }
+        await batch.commit();
+        console.log('Done!');
+    } catch (error) {
+        console.log('Not done!');
+        throw error;
     }
 }

@@ -1,6 +1,6 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -83,9 +83,6 @@ const Notifications = (props: NotificationsProps) => {
             )}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
-                    {/* <div className="page--header">
-                        <h3>{`You have ${notificationCount} notifications`}</h3>
-                    </div> */}
                     {sortedDonationsWaitingApproval.length > 0 && (
                         <>
                             <Typography sx={{ marginTop: '1rem' }} variant="h6">
