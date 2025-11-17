@@ -28,6 +28,7 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import AddIcon from '@mui/icons-material/Add';
 //Styles
 import EditDonation from '@/components/EditDonation';
 import '@/styles/globalStyles.css';
@@ -77,11 +78,26 @@ const DonationDetails = (props: DonationDetailsProps) => {
         try {
             if (donationDetails) {
                 await updateDonationStatus(donationDetails.id, 'unavailable');
-                setDialogContent(`${donationDetails.brand} - ${donationDetails.model} has been removed from inventory.`);
+                setDialogContent(`'${donationDetails.brand} - ${donationDetails.model}' has been removed from inventory.`);
                 setIsDialogOpen(true);
             }
         } catch (error) {
             addErrorEvent('Error removing donation from inventory', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const addToInventory = async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+            if (donationDetails) {
+                await updateDonationStatus(donationDetails.id, 'available');
+                setDialogContent(`'${donationDetails.brand} - ${donationDetails.model}' has been added to inventory.`);
+                setIsDialogOpen(true);
+            }
+        } catch (error) {
+            addErrorEvent('Error adding donation from inventory', error);
         } finally {
             setIsLoading(false);
         }
@@ -136,6 +152,11 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             {donationDetails.status === 'available' && (
                                 <Button variant="contained" startIcon={<RemoveCircleOutlineIcon />} color="error" onClick={removeFromInventory}>
                                     Remove from inventory
+                                </Button>
+                            )}
+                            {donationDetails.status === 'unavailable' && (
+                                <Button variant="contained" startIcon={<AddIcon />} color="error" onClick={addToInventory}>
+                                    Add to inventory
                                 </Button>
                             )}
                         </Stack>
