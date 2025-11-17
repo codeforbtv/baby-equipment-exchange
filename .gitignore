@@ -58,4 +58,4 @@ serviceAccount.json
 .env
 
 #images to import
-/src/data/imports/tagged_images
+/src/data/imports/*
