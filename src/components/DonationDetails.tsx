@@ -6,35 +6,20 @@ import { MouseEventHandler, useEffect, useState, Dispatch, SetStateAction } from
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationById, updateDonationStatus } from '@/api/firebase-donations';
 //Components
-import {
-    Dialog,
-    DialogActions,
-    FormControl,
-    ImageList,
-    ImageListItem,
-    InputLabel,
-    MenuItem,
-    Select,
-    SelectChangeEvent,
-    Button,
-    Divider,
-    IconButton,
-    Typography,
-    Stack
-} from '@mui/material';
+import { Dialog, DialogActions, ImageList, ImageListItem, Button, Divider, IconButton, Typography, Stack } from '@mui/material';
 import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+import CustomDialog from './CustomDialog';
+import EditDonation from '@/components/EditDonation';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
 //Styles
-import EditDonation from '@/components/EditDonation';
 import '@/styles/globalStyles.css';
 //Types
-import { IDonation, DonationStatuses, DonationStatusKeys, DonationStatusValues, donationStatuses, Donation } from '@/models/donation';
-import CustomDialog from './CustomDialog';
+import { DonationStatusKeys, donationStatuses, Donation } from '@/models/donation';
 
 type DonationDetailsProps = {
     id: string | null;
@@ -54,12 +39,8 @@ const DonationDetails = (props: DonationDetailsProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogContent, setDialogContent] = useState<string>('');
 
-    const initialStatus: DonationStatusValues = donationDetails ? donationDetails.status : 'in processing';
-
     //Status names for select menu
     const statusSelectOptions = Object.keys(donationStatuses);
-
-    const [selectedStatus, setSelectedStatus] = useState<DonationStatusValues>(initialStatus);
 
     async function fetchDonation(id: string) {
         setIsLoading(true);
@@ -105,6 +86,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
 
     const handleClose = async (): Promise<void> => {
         if (donationDetails) await fetchDonation(donationDetails.id);
+        if (setDonationsUpdated) setDonationsUpdated(true);
         setDialogContent('');
         setIsDialogOpen(false);
     };
@@ -119,10 +101,6 @@ const DonationDetails = (props: DonationDetailsProps) => {
     useEffect(() => {
         if (id && !donation) fetchDonation(id);
     }, []);
-
-    useEffect(() => {
-        setSelectedStatus(initialStatus);
-    }, [initialStatus]);
 
     return (
         <ProtectedAdminRoute>
