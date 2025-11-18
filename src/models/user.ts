@@ -6,6 +6,8 @@ export interface IUser {
     [key: string]:
         | string
         | { id: string; name: string }[]
+        | { id: string; tagNumber: string }[]
+        | null
         | FieldValue
         | Timestamp
         | null
@@ -15,6 +17,7 @@ export interface IUser {
         | { [key: string]: any }
         | (() => string)
         | (() => { id: string; name: string }[] | null | undefined)
+        | (() => { id: string; tagNumber: string }[] | null)
         | (() => DocumentReference | null | undefined)
         | (() => DocumentReference[] | null | undefined)
         | (() => Timestamp | FieldValue)
@@ -26,7 +29,7 @@ export interface IUser {
     isDisabled?: boolean;
     phoneNumber: string;
     requestedItems: { id: string; model: string }[] | null | undefined;
-    distributedItems: Donation[] | null;
+    distributedItems: { id: string; tagNumber: string }[] | null;
     notes: string[] | null | undefined;
     organization: { id: string; name: string } | null;
     modifiedAt: Timestamp | FieldValue;
@@ -45,8 +48,11 @@ export class UserCollection implements IUser {
         | boolean
         | undefined
         | { [key: string]: any }
+        | { id: string; tagNumber: string }[]
+        | null
         | (() => string)
         | (() => { id: string; model: string }[] | null | undefined)
+        | (() => { id: string; tagNumber: string }[] | null)
         | (() => Timestamp | FieldValue)
         | (() => boolean | undefined);
     readonly uid: string;
@@ -56,7 +62,7 @@ export class UserCollection implements IUser {
     isDisabled?: boolean;
     phoneNumber: string;
     requestedItems: { id: string; model: string }[] | null | undefined;
-    distributedItems: Donation[] | null;
+    distributedItems: { id: string; tagNumber: string }[] | null;
     notes: string[] | null | undefined;
     organization: { id: string; name: string } | null;
     modifiedAt: Timestamp | FieldValue;
@@ -103,7 +109,7 @@ export class UserCollection implements IUser {
         return this.requestedItems;
     }
 
-    getDistributedItems(): Donation[] | null {
+    getDistributedItems(): { id: string; tagNumber: string }[] | null {
         return this.distributedItems;
     }
 

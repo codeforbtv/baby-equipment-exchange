@@ -24,13 +24,14 @@ export interface IOrganization {
         | IAddress
         | undefined
         | Timestamp
-        | Donation[]
+        | { id: string; tagNumber: string }[]
         | null
+        | null
+        | (() => { id: string; tagNumber: string }[] | null)
         | (() => OrganizationTagValues[])
         | (() => string[])
         | (() => IAddress | undefined)
         | (() => string | undefined)
-        | (() => Donation[] | null)
         | (() => Timestamp);
     id: string;
     name: string;
@@ -39,7 +40,7 @@ export interface IOrganization {
     phoneNumber?: string;
     emailFooter?: string;
     tags: OrganizationTagValues[];
-    distributedItems: Donation[] | null;
+    distributedItems: { id: string; tagNumber: string }[] | null;
     notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -52,13 +53,14 @@ export class Organization implements IOrganization {
         | IAddress
         | undefined
         | Timestamp
-        | Donation[]
+        | { id: string; tagNumber: string }[]
+        | null
         | null
         | (() => OrganizationTagValues[])
         | (() => IAddress | undefined)
         | (() => string[])
         | (() => string | undefined)
-        | (() => Donation[] | null)
+        | (() => { id: string; tagNumber: string }[] | null)
         | (() => Timestamp);
     id: string;
     name: string;
@@ -67,7 +69,7 @@ export class Organization implements IOrganization {
     phoneNumber?: string;
     emailFooter?: string;
     tags: OrganizationTagValues[];
-    distributedItems: Donation[] | null;
+    distributedItems: { id: string; tagNumber: string }[] | null;
     notes: string[];
     createdAt: Timestamp;
     modifiedAt: Timestamp;
@@ -114,7 +116,7 @@ export class Organization implements IOrganization {
         return this.tags;
     }
 
-    getDistributedItems(): Donation[] | null {
+    getDistributedItems(): { id: string; tagNumber: string }[] | null {
         return this.distributedItems;
     }
 
