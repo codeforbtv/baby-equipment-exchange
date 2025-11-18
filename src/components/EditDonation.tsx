@@ -13,7 +13,7 @@ import { categories } from '@/data/html';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
-import { DonationStatusValues, donationStatuses, IDonation, DonationStatuses } from '@/models/donation';
+import { IDonation } from '@/models/donation';
 import CustomDialog from './CustomDialog';
 import { addErrorEvent } from '@/api/firebase';
 import { getTagNumber } from '@/api/firebase-categories';
@@ -37,13 +37,6 @@ const EditDonation = (props: EditDonationProps) => {
     const [newDescription, setNewDescription] = useState<string>(description ?? '');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    const initialStatus: DonationStatusValues = status ? status : 'in processing';
-
-    //Status names for select menu
-    const statusSelectOptions = Object.keys(donationStatuses);
-
-    const [selectedStatus, setSelectedStatus] = useState<DonationStatusValues>(initialStatus);
-
     const handleClose = () => {
         if (setDonationsUpdated) setDonationsUpdated(true);
         setIsDialogOpen(false);
@@ -53,10 +46,6 @@ const EditDonation = (props: EditDonationProps) => {
 
     const handleCategoryChange = (event: SelectChangeEvent) => {
         setNewCategory(event.target.value);
-    };
-
-    const handleStatusChange = (event: SelectChangeEvent) => {
-        setSelectedStatus(event.target.value);
     };
 
     const handleSubmitUpdatedDonation = async (event: React.FormEvent): Promise<void> => {
@@ -75,8 +64,7 @@ const EditDonation = (props: EditDonationProps) => {
                 tagNumber: newCategoryTagNumber.length ? newCategoryTagNumber : newTagNumber,
                 brand: newBrand,
                 model: newModel,
-                description: newDescription,
-                status: selectedStatus
+                description: newDescription
             };
             await updateDonation(id, updatedDonation);
         } catch (error) {
@@ -113,7 +101,7 @@ const EditDonation = (props: EditDonationProps) => {
                                 ))}
                             </Select>
                         </FormControl>
-                        {selectedStatus !== 'rejected' && (
+                        {status !== 'rejected' && (
                             <TextField
                                 type="text"
                                 label="Tag Number"
@@ -152,19 +140,6 @@ const EditDonation = (props: EditDonationProps) => {
                             value={newDescription}
                             required
                         />
-                        <FormControl fullWidth>
-                            <InputLabel id="donation-status-label">Status</InputLabel>
-                            <Select labelId="donation-status-label" id="donation-status" value={selectedStatus} label="Status" onChange={handleStatusChange}>
-                                {statusSelectOptions.map((status) => {
-                                    const value = donationStatuses[status as keyof DonationStatuses];
-                                    return (
-                                        <MenuItem key={status} value={value}>
-                                            {status}
-                                        </MenuItem>
-                                    );
-                                })}
-                            </Select>
-                        </FormControl>
                         <Button variant="contained" type="submit">
                             Save changes
                         </Button>

@@ -49,6 +49,7 @@ export const userConverter = {
             isDisabled: user.getIsDisabled(),
             phoneNumber: user.getPhoneNumber(),
             requestedItems: user.getRequestedItems(),
+            distributedItems: user.getDistributedItems(),
             notes: user.getNotes(),
             organization: user.getOrganization(),
             modifiedAt: user.getModifiedAt()
@@ -71,6 +72,7 @@ export const userConverter = {
             isDisabled: data.isDisabled,
             phoneNumber: data.phoneNumber,
             requestedItems: data.requestedItems,
+            distributedItems: data.distributedItems,
             notes: data.notes,
             organization: data.organization,
             modifiedAt: data.modifiedAt
@@ -164,6 +166,7 @@ export async function getUserDetails(uid: string): Promise<IUser> {
             customClaims: authUser.customClaims,
             phoneNumber: dbUser.phoneNumber,
             requestedItems: dbUser.requestedItems,
+            distributedItems: dbUser.distributedItems,
             notes: dbUser.notes,
             organization: dbUser.organization,
             modifiedAt: dbUser.modifiedAt
