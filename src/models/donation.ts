@@ -224,8 +224,11 @@ export class Donation implements IDonation {
             return undefined;
         }
         const dateReceived = this.dateReceived!;
+        const dateDistributed = this.dateDistributed;
         const currentTime = Date.now();
-        const daysInStorage = Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
+        const daysInStorage = dateDistributed
+            ? Math.floor((dateDistributed.toMillis() - dateReceived.toMillis()) / 86400000)
+            : Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
         return daysInStorage;
     }
 }

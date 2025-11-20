@@ -157,6 +157,12 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             <b>Status: </b>
                             {statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donationDetails.status)}
                         </Typography>
+                        {donationDetails.status === 'available' && (
+                            <Typography variant="body1">
+                                <b>Days in storage: </b>
+                                {donationDetails.getDaysInStorage()}
+                            </Typography>
+                        )}
 
                         <Typography variant="body1" sx={{ marginTop: '1em' }}>
                             <b>Category: </b> {donationDetails.category}
@@ -172,13 +178,16 @@ const DonationDetails = (props: DonationDetailsProps) => {
                                 {donationDetails.dateAccepted.toDate().toDateString()}
                             </Typography>
                         )}
-                        <Typography variant="body1">
-                            <b>Donated by: </b>
-                            {donationDetails.donorEmail}
-                        </Typography>
+                        {(donationDetails.donorEmail.length > 0 || donationDetails.donorName.length > 0) && (
+                            <Typography variant="body1">
+                                <b>Donated by: </b>
+                                {donationDetails.donorName} ({donationDetails.donorEmail})
+                            </Typography>
+                        )}
+
                         {donationDetails.dateReceived && (
                             <Typography variant="body1">
-                                <b>Recieved on: </b>
+                                <b>Received on: </b>
                                 {donationDetails.dateReceived.toDate().toDateString()}
                             </Typography>
                         )}
