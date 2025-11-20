@@ -655,21 +655,11 @@ export async function uploadImagesFromTagNumber(tagNumber: string) {
 
 export async function convertImportedDonations(): Promise<void> {
     try {
-        const importsSnapshot = await getDocs(collection(db, 'BPE_Test_Data_Updated_Donors_v2'));
+        const importsSnapshot = await getDocs(collection(db, 'BEE_Data_2025-11-19_v1'));
         const batch = writeBatch(db);
         for (const doc of importsSnapshot.docs) {
             const docData = doc.data();
             const images = await uploadImagesFromTagNumber(docData['tagNumber']);
-            batch.update(doc.ref, {
-                images: images,
-                dateAccepted: null,
-                dateReceived: null,
-                dateRequested: null,
-                dateDistributed: null,
-                requestor: null,
-                notes: null,
-                modifiedAt: serverTimestamp()
-            });
             if (docData['donorEmail'] === undefined) {
                 batch.update(doc.ref, {
                     donorEmail: ''
@@ -680,6 +670,22 @@ export async function convertImportedDonations(): Promise<void> {
                     donorName: ''
                 });
             }
+            batch.update(doc.ref, {
+                images:
+                    images.length > 0
+                        ? images
+                        : [
+                              'https://firebasestorage.googleapis.com/v0/b/baby-equipment-exchange.appspot.com/o/77def461-02a2-4667-b7cf-6a9d94306823-1763596581708.jpg?alt=media&token=46d43d52-3c5d-4808-8ec5-0bb244d43405'
+                          ],
+                status: docData['status'] === 'Available' ? 'available' : 'unavailable',
+                id: doc.id,
+                dateAccepted: null,
+                dateRequested: null,
+                dateDistributed: null,
+                requestor: null,
+                notes: null,
+                modifiedAt: serverTimestamp()
+            });
         }
         await batch.commit();
         console.log('Done!');
