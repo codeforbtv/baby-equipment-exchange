@@ -226,6 +226,7 @@ export class Donation implements IDonation {
         const dateReceived = this.dateReceived!;
         const dateDistributed = this.dateDistributed;
         const currentTime = Date.now();
+        //If item was distributed, get days it took to distrbute. If not, get days up until now
         const daysInStorage = dateDistributed
             ? Math.floor((dateDistributed.toMillis() - dateReceived.toMillis()) / 86400000)
             : Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
