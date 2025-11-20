@@ -59,7 +59,7 @@ export function stripNullUndefined(object: any) {
         if (object[key] instanceof Object) {
             stripNullUndefined(object[key]);
         }
-        if (object[key] === undefined || object[key] === null) {
+        if (object[key] === undefined || object[key] === null || object[key] === '') {
             delete object[key];
         }
     }
