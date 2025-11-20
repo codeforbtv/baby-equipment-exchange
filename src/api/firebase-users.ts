@@ -24,7 +24,6 @@ import { Event, IEvent } from '@/models/event';
 // Types
 import { NoteBody } from '@/types/post-data';
 // Utility methods
-import { stripNullUndefined } from '@/utils/utils';
 
 import {
     NextOrObserver,

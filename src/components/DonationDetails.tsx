@@ -16,10 +16,12 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
+import DownloadIcon from '@mui/icons-material/Download';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { DonationStatusKeys, donationStatuses, Donation } from '@/models/donation';
+import { productLifeCycleReport } from '@/api/firebase-reports';
 
 type DonationDetailsProps = {
     id: string | null;
@@ -97,6 +99,10 @@ const DonationDetails = (props: DonationDetailsProps) => {
 
     const handleImageClose = () => setIsImageOpen(false);
 
+    const generateProductLifeCycleReport = (donation: Donation) => {
+        return productLifeCycleReport(donation);
+    };
+
     useEffect(() => {
         if (id && !donation) fetchDonation(id);
     }, []);
@@ -122,15 +128,19 @@ const DonationDetails = (props: DonationDetailsProps) => {
                                 </ImageListItem>
                             ))}
                         </ImageList>
-                        <Stack direction="row" spacing={2} sx={{ marginBottom: '1em' }}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ marginBottom: '1em' }}>
                             <Button variant="contained" type="button" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
                                 Edit Donation
+                            </Button>
+                            <Button variant="contained" startIcon={<DownloadIcon />} onClick={() => generateProductLifeCycleReport(donationDetails)}>
+                                Lifecycle Report
                             </Button>
                             {donationDetails.status === 'available' && (
                                 <Button variant="contained" startIcon={<RemoveCircleOutlineIcon />} color="error" onClick={removeFromInventory}>
                                     Remove from inventory
                                 </Button>
                             )}
+
                             {donationDetails.status === 'unavailable' && (
                                 <Button variant="contained" startIcon={<AddIcon />} color="error" onClick={addToInventory}>
                                     Add to inventory
