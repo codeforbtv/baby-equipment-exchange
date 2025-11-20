@@ -64,7 +64,8 @@ const donationConverter = {
             dateReceived: donation.getDateReceived(),
             dateRequested: donation.getDateRequested(),
             dateDistributed: donation.getDateDistributed(),
-            requestor: donation.getRequestor()
+            requestor: donation.getRequestor(),
+            distributor: donation.getDistributor()
         };
         for (const key in donationData) {
             if (donationData[key] === undefined || donationData[key] === null) {
@@ -95,7 +96,8 @@ const donationConverter = {
             dateReceived: data.dateReceived,
             dateRequested: data.dateRequested,
             dateDistributed: data.dateDistributed,
-            requestor: data.requestor
+            requestor: data.requestor,
+            distributor: data.distributor
         };
         return new Donation(donationData);
     }
@@ -286,7 +288,8 @@ export async function addDonation(newDonations: DonationBody[]) {
                 dateReceived: null,
                 dateRequested: null,
                 dateDistributed: null,
-                requestor: null
+                requestor: null,
+                distributor: null
             };
             const donation = new Donation(donationParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
@@ -334,7 +337,8 @@ export async function addAdminDonation(newDonations: DonationBody[]): Promise<vo
                 dateReceived: serverTimestamp() as Timestamp,
                 dateRequested: null,
                 dateDistributed: null,
-                requestor: null
+                requestor: null,
+                distributor: null
             };
             const donation = new Donation(donationParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
@@ -590,6 +594,7 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
         });
         batch.update(donationRef, {
             status: 'unavailable',
+            requestor: null,
             modifiedAt: serverTimestamp()
         });
         await batch.commit();
@@ -611,9 +616,20 @@ export async function markDonationAsDistributed(donation: Donation): Promise<voi
             orgId = requestor.organization.id;
         }
         const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, orgId);
+        const organizationSnapshot = await getDoc(organizationRef);
+        let orgName;
+        if (organizationSnapshot.exists()) {
+            orgName = organizationSnapshot.data().name;
+        }
 
         batch.update(donationRef, {
             status: 'distributed',
+            distributor: {
+                id: donation.requestor?.id,
+                name: donation.requestor?.name,
+                email: donation.requestor?.email,
+                organization: orgName
+            },
             modifiedAt: serverTimestamp(),
             dateDistributed: serverTimestamp()
         });

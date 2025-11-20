@@ -36,6 +36,9 @@ export function productLifeCycleReport(donation: Donation) {
         'Requester Name': donation.requestor?.name,
         'Requester Email': donation.requestor?.email,
         'Date Distributed': donation.dateDistributed && donation.dateDistributed.toDate().toDateString(),
+        'Distributor Name': donation.distributor?.name,
+        'Distributor Email': donation.distributor?.email,
+        'Distributor Orginzation': donation.distributor?.organization,
         'Days In Storage': donation.getDaysInStorage(),
         'Date Created': donation.createdAt && donation.createdAt.toDate().toDateString(),
         'Last Modified': donation.modifiedAt && donation.modifiedAt.toDate().toDateString()

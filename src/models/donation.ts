@@ -38,6 +38,7 @@ export interface IDonation {
         | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
+        | ({ id: string; name: string; email: string; organization: string } | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -63,6 +64,7 @@ export interface IDonation {
     dateRequested: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
     requestor: { id: string; name: string; email: string } | null;
+    distributor: { id: string; name: string; email: string; organization: string } | null;
 }
 
 export class Donation implements IDonation {
@@ -81,6 +83,7 @@ export class Donation implements IDonation {
         | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
+        | ({ id: string; name: string; email: string; organization: string } | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -106,6 +109,7 @@ export class Donation implements IDonation {
     dateRequested: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
     requestor: { id: string; name: string; email: string } | null;
+    distributor: { id: string; name: string; email: string; organization: string } | null;
 
     constructor(args: IDonation) {
         this.id = args.id;
@@ -128,6 +132,7 @@ export class Donation implements IDonation {
         this.dateRequested = args.dateRequested as Timestamp;
         this.dateDistributed = args.dateDistributed as Timestamp;
         this.requestor = args.requestor;
+        this.distributor = args.distributor;
     }
 
     getId(): string {
@@ -208,6 +213,10 @@ export class Donation implements IDonation {
 
     getRequestor(): { id: string; name: string; email: string } | null {
         return this.requestor;
+    }
+
+    getDistributor(): { id: string; name: string; email: string; organization: string } | null {
+        return this.distributor;
     }
 
     getDaysInStorage(): number | undefined {
