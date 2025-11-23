@@ -38,7 +38,7 @@ const categoryConverter = {
     fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Category {
         const data = snapshot.data(options);
         const categoryData: ICategory = {
-            id: data.id,
+            id: snapshot.id,
             active: data.active,
             name: data.name,
             description: data.description,

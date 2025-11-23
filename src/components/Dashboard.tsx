@@ -187,7 +187,7 @@ export default function Dashboard() {
             fetchUsers();
         } else if ((currentTab === 4 && !orgNamesAndIds) || orgsUpdated) {
             fetchOrgNames();
-        } else if (currentTab === 5 && !categories && categoriesUpdated) {
+        } else if ((currentTab === 5 && !categories) || categoriesUpdated) {
             fetchCategories();
         }
     }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated, categoriesUpdated]);

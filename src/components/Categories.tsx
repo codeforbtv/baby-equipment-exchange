@@ -11,6 +11,7 @@ import '@/styles/globalStyles.css';
 import { Category } from '@/models/category';
 import { Button, InputAdornment, List, ListItem, ListItemButton, ListItemText, TextField, Typography } from '@mui/material';
 import Loader from './Loader';
+import CategoryDetails from './CategoryDetails';
 
 type CategoryProps = {
     categories: Category[];
@@ -33,43 +34,55 @@ const Categories = (props: CategoryProps) => {
 
     return (
         <ProtectedAdminRoute>
-            <div className="page--header">
-                <Typography variant="h5">Categories</Typography>
-            </div>
-            <Button variant="contained" type="button">
-                Add New
-            </Button>
-            <TextField
-                label="Search"
-                id="search-field"
-                value={searchInput}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <SearchIcon />
-                        </InputAdornment>
-                    )
-                }}
-            />
-            <div className="content--container">
-                {isLoading && <Loader />}
-                {!isLoading && filteredCategories && (
-                    <List>
-                        {filteredCategories.map((category) => (
-                            <ListItem key={category.id}>
-                                <ListItemButton
-                                    sx={{ backgroundColor: 'white', border: '1px solid black' }}
-                                    component="a"
-                                    onClick={() => setIdtoDisplay(category.id)}
-                                >
-                                    <ListItemText primary={category.name} sx={{ color: category.active ? 'black' : 'gray' }} />
-                                </ListItemButton>
-                            </ListItem>
-                        ))}
-                    </List>
-                )}
-            </div>
+            {idToDisplay && (
+                <CategoryDetails
+                    id={idToDisplay}
+                    category={categories.find((c) => c.id === idToDisplay)}
+                    setIdToDisplay={setIdtoDisplay}
+                    setCategoriesUpdated={setCategoriesUpdated}
+                />
+            )}
+            {!idToDisplay && !showForm && (
+                <>
+                    <div className="page--header">
+                        <Typography variant="h5">Categories</Typography>
+                    </div>
+                    <Button variant="contained" type="button">
+                        Add New
+                    </Button>
+                    <TextField
+                        label="Search"
+                        id="search-field"
+                        value={searchInput}
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon />
+                                </InputAdornment>
+                            )
+                        }}
+                    />
+                    <div className="content--container">
+                        {isLoading && <Loader />}
+                        {!isLoading && filteredCategories && (
+                            <List>
+                                {filteredCategories.map((category) => (
+                                    <ListItem key={category.name}>
+                                        <ListItemButton
+                                            sx={{ backgroundColor: 'white', border: '1px solid black' }}
+                                            component="a"
+                                            onClick={() => setIdtoDisplay(category.id)}
+                                        >
+                                            <ListItemText primary={category.name} sx={{ color: category.active ? 'black' : 'gray' }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        )}
+                    </div>
+                </>
+            )}
         </ProtectedAdminRoute>
     );
 };

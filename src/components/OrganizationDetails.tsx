@@ -14,7 +14,6 @@ import { addErrorEvent } from '@/api/firebase';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 //Styles
-//Styling
 import '@/styles/globalStyles.css';
 //Types
 import { orgTags, OrganizationTagKeys, IOrganization } from '@/models/organization';
