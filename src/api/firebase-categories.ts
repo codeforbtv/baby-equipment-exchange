@@ -1,4 +1,4 @@
-import { CategoryType } from '@/types/CategoryTypes';
+import { categoryBody, CategoryType } from '@/types/CategoryTypes';
 import { categories } from '@/data/html';
 
 import { addErrorEvent, db } from './firebase';
@@ -7,12 +7,16 @@ import {
     doc,
     DocumentData,
     getDoc,
+    setDoc,
     getDocs,
     runTransaction,
     serverTimestamp,
+    Timestamp,
     SnapshotOptions,
     writeBatch,
-    QueryDocumentSnapshot
+    QueryDocumentSnapshot,
+    updateDoc,
+    deleteDoc
 } from 'firebase/firestore';
 import { Category, ICategory } from '@/models/category';
 
@@ -57,6 +61,46 @@ export async function getAllCategories(): Promise<Category[]> {
     } catch (error) {
         addErrorEvent('Error getting all categories: ', error);
         throw error;
+    }
+}
+
+export async function addCategory(newCategory: categoryBody): Promise<void> {
+    try {
+        const categoryRef = doc(collection(db, CATEGORIES_COLLECTION));
+        const categoryParams: ICategory = {
+            id: categoryRef.id,
+            active: true,
+            name: newCategory.name,
+            description: newCategory.description,
+            tagCount: 0,
+            tagPrefix: newCategory.tagPrefix,
+            modifiedAt: serverTimestamp() as Timestamp
+        };
+        const category = new Category(categoryParams);
+        await setDoc(categoryRef, categoryConverter.toFirestore(category));
+    } catch (error) {
+        addErrorEvent('Error creating new categoy: ', error);
+    }
+}
+
+export async function updateCategory(id: string, categoryDetails: any): Promise<void> {
+    try {
+        const categoryRef = doc(db, CATEGORIES_COLLECTION, id).withConverter(categoryConverter);
+        await updateDoc(categoryRef, {
+            ...categoryDetails,
+            modifiedAt: serverTimestamp()
+        });
+    } catch (error) {
+        addErrorEvent('Error updating category: ', error);
+    }
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+    try {
+        const categoryRef = doc(db, CATEGORIES_COLLECTION, id);
+        await deleteDoc(categoryRef);
+    } catch (error) {
+        addErrorEvent('Error deleting category: ', error);
     }
 }
 
