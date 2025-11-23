@@ -10,6 +10,7 @@ import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
 import Notifications from './Notifications';
 import Inventory from './Inventory';
+import Categories from './Categories';
 //Hooks
 import React, { useEffect, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -243,6 +244,9 @@ export default function Dashboard() {
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={4}>
                         {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} /> : <p>No organizations found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={5}>
+                        {categories ? <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} /> : <p>No categories found.</p>}
                     </CustomTabPanel>
                 </>
             )}
