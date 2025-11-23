@@ -44,17 +44,21 @@ export class Category implements ICategory {
     tagPrefix: string;
 
     constructor(args: ICategory) {
-        ((this.id = args.id),
-            (this.active = args.active),
-            (this.name = args.name),
-            (this.description = args.description),
-            (this.modifiedAt = args.modifiedAt),
-            (this.tagCount = args.tagCount),
-            (this.tagPrefix = args.tagPrefix));
+        this.id = args.id;
+        this.active = args.active;
+        this.name = args.name;
+        this.description = args.description;
+        this.modifiedAt = args.modifiedAt as Timestamp;
+        this.tagCount = args.tagCount;
+        this.tagPrefix = args.tagPrefix;
     }
 
     getId(): string {
         return this.id;
+    }
+
+    getActive(): boolean {
+        return this.active;
     }
 
     getName(): string {
