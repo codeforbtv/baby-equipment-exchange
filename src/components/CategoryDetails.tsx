@@ -12,6 +12,8 @@ import '@/styles/globalStyles.css';
 import { Dispatch, SetStateAction, useState } from 'react';
 //types
 import { Category } from '@/models/category';
+import { updateCategory } from '@/api/firebase-categories';
+import { addErrorEvent } from '@/api/firebase';
 
 type CategoryDetailsProps = {
     id: string;
@@ -26,6 +28,26 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const handleToggleActive = async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+            if (category?.active) {
+                await updateCategory(id, {
+                    active: false
+                });
+            } else if (!category?.active) {
+                await updateCategory(id, {
+                    active: true
+                });
+            }
+        } catch (error) {
+            addErrorEvent('Error toggling category active status: ', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <ProtectedAdminRoute>
@@ -47,12 +69,16 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
                     {category.active ? (
                         <Stack direction="row" spacing={2}>
                             <Typography variant="h6">Active</Typography>
-                            <Button variant="text">Make inactive</Button>
+                            <Button variant="text" onClick={handleToggleActive}>
+                                Make inactive
+                            </Button>
                         </Stack>
                     ) : (
                         <Stack direction="row">
                             <Typography variant="h6">Inactive</Typography>
-                            <Button variant="text">Make Active</Button>
+                            <Button variant="text" onClick={handleToggleActive}>
+                                Make Active
+                            </Button>
                         </Stack>
                     )}
                     {category.description && (

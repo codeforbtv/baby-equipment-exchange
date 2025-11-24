@@ -12,6 +12,7 @@ import { Category } from '@/models/category';
 import { Button, InputAdornment, List, ListItem, ListItemButton, ListItemText, TextField, Typography } from '@mui/material';
 import Loader from './Loader';
 import CategoryDetails from './CategoryDetails';
+import CategoryForm from './CategoryForm';
 
 type CategoryProps = {
     categories: Category[];
@@ -21,10 +22,16 @@ type CategoryProps = {
 const Categories = (props: CategoryProps) => {
     const { categories, setCategoriesUpdated } = props;
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [idToDisplay, setIdtoDisplay] = useState<string | null>(null);
+    const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [searchInput, setSearchInput] = useState<string>('');
     const [filteredCategories, setFilteredCategories] = useState<Category[] | null>(categories);
+
+    const handleShowForm = () => {
+        //Close details if open
+        setIdToDisplay(null);
+        setShowForm(true);
+    };
 
     useEffect(() => {
         setFilteredCategories(
@@ -38,16 +45,17 @@ const Categories = (props: CategoryProps) => {
                 <CategoryDetails
                     id={idToDisplay}
                     category={categories.find((c) => c.id === idToDisplay)}
-                    setIdToDisplay={setIdtoDisplay}
+                    setIdToDisplay={setIdToDisplay}
                     setCategoriesUpdated={setCategoriesUpdated}
                 />
             )}
+            {showForm && <CategoryForm setShowForm={setShowForm} setCategoriesUpdated={setCategoriesUpdated} />}
             {!idToDisplay && !showForm && (
                 <>
                     <div className="page--header">
                         <Typography variant="h5">Categories</Typography>
                     </div>
-                    <Button variant="contained" type="button">
+                    <Button variant="contained" type="button" onClick={handleShowForm}>
                         Add New
                     </Button>
                     <TextField
@@ -72,7 +80,7 @@ const Categories = (props: CategoryProps) => {
                                         <ListItemButton
                                             sx={{ backgroundColor: 'white', border: '1px solid black' }}
                                             component="a"
-                                            onClick={() => setIdtoDisplay(category.id)}
+                                            onClick={() => setIdToDisplay(category.id)}
                                         >
                                             <ListItemText primary={category.name} sx={{ color: category.active ? 'black' : 'gray' }} />
                                         </ListItemButton>
