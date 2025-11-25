@@ -67,6 +67,21 @@ export async function getAllCategories(): Promise<Category[]> {
     }
 }
 
+export async function getCategoryById(id: string): Promise<Category> {
+    try {
+        const categoryRef = doc(db, CATEGORIES_COLLECTION, id).withConverter(categoryConverter);
+        const categorySnapshot = await getDoc(categoryRef);
+        if (categorySnapshot.exists()) {
+            return categorySnapshot.data();
+        } else {
+            return Promise.reject('Category not found.');
+        }
+    } catch (error) {
+        addErrorEvent('Error getting category by id: ', error);
+        throw error;
+    }
+}
+
 export async function addCategory(newCategory: categoryBody): Promise<void> {
     try {
         const categoryRef = doc(collection(db, CATEGORIES_COLLECTION));

@@ -9,11 +9,12 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 //Styles
 import '@/styles/globalStyles.css';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //types
 import { Category } from '@/models/category';
-import { updateCategory } from '@/api/firebase-categories';
+import { updateCategory, getCategoryById } from '@/api/firebase-categories';
 import { addErrorEvent } from '@/api/firebase';
+import { faL } from '@fortawesome/free-solid-svg-icons';
 
 type CategoryDetailsProps = {
     id: string;
@@ -28,19 +29,39 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [categoryDetailsUpdated, setCategoryDetailsUpdated] = useState<boolean>(false);
+
+    //If category has been updated, fetch latest changes from db
+
+    const [categoryDetails, setCategoryDetails] = useState<Category | undefined>(category);
+
+    const fetchCategory = async (id: string): Promise<void> => {
+        setIsLoading(true);
+        try {
+            const categoryResult = await getCategoryById(id);
+            setCategoryDetails(categoryResult);
+            setCategoryDetailsUpdated(false);
+        } catch (error) {
+            addErrorEvent('Error fetching category: ', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleToggleActive = async (): Promise<void> => {
         setIsLoading(true);
         try {
-            if (category?.active) {
+            if (categoryDetails?.active) {
                 await updateCategory(id, {
                     active: false
                 });
-            } else if (!category?.active) {
+            } else if (!categoryDetails?.active) {
                 await updateCategory(id, {
                     active: true
                 });
             }
+            setCategoryDetailsUpdated(true);
         } catch (error) {
             addErrorEvent('Error toggling category active status: ', error);
             throw error;
@@ -48,6 +69,10 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!categoryDetails || categoryDetailsUpdated) fetchCategory(id);
+    }, [categoryDetailsUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -61,12 +86,12 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
             </div>
 
             {isLoading && <Loader />}
-            {!isLoading && !category && !isEditMode && <Typography variant="body1">Category not found</Typography>}
-            {!isLoading && category && !isEditMode && (
+            {!isLoading && !categoryDetails && !isEditMode && <Typography variant="body1">Category not found</Typography>}
+            {!isLoading && categoryDetails && !isEditMode && (
                 <div className="content--container">
-                    <Typography variant="h5">{category.name}</Typography>
+                    <Typography variant="h5">{categoryDetails.name}</Typography>
                     <Typography variant="caption">Status</Typography>
-                    {category.active ? (
+                    {categoryDetails.active ? (
                         <Stack direction="row" spacing={2}>
                             <Typography variant="h6">Active</Typography>
                             <Button variant="text" onClick={handleToggleActive}>
@@ -81,19 +106,19 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
                             </Button>
                         </Stack>
                     )}
-                    {category.description && (
+                    {categoryDetails.description && categoryDetails.description.length > 0 && (
                         <Typography variant="body1">
                             <b>Description: </b>
-                            {category.description}
+                            {categoryDetails.description}
                         </Typography>
                     )}
                     <Typography variant="body1">
                         <b>Tag Prefix: </b>
-                        {category.tagPrefix}
+                        {categoryDetails.tagPrefix}
                     </Typography>
                     <Typography variant="body1">
                         <b>Tag Counter: </b>
-                        {category.tagCount}
+                        {categoryDetails.tagCount}
                     </Typography>
                 </div>
             )}
