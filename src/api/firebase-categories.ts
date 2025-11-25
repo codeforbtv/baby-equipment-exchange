@@ -16,7 +16,9 @@ import {
     writeBatch,
     QueryDocumentSnapshot,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    query,
+    orderBy
 } from 'firebase/firestore';
 import { Category, ICategory } from '@/models/category';
 
@@ -53,7 +55,8 @@ const categoryConverter = {
 export async function getAllCategories(): Promise<Category[]> {
     try {
         let categories: Category[] = [];
-        const querySnapshot = await getDocs(collection(db, CATEGORIES_COLLECTION).withConverter(categoryConverter));
+        const q = query(collection(db, CATEGORIES_COLLECTION), orderBy('name')).withConverter(categoryConverter);
+        const querySnapshot = await getDocs(q);
         querySnapshot.forEach((snapshot) => {
             categories.push(snapshot.data());
         });
