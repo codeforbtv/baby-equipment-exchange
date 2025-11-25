@@ -96,7 +96,6 @@ export default function OrganizationForm(props: DonationFormProps) {
         };
         try {
             await addOrganization(orgToSubmit);
-            setIsLoading(false);
             setDialogText('Organization created successfully');
             setDialogContent(`Organization ${name} was created sucessfully.`);
             setIsDialogOpen(true);
@@ -105,8 +104,10 @@ export default function OrganizationForm(props: DonationFormProps) {
             setPhoneNumber('');
             setTags([]);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Submit Organization', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
         }
     };
 

@@ -2,13 +2,18 @@
 
 //Hooks
 import { Dispatch, SetStateAction, useState } from 'react';
+import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Box, Button, IconButton, TextField, Typography } from '@mui/material';
+import CustomDialog from './CustomDialog';
 import Loader from './Loader';
+//API
+import { addCategory } from '@/api/firebase-categories';
+import { addErrorEvent } from '@/api/firebase';
 //Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { addErrorEvent } from '@/api/firebase';
+import { categoryBody } from '@/types/CategoryTypes';
 
 type CategoryFormProps = {
     setShowForm?: Dispatch<SetStateAction<boolean>>;
@@ -22,13 +27,32 @@ const CategoryForm = (props: CategoryFormProps) => {
     const [name, setName] = useState<string>('');
     const [tagPrefix, setTagPrefix] = useState<string>('');
     const [description, setDescription] = useState<string>('');
-    const [error, setError] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const router = useRouter();
+
+    const handleClose = () => {
+        if (setCategoriesUpdated) setCategoriesUpdated(true);
+        if (setShowForm) {
+            setIsDialogOpen(false);
+            setShowForm(false);
+        } else {
+            setIsDialogOpen(false);
+            router.push('/categories');
+        }
+    };
 
     const handleSubmit = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
         try {
+            const categoryToCreate: categoryBody = {
+                name: name,
+                tagPrefix: tagPrefix,
+                description: description
+            };
+            await addCategory(categoryToCreate);
+            setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting new category: ', error);
             throw error;
@@ -90,6 +114,12 @@ const CategoryForm = (props: CategoryFormProps) => {
                             </Button>
                         )}
                     </Box>
+                    <CustomDialog
+                        isOpen={isDialogOpen}
+                        onClose={handleClose}
+                        title="Cateory created"
+                        content={`The category "${name}" has been successfuly created`}
+                    />
                 </div>
             )}
         </ProtectedAdminRoute>
