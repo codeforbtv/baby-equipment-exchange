@@ -1,20 +1,22 @@
 'use client';
 
+//Hooks
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Button, IconButton, Stack, Typography } from '@mui/material';
 import Loader from './Loader';
-//icons
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DeleteIcon from '@mui/icons-material/Delete';
-//Styles
-import '@/styles/globalStyles.css';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-//types
-import { Category } from '@/models/category';
+import EditCategory from './EditCategory';
+//Api
 import { updateCategory, getCategoryById } from '@/api/firebase-categories';
 import { addErrorEvent } from '@/api/firebase';
-import { faL } from '@fortawesome/free-solid-svg-icons';
+//icons
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
+//Styles
+import '@/styles/globalStyles.css';
+//types
+import { Category } from '@/models/category';
 
 type CategoryDetailsProps = {
     id: string;
@@ -28,7 +30,6 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
-    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [categoryDetailsUpdated, setCategoryDetailsUpdated] = useState<boolean>(false);
 
     //If category has been updated, fetch latest changes from db
@@ -120,7 +121,15 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
                         <b>Tag Counter: </b>
                         {categoryDetails.tagCount}
                     </Typography>
+                    <Stack sx={{ marginTop: '2em' }}>
+                        <Button variant="contained" type="button" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
+                            Edit Category
+                        </Button>
+                    </Stack>
                 </div>
+            )}
+            {!isLoading && categoryDetails && isEditMode && (
+                <EditCategory category={categoryDetails} setIsEditMode={setIsEditMode} setCategoryDetailsUpdated={setCategoryDetailsUpdated} />
             )}
         </ProtectedAdminRoute>
     );
