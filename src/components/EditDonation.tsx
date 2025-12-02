@@ -4,19 +4,19 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //API
 import { updateDonation } from '@/api/firebase-donations';
+import { addErrorEvent } from '@/api/firebase';
+import { getTagNumber } from '@/api/firebase-categories';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
-import { Paper, Box, TextField, Select, FormControl, InputLabel, SelectChangeEvent, MenuItem, Button } from '@mui/material';
+import { Paper, Box, TextField, Select, FormControl, InputLabel, SelectChangeEvent, MenuItem, Button, Stack } from '@mui/material';
+import CustomDialog from './CustomDialog';
 //Constants
 import { categories } from '@/data/html';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { IDonation } from '@/models/donation';
-import CustomDialog from './CustomDialog';
-import { addErrorEvent } from '@/api/firebase';
-import { getTagNumber } from '@/api/firebase-categories';
 
 type EditDonationProps = {
     donationDetails: IDonation;
@@ -53,26 +53,21 @@ const EditDonation = (props: EditDonationProps) => {
         setIsLoading(true);
 
         try {
-            //If category has changed, updated Tag Number accordingly.
-            let newCategoryTagNumber = '';
-            if (newCategory !== category) {
-                newCategoryTagNumber = await getTagNumber(newCategory);
-            }
-
             const updatedDonation = {
                 category: newCategory,
-                tagNumber: newCategoryTagNumber.length ? newCategoryTagNumber : newTagNumber,
+                tagNumber: newTagNumber,
                 brand: newBrand,
                 model: newModel,
                 description: newDescription
             };
             await updateDonation(id, updatedDonation);
+            setIsDialogOpen(true);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Error submitting donation update', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
-        setIsDialogOpen(true);
     };
 
     const assignTagNumber = async () => {
@@ -102,14 +97,19 @@ const EditDonation = (props: EditDonationProps) => {
                             </Select>
                         </FormControl>
                         {status !== 'rejected' && (
-                            <TextField
-                                type="text"
-                                label="Tag Number"
-                                name="tagNumber"
-                                id="tagNumber"
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewTagnumber(event.target.value)}
-                                value={newTagNumber}
-                            />
+                            <Stack direction="row" spacing={2}>
+                                <TextField
+                                    type="text"
+                                    label="Tag Number"
+                                    name="tagNumber"
+                                    id="tagNumber"
+                                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewTagnumber(event.target.value)}
+                                    value={newTagNumber}
+                                />
+                                <Button variant="text" type="button" onClick={assignTagNumber}>
+                                    Generate New Tag Number
+                                </Button>
+                            </Stack>
                         )}
 
                         <TextField
