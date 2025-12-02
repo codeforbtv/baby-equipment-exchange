@@ -10,7 +10,7 @@ import OrganizationForm from '@/components/OrganizationForm';
 //Styles
 import '@/styles/globalStyles.css';
 import Loader from '@/components/Loader';
-import { Button, IconButton, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
+import { Button, IconButton, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
 //Icons
 import RefreshIcon from '@mui/icons-material/Refresh';
 //Types
@@ -41,7 +41,7 @@ const Organizations = (props: OrganizationsProps) => {
             {!idToDisplay && !showForm && (
                 <>
                     <div className="page--header">
-                        <h3>Organizations</h3>
+                        <Typography variant="h5">Organizations</Typography>
                     </div>
                     <Button variant="contained" type="button" onClick={handleShowForm}>
                         Create new

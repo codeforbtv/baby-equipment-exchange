@@ -26,7 +26,7 @@ export type DonationFormProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function DonationForm(props: DonationFormProps) {
+export default function AdminDonationForm(props: DonationFormProps) {
     const [formData, setFormData] = useState<DonationFormData>({
         category: null,
         brand: '',
@@ -57,14 +57,6 @@ export default function DonationForm(props: DonationFormProps) {
 
     const isDisabled =
         !images || formData.category?.length === 0 || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
-
-    const isCategoryActive = (category: string) => {
-        if (categories) {
-            const currentCategory = categories.find((cat) => cat.name === category);
-            return !currentCategory?.active;
-        }
-        return false;
-    };
 
     useEffect(() => {
         const tempImages = [];
@@ -161,7 +153,6 @@ export default function DonationForm(props: DonationFormProps) {
                                     sx={{ maxWidth: '88%' }}
                                     disablePortal
                                     options={categories.map((option) => option.name)}
-                                    getOptionDisabled={isCategoryActive}
                                     renderInput={(params) => <TextField {...params} label="Category" />}
                                     value={formData.category}
                                     onChange={handleCategoryChange}
