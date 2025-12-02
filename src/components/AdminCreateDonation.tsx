@@ -21,6 +21,7 @@ import { DonationFormData, DonationBody } from '@/types/DonationTypes';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { addAdminDonation } from '@/api/firebase-donations';
 import CustomDialog from './CustomDialog';
+import AdminDonationForm from './AdminDonationForm';
 
 type CreateAdminDonationProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
@@ -92,16 +93,17 @@ const AdminCreateDonation = (props: CreateAdminDonationProps) => {
         <ProtectedAdminRoute>
             <div className="page--header">
                 <h3>Create donation</h3>
+                <IconButton onClick={() => setShowForm(false)}>
+                    <ArrowBackIcon />
+                </IconButton>
             </div>
-            <IconButton onClick={() => setShowForm(false)}>
-                <ArrowBackIcon />
-            </IconButton>
+
             {isLoading ? (
                 <Loader />
             ) : (
                 <>
                     {pendingDonations.length > 0 && <PendingDonations />}
-                    <DonationForm setShowForm={setShowForm} />
+                    <AdminDonationForm setShowForm={setShowForm} />
                     {pendingDonations.length > 0 && (
                         <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
                             {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}

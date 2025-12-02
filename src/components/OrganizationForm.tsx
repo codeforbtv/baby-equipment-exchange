@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 //Components
-import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox, Button, FormHelperText, IconButton } from '@mui/material';
+import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox, Button, FormHelperText, IconButton, Typography } from '@mui/material';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
@@ -96,7 +96,6 @@ export default function OrganizationForm(props: DonationFormProps) {
         };
         try {
             await addOrganization(orgToSubmit);
-            setIsLoading(false);
             setDialogText('Organization created successfully');
             setDialogContent(`Organization ${name} was created sucessfully.`);
             setIsDialogOpen(true);
@@ -105,8 +104,10 @@ export default function OrganizationForm(props: DonationFormProps) {
             setPhoneNumber('');
             setTags([]);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Submit Organization', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -124,13 +125,14 @@ export default function OrganizationForm(props: DonationFormProps) {
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                <h3>Create Organization</h3>
+                <Typography variant="h5">Create Organization</Typography>
+                {setShowForm && (
+                    <IconButton onClick={() => setShowForm(false)}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                )}
             </div>
-            {setShowForm && (
-                <IconButton onClick={() => setShowForm(false)}>
-                    <ArrowBackIcon />
-                </IconButton>
-            )}
+
             {isLoading && <Loader />}
             {!isLoading && (
                 <div className="content--container">
