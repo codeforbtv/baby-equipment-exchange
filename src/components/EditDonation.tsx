@@ -5,18 +5,17 @@ import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //API
 import { updateDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
-import { getTagNumber } from '@/api/firebase-categories';
+import { getAllCategories, getTagNumber } from '@/api/firebase-categories';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
-import { Paper, Box, TextField, Select, FormControl, InputLabel, SelectChangeEvent, MenuItem, Button, Stack } from '@mui/material';
+import { Paper, Box, TextField, Button, Stack, Typography, Autocomplete } from '@mui/material';
 import CustomDialog from './CustomDialog';
-//Constants
-import { categories } from '@/data/html';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { IDonation } from '@/models/donation';
+import { Category } from '@/models/category';
 
 type EditDonationProps = {
     donationDetails: IDonation;
@@ -30,12 +29,26 @@ const EditDonation = (props: EditDonationProps) => {
     const { setIsEditMode, fetchDonation, setDonationsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [newCategory, setNewCategory] = useState<string>(category);
+    const [categories, setCategories] = useState<Category[] | null>(null);
+    const [newCategory, setNewCategory] = useState<string | null>(category);
     const [newTagNumber, setNewTagnumber] = useState<string | undefined | null>(tagNumber);
     const [newBrand, setNewBrand] = useState<string>(brand);
     const [newModel, setNewModel] = useState<string>(model);
     const [newDescription, setNewDescription] = useState<string>(description ?? '');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const fetchCategories = async (): Promise<void> => {
+        try {
+            setIsLoading(true);
+            const categoriesResult = await getAllCategories();
+            setCategories(categoriesResult);
+        } catch (error) {
+            addErrorEvent('Error fetching all categories: ', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleClose = () => {
         if (setDonationsUpdated) setDonationsUpdated(true);
@@ -44,8 +57,8 @@ const EditDonation = (props: EditDonationProps) => {
         fetchDonation(id);
     };
 
-    const handleCategoryChange = (event: SelectChangeEvent) => {
-        setNewCategory(event.target.value);
+    const handleCategoryChange = (event: any, newValue: string | null) => {
+        setNewCategory(newValue);
     };
 
     const handleSubmitUpdatedDonation = async (event: React.FormEvent): Promise<void> => {
@@ -77,25 +90,25 @@ const EditDonation = (props: EditDonationProps) => {
 
     useEffect(() => {
         if (!tagNumber) assignTagNumber();
+        if (!categories) fetchCategories();
     }, []);
 
     return (
         <ProtectedAdminRoute>
             <Paper className="content--container" elevation={8} square={false}>
-                {isLoading ? (
-                    <Loader />
-                ) : (
+                {isLoading && <Loader />}
+                {!isLoading && !categories && <Typography variant="body1">Could not load edit donation form. Please try again later. </Typography>}
+                {!isLoading && categories && (
                     <Box component="form" gap={3} display={'flex'} flexDirection={'column'} className="form--container" onSubmit={handleSubmitUpdatedDonation}>
-                        <FormControl fullWidth>
-                            <InputLabel id="category-label">Category</InputLabel>
-                            <Select labelId="category-label" id="category" value={newCategory} label="Category" onChange={handleCategoryChange}>
-                                {categories.map((category) => (
-                                    <MenuItem key={category.name} value={category.name}>
-                                        {category.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <Autocomplete
+                            sx={{ maxWidth: '88%' }}
+                            disablePortal
+                            options={categories.map((option) => option.name)}
+                            renderInput={(params) => <TextField {...params} label="Category" />}
+                            value={newCategory}
+                            onChange={handleCategoryChange}
+                            aria-label="Category"
+                        />
                         {status !== 'rejected' && (
                             <Stack direction="row" spacing={2}>
                                 <TextField
