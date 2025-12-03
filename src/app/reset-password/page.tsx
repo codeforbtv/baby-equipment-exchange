@@ -98,7 +98,7 @@ export default function ResetPassword() {
                 isOpen={isDialogOpen}
                 onClose={handleClose}
                 title="Email Sent"
-                content={`An email with instructions for resetting your password has been sent to ${email}. Please check your spam folder if you cannot find this email. `}
+                content={`An email with instructions for resetting your password has been sent to ${email}. Please search your spam or junk folder for noreply@babyproductexchange.org if you cannot find this email.`}
             />
         </>
     );
