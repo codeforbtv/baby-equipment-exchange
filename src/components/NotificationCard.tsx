@@ -63,6 +63,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsDialogOpen(false);
         setDialogTitle('');
         setDialogContent('');
+        if (setNotificationsUpdated) setNotificationsUpdated(true);
     };
 
     const handleDeleteDialogClose = () => {
@@ -123,6 +124,7 @@ const NotificationCard = (props: NotificationCardProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Call delete user', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }

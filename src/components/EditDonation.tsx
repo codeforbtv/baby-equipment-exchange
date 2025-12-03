@@ -84,8 +84,10 @@ const EditDonation = (props: EditDonationProps) => {
     };
 
     const assignTagNumber = async () => {
-        const assignedTagNumber = await getTagNumber(category);
-        setNewTagnumber(assignedTagNumber);
+        if (newCategory) {
+            const assignedTagNumber = await getTagNumber(newCategory);
+            setNewTagnumber(assignedTagNumber);
+        }
     };
 
     useEffect(() => {
