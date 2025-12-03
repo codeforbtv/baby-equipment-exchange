@@ -83,6 +83,11 @@ const Notifications = (props: NotificationsProps) => {
             )}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
+                    {notifications.donations.length === 0 && notifications.orders.length === 0 && notifications.users.length === 0 && (
+                        <Typography sx={{ marginTop: '1rem' }} variant="body1">
+                            No new notifications at this time.
+                        </Typography>
+                    )}
                     {sortedDonationsWaitingApproval.length > 0 && (
                         <>
                             <Typography sx={{ marginTop: '1rem' }} variant="h6">
