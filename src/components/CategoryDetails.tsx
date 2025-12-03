@@ -118,7 +118,7 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
                         {categoryDetails.tagPrefix}
                     </Typography>
                     <Typography variant="body1">
-                        <b>Tag Counter: </b>
+                        <b>Last tag number used: </b>
                         {categoryDetails.tagCount}
                     </Typography>
                     <Stack sx={{ marginTop: '2em' }}>
