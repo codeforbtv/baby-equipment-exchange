@@ -28,6 +28,7 @@ export default function NewAccount() {
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [confirmedUserName, setConfirmedUserName] = useState<string>('');
+    const [title, setTitle] = useState<string>('');
 
     //List of Org names, ids from Server
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
@@ -195,6 +196,19 @@ export default function NewAccount() {
                                 id="organzation-select"
                                 options={orgNames}
                                 renderInput={(params) => <TextField {...params} label="Organization (select or enter a name)" />}
+                            />
+                            <TextField
+                                type="text"
+                                label="Title"
+                                name="title"
+                                id="title"
+                                placeholder="Title"
+                                value={title}
+                                required
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setTitle(event.target.value);
+                                }}
+                                onBlur={handleBlur}
                             />
                             <TextField
                                 type="password"
