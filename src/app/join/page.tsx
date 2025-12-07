@@ -1,6 +1,6 @@
 'use client';
 //Components
-import { Autocomplete, Box, Button, Paper, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, Paper, TextField, Typography } from '@mui/material';
 import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
 import Loader from '@/components/Loader';
 //Hooks
@@ -13,6 +13,8 @@ import { PatternFormat, OnValueChange } from 'react-number-format';
 import '../../styles/globalStyles.css';
 //Types
 import { NewUserAccountInfo } from '@/types/UserTypes';
+import { cancellationNotice, liabiltyNotice } from '@/data/agreements';
+import RecallStatuses from '@/components/RecallStatuses';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -246,6 +248,12 @@ export default function NewAccount() {
                                 required
                                 error={phoneNumber.includes('_')}
                             />
+                            <Typography variant="body2">
+                                <b>Cancellation & Liability Notice: </b>
+                                {cancellationNotice}
+                            </Typography>
+                            <Typography variant="body2">{liabiltyNotice}</Typography>
+                            <RecallStatuses />
                             <Button variant="contained" type={'submit'} disabled={isDisabled}>
                                 Join
                             </Button>
