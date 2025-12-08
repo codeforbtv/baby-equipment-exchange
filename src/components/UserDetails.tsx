@@ -75,15 +75,28 @@ export default function UserDetails(props: UserDetailsProps) {
                 {!isLoading && !userDetails && <p>User not found</p>}
                 {!isLoading && userDetails && !isEditMode && (
                     <div className="content--container">
-                        <h3>{userDetails.displayName}</h3>
-                        <h4>{userDetails.email}</h4>
-                        <h4>{userDetails.phoneNumber}</h4>
+                        <Typography variant="h5">{userDetails.displayName}</Typography>
+                        <Typography variant="h6">{userDetails.email}</Typography>
+                        <Typography variant="body1">{userDetails.phoneNumber}</Typography>
                         {userDetails.organization === null ? (
                             <p style={{ color: 'red' }}>This user is missing an organization. Click edit user to assign one.</p>
                         ) : (
-                            <p>
-                                <b>Organization:</b> {userDetails.organization.name}
-                            </p>
+                            <Typography variant="body1" sx={{ marginTop: '1em' }}>
+                                <b>Organization: </b> {userDetails.organization.name}
+                            </Typography>
+                        )}
+                        {userDetails.title && <Typography variant="body1">{userDetails.title}</Typography>}
+                        {userDetails.distributedItems && (
+                            <>
+                                <Typography variant="body1">
+                                    <b>Distributed Items:</b>
+                                </Typography>
+                                <ul>
+                                    {userDetails.distributedItems.map((item) => (
+                                        <li>{item.tagNumber}</li>
+                                    ))}
+                                </ul>
+                            </>
                         )}
                         {userDetails.notes && userDetails.notes.length > 0 && (
                             <>
@@ -97,7 +110,7 @@ export default function UserDetails(props: UserDetailsProps) {
                                 </ul>
                             </>
                         )}
-                        <Button variant="contained" type="button" onClick={() => setIsEditMode(true)}>
+                        <Button variant="contained" type="button" onClick={() => setIsEditMode(true)} sx={{ marginTop: '2em' }}>
                             Edit User
                         </Button>
                     </div>
