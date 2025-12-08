@@ -51,6 +51,9 @@ export const userConverter = {
             distributedItems: user.getDistributedItems(),
             notes: user.getNotes(),
             organization: user.getOrganization(),
+            title: user.getTitle(),
+            termsAccepted: user.getTermsAccepted(),
+            createdAt: user.getCreatedAt(),
             modifiedAt: user.getModifiedAt()
         };
 
@@ -74,6 +77,9 @@ export const userConverter = {
             distributedItems: data.distributedItems,
             notes: data.notes,
             organization: data.organization,
+            title: data.title,
+            termsAccepted: data.termsAccepted,
+            createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
         };
         return new UserCollection(userData);
@@ -168,6 +174,9 @@ export async function getUserDetails(uid: string): Promise<IUser> {
             distributedItems: dbUser.distributedItems,
             notes: dbUser.notes,
             organization: dbUser.organization,
+            title: dbUser.title,
+            termsAccepted: dbUser.termsAccepted,
+            createdAt: dbUser.createdAt,
             modifiedAt: dbUser.modifiedAt
         };
         return userDetails;

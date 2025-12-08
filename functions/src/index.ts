@@ -20,7 +20,7 @@ const db = admin.firestore();
 export const createnewuser = onCall(async (request: CallableRequest): Promise<UserRecord> => {
     try {
         const accountInfo = request.data;
-        const { email, password, displayName, phoneNumber, organization, notes } = accountInfo;
+        const { email, password, displayName, phoneNumber, organization, notes, title, termsAccepted } = accountInfo;
 
         if (!email || email.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'A valid email address is required.'));
         if (!password || password.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Password is required.'));
@@ -39,10 +39,13 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
             isDisabled: true,
             email: userRecord.email,
             organization: organization,
+            title: title,
+            termsAccepted: termsAccepted,
             displayName: userRecord.displayName,
             phoneNumber: phoneNumber,
             requestedItems: [],
             notes: notes,
+            createdAt: FieldValue.serverTimestamp(),
             modifiedAt: FieldValue.serverTimestamp()
         };
 
