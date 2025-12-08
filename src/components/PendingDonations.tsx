@@ -34,10 +34,11 @@ export default function PendingDonations() {
                                 <Typography variant="h5" className={styles['left--column']}>
                                     {donation.model}
                                 </Typography>
-                                <Typography variant="h5" className={styles['right--column']}>
+                                <Typography variant="h6" className={styles['right--column']}>
                                     {donation.brand}
                                 </Typography>
                             </div>
+
                             <Button variant="outlined" type="button" onClick={() => removePendingDonation(i)}>
                                 <DeleteIcon />
                             </Button>
