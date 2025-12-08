@@ -161,7 +161,7 @@ export default function Donate() {
         setIsLoading(true);
         try {
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
-            await addDonation(donationsToUpload);
+            await addDonation(donationsToUpload, donationDisclaimer);
             clearPendingDonations();
             setPendingDonorEmail('');
             setPendingDonorName('');
@@ -170,7 +170,8 @@ export default function Donate() {
             await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
-            addErrorEvent('Bulk donation', error);
+            addErrorEvent('Error submitting donation', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }

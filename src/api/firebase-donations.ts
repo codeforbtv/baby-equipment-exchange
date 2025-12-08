@@ -255,7 +255,7 @@ export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
     return Promise.reject(new Error('Something went wrong fetching donations by bulk ID'));
 }
 
-export async function addDonation(newDonations: DonationBody[]) {
+export async function addDonation(newDonations: DonationBody[], termsAccepted: string) {
     try {
         //All donations are assigned a bulk donatin id to account for multiple items
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
@@ -264,7 +264,9 @@ export async function addDonation(newDonations: DonationBody[]) {
             donations: [],
             donorEmail: newDonations[0].donorEmail,
             donorName: newDonations[0].donorName,
-            donorId: newDonations[0].donorId
+            donorId: newDonations[0].donorId,
+            termsAccepted: termsAccepted,
+            createdAt: serverTimestamp()
         });
         for (const newDonation of newDonations) {
             const donationRef = doc(collection(db, DONATIONS_COLLECTION));
