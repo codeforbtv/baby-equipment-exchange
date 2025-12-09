@@ -31,7 +31,10 @@
 }
 
 .info {
-    margin-top: 4em;
+    margin-top: 2em;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
 }
 
 /* .image-uploader__input label {
@@ -56,7 +59,7 @@
     display: flex;
     flex-direction: column;
     margin: 0px auto;
-    padding: 1rem;
+    padding: 1rem 0;
     gap: 12px;
 }
 

@@ -1,6 +1,5 @@
 // Firebase types
 import { DocumentReference, FieldValue, Timestamp } from 'firebase/firestore';
-import { Donation } from './donation';
 
 export interface IUser {
     [key: string]:
@@ -16,6 +15,7 @@ export interface IUser {
         | undefined
         | { [key: string]: any }
         | (() => string)
+        | (() => string[])
         | (() => { id: string; name: string }[] | null | undefined)
         | (() => { id: string; tagNumber: string }[] | null)
         | (() => DocumentReference | null | undefined)
@@ -32,12 +32,16 @@ export interface IUser {
     distributedItems: { id: string; tagNumber: string }[] | null;
     notes: string[] | null | undefined;
     organization: { id: string; name: string } | null;
+    title?: string;
+    termsAccepted?: string[];
+    createdAt?: Timestamp | FieldValue;
     modifiedAt: Timestamp | FieldValue;
 }
 
 export class UserCollection implements IUser {
     [key: string]:
         | string
+        | (() => string[])
         | { id: string; name: string }[]
         | DocumentReference
         | DocumentReference[]
@@ -65,6 +69,9 @@ export class UserCollection implements IUser {
     distributedItems: { id: string; tagNumber: string }[] | null;
     notes: string[] | null | undefined;
     organization: { id: string; name: string } | null;
+    title?: string;
+    termsAccepted?: string[];
+    createdAt?: Timestamp | FieldValue;
     modifiedAt: Timestamp | FieldValue;
 
     constructor(args: IUser) {
@@ -78,6 +85,9 @@ export class UserCollection implements IUser {
         this.distributedItems = args.distributedItems;
         this.notes = args.notes;
         this.organization = args.organization;
+        this.title = args.title;
+        this.termsAccepted = args.termsAccepted;
+        this.createdAt = args.createdAt;
         this.modifiedAt = args.modifiedAt;
     }
 
@@ -119,6 +129,17 @@ export class UserCollection implements IUser {
 
     getOrganization(): { id: string; name: string } | null {
         return this.organization;
+    }
+    getTitle(): string | undefined {
+        return this.title;
+    }
+
+    getTermsAccepted(): string[] | undefined {
+        return this.termsAccepted;
+    }
+
+    getCreatedAt(): Timestamp | FieldValue | undefined {
+        return this.createdAt;
     }
 
     getModifiedAt(): Timestamp | FieldValue {

@@ -8,9 +8,10 @@ import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //components
 import PendingDonations from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
-import { Button, Box, TextField, Typography } from '@mui/material';
+import { Button, Box, TextField, Typography, Paper, FormControlLabel, Checkbox } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from '@/components/CustomDialog';
+import RecallStatuses from '@/components/RecallStatuses';
 //Icons
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -19,10 +20,11 @@ import { addDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 import { uploadImages } from '@/api/firebase-images';
 import { loginAnonymousUser, signOutUser } from '@/api/firebase-users';
+//Constants
+import { donationDisclaimer } from '@/data/agreements';
 //styles
 import '@/styles/globalStyles.css';
 import styles from './Donate.module.css';
-
 //Types
 import { DonationFormData, DonationBody } from '@/types/DonationTypes';
 import donationsSubmitted from '@/email-templates/donationSubmitted';
@@ -38,8 +40,8 @@ export default function Donate() {
     const [confirmEmail, setConfirmEmail] = useState<string>('');
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
-    // const [submitState, setSubmitState] = useState<'idle' | 'submitting' | 'error'>('idle');
     const [showForm, setShowForm] = useState<boolean>(false);
+    const [hasAgreed, setHasAgreed] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const { currentUser } = useUserContext();
@@ -69,6 +71,10 @@ export default function Donate() {
         setPendingDonorEmail(donorEmail);
         //Dont open the donation form unless saving name for first time
         if (pendingDonations.length === 0) setShowForm(true);
+    };
+
+    const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setHasAgreed(event.target.checked);
     };
 
     useEffect(() => {
@@ -155,7 +161,7 @@ export default function Donate() {
         setIsLoading(true);
         try {
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
-            await addDonation(donationsToUpload);
+            await addDonation(donationsToUpload, donationDisclaimer);
             clearPendingDonations();
             setPendingDonorEmail('');
             setPendingDonorName('');
@@ -164,7 +170,8 @@ export default function Donate() {
             await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
-            addErrorEvent('Bulk donation', error);
+            addErrorEvent('Error submitting donation', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -185,7 +192,7 @@ export default function Donate() {
                         For a list of currently accepted items, please see our <a href="/about">about page</a>.
                     </Typography>
                     {pendingDonorEmail.length > 0 && pendingDonorName.length > 0 && (
-                        <Typography variant="h5" sx={{ marginTop: '2em' }}>
+                        <Typography variant="h6" sx={{ marginTop: '2em' }}>
                             {`Donor name: ${pendingDonorName} (${pendingDonorEmail}):`}{' '}
                             <Button variant="text" onClick={handleEditName}>
                                 Edit
@@ -255,7 +262,21 @@ export default function Donate() {
                                 <Button variant="contained" startIcon={<AddIcon />} onClick={() => setShowForm(true)}>
                                     Add another item
                                 </Button>
-                                <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
+                                <Paper variant="outlined" sx={{ marginTop: '1em', padding: '4px' }}>
+                                    <Typography variant="body1">
+                                        <b>DISCLAIMER: </b>
+                                        {donationDisclaimer}
+                                    </Typography>
+                                    <FormControlLabel control={<Checkbox checked={hasAgreed} onChange={handleCheck} />} label="I Accept" />
+                                </Paper>
+                                <Button
+                                    variant="contained"
+                                    size="medium"
+                                    type="submit"
+                                    endIcon={<UploadOutlinedIcon />}
+                                    onClick={handleFormSubmit}
+                                    disabled={!hasAgreed}
+                                >
                                     {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
                                 </Button>
                             </>
@@ -264,28 +285,10 @@ export default function Donate() {
                     <div className={styles['info']}>
                         <Typography variant="body2">
                             Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we
-                            do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could
-                            be subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to
-                            recall.
+                            do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps). We ask that
+                            donors only offer items that are clean, in good working order, and not subject to recall.
                         </Typography>
-                        <Typography variant="body2">
-                            Please reference the following web pages if you have any questions about safety/recall status of these items:
-                        </Typography>
-                        <ul className="page--list">
-                            <li>
-                                Consumer Product Safety Commission (<a href="https://www.cpsc.gov/">cpsc.gov</a>)
-                            </li>
-                            <li>Reseller&apos;s Guide to Selling Safer Products</li>
-                            <li>
-                                SaferProducts.gov (<a href="https://www.saferproducts.gov">saferproducts.gov</a>)
-                            </li>
-                            <li>
-                                Recalls.gov (<a href="https://www.recalls.gov/">recalls.gov</a>)
-                            </li>
-                            <li>
-                                Safercar.gov (<a href="https://www.nhtsa.gov/campaign/safercargov?redirect-safercar-sitewide">safercar.gov</a>)
-                            </li>
-                        </ul>
+                        <RecallStatuses />
                     </div>
                 </div>
             )}

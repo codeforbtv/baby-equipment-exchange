@@ -7,20 +7,20 @@ import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 import ImageThumbnail from './ImageThumbnail';
 import InputContainer from '@/components/InputContainer';
 import { Autocomplete, Box, Button, TextField, Typography } from '@mui/material';
+import CustomDialog from './CustomDialog';
+import Loader from './Loader';
 //Icons
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 //Api
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
+import { addErrorEvent } from '@/api/firebase';
+import { getAllCategories } from '@/api/firebase-categories';
 //styles
 import styles from './DonationForm.module.css';
 import '../styles/globalStyles.css';
 //Types
 import { DonationFormData } from '@/types/DonationTypes';
-import CustomDialog from './CustomDialog';
 import { Category } from '@/models/category';
-import { addErrorEvent } from '@/api/firebase';
-import Loader from './Loader';
-import { getAllCategories } from '@/api/firebase-categories';
 
 export type DonationFormProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
@@ -158,7 +158,7 @@ export default function DonationForm(props: DonationFormProps) {
                         <Box className={styles['form__section--left']}>
                             <Box display={'flex'} flexDirection={'column'} gap={1}>
                                 <Autocomplete
-                                    sx={{ maxWidth: '88%' }}
+                                    sx={{ maxWidth: '87%' }}
                                     disablePortal
                                     options={categories.map((option) => option.name)}
                                     getOptionDisabled={isCategoryActive}

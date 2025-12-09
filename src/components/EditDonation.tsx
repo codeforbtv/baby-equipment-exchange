@@ -103,7 +103,7 @@ const EditDonation = (props: EditDonationProps) => {
                 {!isLoading && categories && (
                     <Box component="form" gap={3} display={'flex'} flexDirection={'column'} className="form--container" onSubmit={handleSubmitUpdatedDonation}>
                         <Autocomplete
-                            sx={{ maxWidth: '88%' }}
+                            sx={{ maxWidth: { sm: '88%', xs: '80%' } }}
                             disablePortal
                             options={categories.map((option) => option.name)}
                             renderInput={(params) => <TextField {...params} label="Category" />}
