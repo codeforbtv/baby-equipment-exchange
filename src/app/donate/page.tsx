@@ -285,9 +285,8 @@ export default function Donate() {
                     <div className={styles['info']}>
                         <Typography variant="body2">
                             Vermont Connector does not have the capacity to verify recall and safety guidelines for each individual item donated. That said, we
-                            do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps) or that could
-                            be subject to recall (such as cribs). We ask that donors only offer items that are clean, in good working order, and not subject to
-                            recall.
+                            do not accept items that have stringent health or safety requirements (such as car seats, booster seats, breast pumps). We ask that
+                            donors only offer items that are clean, in good working order, and not subject to recall.
                         </Typography>
                         <RecallStatuses />
                     </div>
