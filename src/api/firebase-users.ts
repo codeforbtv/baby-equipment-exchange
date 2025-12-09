@@ -111,7 +111,7 @@ export async function getAllActiveDbUsers(): Promise<IUser[]> {
     }
 }
 
-export async function getDbUser(uid: string): Promise<IUser> {
+export async function getDbUser(uid: string): Promise<UserCollection> {
     try {
         const userRef = doc(db, `${USERS_COLLECTION}/${uid}`).withConverter(userConverter);
         const snapshot = await getDoc(userRef);
