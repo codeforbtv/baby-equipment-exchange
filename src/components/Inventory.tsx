@@ -168,7 +168,7 @@ const Inventory = (props: InventoryProps) => {
                                     }}
                                 />
                                 <Autocomplete
-                                    sx={{ maxWidth: '83vw' }}
+                                    sx={{ maxWidth: '80vw' }}
                                     multiple
                                     id="category-filter"
                                     options={categories.map((category) => category.name)}

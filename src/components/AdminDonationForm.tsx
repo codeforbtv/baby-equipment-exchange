@@ -150,7 +150,7 @@ export default function AdminDonationForm(props: DonationFormProps) {
                         <Box className={styles['form__section--left']}>
                             <Box display={'flex'} flexDirection={'column'} gap={1}>
                                 <Autocomplete
-                                    sx={{ maxWidth: '88%' }}
+                                    sx={{ maxWidth: '87%' }}
                                     disablePortal
                                     options={categories.map((option) => option.name)}
                                     renderInput={(params) => <TextField {...params} label="Category" />}
