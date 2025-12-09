@@ -4,25 +4,26 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 //API
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims, callUpdateAuthUser, callEnableUser } from '@/api/firebase';
-import { PatternFormat, OnValueChange } from 'react-number-format';
+import sendMail from '@/api/nodemailer';
 import { enableDbUser, updateDbUser } from '@/api/firebase-users';
 //Components
 import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from './CustomDialog';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
+//Constants
+import userEnabled from '@/email-templates/userEnabled';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
+import { PatternFormat, OnValueChange } from 'react-number-format';
 
-import sendMail from '@/api/nodemailer';
-import userEnabled from '@/email-templates/userEnabled';
-import { IUser } from '@/models/user';
+import { UserCollection } from '@/models/user';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type EditUserProps = {
-    userDetails: IUser;
+    userDetails: UserCollection;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
     setUserDetailsUpdated?: Dispatch<SetStateAction<boolean>>;
 };

@@ -11,6 +11,7 @@ import DonationForm from '@/components/DonationForm';
 import { Button, Box, TextField, Typography, Paper, FormControlLabel, Checkbox } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from '@/components/CustomDialog';
+import RecallStatuses from '@/components/RecallStatuses';
 //Icons
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -19,16 +20,15 @@ import { addDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 import { uploadImages } from '@/api/firebase-images';
 import { loginAnonymousUser, signOutUser } from '@/api/firebase-users';
+//Constants
+import { donationDisclaimer } from '@/data/agreements';
 //styles
 import '@/styles/globalStyles.css';
 import styles from './Donate.module.css';
-
 //Types
 import { DonationFormData, DonationBody } from '@/types/DonationTypes';
 import donationsSubmitted from '@/email-templates/donationSubmitted';
 import sendMail from '@/api/nodemailer';
-import RecallStatuses from '@/components/RecallStatuses';
-import { donationDisclaimer } from '@/data/agreements';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

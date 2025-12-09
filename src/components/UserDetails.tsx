@@ -9,15 +9,15 @@ import { ListItem, Typography, Button, IconButton } from '@mui/material';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
 //APIs
-import { addErrorEvent, callEnableUser } from '@/api/firebase';
+import { addErrorEvent } from '@/api/firebase';
 import { getDbUser } from '@/api/firebase-users';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 //styles
 import '@/styles/globalStyles.css';
-import { UserCollection } from '@/models/user';
 //Types
+import { UserCollection } from '@/models/user';
 
 type UserDetailsProps = {
     id: string;
@@ -117,7 +117,7 @@ export default function UserDetails(props: UserDetailsProps) {
                                 </ul>
                             </>
                         )}
-                        <Button variant="contained" type="button" onClick={() => setIsEditMode(true)} sx={{ marginTop: '2em' }}>
+                        <Button variant="contained" type="button" onClick={() => setIsEditMode(true)} sx={{ marginTop: '2em' }} startIcon={<EditIcon />}>
                             Edit User
                         </Button>
                     </div>

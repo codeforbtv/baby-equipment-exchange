@@ -1,6 +1,6 @@
 'use client';
 
-import { List, ListItem, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 
 const RecallStatuses = () => {
     return (

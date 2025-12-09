@@ -14,17 +14,6 @@ import {
     getDocs,
     deleteDoc
 } from 'firebase/firestore';
-
-//API
-import { getAuthUserById } from './firebaseAdmin';
-
-// Models
-import { IUser, UserCollection } from '@/models/user';
-import { Event, IEvent } from '@/models/event';
-// Types
-import { NoteBody } from '@/types/post-data';
-// Utility methods
-
 import {
     NextOrObserver,
     onAuthStateChanged,
@@ -35,6 +24,13 @@ import {
     User,
     UserCredential
 } from 'firebase/auth';
+//API
+import { getAuthUserById } from './firebaseAdmin';
+// Models
+import { IUser, UserCollection } from '@/models/user';
+import { Event, IEvent } from '@/models/event';
+// Types
+import { NoteBody } from '@/types/post-data';
 
 export const USERS_COLLECTION = 'Users';
 
