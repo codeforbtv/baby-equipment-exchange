@@ -204,7 +204,8 @@ export default function NewAccount() {
                                 onBlur={handleBlur}
                             />
                             <Autocomplete
-                                sx={{ maxWidth: '580px' }}
+                                sx={{ maxWidth: { sm: '97%', xs: '95%' } }}
+                                disablePortal
                                 freeSolo={true}
                                 value={orgValue}
                                 onChange={(event: any, newValue: string | null) => setOrgValue(newValue)}

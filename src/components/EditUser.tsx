@@ -211,7 +211,7 @@ const EditUser = (props: EditUserProps) => {
                         {orgNamesAndIds ? (
                             <Autocomplete
                                 disablePortal
-                                sx={{ maxWidth: '580px' }}
+                                sx={{ maxWidth: { sm: '88%', xs: '80%' } }}
                                 value={selectedOrg}
                                 onChange={(event: any, newValue: string | null) => setSelectedOrg(newValue)}
                                 id="organzation-select"

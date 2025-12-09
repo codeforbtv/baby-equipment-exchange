@@ -165,7 +165,7 @@ const AdminCart = () => {
                                     </Box>
                                     {activeUsers ? (
                                         <Autocomplete
-                                            sx={{ marginTop: '2em', maxWidth: '70vw' }}
+                                            sx={{ marginTop: '2em', maxWidth: { sm: '88%', xs: '80%' } }}
                                             value={selectedUser}
                                             onChange={(event: any, newValue: string | null) => setSelectedUser(newValue)}
                                             id="requestor-select"
