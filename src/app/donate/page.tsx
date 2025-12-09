@@ -264,10 +264,9 @@ export default function Donate() {
                                 </Button>
                                 <Paper variant="outlined" sx={{ marginTop: '1em', padding: '4px' }}>
                                     <Typography variant="body1">
-                                        <b>DISCLAIMER: </b>
-                                        {donationDisclaimer}
+                                        <b>{donationDisclaimer}</b>
                                     </Typography>
-                                    <FormControlLabel control={<Checkbox checked={hasAgreed} onChange={handleCheck} />} label="I Accept" />
+                                    <FormControlLabel control={<Checkbox checked={hasAgreed} onChange={handleCheck} />} label="I Agree" />
                                 </Paper>
                                 <Button
                                     variant="contained"

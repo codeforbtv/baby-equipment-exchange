@@ -3,7 +3,7 @@
 //Hooks
 import { SetStateAction, useState, Dispatch, useMemo } from 'react';
 //Components
-import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography, Box, InputAdornment } from '@mui/material';
+import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography, InputAdornment, useMediaQuery } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
 import DonationDetails from '@/components/DonationDetails';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -33,6 +33,9 @@ const Donations = (props: DonationsProps) => {
     const [searchInput, setSearchInput] = useState<string>('');
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
     const [statusFilter, setStatusFilter] = useState<string[] | undefined>([]);
+
+    //Media query for imagelist grid
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     const handleShowForm = () => {
         //Close details if open
@@ -119,7 +122,7 @@ const Donations = (props: DonationsProps) => {
                     {donationsToDisplay.length === 0 ? (
                         <Typography variant="body1">No donations found.</Typography>
                     ) : (
-                        <ImageList className={styles['browse__grid']} rowHeight={300} gap={4}>
+                        <ImageList className={styles['browse__grid']} rowHeight={300} gap={4} cols={isMobile ? 1 : 2}>
                             {donationsToDisplay.map((donation) => (
                                 <DonationCard key={donation.id} donation={donation} setIdToDisplay={setIdToDisplay} />
                             ))}
