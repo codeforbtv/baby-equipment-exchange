@@ -23,9 +23,3 @@
     height: auto;
     margin: 0 auto;
 }
-
-@media screen and (max-width: 480px) {
-    .grid__item {
-        max-width: 400px;
-    }
-}
