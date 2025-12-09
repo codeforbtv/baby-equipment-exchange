@@ -22,7 +22,8 @@ import {
     Chip,
     Stack,
     InputAdornment,
-    Paper
+    Paper,
+    useMediaQuery
 } from '@mui/material';
 import ProtectedAidWorkerRoute from './ProtectedAidWorkerRoute';
 //Icons
@@ -69,6 +70,9 @@ const Inventory = (props: InventoryProps) => {
             </IconButton>
         </>
     );
+
+    //Media query for imagelist grid
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     const { isAidWorker, isAdmin } = useUserContext();
     const { addRequestedInventoryItem, requestedInventory } = useRequestedInventoryContext();
@@ -195,7 +199,7 @@ const Inventory = (props: InventoryProps) => {
                             {inventoryToDisplay == null || inventoryToDisplay.length == 0 ? (
                                 <p>No products found.</p>
                             ) : (
-                                <ImageList className={styles['browse__grid']} rowHeight={300} gap={4}>
+                                <ImageList className={styles['browse__grid']} rowHeight={300} gap={4} cols={isMobile ? 1 : 2}>
                                     {inventoryToDisplay.map((inventoryItem: InventoryItem) => {
                                         return (
                                             <InventoryItemCard
