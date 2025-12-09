@@ -4,5 +4,4 @@ export const cancellationNotice =
 export const liabiltyNotice =
     'All items provided through the Exchange are offered as is. The Exchange makes no warranties—express or implied—regarding item condition, safety, merchantability, or fitness for a particular purpose. Recipients are responsible for inspecting all items and verifying their recall status prior to use.';
 
-export const donationDisclaimer =
-    'ALL ITEMS ARE TRANSFERRED AS IS. THE EXCHANGE EXPRESSLY DISCLAIMS ALL OTHER WARRANTIES EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY IMPLIED WARRANTY OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Recipients of products from the Exchange should inspect items and verify recall status prior to use.';
+export const donationDisclaimer = 'By donating these items, I attest that they are clean, in good working order, and not subject to recall.';
