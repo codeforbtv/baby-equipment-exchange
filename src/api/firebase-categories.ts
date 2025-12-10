@@ -1,5 +1,4 @@
 import { categoryBody, CategoryType } from '@/types/CategoryTypes';
-import { categories } from '@/data/html';
 
 import { addErrorEvent, db } from './firebase';
 import {
@@ -84,7 +83,7 @@ export async function getCategoryById(id: string): Promise<Category> {
 
 export async function addCategory(newCategory: categoryBody): Promise<void> {
     try {
-        const categoryRef = doc(collection(db, CATEGORIES_COLLECTION));
+        const categoryRef = doc(collection(db, CATEGORIES_COLLECTION), newCategory.name);
         const categoryParams: ICategory = {
             id: categoryRef.id,
             active: true,

@@ -87,6 +87,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     });
                 } catch (error) {
                     addErrorEvent('Error accepting donation', error);
+                    throw error;
                 }
             })
         );
