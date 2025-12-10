@@ -4,33 +4,33 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 //API
 import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims, callUpdateAuthUser, callEnableUser } from '@/api/firebase';
-import { PatternFormat, OnValueChange } from 'react-number-format';
+import sendMail from '@/api/nodemailer';
 import { enableDbUser, updateDbUser } from '@/api/firebase-users';
 //Components
 import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from './CustomDialog';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
+//Constants
+import userEnabled from '@/email-templates/userEnabled';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
+import { PatternFormat, OnValueChange } from 'react-number-format';
 
-import sendMail from '@/api/nodemailer';
-import userEnabled from '@/email-templates/userEnabled';
-import { IUser } from '@/models/user';
+import { UserCollection } from '@/models/user';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type EditUserProps = {
-    userDetails: IUser;
+    userDetails: UserCollection;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
-    fetchUserDetails: (id: string) => void;
-    setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
+    setUserDetailsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const EditUser = (props: EditUserProps) => {
-    const { uid, email, displayName, customClaims, phoneNumber, notes, organization, isDisabled } = props.userDetails;
-    const { setIsEditMode, fetchUserDetails, setUsersUpdated } = props;
+    const { uid, email, displayName, customClaims, phoneNumber, notes, organization, isDisabled, title } = props.userDetails;
+    const { setIsEditMode, setUserDetailsUpdated } = props;
 
     let initialRole = '';
     if (customClaims && customClaims.admin === true) {
@@ -45,14 +45,14 @@ const EditUser = (props: EditUserProps) => {
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
     const [newPhoneNumber, setNewPhoneNumber] = useState<string>(phoneNumber);
+    const [newTitle, setNewTitle] = useState<string>(title ?? '');
     const [role, setRole] = useState<string>(initialRole);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleClose = () => {
-        if (setUsersUpdated) setUsersUpdated(true);
+        if (setUserDetailsUpdated) setUserDetailsUpdated(true);
         setIsDialogOpen(false);
         setIsEditMode(false);
-        fetchUserDetails(uid);
     };
 
     //List of Org names, ids from Server
@@ -143,7 +143,7 @@ const EditUser = (props: EditUserProps) => {
                 }
             }
             //If any fields in User collection in DB, update db user
-            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || email !== newEmail || displayName !== newDisplayName) {
+            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || email !== newEmail || displayName !== newDisplayName || title !== newTitle) {
                 try {
                     const updatedOrganization = selectedOrg
                         ? {
@@ -155,16 +155,19 @@ const EditUser = (props: EditUserProps) => {
                     await updateDbUser(uid, {
                         phoneNumber: newPhoneNumber,
                         organization: updatedOrganization,
+                        title: newTitle,
                         email: newEmail,
                         displayName: newDisplayName
                     });
                 } catch (error) {
                     addErrorEvent('Error updating DB user', error);
+                    throw error;
                 }
             }
             setIsDialogOpen(true);
         } catch (error) {
-            return Promise.reject('Failed to update user');
+            addErrorEvent('Error updating user', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -208,7 +211,7 @@ const EditUser = (props: EditUserProps) => {
                         {orgNamesAndIds ? (
                             <Autocomplete
                                 disablePortal
-                                sx={{ maxWidth: '580px' }}
+                                sx={{ maxWidth: { sm: '88%', xs: '80%' } }}
                                 value={selectedOrg}
                                 onChange={(event: any, newValue: string | null) => setSelectedOrg(newValue)}
                                 id="organzation-select"
@@ -218,6 +221,16 @@ const EditUser = (props: EditUserProps) => {
                         ) : (
                             <Typography variant="body1">Could not load list of organizations</Typography>
                         )}
+                        <TextField
+                            type="text"
+                            label="Title"
+                            name="title"
+                            id="title"
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                setNewTitle(event.target.value);
+                            }}
+                            value={newTitle}
+                        />
                         <PatternFormat
                             id="phone-number"
                             format="+1 (###) ###-####"

@@ -21,7 +21,9 @@ import {
     TextField,
     Chip,
     Stack,
-    InputAdornment
+    InputAdornment,
+    Paper,
+    useMediaQuery
 } from '@mui/material';
 import ProtectedAidWorkerRoute from './ProtectedAidWorkerRoute';
 //Icons
@@ -68,6 +70,9 @@ const Inventory = (props: InventoryProps) => {
             </IconButton>
         </>
     );
+
+    //Media query for imagelist grid
+    const isMobile = useMediaQuery('(max-width:600px)');
 
     const { isAidWorker, isAdmin } = useUserContext();
     const { addRequestedInventoryItem, requestedInventory } = useRequestedInventoryContext();
@@ -135,8 +140,16 @@ const Inventory = (props: InventoryProps) => {
             )}
             {!idToDisplay && (
                 <>
-                    <div className="page--header" style={{ marginTop: '4em', display: 'flex', justifyContent: 'space-between' }}>
+                    <div className="page--header" style={{ marginTop: '4em', display: 'flex', flexDirection: 'column', gap: '1em' }}>
                         <Typography variant="h5">Inventory</Typography>
+                        <Paper variant="outlined" sx={{ padding: '2px' }}>
+                            <Typography variant="body1">
+                                <b>DISCLAIMER: </b> ALL ITEMS ARE TRANSFERRED AS IS. THE EXCHANGE EXPRESSLY DISCLAIMS ALL OTHER WARRANTIES EXPRESS OR IMPLIED,
+                                INCLUDING BUT NOT LIMITED TO ANY IMPLIED WARRANTY OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Recipients of
+                                products from the Exchange should inspect items and verify recall status prior to use.
+                            </Typography>
+                        </Paper>
+
                         <div>
                             {requestedInventory.length > 0 && (
                                 <Badge badgeContent={requestedInventory.length} color="primary">
@@ -168,7 +181,7 @@ const Inventory = (props: InventoryProps) => {
                                     }}
                                 />
                                 <Autocomplete
-                                    sx={{ maxWidth: '83vw' }}
+                                    sx={{ maxWidth: '80vw' }}
                                     multiple
                                     id="category-filter"
                                     options={categories.map((category) => category.name)}
@@ -186,7 +199,7 @@ const Inventory = (props: InventoryProps) => {
                             {inventoryToDisplay == null || inventoryToDisplay.length == 0 ? (
                                 <p>No products found.</p>
                             ) : (
-                                <ImageList className={styles['browse__grid']} rowHeight={200}>
+                                <ImageList className={styles['browse__grid']} rowHeight={300} gap={4} cols={isMobile ? 1 : 2}>
                                     {inventoryToDisplay.map((inventoryItem: InventoryItem) => {
                                         return (
                                             <InventoryItemCard

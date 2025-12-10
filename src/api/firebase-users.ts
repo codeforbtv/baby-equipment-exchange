@@ -14,18 +14,6 @@ import {
     getDocs,
     deleteDoc
 } from 'firebase/firestore';
-
-//API
-import { getAuthUserById } from './firebaseAdmin';
-
-// Models
-import { IUser, UserCollection } from '@/models/user';
-import { Event, IEvent } from '@/models/event';
-// Types
-import { NoteBody } from '@/types/post-data';
-// Utility methods
-import { stripNullUndefined } from '@/utils/utils';
-
 import {
     NextOrObserver,
     onAuthStateChanged,
@@ -36,6 +24,13 @@ import {
     User,
     UserCredential
 } from 'firebase/auth';
+//API
+import { getAuthUserById } from './firebaseAdmin';
+// Models
+import { IUser, UserCollection } from '@/models/user';
+import { Event, IEvent } from '@/models/event';
+// Types
+import { NoteBody } from '@/types/post-data';
 
 export const USERS_COLLECTION = 'Users';
 
@@ -49,8 +44,12 @@ export const userConverter = {
             isDisabled: user.getIsDisabled(),
             phoneNumber: user.getPhoneNumber(),
             requestedItems: user.getRequestedItems(),
+            distributedItems: user.getDistributedItems(),
             notes: user.getNotes(),
             organization: user.getOrganization(),
+            title: user.getTitle(),
+            termsAccepted: user.getTermsAccepted(),
+            createdAt: user.getCreatedAt(),
             modifiedAt: user.getModifiedAt()
         };
 
@@ -71,8 +70,12 @@ export const userConverter = {
             isDisabled: data.isDisabled,
             phoneNumber: data.phoneNumber,
             requestedItems: data.requestedItems,
+            distributedItems: data.distributedItems,
             notes: data.notes,
             organization: data.organization,
+            title: data.title,
+            termsAccepted: data.termsAccepted,
+            createdAt: data.createdAt,
             modifiedAt: data.modifiedAt
         };
         return new UserCollection(userData);
@@ -104,7 +107,7 @@ export async function getAllActiveDbUsers(): Promise<IUser[]> {
     }
 }
 
-export async function getDbUser(uid: string): Promise<IUser> {
+export async function getDbUser(uid: string): Promise<UserCollection> {
     try {
         const userRef = doc(db, `${USERS_COLLECTION}/${uid}`).withConverter(userConverter);
         const snapshot = await getDoc(userRef);
@@ -164,8 +167,12 @@ export async function getUserDetails(uid: string): Promise<IUser> {
             customClaims: authUser.customClaims,
             phoneNumber: dbUser.phoneNumber,
             requestedItems: dbUser.requestedItems,
+            distributedItems: dbUser.distributedItems,
             notes: dbUser.notes,
             organization: dbUser.organization,
+            title: dbUser.title,
+            termsAccepted: dbUser.termsAccepted,
+            createdAt: dbUser.createdAt,
             modifiedAt: dbUser.modifiedAt
         };
         return userDetails;

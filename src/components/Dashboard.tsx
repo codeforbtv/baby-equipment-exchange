@@ -10,6 +10,7 @@ import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
 import Notifications from './Notifications';
 import Inventory from './Inventory';
+import Categories from './Categories';
 //Hooks
 import React, { useEffect, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -30,8 +31,10 @@ import { Donation } from '@/models/donation';
 import { Notification } from '@/types/NotificationTypes';
 import { IUser } from '@/models/user';
 import { InventoryItem } from '@/models/inventoryItem';
+import { Category } from '@/models/category';
+import { getAllCategories } from '@/api/firebase-categories';
 
-const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations'];
+const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations', 'Categories'];
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -43,6 +46,7 @@ export default function Dashboard() {
         [key: string]: string;
     } | null>(null);
     const [notifications, setNotifications] = useState<Notification | null>(null);
+    const [categories, setCategories] = useState<Category[] | null>(null);
 
     const { requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
@@ -53,6 +57,7 @@ export default function Dashboard() {
     const [inventoryUpdated, setInventoryUpdated] = useState<boolean>(false);
     const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
     const [orgsUpdated, setOrgsUpdated] = useState<boolean>(false);
+    const [categoriesUpdated, setCategoriesUpdated] = useState<boolean>(false);
 
     //for mobile tab menu
     const matches = useMediaQuery('(min-width:600px)');
@@ -140,6 +145,19 @@ export default function Dashboard() {
         }
     }
 
+    async function fetchCategories(): Promise<void> {
+        setIsLoading(true);
+        try {
+            const categoriesResult = await getAllCategories();
+            setCategories(categoriesResult);
+            setCategoriesUpdated(false);
+        } catch (error) {
+            addErrorEvent('Could not fetch categories', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     async function handleRefresh(): Promise<void> {
         if (currentTab === 0) {
             fetchNotifications();
@@ -151,6 +169,8 @@ export default function Dashboard() {
             fetchUsers();
         } else if (currentTab === 4) {
             fetchOrgNames();
+        } else if (currentTab === 5) {
+            fetchCategories();
         }
     }
 
@@ -167,8 +187,10 @@ export default function Dashboard() {
             fetchUsers();
         } else if ((currentTab === 4 && !orgNamesAndIds) || orgsUpdated) {
             fetchOrgNames();
+        } else if ((currentTab === 5 && !categories) || categoriesUpdated) {
+            fetchCategories();
         }
-    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated]);
+    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated, categoriesUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -222,6 +244,9 @@ export default function Dashboard() {
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={4}>
                         {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} /> : <p>No organizations found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={5}>
+                        {categories ? <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} /> : <p>No categories found.</p>}
                     </CustomTabPanel>
                 </>
             )}

@@ -5,3 +5,9 @@ export type CategoryType = {
     active: boolean;
     description?: string;
 };
+
+export type categoryBody = {
+    name: string;
+    tagPrefix: string;
+    description?: string;
+};

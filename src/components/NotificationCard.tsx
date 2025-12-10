@@ -21,20 +21,21 @@ import {
     Box
 } from '@mui/material';
 import Loader from './Loader';
+import CustomDialog from './CustomDialog';
 //Api
-import { updateDonationStatus } from '@/api/firebase-donations';
+import { markDonationAsDistributed, updateDonationStatus } from '@/api/firebase-donations';
+import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
+import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
+import sendMail from '@/api/nodemailer';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
 //Types
 import { Donation } from '@/models/donation';
 import { Order } from '@/types/OrdersTypes';
-import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { IUser } from '@/models/user';
-import CustomDialog from './CustomDialog';
-import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
+
 import rejectUser from '@/email-templates/rejectUser';
-import sendMail from '@/api/nodemailer';
 import userEnabled from '@/email-templates/userEnabled';
 
 type NotificationCardProps = {
@@ -62,6 +63,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsDialogOpen(false);
         setDialogTitle('');
         setDialogContent('');
+        if (setNotificationsUpdated) setNotificationsUpdated(true);
     };
 
     const handleDeleteDialogClose = () => {
@@ -81,12 +83,11 @@ const NotificationCard = (props: NotificationCardProps) => {
         }
     };
 
-    const markAsDistributed = async (id: string) => {
+    const markAsDistributed = async (donation: Donation) => {
         setIsLoading(true);
         try {
-            await updateDonationStatus(id, 'distributed');
+            await markDonationAsDistributed(donation);
             if (setNotificationsUpdated) setNotificationsUpdated(true);
-            true;
             window.location.reload();
         } catch (error) {
             addErrorEvent('Mark as distributed', error);
@@ -123,6 +124,7 @@ const NotificationCard = (props: NotificationCardProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Call delete user', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -215,7 +217,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                 </CardContent>
                             </div>
                             <CardActions className={styles['notification-card--container--btn']}>
-                                <Button variant="contained" onClick={() => markAsDistributed(donation.id)}>
+                                <Button variant="contained" onClick={() => markAsDistributed(donation)}>
                                     Mark as distributed
                                 </Button>
                             </CardActions>

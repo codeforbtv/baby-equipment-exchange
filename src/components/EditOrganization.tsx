@@ -89,12 +89,12 @@ const EditOrganization = (props: EditOrganizationProps) => {
                 tags: newTags
             };
             await updateOrganization(id, updatedOrganization);
+            setIsDialogOpen(true);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Error submitting organization update', error);
+            throw error;
         }
         setIsLoading(false);
-        setIsDialogOpen(true);
     };
 
     return (

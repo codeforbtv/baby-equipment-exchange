@@ -12,15 +12,12 @@ import {
     getDoc,
     getDocs,
     query,
-    and,
     or,
     serverTimestamp,
     updateDoc,
     where,
     writeBatch,
     documentId,
-    DocumentReference,
-    FieldValue,
     arrayRemove
 } from 'firebase/firestore';
 // Models
@@ -30,10 +27,16 @@ import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
 import { Order } from '@/types/OrdersTypes';
 // Libs
-import { db, auth, addErrorEvent, storage, checkIsAdmin, checkIsAidWorker } from './firebase';
+import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
+import { getBase64ImagesFromTagnumber } from './firebaseAdmin';
+import { base64ImageObj } from '@/types/DonationTypes';
+import { base64ObjToFile } from '@/utils/utils';
+import { uploadImages } from './firebase-images';
 
 // Imported constants
+import { USERS_COLLECTION } from './firebase-users';
+import { ORGANIZATIONS_COLLECTION } from './firebase-organizations';
 
 export const DONATIONS_COLLECTION = 'Donations';
 export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
@@ -61,7 +64,8 @@ const donationConverter = {
             dateReceived: donation.getDateReceived(),
             dateRequested: donation.getDateRequested(),
             dateDistributed: donation.getDateDistributed(),
-            requestor: donation.getRequestor()
+            requestor: donation.getRequestor(),
+            distributor: donation.getDistributor()
         };
         for (const key in donationData) {
             if (donationData[key] === undefined || donationData[key] === null) {
@@ -92,7 +96,8 @@ const donationConverter = {
             dateReceived: data.dateReceived,
             dateRequested: data.dateRequested,
             dateDistributed: data.dateDistributed,
-            requestor: data.requestor
+            requestor: data.requestor,
+            distributor: data.distributor
         };
         return new Donation(donationData);
     }
@@ -250,7 +255,7 @@ export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
     return Promise.reject(new Error('Something went wrong fetching donations by bulk ID'));
 }
 
-export async function addDonation(newDonations: DonationBody[]) {
+export async function addDonation(newDonations: DonationBody[], termsAccepted: string) {
     try {
         //All donations are assigned a bulk donatin id to account for multiple items
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
@@ -259,7 +264,9 @@ export async function addDonation(newDonations: DonationBody[]) {
             donations: [],
             donorEmail: newDonations[0].donorEmail,
             donorName: newDonations[0].donorName,
-            donorId: newDonations[0].donorId
+            donorId: newDonations[0].donorId,
+            termsAccepted: termsAccepted,
+            createdAt: serverTimestamp()
         });
         for (const newDonation of newDonations) {
             const donationRef = doc(collection(db, DONATIONS_COLLECTION));
@@ -283,7 +290,8 @@ export async function addDonation(newDonations: DonationBody[]) {
                 dateReceived: null,
                 dateRequested: null,
                 dateDistributed: null,
-                requestor: null
+                requestor: null,
+                distributor: null
             };
             const donation = new Donation(donationParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
@@ -331,7 +339,8 @@ export async function addAdminDonation(newDonations: DonationBody[]): Promise<vo
                 dateReceived: serverTimestamp() as Timestamp,
                 dateRequested: null,
                 dateDistributed: null,
-                requestor: null
+                requestor: null,
+                distributor: null
             };
             const donation = new Donation(donationParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
@@ -587,10 +596,119 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
         });
         batch.update(donationRef, {
             status: 'unavailable',
+            requestor: null,
             modifiedAt: serverTimestamp()
         });
         await batch.commit();
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);
+    }
+}
+
+//Marks donation as distributed and adds it to user's and organization's distributed items list
+export async function markDonationAsDistributed(donation: Donation): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
+        const requestorRef = doc(db, `${USERS_COLLECTION}/${donation.requestor?.id}`);
+        const requestorSnapshot = await getDoc(requestorRef);
+        let orgId = '';
+        if (requestorSnapshot.exists()) {
+            const requestor = requestorSnapshot.data();
+            orgId = requestor.organization.id;
+        }
+        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, orgId);
+        const organizationSnapshot = await getDoc(organizationRef);
+        let orgName;
+        if (organizationSnapshot.exists()) {
+            orgName = organizationSnapshot.data().name;
+        }
+
+        batch.update(donationRef, {
+            status: 'distributed',
+            distributor: {
+                id: donation.requestor?.id,
+                name: donation.requestor?.name,
+                email: donation.requestor?.email,
+                organization: orgName
+            },
+            modifiedAt: serverTimestamp(),
+            dateDistributed: serverTimestamp()
+        });
+        batch.update(requestorRef, {
+            distributedItems: arrayUnion({
+                id: donation.id,
+                tagNumber: donation.tagNumber
+            }),
+            modifiedAt: serverTimestamp()
+        });
+        batch.update(organizationRef, {
+            distributedItems: arrayUnion({
+                id: donation.id,
+                tagNumber: donation.tagNumber
+            }),
+            modifiedAt: serverTimestamp()
+        });
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('Error marking donation as distributed', error);
+    }
+}
+
+//The below functions are for uploading images for donations imported from the original spreadsheet
+export async function uploadImagesFromTagNumber(tagNumber: string) {
+    try {
+        const base64Images: base64ImageObj[] = await getBase64ImagesFromTagnumber(tagNumber);
+        let imageFiles: File[] = [];
+        for (const base64Image of base64Images) {
+            const imageFile = await base64ObjToFile(base64Image);
+            imageFiles.push(imageFile);
+        }
+        const imageUrls = await uploadImages(imageFiles);
+        return imageUrls;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function convertImportedDonations(): Promise<void> {
+    try {
+        const importsSnapshot = await getDocs(collection(db, 'BEE_Data_2025-11-19_v1'));
+        const batch = writeBatch(db);
+        for (const doc of importsSnapshot.docs) {
+            const docData = doc.data();
+            const images = await uploadImagesFromTagNumber(docData['tagNumber']);
+            if (docData['donorEmail'] === undefined) {
+                batch.update(doc.ref, {
+                    donorEmail: ''
+                });
+            }
+            if (docData['donorName'] === undefined) {
+                batch.update(doc.ref, {
+                    donorName: ''
+                });
+            }
+            batch.update(doc.ref, {
+                images:
+                    images.length > 0
+                        ? images
+                        : [
+                              'https://firebasestorage.googleapis.com/v0/b/baby-equipment-exchange.appspot.com/o/77def461-02a2-4667-b7cf-6a9d94306823-1763596581708.jpg?alt=media&token=46d43d52-3c5d-4808-8ec5-0bb244d43405'
+                          ],
+                status: docData['status'] === 'Available' ? 'available' : 'unavailable',
+                id: doc.id,
+                dateAccepted: null,
+                dateRequested: null,
+                dateDistributed: null,
+                requestor: null,
+                notes: null,
+                modifiedAt: serverTimestamp()
+            });
+        }
+        await batch.commit();
+        console.log('Done!');
+    } catch (error) {
+        console.log('Not done!');
+        throw error;
     }
 }

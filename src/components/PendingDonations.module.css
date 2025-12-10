@@ -18,8 +18,7 @@
 .text--group {
     min-width: 50%;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
 }
 
 .left--column {

@@ -1,6 +1,6 @@
 'use client';
 //Components
-import { Autocomplete, Box, Button, Paper, TextField } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, FormControlLabel, FormGroup, Paper, TextField, Typography } from '@mui/material';
 import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
 import Loader from '@/components/Loader';
 //Hooks
@@ -13,6 +13,8 @@ import { PatternFormat, OnValueChange } from 'react-number-format';
 import '../../styles/globalStyles.css';
 //Types
 import { NewUserAccountInfo } from '@/types/UserTypes';
+import { cancellationNotice, liabiltyNotice } from '@/data/agreements';
+import RecallStatuses from '@/components/RecallStatuses';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,6 +30,8 @@ export default function NewAccount() {
     const [phoneNumber, setPhoneNumber] = useState<string>('');
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [confirmedUserName, setConfirmedUserName] = useState<string>('');
+    const [title, setTitle] = useState<string>('');
+    const [hasAgreed, setHasAgreed] = useState(false);
 
     //List of Org names, ids from Server
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
@@ -43,7 +47,14 @@ export default function NewAccount() {
     const [orgInputValue, setOrgInputValue] = useState<string>('');
 
     const isDisabled =
-        displayName.length < 1 || email.length < 1 || password.length < 1 || isInvalidEmail || isEmailInUse || passwordsDoNotMatch || phoneNumber.includes('_');
+        displayName.length < 1 ||
+        email.length < 1 ||
+        password.length < 1 ||
+        isInvalidEmail ||
+        isEmailInUse ||
+        passwordsDoNotMatch ||
+        phoneNumber.includes('_') ||
+        !hasAgreed;
 
     const router = useRouter();
 
@@ -81,16 +92,19 @@ export default function NewAccount() {
             password: password,
             phoneNumber: phoneNumber,
             organization: organization,
+            title: title,
+            termsAccepted: [cancellationNotice, liabiltyNotice],
             notes: notes
         };
         try {
             const newUser = await callCreateUser(accountInfo);
             newUser.displayName && setConfirmedUserName(newUser.displayName);
-            setIsLoading(false);
             setOpenDialog(true);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('handleAccountCreate', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -142,6 +156,10 @@ export default function NewAccount() {
         router.push('/');
     };
 
+    const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setHasAgreed(event.target.checked);
+    };
+
     useEffect(() => {
         getOrgNames();
     }, []);
@@ -186,7 +204,8 @@ export default function NewAccount() {
                                 onBlur={handleBlur}
                             />
                             <Autocomplete
-                                sx={{ maxWidth: '580px' }}
+                                sx={{ maxWidth: { sm: '97%', xs: '95%' } }}
+                                disablePortal
                                 freeSolo={true}
                                 value={orgValue}
                                 onChange={(event: any, newValue: string | null) => setOrgValue(newValue)}
@@ -195,6 +214,19 @@ export default function NewAccount() {
                                 id="organzation-select"
                                 options={orgNames}
                                 renderInput={(params) => <TextField {...params} label="Organization (select or enter a name)" />}
+                            />
+                            <TextField
+                                type="text"
+                                label="Title"
+                                name="title"
+                                id="title"
+                                placeholder="Title"
+                                value={title}
+                                required
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                    setTitle(event.target.value);
+                                }}
+                                onBlur={handleBlur}
                             />
                             <TextField
                                 type="password"
@@ -232,6 +264,16 @@ export default function NewAccount() {
                                 required
                                 error={phoneNumber.includes('_')}
                             />
+                            <Paper variant="outlined" sx={{ padding: '1em', display: 'flex', flexDirection: 'column', gap: '1em' }}>
+                                <Typography variant="body2">
+                                    <b>Cancellation & Liability Notice: </b>
+                                    {cancellationNotice}
+                                </Typography>
+                                <Typography variant="body2">{liabiltyNotice}</Typography>
+                                <RecallStatuses />
+
+                                <FormControlLabel control={<Checkbox size="small" checked={hasAgreed} onChange={handleCheck} />} label="I agree" />
+                            </Paper>
                             <Button variant="contained" type={'submit'} disabled={isDisabled}>
                                 Join
                             </Button>
