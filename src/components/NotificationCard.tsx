@@ -78,6 +78,7 @@ const NotificationCard = (props: NotificationCardProps) => {
             window.location.reload();
         } catch (error) {
             addErrorEvent('Mark donation as recieved', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
