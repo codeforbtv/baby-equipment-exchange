@@ -99,7 +99,7 @@ const EditCategory = (props: EditCategoryProps) => {
                             placeholder="Description"
                             onChange={(e) => setNewDescription(e.target.value)}
                         />
-                        <NumberField label="Tag Count" value={newTagCount} onValueChange={(e) => setNewtagCount(e ?? 0)} />
+                        <NumberField label="Last tag number used" value={newTagCount} onValueChange={(e) => setNewtagCount(e ?? 0)} />
                         <Stack direction="column" spacing={2}>
                             <Button variant="contained" type="submit">
                                 Save

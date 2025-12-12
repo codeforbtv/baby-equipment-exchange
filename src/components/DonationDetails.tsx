@@ -4,7 +4,7 @@
 import { MouseEventHandler, useEffect, useState, Dispatch, SetStateAction } from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
-import { getDonationById, updateDonationStatus } from '@/api/firebase-donations';
+import { getDonationById, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
 //Components
 import { Dialog, DialogActions, ImageList, ImageListItem, Button, Divider, IconButton, Typography, Stack } from '@mui/material';
 import Loader from '@/components/Loader';
@@ -66,6 +66,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
             }
         } catch (error) {
             addErrorEvent('Error removing donation from inventory', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -75,12 +76,15 @@ const DonationDetails = (props: DonationDetailsProps) => {
         setIsLoading(true);
         try {
             if (donationDetails) {
-                await updateDonationStatus(donationDetails.id, 'available');
+                await updateDonation(donationDetails.id, {
+                    status: 'available'
+                });
                 setDialogContent(`'${donationDetails.brand} - ${donationDetails.model}' has been added to inventory.`);
                 setIsDialogOpen(true);
             }
         } catch (error) {
             addErrorEvent('Error adding donation from inventory', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -157,7 +161,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             <b>Status: </b>
                             {statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === donationDetails.status)}
                         </Typography>
-                        {donationDetails.status === 'available' && (
+                        {(donationDetails.status === 'available' || donationDetails.status === 'unavailable') && (
                             <Typography variant="body1">
                                 <b>Days in storage: </b>
                                 {donationDetails.getDaysInStorage()}

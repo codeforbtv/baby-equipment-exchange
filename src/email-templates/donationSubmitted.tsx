@@ -19,7 +19,7 @@ export default function donationsSubmitted(donorEmail: string, donorName: string
         to: donorEmail,
         cc: emailCc,
         from: emailSender,
-        subject: 'Your Baby Equipment Exchange donation has been submitted.',
+        subject: 'Your Baby Product Exchange donation has been submitted.',
         html: html
     };
 }

@@ -104,7 +104,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const message = (
         <>
             <p>{`Hello ${donorName},`}</p>
-            <p>Thank you for submitting your donation to the Baby Equipment Exchange.</p>
+            <p>Thank you for submitting your donation to the Baby Product Exchange.</p>
             {acceptedDonations && acceptedDonations.length > 0 && (
                 <>
                     <p>The following items have been accepted:</p>
@@ -143,6 +143,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }

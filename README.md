@@ -1,4 +1,4 @@
-# The Baby Equipment Exchange
+# The Baby Product Exchange
 
 ## Introduction...
 

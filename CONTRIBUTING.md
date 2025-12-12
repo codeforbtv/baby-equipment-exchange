@@ -1,4 +1,4 @@
-# Contributing to the Baby Equipment Exchange Project
+# Contributing to the Baby Product Exchange Project
 
 ## Starting Notes
 
@@ -8,11 +8,11 @@ That said we need to level-set on a couple items right up-front.
 - Contributions and Contributors Must Follow the Code for BTV Code of Conduct https://codeforbtv.org/code-conduct/
 - Contributions are open source and will adhere to the project license (MIT License)
 
-## How to Engage 
+## How to Engage
 
 New contributors should be aware that we are not winging-it or working without a plan.
 We have a plan. Sometimes we are better than other times at clearly sharing it, but it exists if you ask.
-Because we are all volunteers, there may be miscommunication, and mistakes in contributed code or artifacts. 
+Because we are all volunteers, there may be miscommunication, and mistakes in contributed code or artifacts.
 Let us be empathetic towards eachother in this regard. Not every contributor is a master 20 year professional developer. Most are just learning.
 If you need more rigor and professionalism you are welcome to lay out plans for how to accomplish that yourself, or give feedback to the current project manager.
 
@@ -22,7 +22,7 @@ Most of our work to be done should be captured into either a Github Issue for th
 Some of the tickets in the project are assigned. Some are not. If they are not assigned, you may assign them to yourself.
 If they are already assigned you can check in our Slack with the person who is assigned and see if they are indeed working on it.
 
-If you see something that seems like an issue, then file it as an issue in the repo. 
+If you see something that seems like an issue, then file it as an issue in the repo.
 At some point later it should be elevated by the project manager to become a ticket.
 If you see an issue that you want to work on and it is not a ticket, first try to ask the Project Manager to make it a ticket.
 If you cannot reach the project manager, then you may try to make it a ticket yourself, and then assign it to yourself and work on it.
@@ -58,7 +58,7 @@ Some very junior contributors may be trying to pitch in and help and learn ... a
 
 Most projects require secrets... tokens, keys, passwords, etc.
 
-Most of our projects use a .env file. It should *NEVER* be committed to the repo - because the repos are public.
+Most of our projects use a .env file. It should _NEVER_ be committed to the repo - because the repos are public.
 As such you won't (shouldn't) find it here. Or if you do it may be a placeholder with fake values.
 Either way, you will usually need to acquire a secrets file (.env file probably) from an existing developer working on the project.
 Just reach ou in the Slack channel or one of the repo admins.

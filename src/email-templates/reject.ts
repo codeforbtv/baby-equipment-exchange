@@ -13,7 +13,7 @@ export default function reject(donorEmail: string, message: string, notes?: stri
         to: donorEmail,
         cc: emailCc,
         from: emailSender,
-        subject: 'Your Baby Equipment Exchange donation has been reviewed',
+        subject: 'Your Baby Product Exchange donation has been reviewed',
         html: html
     };
 }
