@@ -143,6 +143,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
