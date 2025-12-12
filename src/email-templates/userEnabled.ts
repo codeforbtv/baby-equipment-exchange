@@ -6,9 +6,9 @@ export default function userEnabled(email: string, displayName: string) {
         to: email,
         cc: emailCc,
         from: emailSender,
-        subject: 'Your Baby Equipment Exchange account is now active.',
+        subject: 'Your Baby Product Exchange account is now active.',
         html: `<p>Hello, ${displayName}</p>
-                <p>Your account has been enabled and you can now log into the Baby Equipment Exchange with the username: ${email} and the password you created.</p>
+                <p>Your account has been enabled and you can now log into the Baby Product Exchange with the username: ${email} and the password you created.</p>
         `
     };
 }

@@ -104,7 +104,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const message = (
         <>
             <p>{`Hello ${donorName},`}</p>
-            <p>Thank you for submitting your donation to the Baby Equipment Exchange.</p>
+            <p>Thank you for submitting your donation to the Baby Product Exchange.</p>
             {acceptedDonations && acceptedDonations.length > 0 && (
                 <>
                     <p>The following items have been accepted:</p>
