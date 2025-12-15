@@ -65,7 +65,7 @@ export default function AdminDonationForm(props: DonationFormProps) {
                 const imagePreview = (
                     <ImageThumbnail
                         key={i}
-                        removeFunction={(fileToRemove: File) => removeImageFromState(images, setImages, fileToRemove)}
+                        removeFromState={(fileToRemove: File) => removeImageFromState(images, setImages, fileToRemove)}
                         file={images[i]}
                         width={'32%'}
                         margin={'.66%'}

@@ -21,6 +21,8 @@ import styles from '@/components/DonationForm.module.css';
 import { IDonation } from '@/models/donation';
 import { Category } from '@/models/category';
 import InputContainer from './InputContainer';
+import ImageThumbnailFromUrl from './ImageThumbnailFromUrl';
+import ImageThumbnail from './ImageThumbnail';
 
 type EditDonationProps = {
     donationDetails: IDonation;
@@ -30,7 +32,7 @@ type EditDonationProps = {
 };
 
 const EditDonation = (props: EditDonationProps) => {
-    const { id, category, brand, model, description, status, tagNumber, requestor } = props.donationDetails;
+    const { id, category, brand, model, description, status, tagNumber, images, requestor } = props.donationDetails;
     const { setIsEditMode, fetchDonation, setDonationsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -40,9 +42,10 @@ const EditDonation = (props: EditDonationProps) => {
     const [newBrand, setNewBrand] = useState<string>(brand);
     const [newModel, setNewModel] = useState<string>(model);
     const [newDescription, setNewDescription] = useState<string>(description ?? '');
+    const [newImages, setNewImages] = useState<string[]>(images);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    const [images, setImages] = useState<File[] | null>();
+    const [addedImages, setAddedImages] = useState<File[] | null>();
     const [imageElements, setImageElements] = useState<ReactElement[]>([]);
 
     const fetchCategories = async (): Promise<void> => {
@@ -169,6 +172,9 @@ const EditDonation = (props: EditDonationProps) => {
                         <Box className={styles['form__section--right']}>
                             <InputContainer for="images" label="Images">
                                 <div className={styles['image-uploader__container']}>
+                                    {newImages.map((image) => (
+                                        <ImageThumbnail key={image} url={image} width={'32%'} margin={'.66%'} />
+                                    ))}
                                     <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
                                     <div className={styles['image-uploader__input']}>
                                         <label id="labelForImages" htmlFor="images">
@@ -178,7 +184,9 @@ const EditDonation = (props: EditDonationProps) => {
                                                 id="images"
                                                 name="images"
                                                 accept="image/*"
-                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => appendImagesToState(images, setImages, event)}
+                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                                                    appendImagesToState(addedImages, setAddedImages, event)
+                                                }
                                                 multiple
                                             />
                                             <Button variant="contained" component="span" className={styles['form-btn']} endIcon={<AddPhotoAlternateIcon />}>
