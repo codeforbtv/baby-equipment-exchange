@@ -12,6 +12,8 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
 import { Paper, Box, TextField, Button, Stack, Typography, Autocomplete } from '@mui/material';
 import CustomDialog from './CustomDialog';
+import InputContainer from './InputContainer';
+import ImageThumbnail from './ImageThumbnail';
 //Icons
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 //Styles
@@ -20,9 +22,7 @@ import styles from '@/components/DonationForm.module.css';
 //Types
 import { IDonation } from '@/models/donation';
 import { Category } from '@/models/category';
-import InputContainer from './InputContainer';
-import ImageThumbnailFromUrl from './ImageThumbnailFromUrl';
-import ImageThumbnail from './ImageThumbnail';
+import { uploadImages } from '@/api/firebase-images';
 
 type EditDonationProps = {
     donationDetails: IDonation;
@@ -46,7 +46,6 @@ const EditDonation = (props: EditDonationProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const [addedImages, setAddedImages] = useState<File[] | null>();
-    const [imageElements, setImageElements] = useState<ReactElement[]>([]);
 
     const fetchCategories = async (): Promise<void> => {
         try {
@@ -72,17 +71,26 @@ const EditDonation = (props: EditDonationProps) => {
         setNewCategory(newValue);
     };
 
+    const handleRemoveExistingImage = (url: string) => {
+        setNewImages(newImages.filter((image) => image !== url));
+    };
+
     const handleSubmitUpdatedDonation = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
 
         try {
+            let addedImageUrls: string[] = [];
+            if (addedImages) {
+                addedImageUrls = await uploadImages(addedImages);
+            }
             const updatedDonation = {
                 category: newCategory,
                 tagNumber: newTagNumber,
                 brand: newBrand,
                 model: newModel,
-                description: newDescription
+                description: newDescription,
+                images: [...newImages, ...addedImageUrls]
             };
             await updateDonation(id, updatedDonation);
             setIsDialogOpen(true);
@@ -105,6 +113,11 @@ const EditDonation = (props: EditDonationProps) => {
         if (!tagNumber) assignTagNumber();
         if (!categories) fetchCategories();
     }, []);
+
+    useEffect(() => {
+        console.log('added images', addedImages);
+        console.log('newimages', newImages);
+    }, [addedImages, newImages]);
 
     return (
         <ProtectedAdminRoute>
@@ -173,9 +186,26 @@ const EditDonation = (props: EditDonationProps) => {
                             <InputContainer for="images" label="Images">
                                 <div className={styles['image-uploader__container']}>
                                     {newImages.map((image) => (
-                                        <ImageThumbnail key={image} url={image} width={'32%'} margin={'.66%'} />
+                                        <ImageThumbnail
+                                            key={image}
+                                            url={image}
+                                            width={'32%'}
+                                            margin={'.66%'}
+                                            removeFromDb={() => handleRemoveExistingImage(image)}
+                                        />
                                     ))}
-                                    <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
+                                    <div className={styles['image-uploader__display']}>
+                                        {addedImages &&
+                                            addedImages.map((image) => (
+                                                <ImageThumbnail
+                                                    key={image.name}
+                                                    file={image}
+                                                    width={'32%'}
+                                                    margin={'.66%'}
+                                                    removeFromState={(fileToRemove: File) => removeImageFromState(addedImages, setAddedImages, fileToRemove)}
+                                                />
+                                            ))}
+                                    </div>
                                     <div className={styles['image-uploader__input']}>
                                         <label id="labelForImages" htmlFor="images">
                                             <input
@@ -198,7 +228,7 @@ const EditDonation = (props: EditDonationProps) => {
                             </InputContainer>
                         </Box>
                         <Box className={styles['form__section--bottom']}>
-                            <Button variant="contained" type="submit">
+                            <Button variant="contained" type="submit" disabled={(!addedImages || addedImages.length === 0) && newImages.length === 0}>
                                 Save changes
                             </Button>
                             <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
