@@ -5,6 +5,7 @@ import { MouseEventHandler, useEffect, useState, Dispatch, SetStateAction } from
 //APi
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationById, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
+import { productLifeCycleReport } from '@/api/firebase-reports';
 //Components
 import { Dialog, DialogActions, ImageList, ImageListItem, Button, Divider, IconButton, Typography, Stack } from '@mui/material';
 import Loader from '@/components/Loader';
@@ -21,7 +22,6 @@ import DownloadIcon from '@mui/icons-material/Download';
 import '@/styles/globalStyles.css';
 //Types
 import { DonationStatusKeys, donationStatuses, Donation } from '@/models/donation';
-import { productLifeCycleReport } from '@/api/firebase-reports';
 
 type DonationDetailsProps = {
     id: string | null;
@@ -34,6 +34,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
     const { id, setIdToDisplay, donation, setDonationsUpdated } = props;
     const intialDonation = donation ? donation : null;
     const [donationDetails, setDonationDetails] = useState<Donation | null>(intialDonation);
+    const [donationDetailsUpdated, setDonationDetailsUpdated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
@@ -49,8 +50,10 @@ const DonationDetails = (props: DonationDetailsProps) => {
         try {
             const donationToView = await getDonationById(id);
             setDonationDetails(donationToView);
+            setDonationDetailsUpdated(false);
         } catch (error: any) {
             addErrorEvent(`Fetch donation by ID`, error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -108,8 +111,8 @@ const DonationDetails = (props: DonationDetailsProps) => {
     };
 
     useEffect(() => {
-        if (id && !donation) fetchDonation(id);
-    }, []);
+        if ((id && !donation) || (id && donationDetailsUpdated)) fetchDonation(id);
+    }, [donationDetailsUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -225,12 +228,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                     </div>
                 )}
                 {!isLoading && donationDetails && isEditMode && (
-                    <EditDonation
-                        donationDetails={donationDetails}
-                        setIsEditMode={setIsEditMode}
-                        fetchDonation={fetchDonation}
-                        setDonationsUpdated={setDonationsUpdated && setDonationsUpdated}
-                    />
+                    <EditDonation donationDetails={donationDetails} setIsEditMode={setIsEditMode} setDonationDetailsUpdated={setDonationDetailsUpdated} />
                 )}
             </div>
         </ProtectedAdminRoute>
