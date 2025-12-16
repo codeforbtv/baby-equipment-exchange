@@ -1,12 +1,13 @@
 'use client';
 
 //Hooks
-import { Dispatch, ReactElement, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //API
 import { updateDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 import { getAllCategories, getTagNumber } from '@/api/firebase-categories';
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
+import { uploadImages } from '@/api/firebase-images';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
@@ -20,20 +21,19 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import '@/styles/globalStyles.css';
 import styles from '@/components/DonationForm.module.css';
 //Types
-import { IDonation } from '@/models/donation';
+import { Donation } from '@/models/donation';
 import { Category } from '@/models/category';
-import { uploadImages } from '@/api/firebase-images';
 
 type EditDonationProps = {
-    donationDetails: IDonation;
+    donationDetails: Donation;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
-    fetchDonation: (id: string) => void;
+    setDonationDetailsUpdated: Dispatch<SetStateAction<boolean>>;
     setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const EditDonation = (props: EditDonationProps) => {
     const { id, category, brand, model, description, status, tagNumber, images, requestor } = props.donationDetails;
-    const { setIsEditMode, fetchDonation, setDonationsUpdated } = props;
+    const { setIsEditMode, setDonationDetailsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[] | null>(null);
@@ -61,10 +61,9 @@ const EditDonation = (props: EditDonationProps) => {
     };
 
     const handleClose = () => {
-        if (setDonationsUpdated) setDonationsUpdated(true);
         setIsDialogOpen(false);
         setIsEditMode(false);
-        fetchDonation(id);
+        setDonationDetailsUpdated(true);
     };
 
     const handleCategoryChange = (event: any, newValue: string | null) => {
@@ -86,11 +85,11 @@ const EditDonation = (props: EditDonationProps) => {
             }
             const updatedDonation = {
                 category: newCategory,
-                tagNumber: newTagNumber,
+                tagNumber: newTagNumber ?? '',
                 brand: newBrand,
                 model: newModel,
                 description: newDescription,
-                images: [...newImages, ...addedImageUrls]
+                images: [...addedImageUrls, ...newImages]
             };
             await updateDonation(id, updatedDonation);
             setIsDialogOpen(true);
@@ -110,14 +109,8 @@ const EditDonation = (props: EditDonationProps) => {
     };
 
     useEffect(() => {
-        if (!tagNumber) assignTagNumber();
         if (!categories) fetchCategories();
     }, []);
-
-    useEffect(() => {
-        console.log('added images', addedImages);
-        console.log('newimages', newImages);
-    }, [addedImages, newImages]);
 
     return (
         <ProtectedAdminRoute>
@@ -209,7 +202,6 @@ const EditDonation = (props: EditDonationProps) => {
                                     <div className={styles['image-uploader__input']}>
                                         <label id="labelForImages" htmlFor="images">
                                             <input
-                                                required
                                                 type="file"
                                                 id="images"
                                                 name="images"
