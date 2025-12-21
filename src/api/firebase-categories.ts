@@ -17,7 +17,9 @@ import {
     updateDoc,
     deleteDoc,
     query,
-    orderBy
+    orderBy,
+    where,
+    DocumentReference
 } from 'firebase/firestore';
 import { Category, ICategory } from '@/models/category';
 
@@ -123,7 +125,17 @@ export async function deleteCategory(id: string): Promise<void> {
 
 // Increments category's tagCount by 1 and combines it with the category's tagPrefix to create a Tag number
 export async function getTagNumber(category: string): Promise<string> {
-    const categoryRef = doc(db, CATEGORIES_COLLECTION, category);
+    //query by category name in case doc ID !== category name
+    const q = query(collection(db, CATEGORIES_COLLECTION), where('name', '==', category));
+    const querySnapshot = await getDocs(q);
+    //query should only return 1 result, but still must be interated through
+    const docRefs: DocumentReference[] = [];
+    querySnapshot.forEach((docSnap) => {
+        const docRef = docSnap.ref;
+        docRefs.push(docRef);
+    });
+    //Use first (and only) query to obtain doc ref for transaction
+    const categoryRef = docRefs[0];
     let tagNumber = '';
     try {
         await runTransaction(db, async (transaction) => {
@@ -139,8 +151,8 @@ export async function getTagNumber(category: string): Promise<string> {
         return tagNumber;
     } catch (error) {
         addErrorEvent('Get tag number', error);
+        throw error;
     }
-    return Promise.reject();
 }
 
 //Script tha was used to upload categories to DB.
