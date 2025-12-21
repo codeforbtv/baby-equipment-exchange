@@ -158,7 +158,7 @@ export default function Dashboard() {
         }
     }
 
-    async function handleRefresh(): Promise<void> {
+    function handleRefresh() {
         if (currentTab === 0) {
             fetchNotifications();
         } else if (currentTab === 1) {
@@ -178,8 +178,7 @@ export default function Dashboard() {
     useEffect(() => {
         if ((currentTab === 0 && !notifications) || notificationsUpdated || donationsUpdated || usersUpdated) {
             fetchNotifications();
-        }
-        if ((currentTab === 1 && !donations) || donationsUpdated) {
+        } else if ((currentTab === 1 && !donations) || donationsUpdated) {
             fetchDonations();
         } else if ((currentTab === 2 && !inventory) || inventoryUpdated) {
             fetchInventory();

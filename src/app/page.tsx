@@ -8,8 +8,7 @@ import Inventory from '@/components/Inventory';
 import { useUserContext } from '@/contexts/UserContext';
 
 export default function Home() {
-    const currentUser = useUserContext();
-    const { isAdmin, isAidWorker } = currentUser;
+    const { isAdmin, isAidWorker } = useUserContext();
 
     if (isAdmin) {
         return <Dashboard />;
