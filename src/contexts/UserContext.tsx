@@ -2,7 +2,7 @@
 //Hooks
 import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 //Libs
-import { checkIsAdmin, checkIsAidWorker } from '@/api/firebase';
+import { addErrorEvent, checkIsAdmin, checkIsAidWorker } from '@/api/firebase';
 import { onAuthStateChangedListener } from '@/api/firebase-users';
 //Types
 import { User } from 'firebase/auth';
@@ -39,18 +39,23 @@ export const UserProvider = ({ children }: Props) => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChangedListener(async (user) => {
-            if (!user) {
-                setCurrentUser(null);
+            setIsLoading(true);
+            try {
+                if (!user) {
+                    setCurrentUser(null);
+                }
+                if (user) {
+                    setCurrentUser(user);
+                    const adminResult = await checkIsAdmin(user);
+                    setIsAdmin(adminResult);
+                    const aidWorkerResult = await checkIsAidWorker(user);
+                    setIsAidworker(aidWorkerResult);
+                }
+            } catch (error) {
+                addErrorEvent('Error updating user context', error);
+                throw error;
+            } finally {
                 setIsLoading(false);
-            }
-            if (user) {
-                setIsLoading(true);
-                setCurrentUser(user);
-                setIsLoading(false);
-                const adminResult = await checkIsAdmin(user);
-                setIsAdmin(adminResult);
-                const aidWorkerResult = await checkIsAidWorker(user);
-                setIsAidworker(aidWorkerResult);
             }
         });
         return unsubscribe;
