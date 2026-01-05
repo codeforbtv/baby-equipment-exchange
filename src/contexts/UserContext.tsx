@@ -58,7 +58,7 @@ export const UserProvider = ({ children }: Props) => {
                 setIsLoading(false);
             }
         });
-        return unsubscribe;
+        return () => unsubscribe;
     }, []);
 
     return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
