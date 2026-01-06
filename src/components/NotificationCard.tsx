@@ -70,14 +70,27 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsDeleteDialogOpen(false);
     };
 
-    const markAsRecieved = async (id: string) => {
+    const markAsReceived = async (id: string) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'available');
             if (setNotificationsUpdated) setNotificationsUpdated(true);
             window.location.reload();
         } catch (error) {
-            addErrorEvent('Mark donation as recieved', error);
+            addErrorEvent('Mark donation as received', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const markAsNotReceived = async (id: string) => {
+        setIsLoading(true);
+        try {
+            await updateDonationStatus(id, 'not-received');
+            if (setNotificationsUpdated) setNotificationsUpdated(true);
+        } catch (error) {
+            addErrorEvent('Mark donation as not received', error);
             throw error;
         } finally {
             setIsLoading(false);
@@ -180,8 +193,11 @@ const NotificationCard = (props: NotificationCardProps) => {
                                 </CardContent>
                             </div>
                             <CardActions className={styles['notification-card--container--btn']}>
-                                <Button variant="contained" onClick={() => markAsRecieved(donation.id)}>
+                                <Button variant="contained" onClick={() => markAsReceived(donation.id)}>
                                     Add to inventory
+                                </Button>
+                                <Button variant="contained" color="error" onClick={() => markAsNotReceived(donation.id)}>
+                                    Not Received
                                 </Button>
                             </CardActions>
                         </Card>
