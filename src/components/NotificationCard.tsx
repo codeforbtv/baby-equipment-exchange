@@ -23,7 +23,7 @@ import {
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
-import { markDonationAsDistributed, updateDonationStatus } from '@/api/firebase-donations';
+import { markDonationAsDistributed, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
 import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
 import sendMail from '@/api/nodemailer';
@@ -105,6 +105,23 @@ const NotificationCard = (props: NotificationCardProps) => {
             window.location.reload();
         } catch (error) {
             addErrorEvent('Mark as distributed', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const returnToInventory = async (id: string) => {
+        setIsLoading(true);
+        try {
+            await updateDonation(id, {
+                status: 'available'
+            });
+            if (setNotificationsUpdated) setNotificationsUpdated(true);
+            window.location.reload();
+        } catch (error) {
+            addErrorEvent('Return to inventory', error);
+            throw error;
         } finally {
             setIsLoading(false);
         }
@@ -236,6 +253,9 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <CardActions className={styles['notification-card--container--btn']}>
                                 <Button variant="contained" onClick={() => markAsDistributed(donation)}>
                                     Mark as distributed
+                                </Button>
+                                <Button variant="contained" color="error" onClick={() => returnToInventory(donation.id)}>
+                                    Return to Inventory
                                 </Button>
                             </CardActions>
                         </Card>
