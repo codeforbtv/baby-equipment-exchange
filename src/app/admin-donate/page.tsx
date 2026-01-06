@@ -18,10 +18,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles
 import '@/styles/globalStyles.css';
 import CustomDialog from '@/components/CustomDialog';
-import { DonationBody, DonationFormData } from '@/types/DonationTypes';
+import { AdminDonationBody, DonationBody, DonationFormData } from '@/types/DonationTypes';
 import { uploadImages } from '@/api/firebase-images';
 import { addErrorEvent } from '@/api/firebase';
 import { addAdminDonation } from '@/api/firebase-donations';
+import { getTagNumber } from '@/api/firebase-categories';
 
 export default function AdminDonate() {
     const [showForm, setShowForm] = useState<boolean>(true);
@@ -37,8 +38,8 @@ export default function AdminDonate() {
         router.push('/');
     };
 
-    async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
-        let bulkDonations: DonationBody[] = [];
+    async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<AdminDonationBody[]> {
+        let bulkDonations: AdminDonationBody[] = [];
         if (currentUser && currentUser.uid && currentUser.displayName && currentUser.email) {
             try {
                 for (const donation of pendingDonations) {
@@ -46,6 +47,9 @@ export default function AdminDonate() {
                     if (donation.images) {
                         imageURLs = await uploadImages(donation.images);
                     }
+                    //generate tag number using 'Other' category if category somehow isn't provided
+                    const tagNumber = donation.category ? await getTagNumber(donation.category) : await getTagNumber('Other');
+
                     const newDonation = {
                         donorName: currentUser.displayName,
                         donorEmail: currentUser.email,
@@ -54,7 +58,8 @@ export default function AdminDonate() {
                         category: donation.category ?? '',
                         model: donation.model ?? '',
                         description: donation.description ?? '',
-                        images: imageURLs
+                        images: imageURLs,
+                        tagNumber: tagNumber
                     };
                     bulkDonations.push(newDonation);
                 }
@@ -72,7 +77,7 @@ export default function AdminDonate() {
         event.preventDefault();
         setIsLoading(true);
         try {
-            const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
+            const donationsToUpload: AdminDonationBody[] = await convertPendingDonations(pendingDonations);
             await addAdminDonation(donationsToUpload);
             clearPendingDonations();
             localStorage.clear();
