@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 import { useUserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
@@ -11,18 +11,20 @@ import { Button, IconButton, Stack } from '@mui/material';
 import Loader from '@/components/Loader';
 import AdminDonationForm from '@/components/AdminDonationForm';
 import PendingDonations from '@/components/PendingDonations';
+import CustomDialog from '@/components/CustomDialog';
+//Api
+import { uploadImages } from '@/api/firebase-images';
+import { addErrorEvent } from '@/api/firebase';
+import { addAdminDonation } from '@/api/firebase-donations';
+import { getTagNumber } from '@/api/firebase-categories';
 //Icons
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles
 import '@/styles/globalStyles.css';
-import CustomDialog from '@/components/CustomDialog';
-import { AdminDonationBody, DonationBody, DonationFormData } from '@/types/DonationTypes';
-import { uploadImages } from '@/api/firebase-images';
-import { addErrorEvent } from '@/api/firebase';
-import { addAdminDonation } from '@/api/firebase-donations';
-import { getTagNumber } from '@/api/firebase-categories';
+//Types
+import { AdminDonationBody, DonationFormData } from '@/types/DonationTypes';
 
 export default function AdminDonate() {
     const [showForm, setShowForm] = useState<boolean>(true);
@@ -90,6 +92,11 @@ export default function AdminDonate() {
         }
     }
 
+    //show form if all pending donations are deleted
+    useEffect(() => {
+        if (!showForm && pendingDonations.length === 0) setShowForm(true);
+    }, [pendingDonations, showForm]);
+
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
@@ -101,7 +108,7 @@ export default function AdminDonate() {
             {isLoading ? (
                 <Loader />
             ) : (
-                <>
+                <Stack direction="column" spacing={2}>
                     {showForm && <AdminDonationForm setShowForm={setShowForm} />}
                     <hr />
                     {pendingDonations.length > 0 && <PendingDonations />}
@@ -116,7 +123,7 @@ export default function AdminDonate() {
                             </Button>
                         </Stack>
                     )}
-                </>
+                </Stack>
             )}
             <CustomDialog isOpen={isOpen} onClose={handleClose} title="Donation Submitted" content="Your donation has been successfully submitted." />
         </ProtectedAdminRoute>
