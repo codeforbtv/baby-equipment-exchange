@@ -40,3 +40,7 @@ export type DonationBody = {
     description: string;
     images: string[];
 };
+
+export type AdminDonationBody = DonationBody & {
+    tagNumber: string;
+};

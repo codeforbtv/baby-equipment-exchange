@@ -30,7 +30,7 @@ import { Order } from '@/types/OrdersTypes';
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
 import { getBase64ImagesFromTagnumber } from './firebaseAdmin';
-import { base64ImageObj } from '@/types/DonationTypes';
+import { AdminDonationBody, base64ImageObj } from '@/types/DonationTypes';
 import { base64ObjToFile } from '@/utils/utils';
 import { uploadImages } from './firebase-images';
 
@@ -306,7 +306,7 @@ export async function addDonation(newDonations: DonationBody[], termsAccepted: s
 }
 
 //When admins make donations, status is automatically set to 'available'
-export async function addAdminDonation(newDonations: DonationBody[]): Promise<void> {
+export async function addAdminDonation(newDonations: AdminDonationBody[]): Promise<void> {
     try {
         //All donations are assigned a bulk donatin id to account for multiple items
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
@@ -328,7 +328,7 @@ export async function addAdminDonation(newDonations: DonationBody[]): Promise<vo
                 brand: newDonation.brand,
                 model: newDonation.model,
                 description: newDonation.description,
-                tagNumber: null,
+                tagNumber: newDonation.tagNumber,
                 notes: null,
                 status: 'available',
                 bulkCollection: bulkDonationsRef.id,
