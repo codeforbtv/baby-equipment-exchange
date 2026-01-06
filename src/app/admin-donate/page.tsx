@@ -1,45 +1,40 @@
 'use client';
+
 //Hooks
-import { useUserContext } from '@/contexts/UserContext';
+import { useState } from 'react';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+import { useUserContext } from '@/contexts/UserContext';
+import { useRouter } from 'next/navigation';
 //Components
-import ProtectedAdminRoute from './ProtectedAdminRoute';
-import Loader from './Loader';
-import PendingDonations from './PendingDonations';
-import DonationForm from './DonationForm';
-import { Button, IconButton } from '@mui/material';
-//Api
-import { addErrorEvent } from '@/api/firebase';
-import { uploadImages } from '@/api/firebase-images';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+import { Button, IconButton, Stack } from '@mui/material';
+import Loader from '@/components/Loader';
+import AdminDonationForm from '@/components/AdminDonationForm';
+import PendingDonations from '@/components/PendingDonations';
 //Icons
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
+import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //styles
 import '@/styles/globalStyles.css';
-//Types
-import { DonationFormData, DonationBody } from '@/types/DonationTypes';
-import { Dispatch, SetStateAction, useState } from 'react';
+import CustomDialog from '@/components/CustomDialog';
+import { DonationBody, DonationFormData } from '@/types/DonationTypes';
+import { uploadImages } from '@/api/firebase-images';
+import { addErrorEvent } from '@/api/firebase';
 import { addAdminDonation } from '@/api/firebase-donations';
-import CustomDialog from './CustomDialog';
-import AdminDonationForm from './AdminDonationForm';
 
-type CreateAdminDonationProps = {
-    setShowForm: Dispatch<SetStateAction<boolean>>;
-    setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
-};
-
-const AdminCreateDonation = (props: CreateAdminDonationProps) => {
+export default function AdminDonate() {
+    const [showForm, setShowForm] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
-    const { setShowForm, setDonationsUpdated } = props;
     const { currentUser } = useUserContext();
-    const { pendingDonations, removePendingDonation, clearPendingDonations, getPendingDonationsFromLocalStorage } = usePendingDonationsContext();
+    const { pendingDonations, clearPendingDonations } = usePendingDonationsContext();
+    const router = useRouter();
 
     const handleClose = () => {
-        if (setDonationsUpdated) setDonationsUpdated(true);
         setIsOpen(false);
-        setShowForm(false);
+        router.push('/');
     };
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
@@ -66,12 +61,11 @@ const AdminCreateDonation = (props: CreateAdminDonationProps) => {
                 return bulkDonations;
             } catch (error) {
                 addErrorEvent('convertPendingDonations', error);
+                throw error;
             }
         } else {
             return Promise.reject(new Error('You must be logged in to donate.'));
         }
-
-        return Promise.reject();
     }
 
     async function handleFormSubmit(event: React.SyntheticEvent) {
@@ -84,8 +78,10 @@ const AdminCreateDonation = (props: CreateAdminDonationProps) => {
             localStorage.clear();
             setIsOpen(true);
         } catch (error) {
-            setIsLoading(false);
             addErrorEvent('Error submiting admin donation', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -93,28 +89,31 @@ const AdminCreateDonation = (props: CreateAdminDonationProps) => {
         <ProtectedAdminRoute>
             <div className="page--header">
                 <h3>Create donation</h3>
-                <IconButton onClick={() => setShowForm(false)}>
+                <IconButton onClick={() => router.push('./')}>
                     <ArrowBackIcon />
                 </IconButton>
             </div>
-
             {isLoading ? (
                 <Loader />
             ) : (
                 <>
+                    {showForm && <AdminDonationForm setShowForm={setShowForm} />}
+                    <hr />
                     {pendingDonations.length > 0 && <PendingDonations />}
-                    <AdminDonationForm setShowForm={setShowForm} />
-                    {pendingDonations.length > 0 && (
-                        <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
-                            {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
-                        </Button>
+
+                    {!showForm && pendingDonations.length > 0 && (
+                        <Stack direction="column" spacing={2}>
+                            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setShowForm(true)}>
+                                Add Another Item
+                            </Button>
+                            <Button variant="contained" size="medium" type="submit" endIcon={<UploadOutlinedIcon />} onClick={handleFormSubmit}>
+                                {pendingDonations.length > 1 ? 'Submit Donations' : 'Submit Donation'}
+                            </Button>
+                        </Stack>
                     )}
                 </>
             )}
-
             <CustomDialog isOpen={isOpen} onClose={handleClose} title="Donation Submitted" content="Your donation has been successfully submitted." />
         </ProtectedAdminRoute>
     );
-};
-
-export default AdminCreateDonation;
+}
