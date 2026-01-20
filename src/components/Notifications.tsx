@@ -118,7 +118,7 @@ const Notifications = (props: NotificationsProps) => {
                     {sortedDonationsAwaitingDropoff.length > 0 && (
                         <>
                             <Typography sx={{ marginTop: '1rem' }} variant="h6">
-                                Donations waiting to be recieved
+                                Donations waiting to be received
                             </Typography>
                             {sortedDonationsAwaitingDropoff.map((donationArray, i) => (
                                 <Paper className={styles['notification-card--container']} key={i} elevation={3}>
@@ -162,7 +162,7 @@ const Notifications = (props: NotificationsProps) => {
                             </Typography>
                             {orders.map((order) => (
                                 <Paper className={styles['notification-card--container']} key={order.id} elevation={3}>
-                                    <Typography variant="h6">{`${order.requestor.name} has requested the follwing items:`}</Typography>
+                                    <Typography variant="h6">{`${order.requestor.name} has requested the following items:`}</Typography>
                                     {order.items.map((item) => (
                                         <NotificationCard
                                             key={item.id}
