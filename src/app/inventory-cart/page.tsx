@@ -152,7 +152,7 @@ const InventoryCart = () => {
                 isOpen={isSuccessDialogOpen}
                 onClose={handleSuccessDialogClose}
                 title="Your request has been submitted."
-                content="Your requested items have been submitted. You will recieve an email with next steps once your order has been processed."
+                content="Your requested items have been submitted. You will receive an email with next steps once your order has been processed."
             />
         </>
     );
