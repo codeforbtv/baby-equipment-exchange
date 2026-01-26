@@ -17,7 +17,7 @@ const UserConfirmationDialogue = (props: UserConfirmationDialogProps) => {
             <DialogTitle>User successfully created</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    {`A user account for '${displayName}' has been created. You will recieve a confirmation email once your account has been approved and made
+                    {`A user account for '${displayName}' has been created. You will receive a confirmation email once your account has been approved and made
                     active.`}
                 </DialogContentText>
             </DialogContent>

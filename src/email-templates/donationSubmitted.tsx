@@ -9,11 +9,11 @@ export default function donationsSubmitted(donorEmail: string, donorName: string
     const donationCards = donations.map((donation) => <DonationCardSmall donation={donation} />);
 
     let html = `<p>Hello ${donorName},</p>
-        <p>We have recieved your request to donate the following items:</p>
+        <p>We have received your request to donate the following items:</p>
     `;
     html += renderToString(donationCards);
 
-    html += `Please be patient while we review your request. You will recieve another email once we've determined whether we can accept your items.`;
+    html += `Please be patient while we review your request. You will receive another email once we've determined whether we can accept your items.`;
 
     return {
         to: donorEmail,
