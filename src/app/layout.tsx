@@ -17,6 +17,7 @@ const fontClassNames = [montserrat, garamond].map((font) => font.variable).join(
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" className={fontClassNames}>
+            <link rel="icon" href="/src/app/favicon.ico" sizes="any" />
             <body className="body--wrapper">
                 <ThemeProviderWrapper>
                     <PendingDonationsProvider>
