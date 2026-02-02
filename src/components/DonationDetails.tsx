@@ -210,6 +210,12 @@ const DonationDetails = (props: DonationDetailsProps) => {
                                 {donationDetails.dateRequested.toDate().toDateString()}
                             </Typography>
                         )}
+                        {donationDetails.distributor && (
+                            <Typography variant="body1">
+                                <b>Distributed by: </b>
+                                {donationDetails.distributor.name} ({donationDetails.distributor.email})
+                            </Typography>
+                        )}
                         {donationDetails.dateDistributed && (
                             <Typography variant="body1">
                                 <b>Date distributed: </b>

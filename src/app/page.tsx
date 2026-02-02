@@ -1,21 +1,29 @@
 'use client';
 
-//Components
-import Dashboard from '@/components/Dashboard';
-import HomePage from '@/components/HomePage';
-import Inventory from '@/components/Inventory';
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
+import { redirect } from 'next/navigation';
+
+//Components
+import HomePage from '@/components/HomePage';
+import Loader from '@/components/Loader';
+import Dashboard from '@/components/Dashboard';
+import Inventory from '@/components/Inventory';
 
 export default function Home() {
-    const currentUser = useUserContext();
-    const { isAdmin, isAidWorker } = currentUser;
+    const { isAdmin, isAidWorker } = useUserContext();
 
     if (isAdmin) {
         return <Dashboard />;
-    } else if (isAidWorker) {
+    }
+
+    if (isAidWorker) {
         return <Inventory />;
-    } else {
+    }
+
+    if (!isAdmin || !isAidWorker) {
         return <HomePage />;
     }
+
+    return <Loader />;
 }
