@@ -59,8 +59,13 @@ const Donations = (props: DonationsProps) => {
     const donationsToDisplay = useMemo(() => {
         let currentDonations = donations;
         if (searchInput.length > 0) {
-            currentDonations = currentDonations.filter((donation) =>
-                Object.values(donation).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))
+            currentDonations = currentDonations.filter(
+                (donation) =>
+                    Object.values(donation).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase())) ||
+                    (donation.requestor &&
+                        Object.values(donation.requestor).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))) ||
+                    (donation.distributor &&
+                        Object.values(donation.distributor).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase())))
             );
         }
         if (categoryFilter && categoryFilter.length > 0) {

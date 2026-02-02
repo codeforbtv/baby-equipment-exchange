@@ -57,32 +57,36 @@ export const PendingDonationsProvider = ({ children }: Props) => {
     };
 
     const addPendingDonationsToLocalStorage = async (pendingDonations: DonationFormData[]): Promise<void> => {
-        const toLocalStorageArray: DonationFormData[] = [];
-        for (let pendingDonation of pendingDonations) {
-            const toLocalStorageItem: DonationFormData = {
-                category: pendingDonation.category,
-                brand: pendingDonation.brand,
-                model: pendingDonation.model,
-                description: pendingDonation.description,
-                images: null,
-                base64Images: []
-            };
-            if (pendingDonation.images) {
-                for (let image of pendingDonation.images) {
-                    const extension = /[^\.]*$/.exec(image.name)![0];
-                    const base64Image = await fileToBase64(image);
-                    const base64Obj: base64ImageObj = {
-                        base64Image: base64Image,
-                        base64ImageName: image.name,
-                        base64ImageType: `image/${extension}`
-                    };
-                    toLocalStorageItem.base64Images?.push(base64Obj);
+        try {
+            const toLocalStorageArray: DonationFormData[] = [];
+            for (let pendingDonation of pendingDonations) {
+                const toLocalStorageItem: DonationFormData = {
+                    category: pendingDonation.category,
+                    brand: pendingDonation.brand,
+                    model: pendingDonation.model,
+                    description: pendingDonation.description,
+                    images: null,
+                    base64Images: []
+                };
+                if (pendingDonation.images) {
+                    for (let image of pendingDonation.images) {
+                        const extension = /[^\.]*$/.exec(image.name)![0];
+                        const base64Image = await fileToBase64(image);
+                        const base64Obj: base64ImageObj = {
+                            base64Image: base64Image,
+                            base64ImageName: image.name,
+                            base64ImageType: `image/${extension}`
+                        };
+                        toLocalStorageItem.base64Images?.push(base64Obj);
+                    }
                 }
-            }
 
-            toLocalStorageArray.push(toLocalStorageItem);
+                toLocalStorageArray.push(toLocalStorageItem);
+            }
+            localStorage.setItem('pendingDonations', JSON.stringify(toLocalStorageArray));
+        } catch (error) {
+            addErrorEvent('Error adding pending donations to storage', error);
         }
-        localStorage.setItem('pendingDonations', JSON.stringify(toLocalStorageArray));
     };
 
     const getPendingDonationsFromLocalStorage = async (): Promise<void> => {
@@ -112,7 +116,6 @@ export const PendingDonationsProvider = ({ children }: Props) => {
         } catch (error) {
             addErrorEvent('Get pending donations from local storage', error);
         }
-        return Promise.reject();
     };
 
     const value = {
