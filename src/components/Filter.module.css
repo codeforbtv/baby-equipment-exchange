@@ -1,0 +1,48 @@
+.filter__contianer {
+    margin-bottom: 0.25rem;
+    padding: 0.25rem;
+    max-height: 0px;
+    animation: display 2s ease 1 forwards;
+}
+@keyframes display {
+    0% {
+        max-height: 0px;
+        opacity: 0;
+    }
+    100% {
+        max-height: 750px;
+        opacity: 1;
+    }
+}
+
+.filter__contianer h3 {
+    margin-top: 0px;
+    text-transform: uppercase;
+}
+
+.filter__options {
+    background-color: rgba(255, 255, 255, 0.75);
+    border: 1px solid #777;
+    padding: 0.5rem;
+    border-radius: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.filter__option {
+    display: block;
+    width: max-content;
+    margin: 0.25rem;
+    padding: 0.25rem;
+}
+
+.filter__option label {
+    margin: 0.25rem;
+}
+
+.filter__option select {
+    padding: 0.25rem;
+    border-radius: 5px;
+}

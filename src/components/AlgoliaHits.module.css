@@ -1,0 +1,12 @@
+.hits__container {
+    border: 0.5px solid gray;
+    box-shadow: 2px 2px 2px gray;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hit__container {
+    cursor: pointer;
+    padding: 4px;
+}

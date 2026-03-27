@@ -1,0 +1,27 @@
+.input__container {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    justify-content: center;
+}
+
+.input__container input {
+    padding: 0.25rem 0.5rem;
+}
+
+.input__container label {
+    padding: 0.25rem 0;
+}
+
+.footnote {
+    margin: 0;
+    font-size: 0.8rem;
+}
+
+/* Tablets */
+@media screen and (min-width: 480px) {
+}
+
+/* Laptops and above */
+@media screen and (min-width: 800px) {
+}
