@@ -32,6 +32,7 @@ import { markDonationAsDistributed, updateDonation, updateDonationStatus, update
 import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
 import sendMail from '@/api/nodemailer';
+import dayjs from 'dayjs';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
@@ -210,7 +211,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', mt: 0.5 }}>
             <PlaceIcon sx={{ fontSize: '16px', color: resolvedStorageName ? '#1976d2' : '#bdbdbd' }} />
             <Typography variant="caption" sx={{ color: resolvedStorageName ? '#666' : '#bdbdbd' }}>
-                {resolvedStorageName ?? 'No storage assigned'}
+                {resolvedStorageName ?? 'No storage assigned'} {donation?.storageDate ? `(${dayjs().diff(donation.storageDate.toDate(), 'day')} days)` : ''}
             </Typography>
             {activeStorageLocations && activeStorageLocations.length > 0 && (
                 <Button

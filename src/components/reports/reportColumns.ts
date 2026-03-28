@@ -27,7 +27,8 @@ export const donationColumns: ReportColumn[] = [
     { key: 'daysInStorage', label: 'Days in Storage', collection: 'donation', defaultSelected: false },
     { key: 'description', label: 'Description', collection: 'donation', defaultSelected: false },
     { key: 'notes', label: 'Notes', collection: 'donation', defaultSelected: false },
-    { key: 'bulkCollection', label: 'Collection Group', collection: 'donation', defaultSelected: false }
+    { key: 'bulkCollection', label: 'Collection Group', collection: 'donation', defaultSelected: false },
+    { key: 'images', label: 'Images', collection: 'donation', defaultSelected: false }
 ];
 
 // Organization Fields

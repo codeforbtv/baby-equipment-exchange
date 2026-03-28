@@ -7,8 +7,26 @@ import { addErrorEvent } from '@/api/firebase';
 import { getDonationById, updateDonation, updateDonationStatus, updateDonationStorage, getStorageDocRef } from '@/api/firebase-donations';
 import { productLifeCycleReport } from '@/api/firebase-reports';
 import { getActiveStorage, getStorageById } from '@/api/firebase-storage';
+import dayjs from 'dayjs';
 //Components
-import { Dialog, DialogActions, DialogTitle, DialogContent, ImageList, ImageListItem, Button, Divider, IconButton, Typography, Stack, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
+import {
+    Dialog,
+    DialogActions,
+    DialogTitle,
+    DialogContent,
+    ImageList,
+    ImageListItem,
+    Button,
+    Divider,
+    IconButton,
+    Typography,
+    Stack,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Box
+} from '@mui/material';
 import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from './CustomDialog';
@@ -216,8 +234,8 @@ const DonationDetails = (props: DonationDetailsProps) => {
                         </Typography>
                         {(donationDetails.status === 'available' || donationDetails.status === 'unavailable') && (
                             <Typography variant="body1">
-                                <b>Days in storage: </b>
-                                {donationDetails.getDaysInStorage()}
+                                <b>Total days in storage: </b>
+                                {dayjs().diff(donationDetails.dateReceived?.toDate(), 'day')}
                             </Typography>
                         )}
 
@@ -226,14 +244,10 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             <PlaceIcon sx={{ fontSize: '18px', color: resolvedStorageName ? '#1976d2' : '#bdbdbd' }} />
                             <Typography variant="body1" sx={{ color: resolvedStorageName ? 'inherit' : '#bdbdbd' }}>
                                 <b>Storage: </b>
-                                {resolvedStorageName ?? 'No storage assigned'}
+                                {resolvedStorageName ?? 'No storage assigned'}{' '}
+                                {donation?.storageDate ? `(${dayjs().diff(donation.storageDate.toDate(), 'day')} days)` : ''}
                             </Typography>
-                            <Button
-                                size="small"
-                                variant="text"
-                                sx={{ textTransform: 'none', fontSize: '12px' }}
-                                onClick={handleOpenStorageDialog}
-                            >
+                            <Button size="small" variant="text" sx={{ textTransform: 'none', fontSize: '12px' }} onClick={handleOpenStorageDialog}>
                                 Change
                             </Button>
                         </Box>

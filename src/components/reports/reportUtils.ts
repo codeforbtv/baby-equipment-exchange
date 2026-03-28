@@ -8,6 +8,7 @@ import { Timestamp } from 'firebase/firestore';
 import { ReportColumn } from './reportColumns';
 //API
 import * as XLSX from '@e965/xlsx';
+import dayjs from 'dayjs';
 
 // Types
 
@@ -79,13 +80,15 @@ function resolveCellValue(donation: Donation, key: string, storageMap: Record<st
         case 'dateDistributed':
             return formatTimestamp(donation.dateDistributed);
         case 'daysInStorage':
-            return donation.getDaysInStorage()?.toString() ?? '';
+            return donation.dateReceived ? dayjs().diff(donation.dateReceived?.toDate(), 'day').toString() : '';
         case 'description':
             return donation.description ?? '';
         case 'notes':
             return donation.notes?.join('; ') ?? '';
         case 'bulkCollection':
             return donation.bulkCollection;
+        case 'images':
+            return donation.images?.join(', ') ?? '';
         case 'storageName':
             return donation.storage ? (storageMap[donation.storage.id] ?? '') : '';
         case 'storageDate':
