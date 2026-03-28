@@ -27,6 +27,7 @@ import styles from './AdminCart.module.css';
 import { InventoryItem } from '@/models/inventoryItem';
 import { IUser } from '@/models/user';
 import { Order } from '@/types/OrdersTypes';
+import FinalizeReview from '@/components/FinalizeReview';
 
 const AdminCart = () => {
     const { requestedInventory, removeRequestedInventoryItem, isLoading, clearRequestedInventory } = useRequestedInventoryContext();
@@ -38,14 +39,13 @@ const AdminCart = () => {
     const [activeUsers, setActiveUsers] = useState<IUser[] | null>(null);
     const [selectedUser, setSelectedUser] = useState<string | null>(null);
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
-    const [showScheduler, setShowScheduler] = useState<boolean>(false);
 
     const router = useRouter();
     const { isAdmin } = useUserContext();
 
     const handleSuccessDialogClose = () => {
         setIsSuccessDialogOpen(false);
-        setShowScheduler(true);
+        router.push('/');
     };
 
     const handleUnavailableDialogClose = () => {
@@ -116,8 +116,7 @@ const AdminCart = () => {
 
     return (
         <ProtectedAdminRoute>
-            {showScheduler && currentOrder && <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} />}
-            {!showScheduler && !currentOrder && (
+            {!currentOrder && (
                 <>
                     <div className="page--header">
                         <Typography variant="h5" sx={{ marginTop: '2em' }}>
@@ -203,7 +202,7 @@ const AdminCart = () => {
                 isOpen={isSuccessDialogOpen}
                 onClose={handleSuccessDialogClose}
                 title="Your request has been submitted."
-                content="Your requested items have been submitted. Click ok to send a pickup scheduling link."
+                content="Your requested items have been submitted."
             />
         </ProtectedAdminRoute>
     );
