@@ -24,6 +24,12 @@ const nextConfig = {
                 hostname: 'firebasestorage.googleapis.com',
                 port: '',
                 pathname: '/v0/b/baby-equipment-exchange.appspot.com/**'
+            },
+            {
+                protocol: 'https',
+                hostname: 'firebasestorage.googleapis.com',
+                port: '',
+                pathname: '/v0/b/baby-equipment-exchange-dev.firebasestorage.app/**'
             }
         ]
     }
