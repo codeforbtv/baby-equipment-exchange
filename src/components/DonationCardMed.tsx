@@ -37,6 +37,7 @@ const DonationCardMed = (props: DonationCardMedProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleRemove = async (id: string, donation: Donation) => {
+        donation.status = 'unavailable';
         await handleRemoveFromOrder(id, donation);
     };
 
@@ -46,7 +47,7 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                 <CardActions className="card--container-image" onClick={() => setIdToDisplay(donation.id)}>
                     {donation.images && donation.images.length > 0 && <CardMedia component="img" alt={donation.model} image={donation.images[0]} />}
                 </CardActions>
-                <CardContent>
+                <CardContent sx={{ flex: 1 }}>
                     <Typography variant="h5">
                         {donation.brand} - {donation.model}
                     </Typography>

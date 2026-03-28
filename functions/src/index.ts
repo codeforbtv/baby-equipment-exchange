@@ -1,4 +1,5 @@
 // Libs
+import { setGlobalOptions } from 'firebase-functions/v2';
 import { onCall, CallableRequest, HttpsError } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 import * as admin from 'firebase-admin';
@@ -15,6 +16,8 @@ const DONATIONS_COLLECTION = 'Donations';
 admin.initializeApp();
 const auth = admin.auth();
 const db = admin.firestore();
+
+setGlobalOptions({ region: process.env.REGION ? process.env.REGION : 'us-east1' });
 
 //User-related
 export const createnewuser = onCall(async (request: CallableRequest): Promise<UserRecord> => {

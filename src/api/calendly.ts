@@ -1,13 +1,12 @@
 'use server';
 
 import 'server-only';
-
-const API_KEY = process.env.CALENDLY_API_KEY;
-const url =
-    'https://api.calendly.com/event_types?active=true&organization=https%3A%2F%2Fapi.calendly.com%2Forganizations%2F48b74e58-cecf-4fd6-9594-63401556c5c9';
 import { EventType } from '@/types/CalendlyTypes';
 import { addErrorEvent } from './firebase';
 
+const API_KEY = process.env.CALENDLY_API_KEY;
+const organization = encodeURIComponent(`https://api.calendly.com/organizations/${process.env.CALENDLY_ORGANIZATION}`);
+const url = `https://api.calendly.com/event_types?active=true&organization=${organization}`;
 const options = {
     method: 'GET',
     headers: {
@@ -17,8 +16,8 @@ const options = {
 };
 
 export async function getSchedulingPageLink(): Promise<EventType[]> {
-    return fetch(url, options)
-        .then((result) => result.json())
-        .then((data) => data.collection)
-        .catch((error) => addErrorEvent('Get Calendly scheduling links', error));
+    const response = await fetch(url, options);
+    const responseJson = await response.json();
+    const collection = responseJson.collection;
+    return collection;
 }

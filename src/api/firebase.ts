@@ -22,7 +22,7 @@ export const storage = getStorage(app);
 export const auth = getAuth(app);
 
 //Cloud functions
-const functions = getFunctions(app);
+const functions = getFunctions(app, process.env.REGION ? process.env.REGION : 'us-east1');
 const createNewUser = httpsCallable(functions, 'createnewuser');
 const enableUser = httpsCallable(functions, 'enableuser');
 const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');

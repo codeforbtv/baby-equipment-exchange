@@ -52,7 +52,9 @@ export default function Donate() {
     const isDisabled = emailsDoNotMatch || donorName.length === 0;
 
     const handleClose = () => {
-        signOutUser();
+        if (currentUser && currentUser.isAnonymous) {
+            signOutUser();
+        }
         router.push('/');
         setIsDialogOpen(false);
     };

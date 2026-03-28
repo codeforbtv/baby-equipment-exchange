@@ -18,11 +18,9 @@ import { convertToString } from '@/utils/utils';
 import { AuthUserRecord } from '@/types/UserTypes';
 import { imageImports } from '@/data/imports/tag_image_map';
 
-const region = 'us-east1';
-
 setGlobalOptions({
     maxInstances: 10,
-    region: region
+    region: process.env.REGION ? process.env.REGION : 'us-east1'
 });
 
 const EVENTS_COLLECTION = 'Event';
