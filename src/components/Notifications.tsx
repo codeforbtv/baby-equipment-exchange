@@ -62,7 +62,7 @@ const sortArrayByRequestor = (array: Donation[]): Donation[][] => {
     return Object.values(groupedByField);
 };
 
-const notificationTabs = ['Pending Approval', 'Pending Delivery', 'Reserved', 'Requested', 'Storage Assignment', 'Pending Users'];
+const notificationTabs = ['Pending Approval', 'Pending Deliveries', 'Reserved', 'Requested', 'Storage Assignment', 'Pending Users'];
 
 const Notifications = (props: NotificationsProps) => {
     const { notifications, setNotificationsUpdated } = props;
@@ -109,13 +109,7 @@ const Notifications = (props: NotificationsProps) => {
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
             {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
-            {orderIdToDisplay && (
-                <ReviewOrder
-                    id={orderIdToDisplay}
-                    setIdToDisplay={setOrderIdToDisplay}
-                    setNotificationsUpdated={setNotificationsUpdated}
-                />
-            )}
+            {orderIdToDisplay && <ReviewOrder id={orderIdToDisplay} setIdToDisplay={setOrderIdToDisplay} setNotificationsUpdated={setNotificationsUpdated} />}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
                     {notifications.donations.length === 0 && notifications.orders.length === 0 && notifications.users.length === 0 ? (

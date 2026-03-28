@@ -10,6 +10,7 @@ import Loader from './Loader';
 //API
 import { addStorage } from '@/api/firebase-storage';
 import { addErrorEvent } from '@/api/firebase';
+import { PatternFormat } from 'react-number-format';
 //Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Types
@@ -177,13 +178,18 @@ const StorageLocationForm = (props: StorageLocationFormProps) => {
                             onChange={(e) => setContactEmail(e.target.value)}
                             value={contactEmail}
                         />
-                        <TextField
-                            type="tel"
-                            label="Contact Phone"
-                            name="contactPhone"
-                            id="storage-contact-phone"
-                            onChange={(e) => setContactPhone(e.target.value)}
+                        <PatternFormat
+                            id="phone-number"
+                            format="+1 (###) ###-####"
+                            mask="_"
+                            allowEmptyFormatting
                             value={contactPhone}
+                            onValueChange={(values) => setContactPhone(values.formattedValue)}
+                            type="tel"
+                            displayType="input"
+                            customInput={TextField}
+                            required
+                            error={contactPhone.includes('_')}
                         />
 
                         <Button variant="contained" type="submit" disabled={name.length === 0}>
