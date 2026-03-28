@@ -1,7 +1,7 @@
 'use client';
 
 //Components
-import { Badge, Button, IconButton, Menu, MenuItem, Tab, Tabs, Tooltip, useMediaQuery } from '@mui/material';
+import { Button, IconButton, Menu, MenuItem, Tab, Tabs, useMediaQuery } from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';
@@ -23,7 +23,6 @@ import { getAllDbUsers } from '@/api/firebase-users';
 //Icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Dashboard.module.css';
@@ -163,6 +162,19 @@ export default function Dashboard() {
         }
     }
 
+    async function fetchStorageLocations(): Promise<void> {
+        setIsLoading(true);
+        try {
+            const storageResult = await getAllStorage();
+            setStorageLocations(storageResult);
+            setStorageUpdated(false);
+        } catch (error) {
+            addErrorEvent('Could not fetch storage locations', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     function handleRefresh() {
         if (currentTab === 0) {
             fetchNotifications();
@@ -178,19 +190,6 @@ export default function Dashboard() {
             fetchCategories();
         } else if (currentTab === 6) {
             fetchStorageLocations();
-        }
-    }
-
-    async function fetchStorageLocations(): Promise<void> {
-        setIsLoading(true);
-        try {
-            const storageResult = await getAllStorage();
-            setStorageLocations(storageResult);
-            setStorageUpdated(false);
-        } catch (error) {
-            addErrorEvent('Could not fetch storage locations', error);
-        } finally {
-            setIsLoading(false);
         }
     }
 
@@ -217,16 +216,35 @@ export default function Dashboard() {
         <ProtectedAdminRoute>
             <div className={styles['navbar']}>
                 {matches ? (
-                    <>
-                        <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard" variant="scrollable" scrollButtons="auto">
-                            {tabOptions.map((tab) => (
-                                <Tab key={tab} label={tab} sx={{ color: 'black' }} />
-                            ))}
-                        </Tabs>
-                    </>
+                    <Tabs
+                        value={currentTab}
+                        onChange={handleCurrentTab}
+                        aria-label="dashboard"
+                        variant="scrollable"
+                        scrollButtons="auto"
+                        sx={{
+                            flex: 1,
+                            '& .MuiTab-root': {
+                                color: '#666',
+                                fontWeight: 500,
+                                textTransform: 'none',
+                                fontSize: '0.875rem',
+                                minHeight: 48,
+                                '&.Mui-selected': { color: '#1976d2', fontWeight: 600 }
+                            },
+                            '& .MuiTabs-indicator': {
+                                height: 3,
+                                borderRadius: '3px 3px 0 0'
+                            }
+                        }}
+                    >
+                        {tabOptions.map((tab) => (
+                            <Tab key={tab} label={tab} />
+                        ))}
+                    </Tabs>
                 ) : (
                     <>
-                        <Button endIcon={<ArrowDropDownIcon />} onClick={handleClickListItem}>
+                        <Button endIcon={<ArrowDropDownIcon />} onClick={handleClickListItem} sx={{ textTransform: 'none', fontWeight: 600 }}>
                             {tabOptions[currentTab]}
                         </Button>
                         <Menu id="selected-tab" anchorEl={anchorEl} open={open} onClose={handleClose}>
@@ -238,15 +256,15 @@ export default function Dashboard() {
                         </Menu>
                     </>
                 )}
+                <IconButton onClick={handleRefresh} size="small" sx={{ ml: 'auto', mr: 1, color: '#666' }}>
+                    <RefreshIcon fontSize="small" />
+                </IconButton>
             </div>
+
             {isLoading ? (
                 <Loader />
             ) : (
                 <>
-                    <IconButton onClick={handleRefresh} size="large" sx={{ marginRight: 'auto', backgroundColor: '#f1f1f1', marginTop: '1rem' }}>
-                        <RefreshIcon />
-                    </IconButton>
-
                     <CustomTabPanel value={currentTab} index={0}>
                         {notifications ? (
                             <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
@@ -264,10 +282,18 @@ export default function Dashboard() {
                         {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={4}>
-                        {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} /> : <p>No organizations found.</p>}
+                        {orgNamesAndIds ? (
+                            <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} />
+                        ) : (
+                            <p>No organizations found.</p>
+                        )}
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={5}>
-                        {categories ? <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} /> : <p>No categories found.</p>}
+                        {categories ? (
+                            <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} />
+                        ) : (
+                            <p>No categories found.</p>
+                        )}
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={6}>
                         {storageLocations ? (
