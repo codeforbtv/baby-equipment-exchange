@@ -67,6 +67,7 @@ export interface IDonation {
     requestor: { id: string; name: string; email: string } | null;
     distributor: { id: string; name: string; email: string; organization: string } | null;
     storage: DocumentReference | null;
+    storageDate: Timestamp | null | undefined;
 }
 
 export class Donation implements IDonation {
@@ -113,6 +114,7 @@ export class Donation implements IDonation {
     requestor: { id: string; name: string; email: string } | null;
     distributor: { id: string; name: string; email: string; organization: string } | null;
     storage: DocumentReference | null;
+    storageDate: Timestamp | null | undefined;
 
     constructor(args: IDonation) {
         this.id = args.id;
@@ -137,6 +139,7 @@ export class Donation implements IDonation {
         this.requestor = args.requestor;
         this.distributor = args.distributor;
         this.storage = args.storage ?? null;
+        this.storageDate = args.storageDate as Timestamp;
     }
 
     getId(): string {
@@ -225,6 +228,14 @@ export class Donation implements IDonation {
 
     getStorage(): DocumentReference | null {
         return this.storage;
+    }
+
+    /**
+     * Get the date the donation was moved to a storage location
+     * @returns Timestamp or null or undefined
+     */
+    getStorageDate(): Timestamp | null | undefined {
+        return this.storageDate;
     }
 
     getDaysInStorage(): number | undefined {

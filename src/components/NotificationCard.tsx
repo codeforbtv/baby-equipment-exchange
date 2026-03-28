@@ -275,7 +275,6 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <Typography variant="subtitle1">
                                 {donation.donorName} ({donation.donorEmail})
                             </Typography>
-                            <StorageLabel />
                         </CardContent>
                     </div>
                 </Card>
@@ -373,6 +372,14 @@ const NotificationCard = (props: NotificationCardProps) => {
                                 {donation.brand} - {donation.model}
                             </Typography>
                             <Typography variant="h6">{donation.tagNumber}</Typography>
+
+                            {donation.dateRequested && (
+                                <>
+                                    <Typography variant="caption">Requested on:</Typography>
+                                    <Typography variant="body1">{donation!.dateRequested!.toDate().toDateString()}</Typography>
+                                </>
+                            )}
+
                             <Typography variant="caption">Donated by:</Typography>
                             <Typography variant="subtitle1">
                                 {donation.donorName} ({donation.donorEmail})

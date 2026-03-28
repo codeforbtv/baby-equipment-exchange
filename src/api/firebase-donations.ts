@@ -68,7 +68,8 @@ const donationConverter = {
             dateDistributed: donation.getDateDistributed(),
             requestor: donation.getRequestor(),
             distributor: donation.getDistributor(),
-            storage: donation.getStorage()
+            storage: donation.getStorage(),
+            storageDate: donation.getStorageDate()
         };
         for (const key in donationData) {
             if (donationData[key] === undefined || donationData[key] === null) {
@@ -101,7 +102,8 @@ const donationConverter = {
             dateDistributed: data.dateDistributed,
             requestor: data.requestor,
             distributor: data.distributor,
-            storage: data.storage ?? null
+            storage: data.storage ?? null,
+            storageDate: data.storageDate ?? null
         };
         return new Donation(donationData);
     }
@@ -296,7 +298,8 @@ export async function addDonation(newDonations: DonationBody[], termsAccepted: s
                 dateDistributed: null,
                 requestor: null,
                 distributor: null,
-                storage: null
+                storage: null,
+                storageDate: null
             };
             const donation = new Donation(donationParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
@@ -346,7 +349,8 @@ export async function addAdminDonation(newDonations: AdminDonationBody[]): Promi
                 dateDistributed: null,
                 requestor: null,
                 distributor: null,
-                storage: null
+                storage: null,
+                storageDate: null
             };
             const donation = new Donation(donationParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
@@ -724,6 +728,7 @@ export async function updateDonationStorage(donationId: string, storageRef: Docu
         const donationRef = doc(db, DONATIONS_COLLECTION, donationId);
         await updateDoc(donationRef, {
             storage: storageRef,
+            storageDate: serverTimestamp(),
             modifiedAt: serverTimestamp()
         });
     } catch (error) {
@@ -739,6 +744,7 @@ export async function updateBulkDonationStorage(donationIds: string[], storageRe
             const donationRef = doc(db, DONATIONS_COLLECTION, donationId);
             batch.update(donationRef, {
                 storage: storageRef,
+                storageDate: serverTimestamp(),
                 modifiedAt: serverTimestamp()
             });
         }
