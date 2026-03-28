@@ -66,6 +66,7 @@ export interface IDonation {
     dateDistributed: Timestamp | null | undefined;
     requestor: { id: string; name: string; email: string } | null;
     distributor: { id: string; name: string; email: string; organization: string } | null;
+    storage: DocumentReference | null;
 }
 
 export class Donation implements IDonation {
@@ -111,6 +112,7 @@ export class Donation implements IDonation {
     dateDistributed: Timestamp | null | undefined;
     requestor: { id: string; name: string; email: string } | null;
     distributor: { id: string; name: string; email: string; organization: string } | null;
+    storage: DocumentReference | null;
 
     constructor(args: IDonation) {
         this.id = args.id;
@@ -134,6 +136,7 @@ export class Donation implements IDonation {
         this.dateDistributed = args.dateDistributed as Timestamp;
         this.requestor = args.requestor;
         this.distributor = args.distributor;
+        this.storage = args.storage ?? null;
     }
 
     getId(): string {
@@ -218,6 +221,10 @@ export class Donation implements IDonation {
 
     getDistributor(): { id: string; name: string; email: string; organization: string } | null {
         return this.distributor;
+    }
+
+    getStorage(): DocumentReference | null {
+        return this.storage;
     }
 
     getDaysInStorage(): number | undefined {

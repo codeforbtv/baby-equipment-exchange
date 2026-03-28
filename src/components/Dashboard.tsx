@@ -11,6 +11,7 @@ import Loader from './Loader';
 import Notifications from './Notifications';
 import Inventory from './Inventory';
 import Categories from './Categories';
+import StorageLocations from './StorageLocations';
 //Hooks
 import React, { useEffect, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -32,9 +33,11 @@ import { Notification } from '@/types/NotificationTypes';
 import { IUser } from '@/models/user';
 import { InventoryItem } from '@/models/inventoryItem';
 import { Category } from '@/models/category';
+import { Storage as StorageLocation } from '@/models/storage';
 import { getAllCategories } from '@/api/firebase-categories';
+import { getAllStorage } from '@/api/firebase-storage';
 
-const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations', 'Categories'];
+const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations', 'Categories', 'Storage'];
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -47,6 +50,7 @@ export default function Dashboard() {
     } | null>(null);
     const [notifications, setNotifications] = useState<Notification | null>(null);
     const [categories, setCategories] = useState<Category[] | null>(null);
+    const [storageLocations, setStorageLocations] = useState<StorageLocation[] | null>(null);
 
     const { requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
@@ -58,6 +62,7 @@ export default function Dashboard() {
     const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
     const [orgsUpdated, setOrgsUpdated] = useState<boolean>(false);
     const [categoriesUpdated, setCategoriesUpdated] = useState<boolean>(false);
+    const [storageUpdated, setStorageUpdated] = useState<boolean>(false);
 
     //for mobile tab menu
     const matches = useMediaQuery('(min-width:600px)');
@@ -171,6 +176,21 @@ export default function Dashboard() {
             fetchOrgNames();
         } else if (currentTab === 5) {
             fetchCategories();
+        } else if (currentTab === 6) {
+            fetchStorageLocations();
+        }
+    }
+
+    async function fetchStorageLocations(): Promise<void> {
+        setIsLoading(true);
+        try {
+            const storageResult = await getAllStorage();
+            setStorageLocations(storageResult);
+            setStorageUpdated(false);
+        } catch (error) {
+            addErrorEvent('Could not fetch storage locations', error);
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -188,8 +208,10 @@ export default function Dashboard() {
             fetchOrgNames();
         } else if ((currentTab === 5 && !categories) || categoriesUpdated) {
             fetchCategories();
+        } else if ((currentTab === 6 && !storageLocations) || storageUpdated) {
+            fetchStorageLocations();
         }
-    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated, categoriesUpdated]);
+    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated, categoriesUpdated, storageUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -246,6 +268,13 @@ export default function Dashboard() {
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={5}>
                         {categories ? <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} /> : <p>No categories found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={6}>
+                        {storageLocations ? (
+                            <StorageLocations storageLocations={storageLocations} setStorageUpdated={setStorageUpdated} />
+                        ) : (
+                            <p>No storage locations found.</p>
+                        )}
                     </CustomTabPanel>
                 </>
             )}

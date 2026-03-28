@@ -1,6 +1,7 @@
 // Modules
 import {
     DocumentData,
+    DocumentReference,
     QueryConstraint,
     QueryDocumentSnapshot,
     SnapshotOptions,
@@ -37,6 +38,7 @@ import { uploadImages } from './firebase-images';
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
 import { ORGANIZATIONS_COLLECTION } from './firebase-organizations';
+import { STORAGE_COLLECTION } from './firebase-storage';
 
 export const DONATIONS_COLLECTION = 'Donations';
 export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
@@ -65,7 +67,8 @@ const donationConverter = {
             dateRequested: donation.getDateRequested(),
             dateDistributed: donation.getDateDistributed(),
             requestor: donation.getRequestor(),
-            distributor: donation.getDistributor()
+            distributor: donation.getDistributor(),
+            storage: donation.getStorage()
         };
         for (const key in donationData) {
             if (donationData[key] === undefined || donationData[key] === null) {
@@ -97,7 +100,8 @@ const donationConverter = {
             dateRequested: data.dateRequested,
             dateDistributed: data.dateDistributed,
             requestor: data.requestor,
-            distributor: data.distributor
+            distributor: data.distributor,
+            storage: data.storage ?? null
         };
         return new Donation(donationData);
     }
@@ -291,7 +295,8 @@ export async function addDonation(newDonations: DonationBody[], termsAccepted: s
                 dateRequested: null,
                 dateDistributed: null,
                 requestor: null,
-                distributor: null
+                distributor: null,
+                storage: null
             };
             const donation = new Donation(donationParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
@@ -340,7 +345,8 @@ export async function addAdminDonation(newDonations: AdminDonationBody[]): Promi
                 dateRequested: null,
                 dateDistributed: null,
                 requestor: null,
-                distributor: null
+                distributor: null,
+                storage: null
             };
             const donation = new Donation(donationParams);
             batch.set(donationRef, donationConverter.toFirestore(donation));
@@ -711,4 +717,39 @@ export async function convertImportedDonations(): Promise<void> {
         console.log('Not done!');
         throw error;
     }
+}
+
+export async function updateDonationStorage(donationId: string, storageRef: DocumentReference | null): Promise<void> {
+    try {
+        const donationRef = doc(db, DONATIONS_COLLECTION, donationId);
+        await updateDoc(donationRef, {
+            storage: storageRef,
+            modifiedAt: serverTimestamp()
+        });
+    } catch (error) {
+        addErrorEvent('updateDonationStorage', error);
+        throw error;
+    }
+}
+
+export async function updateBulkDonationStorage(donationIds: string[], storageRef: DocumentReference | null): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        for (const donationId of donationIds) {
+            const donationRef = doc(db, DONATIONS_COLLECTION, donationId);
+            batch.update(donationRef, {
+                storage: storageRef,
+                modifiedAt: serverTimestamp()
+            });
+        }
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('updateBulkDonationStorage', error);
+        throw error;
+    }
+}
+
+// Helper to create a storage document reference
+export function getStorageDocRef(storageId: string): DocumentReference {
+    return doc(db, STORAGE_COLLECTION, storageId);
 }

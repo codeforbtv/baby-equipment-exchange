@@ -4,14 +4,16 @@ import { Button, Paper, Typography } from '@mui/material';
 import NotificationCard from '@/components/NotificationCard';
 import styles from '@/components/NotificationCard.module.css';
 import { Donation } from '@/models/donation';
+import { Storage } from '@/models/storage';
 
 interface Props {
     donations: Donation[][];
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    activeStorageLocations?: Storage[];
 }
 
-const PendingDonationsSection = ({ donations, setIdToDisplay, setNotificationsUpdated }: Props) => {
+const PendingDonationsSection = ({ donations, setIdToDisplay, setNotificationsUpdated, activeStorageLocations }: Props) => {
     const router = useRouter();
     if (donations.length === 0) return null;
 
@@ -29,6 +31,7 @@ const PendingDonationsSection = ({ donations, setIdToDisplay, setNotificationsUp
                             type="pending-donation"
                             setIdToDisplay={setIdToDisplay}
                             setNotificationsUpdated={setNotificationsUpdated}
+                            activeStorageLocations={activeStorageLocations}
                         />
                     ))}
                     <Button

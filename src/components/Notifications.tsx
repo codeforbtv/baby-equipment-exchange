@@ -1,6 +1,6 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -12,6 +12,7 @@ import PendingDeliveriesSection from './notifications/PendingDeliveriesSection';
 import ReservedDonationsSection from './notifications/ReservedDonationsSection';
 import RequestedEquipmentSection from './notifications/RequestedEquipmentSection';
 import PendingUsersSection from './notifications/PendingUsersSection';
+import PendingStorageAssignmentSection from './notifications/PendingStorageAssignmentSection';
 import { Typography } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
@@ -19,6 +20,9 @@ import styles from '@/components/NotificationCard.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
+import { Storage } from '@/models/storage';
+import { getActiveStorage } from '@/api/firebase-storage';
+import { addErrorEvent } from '@/api/firebase';
 
 type NotificationsProps = {
     notifications: Notification;
@@ -68,10 +72,23 @@ const Notifications = (props: NotificationsProps) => {
     const sortedDonationsAwaitingDropoff = sortArrayByBulkId(donationsAwaitingDropoff);
     const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
     const sortedDonationsAwaitingPickup = sortArrayByRequestor(donationsAwaitingPickup);
+    const groupedDonations = sortArrayByBulkId(notifications.donations);
     const orders = notifications.orders;
     const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted); //Filters out recently deleted users
 
+    const [activeStorageLocations, setActiveStorageLocations] = useState<Storage[]>([]);
 
+    useEffect(() => {
+        const fetchActiveStorage = async () => {
+            try {
+                const locations = await getActiveStorage();
+                setActiveStorageLocations(locations);
+            } catch (error) {
+                addErrorEvent('Error fetching active storage locations', error);
+            }
+        };
+        fetchActiveStorage();
+    }, []);
 
     return (
         <ProtectedAdminRoute>
@@ -92,32 +109,38 @@ const Notifications = (props: NotificationsProps) => {
                             No new notifications at this time.
                         </Typography>
                     )}
-                    <PendingDonationsSection 
+                    <PendingDonationsSection
                         donations={sortedDonationsWaitingApproval}
                         setIdToDisplay={setDonationIdToDisplay}
                         setNotificationsUpdated={setNotificationsUpdated}
+                        activeStorageLocations={activeStorageLocations}
                     />
-                    <PendingDeliveriesSection 
+                    <PendingDeliveriesSection
                         donations={sortedDonationsAwaitingDropoff}
                         setIdToDisplay={setDonationIdToDisplay}
                         setNotificationsUpdated={setNotificationsUpdated}
+                        activeStorageLocations={activeStorageLocations}
                     />
-                    <ReservedDonationsSection 
+                    <ReservedDonationsSection
                         donations={sortedDonationsAwaitingPickup}
                         setIdToDisplay={setDonationIdToDisplay}
                         setNotificationsUpdated={setNotificationsUpdated}
+                        activeStorageLocations={activeStorageLocations}
                     />
-                    <RequestedEquipmentSection 
+                    <RequestedEquipmentSection
                         orders={orders}
                         setIdToDisplay={setDonationIdToDisplay}
                         setOrderIdToDisplay={setOrderIdToDisplay}
                         setNotificationsUpdated={setNotificationsUpdated}
+                        activeStorageLocations={activeStorageLocations}
                     />
-                    <PendingUsersSection 
-                        users={usersAwaitingApproval}
-                        setIdToDisplay={setUserIdToDisplay}
+                    <PendingStorageAssignmentSection
+                        donations={groupedDonations}
+                        activeStorageLocations={activeStorageLocations}
+                        setIdToDisplay={setDonationIdToDisplay}
                         setNotificationsUpdated={setNotificationsUpdated}
                     />
+                    <PendingUsersSection users={usersAwaitingApproval} setIdToDisplay={setUserIdToDisplay} setNotificationsUpdated={setNotificationsUpdated} />
                 </>
             )}
         </ProtectedAdminRoute>

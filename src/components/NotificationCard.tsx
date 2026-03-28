@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import Link from 'next/link';
@@ -18,12 +18,17 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
-    Box
+    Box,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    IconButton
 } from '@mui/material';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
-import { markDonationAsDistributed, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
+import { markDonationAsDistributed, updateDonation, updateDonationStatus, updateDonationStorage, getStorageDocRef } from '@/api/firebase-donations';
 import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
 import sendMail from '@/api/nodemailer';
@@ -34,6 +39,10 @@ import styles from '@/components/NotificationCard.module.css';
 import { Donation } from '@/models/donation';
 import { Order } from '@/types/OrdersTypes';
 import { IUser } from '@/models/user';
+import { Storage } from '@/models/storage';
+import { IStorage } from '@/models/storage';
+import { getStorageById } from '@/api/firebase-storage';
+import PlaceIcon from '@mui/icons-material/Place';
 
 import rejectUser from '@/email-templates/rejectUser';
 import userEnabled from '@/email-templates/userEnabled';
@@ -45,18 +54,38 @@ type NotificationCardProps = {
     order?: Order;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    activeStorageLocations?: Storage[];
 };
 
 //TO-DO: Set up buttons
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated } = props;
+    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated, activeStorageLocations } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogTitle, setDialogTitle] = useState<string>('');
     const [dialogContent, setDialogContent] = useState<string>('');
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+    const [isStorageDialogOpen, setIsStorageDialogOpen] = useState<boolean>(false);
+    const [selectedStorageId, setSelectedStorageId] = useState<string>('');
+    const [resolvedStorageName, setResolvedStorageName] = useState<string | null>(null);
 
+    // Resolve storage location name from DocumentReference
+    useEffect(() => {
+        const resolveStorage = async () => {
+            if (donation?.storage) {
+                try {
+                    const storageDoc = await getStorageById(donation.storage.id);
+                    setResolvedStorageName(storageDoc.name);
+                } catch {
+                    setResolvedStorageName('Unknown location');
+                }
+            } else {
+                setResolvedStorageName(null);
+            }
+        };
+        resolveStorage();
+    }, [donation?.storage]);
     const router = useRouter();
 
     const handleClose = () => {
@@ -161,6 +190,74 @@ const NotificationCard = (props: NotificationCardProps) => {
         }
     };
 
+    const handleStorageUpdate = async () => {
+        if (!selectedStorageId || !donation) return;
+        try {
+            const storageRef = getStorageDocRef(selectedStorageId);
+            const selectedLocation = activeStorageLocations?.find((s) => s.id === selectedStorageId);
+            // Optimistic update
+            setResolvedStorageName(selectedLocation?.name ?? 'Updated');
+            setIsStorageDialogOpen(false);
+            await updateDonationStorage(donation.id, storageRef);
+            if (setNotificationsUpdated) setNotificationsUpdated(true);
+        } catch (error) {
+            addErrorEvent('Error updating donation storage', error);
+            setResolvedStorageName(null);
+        }
+    };
+
+    const StorageLabel = () => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', mt: 0.5 }}>
+            <PlaceIcon sx={{ fontSize: '16px', color: resolvedStorageName ? '#1976d2' : '#bdbdbd' }} />
+            <Typography variant="caption" sx={{ color: resolvedStorageName ? '#666' : '#bdbdbd' }}>
+                {resolvedStorageName ?? 'No storage assigned'}
+            </Typography>
+            {activeStorageLocations && activeStorageLocations.length > 0 && (
+                <Button
+                    size="small"
+                    variant="text"
+                    sx={{ fontSize: '11px', minWidth: 'auto', padding: '0 4px', textTransform: 'none' }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsStorageDialogOpen(true);
+                    }}
+                >
+                    Update
+                </Button>
+            )}
+        </Box>
+    );
+
+    const StorageUpdateDialog = () => (
+        <Dialog open={isStorageDialogOpen} onClose={() => setIsStorageDialogOpen(false)} maxWidth="xs" fullWidth>
+            <DialogTitle>Update Storage Location</DialogTitle>
+            <DialogContent>
+                <FormControl fullWidth sx={{ mt: 1 }}>
+                    <InputLabel id="storage-update-label">Storage Location</InputLabel>
+                    <Select
+                        labelId="storage-update-label"
+                        id="storage-update-select"
+                        value={selectedStorageId}
+                        label="Storage Location"
+                        onChange={(e) => setSelectedStorageId(e.target.value)}
+                    >
+                        {activeStorageLocations?.map((loc) => (
+                            <MenuItem key={loc.id} value={loc.id}>
+                                {loc.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setIsStorageDialogOpen(false)}>Cancel</Button>
+                <Button variant="contained" onClick={handleStorageUpdate} disabled={!selectedStorageId}>
+                    Save
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+
     return (
         <ProtectedAdminRoute>
             {type === 'pending-donation' && donation && (
@@ -178,6 +275,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <Typography variant="subtitle1">
                                 {donation.donorName} ({donation.donorEmail})
                             </Typography>
+                            <StorageLabel />
                         </CardContent>
                     </div>
                 </Card>
@@ -207,6 +305,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                     <Typography variant="subtitle1">
                                         {donation.donorName} ({donation.donorEmail})
                                     </Typography>
+                                    <StorageLabel />
                                 </CardContent>
                             </div>
                             <CardActions className={styles['notification-card--container--btn']}>
@@ -248,6 +347,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                             {donation.requestor?.name} ({donation.requestor?.email})
                                         </Link>
                                     </Typography>
+                                    <StorageLabel />
                                 </CardContent>
                             </div>
                             <CardActions className={styles['notification-card--container--btn']}>
@@ -277,6 +377,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <Typography variant="subtitle1">
                                 {donation.donorName} ({donation.donorEmail})
                             </Typography>
+                            <StorageLabel />
                         </CardContent>
                     </div>
                 </Card>
@@ -337,6 +438,7 @@ const NotificationCard = (props: NotificationCardProps) => {
             )}
             {/* Confirmation dialog */}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title={dialogTitle} content={dialogContent} />
+            <StorageUpdateDialog />
         </ProtectedAdminRoute>
     );
 };

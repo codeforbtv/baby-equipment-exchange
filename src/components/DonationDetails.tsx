@@ -4,10 +4,11 @@
 import { MouseEventHandler, useEffect, useState, Dispatch, SetStateAction } from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
-import { getDonationById, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
+import { getDonationById, updateDonation, updateDonationStatus, updateDonationStorage, getStorageDocRef } from '@/api/firebase-donations';
 import { productLifeCycleReport } from '@/api/firebase-reports';
+import { getActiveStorage, getStorageById } from '@/api/firebase-storage';
 //Components
-import { Dialog, DialogActions, ImageList, ImageListItem, Button, Divider, IconButton, Typography, Stack } from '@mui/material';
+import { Dialog, DialogActions, DialogTitle, DialogContent, ImageList, ImageListItem, Button, Divider, IconButton, Typography, Stack, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
 import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from './CustomDialog';
@@ -18,10 +19,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/Download';
+import PlaceIcon from '@mui/icons-material/Place';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { DonationStatusKeys, donationStatuses, Donation } from '@/models/donation';
+import { Storage } from '@/models/storage';
 
 type DonationDetailsProps = {
     id: string | null;
@@ -41,6 +44,27 @@ const DonationDetails = (props: DonationDetailsProps) => {
     const [openImageURL, setOpenImageURL] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogContent, setDialogContent] = useState<string>('');
+    const [resolvedStorageName, setResolvedStorageName] = useState<string | null>(null);
+    const [isStorageDialogOpen, setIsStorageDialogOpen] = useState<boolean>(false);
+    const [selectedStorageId, setSelectedStorageId] = useState<string>('');
+    const [activeStorageLocations, setActiveStorageLocations] = useState<Storage[]>([]);
+
+    // Resolve storage location name
+    useEffect(() => {
+        const resolveStorage = async () => {
+            if (donationDetails?.storage) {
+                try {
+                    const storageDoc = await getStorageById(donationDetails.storage.id);
+                    setResolvedStorageName(storageDoc.name);
+                } catch {
+                    setResolvedStorageName('Unknown location');
+                }
+            } else {
+                setResolvedStorageName(null);
+            }
+        };
+        resolveStorage();
+    }, [donationDetails?.storage, donationDetailsUpdated]);
 
     //Status names for select menu
     const statusSelectOptions = Object.keys(donationStatuses);
@@ -97,6 +121,32 @@ const DonationDetails = (props: DonationDetailsProps) => {
         if (donationDetails) await fetchDonation(donationDetails.id);
         setDialogContent('');
         setIsDialogOpen(false);
+    };
+
+    const handleOpenStorageDialog = async () => {
+        try {
+            const locations = await getActiveStorage();
+            setActiveStorageLocations(locations);
+        } catch (error) {
+            addErrorEvent('Error fetching active storage locations', error);
+        }
+        setIsStorageDialogOpen(true);
+    };
+
+    const handleStorageUpdate = async () => {
+        if (!selectedStorageId || !donationDetails) return;
+        try {
+            const storageRef = getStorageDocRef(selectedStorageId);
+            const selectedLocation = activeStorageLocations.find((s) => s.id === selectedStorageId);
+            // Optimistic update
+            setResolvedStorageName(selectedLocation?.name ?? 'Updated');
+            setIsStorageDialogOpen(false);
+            await updateDonationStorage(donationDetails.id, storageRef);
+            setDonationDetailsUpdated(true);
+        } catch (error) {
+            addErrorEvent('Error updating donation storage', error);
+            setResolvedStorageName(null);
+        }
     };
 
     const handleImageClick: MouseEventHandler<HTMLImageElement> = (event) => {
@@ -171,6 +221,23 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             </Typography>
                         )}
 
+                        {/* Storage location */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', mt: 1 }}>
+                            <PlaceIcon sx={{ fontSize: '18px', color: resolvedStorageName ? '#1976d2' : '#bdbdbd' }} />
+                            <Typography variant="body1" sx={{ color: resolvedStorageName ? 'inherit' : '#bdbdbd' }}>
+                                <b>Storage: </b>
+                                {resolvedStorageName ?? 'No storage assigned'}
+                            </Typography>
+                            <Button
+                                size="small"
+                                variant="text"
+                                sx={{ textTransform: 'none', fontSize: '12px' }}
+                                onClick={handleOpenStorageDialog}
+                            >
+                                Change
+                            </Button>
+                        </Box>
+
                         <Typography variant="body1" sx={{ marginTop: '1em' }}>
                             <b>Category: </b> {donationDetails.category}
                         </Typography>
@@ -231,6 +298,34 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             </DialogActions>
                         </Dialog>
                         <CustomDialog isOpen={isDialogOpen} title="Donation updated" content={dialogContent} onClose={handleClose} />
+                        {/* Storage update dialog */}
+                        <Dialog open={isStorageDialogOpen} onClose={() => setIsStorageDialogOpen(false)} maxWidth="xs" fullWidth>
+                            <DialogTitle>Change Storage Location</DialogTitle>
+                            <DialogContent>
+                                <FormControl fullWidth sx={{ mt: 1 }}>
+                                    <InputLabel id="detail-storage-label">Storage Location</InputLabel>
+                                    <Select
+                                        labelId="detail-storage-label"
+                                        id="detail-storage-select"
+                                        value={selectedStorageId}
+                                        label="Storage Location"
+                                        onChange={(e) => setSelectedStorageId(e.target.value)}
+                                    >
+                                        {activeStorageLocations.map((loc) => (
+                                            <MenuItem key={loc.id} value={loc.id}>
+                                                {loc.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={() => setIsStorageDialogOpen(false)}>Cancel</Button>
+                                <Button variant="contained" onClick={handleStorageUpdate} disabled={!selectedStorageId}>
+                                    Save
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
                     </div>
                 )}
                 {!isLoading && donationDetails && isEditMode && (

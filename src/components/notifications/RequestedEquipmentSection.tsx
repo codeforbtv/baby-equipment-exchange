@@ -3,15 +3,17 @@ import { Button, Paper, Typography } from '@mui/material';
 import NotificationCard from '@/components/NotificationCard';
 import styles from '@/components/NotificationCard.module.css';
 import { Order } from '@/types/OrdersTypes';
+import { Storage } from '@/models/storage';
 
 interface Props {
     orders: Order[];
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setOrderIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    activeStorageLocations?: Storage[];
 }
 
-const RequestedEquipmentSection = ({ orders, setIdToDisplay, setOrderIdToDisplay, setNotificationsUpdated }: Props) => {
+const RequestedEquipmentSection = ({ orders, setIdToDisplay, setOrderIdToDisplay, setNotificationsUpdated, activeStorageLocations }: Props) => {
     if (orders.length === 0) return null;
 
     return (
@@ -31,6 +33,7 @@ const RequestedEquipmentSection = ({ orders, setIdToDisplay, setOrderIdToDisplay
                             donation={item}
                             setIdToDisplay={setIdToDisplay}
                             setNotificationsUpdated={setNotificationsUpdated}
+                            activeStorageLocations={activeStorageLocations}
                         />
                     ))}
                     <Button
