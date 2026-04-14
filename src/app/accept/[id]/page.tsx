@@ -1,11 +1,11 @@
 'use client';
 
 //Hoooks
-import { useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
-import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent } from '@mui/material';
 import AcceptRejectCard from '@/components/AcceptRejectCard';
 import DonationDetails from '@/components/DonationDetails';
 import ScheduleDropOff from '@/components/ScheduleDropOff';
@@ -23,10 +23,24 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const [accepted, setAccepted] = useState<string[]>([]);
     const [rejected, setRejected] = useState<string[]>([]);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
-    const [openSecheduler, setOpenScheduler] = useState<boolean>(false);
+    const [activeView, setActiveView] = useState<'review' | 'schedule'>('review');
+    const [hasReviews, setHasReviews] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (accepted.length > 0 || rejected.length > 0) {
+            setHasReviews(true);
+        } else {
+            setHasReviews(false);
+        }
+    }, [accepted, rejected]);
 
     //disable btton unless all donations are accepted or rejected
     const isDisabled = donations ? accepted.length + rejected.length !== donations.length : false;
+
+    const setShowScheduler: Dispatch<SetStateAction<boolean>> = (val) => {
+        const willShow = typeof val === 'function' ? val(activeView === 'schedule') : val;
+        setActiveView(willShow ? 'schedule' : 'review');
+    };
 
     const fetchDonationsByBulkId = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -62,13 +76,14 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     return (
         <ProtectedAdminRoute>
             <div style={{ marginTop: '4em' }}>
-                {openSecheduler ? (
+                {activeView === 'schedule' && (
                     <ScheduleDropOff
                         acceptedDonations={donations?.filter((d) => accepted.includes(d.id))}
                         rejectedDonations={donations?.filter((d) => rejected.includes(d.id))}
-                        setOpenScheduler={setOpenScheduler}
+                        setOpenScheduler={setShowScheduler}
                     />
-                ) : (
+                )}
+                {activeView === 'review' && (
                     <>
                         <div className="page--header">
                             <h3>Review donation</h3>
@@ -100,9 +115,13 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                                         setIdToDisplay={setIdToDisplay}
                                     />
                                 ))}
-                                <Button type="button" variant="contained" disabled={isDisabled} onClick={() => setOpenScheduler(true)}>
-                                    {accepted.length === 0 ? 'Send Rejection Email' : ' Send Scheduling Link'}
-                                </Button>
+                                {hasReviews && (
+                                    <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
+                                        <Button type="button" variant="contained" disabled={isDisabled} onClick={() => setShowScheduler(true)}>
+                                            {accepted.length === 0 ? 'Send Rejection Email' : ' Send Scheduling Link'}
+                                        </Button>
+                                    </Box>
+                                )}
                             </div>
                         )}
                     </>

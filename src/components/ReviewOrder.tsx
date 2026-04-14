@@ -7,13 +7,15 @@ import Loader from './Loader';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import DonationCardMed from './DonationCardMed';
 import DonationDetails from './DonationDetails';
-import { Button, IconButton } from '@mui/material';
+import { Box, Button, IconButton } from '@mui/material';
+import FinalizeReview from './FinalizeReview';
 import SchedulePickup from './SchedulePickup';
+import CancelOrder from './CancelOrder';
 import CustomDialog from './CustomDialog';
 //Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
-import { getOrderById, removeDonationFromOrder } from '@/api/firebase-donations';
+import { closeOrder, updateDonationStatus, getOrderById, removeDonationFromOrder } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 //Styles
 import '@/styles/globalStyles.css';
@@ -33,21 +35,42 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
-    const [showScheduler, setShowScheduler] = useState<boolean>(false);
+    const [activeView, setActiveView] = useState<'review' | 'schedule' | 'finalize' | 'cancel'>('review');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [isOrderUpdated, setIsOrderUpdated] = useState<boolean>(false);
 
-    const fetchOrder = async (id: string): Promise<void> => {
-        setIsLoading(true);
-        try {
-            const orderResult = await getOrderById(id);
-            setCurrentOrder(orderResult);
-        } catch (error) {
-            addErrorEvent('Fetch order by id', error);
-        } finally {
-            setIsLoading(false);
-        }
+    const setShowScheduler: Dispatch<SetStateAction<boolean>> = (val) => {
+        const willShow = typeof val === 'function' ? val(activeView === 'schedule') : val;
+        setActiveView(willShow ? 'schedule' : 'review');
     };
+
+    const setShowFinalize: Dispatch<SetStateAction<boolean>> = (val) => {
+        const willShow = typeof val === 'function' ? val(activeView === 'finalize') : val;
+        setActiveView(willShow ? 'finalize' : 'review');
+    };
+
+    const setShowCancelOrder: Dispatch<SetStateAction<boolean>> = (val) => {
+        const willShow = typeof val === 'function' ? val(activeView === 'cancel') : val;
+        setActiveView(willShow ? 'cancel' : 'review');
+    };
+
+    useEffect(() => {
+        const fetchOrder = async (orderId: string): Promise<void> => {
+            setIsLoading(true);
+            try {
+                const orderResult = await getOrderById(orderId);
+                setCurrentOrder(orderResult);
+            } catch (error) {
+                addErrorEvent('Fetch order by id', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchOrder(id);
+        }
+    }, [id]);
 
     const handleRemoveFromOrder = async (orderId: string, donation: Donation): Promise<void> => {
         setIsLoading(true);
@@ -75,10 +98,6 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         setIsDialogOpen(false);
     };
 
-    useEffect(() => {
-        fetchOrder(id);
-    }, []);
-
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && currentOrder && (
@@ -88,11 +107,16 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     setIdToDisplay={setDonationIdToDisplay}
                 />
             )}
-            {showScheduler && currentOrder && (
+            {activeView === 'schedule' && currentOrder && (
                 <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
             )}
-
-            {!showScheduler && !donationIdToDisplay && (
+            {activeView === 'finalize' && currentOrder && (
+                <FinalizeReview order={currentOrder} shouldShow={setShowFinalize} setNotificationsUpdated={setNotificationsUpdated} />
+            )}
+            {activeView === 'cancel' && currentOrder && (
+                <CancelOrder order={currentOrder} shouldShow={setShowCancelOrder} setNotificationsUpdated={setNotificationsUpdated} />
+            )}
+            {activeView === 'review' && !donationIdToDisplay && (
                 <>
                     <div className="page--header">
                         <h2>Review Order</h2>
@@ -137,14 +161,26 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                     ))}
                                 </>
                             )}
-                            <Button variant="contained" onClick={() => setShowScheduler(true)}>
-                                Schedule Pickup
-                            </Button>
+                            <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
+                                {currentOrder && currentOrder.items.length > 0 && (
+                                    <Button variant="contained" onClick={() => setShowScheduler(true)}>
+                                        Schedule Pickup
+                                    </Button>
+                                )}
+                                {currentOrder && currentOrder.items.length > 0 && (
+                                    <Button variant="contained" onClick={() => setShowFinalize(true)}>
+                                        Finalize Without Scheduling
+                                    </Button>
+                                )}
+                                <Button color="error" variant="contained" onClick={() => setShowCancelOrder(true)}>
+                                    Cancel Order
+                                </Button>
+                            </Box>
                         </div>
                     )}
                 </>
             )}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content="Donation successfully removed from order" />
+            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content="Donation successfully removed from order" />{' '}
         </ProtectedAdminRoute>
     );
 };
