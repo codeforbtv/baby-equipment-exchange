@@ -37,11 +37,11 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [events, setEvents] = useState<EventType[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
+    const [title, setTitle] = useState<string>('');
+    const [dialog, setDialog] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const router = useRouter();
-
-    const isDisabled = acceptedDonations && acceptedDonations.length > 0 ? !inviteUrl : false;
 
     let donorEmail = '';
     let donorName = '';
@@ -140,6 +140,8 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
                     : reject(donorEmail, renderToString(message), notes);
             await sendMail(emailMsg);
+            setTitle('Email sent');
+            setDialog(`Email successfully sent to ${donorEmail}`);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
@@ -185,7 +187,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                     </InputLabel>
                                     <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
                                         <option value="" disabled>
-                                            Select Calendar
+                                            Select Calendar (Optional)
                                         </option>
                                         {events &&
                                             events.map((event, index) => {
@@ -201,7 +203,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                 </FormControl>
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button onClick={handleSubmit} disabled={isDisabled} variant="contained">
+                                <Button onClick={handleSubmit} variant="contained">
                                     Send Email
                                 </Button>
                                 <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
@@ -212,7 +214,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     </div>
                 </>
             )}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${donorEmail}`} />
+            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title={title} content={dialog} />
         </ProtectedAdminRoute>
     );
 };

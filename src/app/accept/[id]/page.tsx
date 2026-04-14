@@ -118,7 +118,7 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                                 {hasReviews && (
                                     <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
                                         <Button type="button" variant="contained" disabled={isDisabled} onClick={() => setShowScheduler(true)}>
-                                            {accepted.length === 0 ? 'Send Rejection Email' : ' Send Scheduling Link'}
+                                            {accepted.length === 0 ? 'Send Rejection Email' : ' Send Email'}
                                         </Button>
                                     </Box>
                                 )}
