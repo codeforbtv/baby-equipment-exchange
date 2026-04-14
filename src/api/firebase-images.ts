@@ -19,7 +19,6 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 
 // Models
 import { IImage, Image } from '@/models/image';
-import { getUserId } from './firebase-users';
 
 const IMAGES_COLLECTION = 'Images';
 const IMAGE_DETAILS_COLLECTION = 'ImageDetails';
@@ -56,7 +55,6 @@ const imageConverter = {
 export async function uploadImages(files: File[]): Promise<string[]> {
     try {
         const imageURLs: string[] = [];
-        const userId = await getUserId();
 
         for (const file of files) {
             const currentTime = Date.now();
