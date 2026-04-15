@@ -35,18 +35,13 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
-    const [activeView, setActiveView] = useState<'review' | 'schedule' | 'finalize' | 'cancel'>('review');
+    const [activeView, setActiveView] = useState<'review' | 'schedule' | 'cancel'>('review');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [isOrderUpdated, setIsOrderUpdated] = useState<boolean>(false);
 
     const setShowScheduler: Dispatch<SetStateAction<boolean>> = (val) => {
         const willShow = typeof val === 'function' ? val(activeView === 'schedule') : val;
         setActiveView(willShow ? 'schedule' : 'review');
-    };
-
-    const setShowFinalize: Dispatch<SetStateAction<boolean>> = (val) => {
-        const willShow = typeof val === 'function' ? val(activeView === 'finalize') : val;
-        setActiveView(willShow ? 'finalize' : 'review');
     };
 
     const setShowCancelOrder: Dispatch<SetStateAction<boolean>> = (val) => {
@@ -110,9 +105,6 @@ const ReviewOrder = (props: ReviewOrderProps) => {
             {activeView === 'schedule' && currentOrder && (
                 <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
             )}
-            {activeView === 'finalize' && currentOrder && (
-                <FinalizeReview order={currentOrder} shouldShow={setShowFinalize} setNotificationsUpdated={setNotificationsUpdated} />
-            )}
             {activeView === 'cancel' && currentOrder && (
                 <CancelOrder order={currentOrder} shouldShow={setShowCancelOrder} setNotificationsUpdated={setNotificationsUpdated} />
             )}
@@ -165,11 +157,6 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                 {currentOrder && currentOrder.items.length > 0 && (
                                     <Button variant="contained" onClick={() => setShowScheduler(true)}>
                                         Schedule Pickup
-                                    </Button>
-                                )}
-                                {currentOrder && currentOrder.items.length > 0 && (
-                                    <Button variant="contained" onClick={() => setShowFinalize(true)}>
-                                        Finalize Without Scheduling
                                     </Button>
                                 )}
                                 <Button color="error" variant="contained" onClick={() => setShowCancelOrder(true)}>
