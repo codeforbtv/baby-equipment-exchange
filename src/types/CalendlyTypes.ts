@@ -1,3 +1,5 @@
+// Event Types
+
 export interface EventType {
     active: boolean;
     color: string;
@@ -36,4 +38,113 @@ export interface EventTypeCustomQuestion {
     type: string;
     uuid: string;
     options?: string[];
+}
+
+// Scheduled Events
+
+export interface ScheduledEvent {
+    uri: string;
+    name: string;
+    status: 'active' | 'canceled';
+    start_time: string;
+    end_time: string;
+    event_type: string;
+    location: ScheduledEventLocation | null;
+    invitees_counter: { total: number; active: number; limit: number };
+    created_at: string;
+    updated_at: string;
+    event_memberships: { user: string; user_email: string }[];
+    calendar_event?: {
+        kind: string;
+        external_id: string;
+    } | null;
+}
+
+export interface ScheduledEventLocation {
+    type: string;
+    location?: string;
+    additional_info?: string;
+}
+
+export interface ScheduledEventsResponse {
+    collection: ScheduledEvent[];
+    pagination: CalendlyPagination;
+}
+
+// Invitees
+
+export interface Invitee {
+    uri: string;
+    name: string;
+    email: string;
+    first_name: string | null;
+    last_name: string | null;
+    status: 'active' | 'canceled';
+    created_at: string;
+    updated_at: string;
+    cancel_url: string;
+    reschedule_url: string;
+    questions_and_answers?: InviteeQuestionAnswer[];
+}
+
+export interface InviteeQuestionAnswer {
+    position: number;
+    question: string;
+    answer: string;
+}
+
+export interface InviteesResponse {
+    collection: Invitee[];
+    pagination: CalendlyPagination;
+}
+
+// Pagination
+
+export interface CalendlyPagination {
+    count: number;
+    next_page: string | null;
+    previous_page: string | null;
+    next_page_token: string | null;
+}
+
+// Time Range & Booking Matching
+
+export type CalendlyTimeRange = '1week' | '2weeks' | '30days' | '60days' | '90days';
+
+/** A scheduled event enriched with its invitee list */
+export interface ScheduledEventWithInvitees extends ScheduledEvent {
+    invitees: Invitee[];
+}
+
+/** Classification of event purpose */
+export type CalendlyEventCategory = 'pickup' | 'dropoff' | 'unknown';
+
+/** Confidence level of a booking match */
+export type BookingMatchConfidence = 'confirmed' | 'possible-match' | 'unconfirmed';
+
+/** Result of matching a Firebase entity to a Calendly booking */
+export interface BookingMatchResult {
+    /** The Firebase donation ID */
+    donationId: string;
+    /** The email used to look up the booking (donor or requestor) */
+    lookupEmail: string;
+    /** The name used to look up the booking */
+    lookupName: string;
+    /** Match confidence */
+    confidence: BookingMatchConfidence;
+    /** Matched Calendly event (if any) */
+    matchedEvent?: ScheduledEventWithInvitees;
+    /** Matched invitee (if any) */
+    matchedInvitee?: Invitee;
+    /** Reason for the match classification */
+    matchReason: string;
+}
+
+/** Aggregated booking status for a set of donations */
+export interface BookingStatusResult {
+    confirmed: BookingMatchResult[];
+    possibleMatches: BookingMatchResult[];
+    unconfirmed: BookingMatchResult[];
+    /** Map of donationId → match result for quick lookup */
+    byDonationId: Record<string, BookingMatchResult>;
 }
