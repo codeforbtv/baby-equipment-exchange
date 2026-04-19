@@ -16,7 +16,12 @@ import sendMail from '@/api/nodemailer';
 import adminUserCreated from '@/email-templates/adminUserCreated';
 import adminUserEnabled from '@/email-templates/adminUserEnabled';
 import userEnabled from '@/email-templates/userEnabled';
+import { getDropOffBookingStatus, getPickupBookingStatus } from '@/api/calendly';
+import { computeNotificationItems } from '@/api/notificationData';
+import type { BookingStatusResult, CalendlyTimeRange } from '@/types/CalendlyTypes';
+import type { Donation } from '@/models/donation';
 import type { IUser } from '@/models/user';
+import type { Order } from '@/types/OrdersTypes';
 
 type RoleClaim = 'admin' | 'aid-worker' | 'donor' | 'verified' | 'volunteer';
 
@@ -105,6 +110,86 @@ export async function getUserDetails(request: { idToken: string; userId: string 
         return serializeFirestoreData({ uid: userSnapshot.id, ...userSnapshot.data() } as IUser);
     } catch (error) {
         addErrorEvent('getUserDetails', error);
+        throw error;
+    }
+}
+
+async function getNotificationDonations(): Promise<Donation[]> {
+    const snapshot = await db.collection(DONATIONS_COLLECTION).where('status', 'in', ['in processing', 'pending delivery', 'reserved']).get();
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Donation);
+}
+
+async function getNotificationUsers(): Promise<IUser[]> {
+    const snapshot = await db.collection(USERS_COLLECTION).where('isDisabled', '==', true).get();
+    return snapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }) as IUser);
+}
+
+async function getNotificationOrders(): Promise<Order[]> {
+    const snapshot = await db.collection(ORDERS_COLLECTION).where('status', '==', 'open').get();
+    const orders: Order[] = [];
+
+    for (const doc of snapshot.docs) {
+        const orderInfo = doc.data();
+        const order: Order = {
+            id: doc.id,
+            status: orderInfo.status,
+            requestor: orderInfo.requestor,
+            items: [],
+            rejectedItems: [],
+            createdAt: orderInfo.createdAt
+        };
+
+        for (const donationRef of orderInfo.items ?? []) {
+            const donationSnapshot = await donationRef.get();
+            if (donationSnapshot.exists) {
+                order.items.push({ id: donationSnapshot.id, ...donationSnapshot.data() } as Donation);
+            }
+        }
+
+        for (const donationRef of orderInfo.rejectedItems ?? []) {
+            const donationSnapshot = await donationRef.get();
+            if (donationSnapshot.exists) {
+                order.rejectedItems?.push({ id: donationSnapshot.id, ...donationSnapshot.data() } as Donation);
+            }
+        }
+
+        orders.push(order);
+    }
+
+    return orders;
+}
+
+export async function fetchNotificationFeedData(timeRange: CalendlyTimeRange = '30days') {
+    try {
+        const [donations, users, orders] = await Promise.all([getNotificationDonations(), getNotificationUsers(), getNotificationOrders()]);
+        let pickupBookingStatus: BookingStatusResult | null = null;
+        let dropOffBookingStatus: BookingStatusResult | null = null;
+
+        try {
+            [pickupBookingStatus, dropOffBookingStatus] = await Promise.all([
+                getPickupBookingStatus(donations, timeRange),
+                getDropOffBookingStatus(donations, timeRange)
+            ]);
+        } catch (error) {
+            addErrorEvent('fetchNotificationFeedData Calendly status', error);
+        }
+
+        const items = await computeNotificationItems({
+            donations,
+            users,
+            orders,
+            pickupBookingStatus,
+            dropOffBookingStatus,
+            calendlyTimeRange: timeRange
+        });
+
+        return {
+            items: items.map((item) => ({ ...item, timestamp: item.timestamp.toISOString() })),
+            pickupBookingStatus,
+            dropOffBookingStatus
+        };
+    } catch (error) {
+        addErrorEvent('fetchNotificationFeedData', error);
         throw error;
     }
 }

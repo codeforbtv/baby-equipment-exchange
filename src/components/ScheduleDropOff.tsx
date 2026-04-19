@@ -99,7 +99,9 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 const updates: Record<string, any> = {
                     status: 'pending delivery',
                     dateAccepted: serverTimestamp(),
-                    tagNumber: newTagNumber
+                    tagNumber: newTagNumber,
+                    schedulingLink: inviteUrl || null,
+                    schedulingEmailSentAt: inviteUrl ? new Date() : null
                 };
                 if (categoryOverrides[donation.id]) {
                     updates.category = effectiveCategory;
@@ -115,7 +117,9 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     await updateDonation(id, {
                         status: 'in processing',
                         dateAccepted: null,
-                        tagNumber: null
+                        tagNumber: null,
+                        schedulingLink: null,
+                        schedulingEmailSentAt: null
                     });
                 } catch (rollbackError) {
                     addErrorEvent('Rollback failed for donation', rollbackError);

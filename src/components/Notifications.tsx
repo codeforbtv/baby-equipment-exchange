@@ -14,15 +14,18 @@ import { Box, Button, Chip, Divider, Paper, Tab, Tabs, Typography } from '@mui/m
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
 //Types
-import { Notification } from '@/types/NotificationTypes';
+import { Notification, NotificationData } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
 import { Order } from '@/types/OrdersTypes';
+import { BookingMatchConfidence } from '@/types/CalendlyTypes';
 
 type NotificationsProps = {
     notifications: Notification;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
     activeSubTab?: number;
     onSubTabChange?: Dispatch<SetStateAction<number>>;
+    notificationData?: NotificationData | null;
+    highlightedEntityId?: string | null;
 };
 
 type DonorGroup = {
@@ -87,7 +90,7 @@ const groupByRequestor = (orders: Order[]): RequestorGroup[] => {
 };
 
 const Notifications = (props: NotificationsProps) => {
-    const { notifications, setNotificationsUpdated, activeSubTab, onSubTabChange } = props;
+    const { notifications, setNotificationsUpdated, activeSubTab, onSubTabChange, notificationData, highlightedEntityId } = props;
 
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
@@ -132,6 +135,11 @@ const Notifications = (props: NotificationsProps) => {
             </Typography>
         </Typography>
     );
+
+    const getBookingStatus = (donationId: string, mode: 'pickup' | 'dropoff'): BookingMatchConfidence | undefined => {
+        const statusResult = mode === 'pickup' ? notificationData?.pickupBookingStatus : notificationData?.dropOffBookingStatus;
+        return statusResult?.byDonationId[donationId]?.confidence;
+    };
 
     return (
         <ProtectedAdminRoute>
@@ -223,6 +231,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             type="pending-donation"
                                                             setIdToDisplay={setDonationIdToDisplay}
                                                             setNotificationsUpdated={setNotificationsUpdated}
+                                                            isHighlighted={highlightedEntityId === donation.id}
                                                         />
                                                     ))}
                                                 </>
@@ -259,6 +268,7 @@ const Notifications = (props: NotificationsProps) => {
                                                                     type="pending-donation"
                                                                     setIdToDisplay={setDonationIdToDisplay}
                                                                     setNotificationsUpdated={setNotificationsUpdated}
+                                                                    isHighlighted={highlightedEntityId === donation.id}
                                                                 />
                                                             ))}
                                                         </Box>
@@ -292,6 +302,8 @@ const Notifications = (props: NotificationsProps) => {
                                                     type="pending-delivery"
                                                     setIdToDisplay={setDonationIdToDisplay}
                                                     setNotificationsUpdated={setNotificationsUpdated}
+                                                    calendlyStatus={getBookingStatus(donation.id, 'dropoff')}
+                                                    isHighlighted={highlightedEntityId === donation.id}
                                                 />
                                             ))}
                                         </Paper>
@@ -330,6 +342,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             donation={item}
                                                             setIdToDisplay={setDonationIdToDisplay}
                                                             setNotificationsUpdated={setNotificationsUpdated}
+                                                            isHighlighted={highlightedEntityId === group.orders[0].id || highlightedEntityId === item.id}
                                                         />
                                                     ))}
                                                 </>
@@ -372,6 +385,7 @@ const Notifications = (props: NotificationsProps) => {
                                                                     donation={item}
                                                                     setIdToDisplay={setDonationIdToDisplay}
                                                                     setNotificationsUpdated={setNotificationsUpdated}
+                                                                    isHighlighted={highlightedEntityId === order.id || highlightedEntityId === item.id}
                                                                 />
                                                             ))}
                                                         </Box>
@@ -405,6 +419,8 @@ const Notifications = (props: NotificationsProps) => {
                                                     type="reserved"
                                                     setIdToDisplay={setDonationIdToDisplay}
                                                     setNotificationsUpdated={setNotificationsUpdated}
+                                                    calendlyStatus={getBookingStatus(donation.id, 'pickup')}
+                                                    isHighlighted={highlightedEntityId === donation.id}
                                                 />
                                             ))}
                                         </Paper>
@@ -426,6 +442,7 @@ const Notifications = (props: NotificationsProps) => {
                                             user={user}
                                             setIdToDisplay={setUserIdToDisplay}
                                             setNotificationsUpdated={setNotificationsUpdated}
+                                            isHighlighted={highlightedEntityId === user.uid}
                                         />
                                     ))
                                 ) : (

@@ -13,7 +13,7 @@ import CustomDialog from './CustomDialog';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
-import { closeOrder, updateDonationStatus } from '@/api/firebase-donations';
+import { closeOrder, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
 import posthog from 'posthog-js';
 //styles
 import '@/styles/globalStyles.css';
@@ -63,6 +63,12 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             await Promise.all(
                 items.map(async (item) => {
                     await updateDonationStatus(item.id, 'reserved');
+                    if (inviteUrl) {
+                        await updateDonation(item.id, {
+                            schedulingLink: inviteUrl,
+                            schedulingEmailSentAt: new Date()
+                        });
+                    }
                 })
             );
             await closeOrder(id);

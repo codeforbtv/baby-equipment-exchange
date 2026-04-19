@@ -23,7 +23,6 @@ export type NotificationFilterType =
     | 'all'
     | 'pending-donations'
     | 'pending-deliveries'
-    | 'pending-storage'
     | 'pending-users'
     | 'requested-equipment'
     | 'reserved'

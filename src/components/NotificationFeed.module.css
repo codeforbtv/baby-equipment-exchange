@@ -1,0 +1,304 @@
+.feed-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.18);
+    z-index: 1200;
+    transition: opacity 0.25s ease;
+}
+
+.feed-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    z-index: 1300;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -6px 0 32px rgba(0, 0, 0, 0.10);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.feed-panel--partial {
+    width: 40%;
+    min-width: 360px;
+}
+
+.feed-panel--expanded {
+    width: 80%;
+    min-width: 480px;
+}
+
+/* Header */
+
+.feed-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #eaeaea;
+    flex-shrink: 0;
+}
+
+.feed-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.feed-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Filter Chips */
+
+.feed-filters {
+    display: flex;
+    gap: 6px;
+    padding: 10px 20px;
+    overflow-x: auto;
+    flex-shrink: 0;
+    border-bottom: 1px solid #f0f0f0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.feed-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.feed-chip {
+    white-space: nowrap;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+    color: #666;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.feed-chip:hover {
+    border-color: #bbb;
+    color: #333;
+}
+
+.feed-chip--active {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+}
+
+.feed-chip--active:hover {
+    background: #333;
+    border-color: #333;
+    color: #fff;
+}
+
+/* Feed List */
+
+.feed-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+    padding: 8px 0;
+}
+
+.feed-empty {
+    padding: 48px 20px;
+    text-align: center;
+    color: #999;
+    font-size: 0.875rem;
+}
+
+/* Feed Item */
+
+.feed-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.12s ease;
+    border-bottom: 1px solid #f5f5f5;
+    position: relative;
+}
+
+.feed-item:hover {
+    background: #fafafa;
+}
+
+.feed-item--new::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #1976d2;
+    border-radius: 0 3px 3px 0;
+}
+
+.feed-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+}
+
+.feed-item-icon--donation {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.feed-item-icon--user {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.feed-item-icon--order {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.feed-item-icon--warning {
+    background: #fff8e1;
+    color: #f57f17;
+}
+
+.feed-item-icon--danger {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.feed-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.feed-item-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.feed-item-subtitle {
+    font-size: 0.75rem;
+    color: #888;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Expanded view shows extra detail */
+.feed-item-subtitle--expanded {
+    white-space: normal;
+    line-height: 1.4;
+}
+
+.feed-item-time {
+    font-size: 0.6875rem;
+    color: #bbb;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* Calendly Status Badges */
+
+.calendly-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.calendly-badge--confirmed {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.calendly-badge--possible {
+    background: #fff8e1;
+    color: #f57f17;
+}
+
+.calendly-badge--unconfirmed {
+    background: #ffebee;
+    color: #c62828;
+}
+
+/* Footer / Expand Button */
+
+.feed-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-top: 1px solid #eaeaea;
+    flex-shrink: 0;
+}
+
+.feed-expand-btn {
+    padding: 6px 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: #555;
+    transition: all 0.15s ease;
+}
+
+.feed-expand-btn:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+}
+
+/* Badge */
+
+.notification-badge {
+    position: relative;
+}
+
+/* Responsivity */
+
+@media screen and (max-width: 768px) {
+    .feed-panel--partial {
+        width: 85%;
+        min-width: 300px;
+    }
+
+    .feed-panel--expanded {
+        width: 95%;
+        min-width: 300px;
+    }
+}
