@@ -140,7 +140,7 @@ const CancelOrder = (props: CancelOrderProps) => {
                                 </InputLabel>
                                 <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
                                     <option value="" disabled>
-                                        Select Calendar (optional)
+                                        Select Calendar (Optional)
                                     </option>
                                     {events &&
                                         events.map((event, index) => {
