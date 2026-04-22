@@ -154,6 +154,15 @@ export async function enableDbUser(uid: string): Promise<void> {
     }
 }
 
+export async function disableDbUser(uid: string): Promise<void> {
+    try {
+        const docRef = doc(db, USERS_COLLECTION, uid);
+        await updateDoc(docRef, { isDisabled: true });
+    } catch (error) {
+        addErrorEvent('Error disabling db User', error);
+    }
+}
+
 //returns Auth User and db User details combined
 export async function getUserDetails(uid: string): Promise<IUser> {
     try {

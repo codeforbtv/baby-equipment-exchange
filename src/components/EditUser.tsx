@@ -10,6 +10,8 @@ import { enableDbUser, updateDbUser } from '@/api/firebase-users';
 import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from './CustomDialog';
+import DisableUser from './DisableUser';
+import EnableUser from './EnableUser';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 //Constants
 import userEnabled from '@/email-templates/userEnabled';
@@ -48,11 +50,16 @@ const EditUser = (props: EditUserProps) => {
     const [newTitle, setNewTitle] = useState<string>(title ?? '');
     const [role, setRole] = useState<string>(initialRole);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [activeDialog, setActiveDialog] = useState<'' | 'enable' | 'disable'>('');
 
     const handleClose = () => {
         if (setUserDetailsUpdated) setUserDetailsUpdated(true);
-        setIsDialogOpen(false);
+        setActiveDialog('');
         setIsEditMode(false);
+    };
+
+    const handleCancel = () => {
+        setActiveDialog('');
     };
 
     //List of Org names, ids from Server
@@ -263,11 +270,27 @@ const EditUser = (props: EditUserProps) => {
                             <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
                                 Cancel
                             </Button>
+
+                            {!isDisabled && (
+                                <Button variant="outlined" color="error" type="button" sx={{ marginLeft: 'auto' }} onClick={() => setActiveDialog('disable')}>
+                                    Disable User
+                                </Button>
+                            )}
+                            {initialOrg && isDisabled && (
+                                <Button variant="outlined" type="button" sx={{ marginLeft: 'auto' }} onClick={() => setActiveDialog('enable')}>
+                                    Enable User
+                                </Button>
+                            )}
                         </Box>
                     </Box>
                 )}
             </Paper>
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="User updated" content={`The user ${newDisplayName} has been updated.`} />
+            {/* Dialog for disabling user */}
+            {activeDialog === 'disable' && (
+                <DisableUser isOpen={true} onClose={handleClose} onCancel={handleCancel} title="Disable user?" user={props.userDetails} setIsLoading={setIsLoading} />
+            )}
+            {activeDialog === 'enable' && <EnableUser isOpen={true} onClose={handleClose} onCancel={handleCancel} user={props.userDetails} setIsLoading={setIsLoading} />}
         </ProtectedAdminRoute>
     );
 };

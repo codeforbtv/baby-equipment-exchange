@@ -67,6 +67,24 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
     return Promise.reject(new HttpsError('unknown', 'An error occurred while trying to create a new user.'));
 });
 
+export const disableuser = onCall(async (request): Promise<void> => {
+    if (!request.auth) {
+        return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to disable user account.'));
+    }
+    if (request.auth && request.auth.token.admin != true) {
+        return Promise.reject(new HttpsError('permission-denied', 'Only admins can disable user accounts.'));
+    } else if (request.auth && request.auth.token.admin == true) {
+        const userId = request.data.userId;
+        if (!userId) {
+            return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to disable a user account.'));
+        } else {
+            auth.updateUser(userId, { disabled: true })
+                .then(() => console.log(`User ${userId} disabled`))
+                .catch((error) => Promise.reject(new HttpsError('invalid-argument', 'Unable to update user account.')));
+        }
+    }
+});
+
 export const enableuser = onCall(async (request): Promise<void> => {
     if (!request.auth) {
         return Promise.reject(new HttpsError('unauthenticated', 'Must be signed in to enable user account.'));

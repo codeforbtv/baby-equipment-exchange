@@ -24,6 +24,7 @@ export const auth = getAuth(app);
 //Cloud functions
 const functions = getFunctions(app);
 const createNewUser = httpsCallable(functions, 'createnewuser');
+const disableUser = httpsCallable(functions, 'disableuser');
 const enableUser = httpsCallable(functions, 'enableuser');
 const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');
 const isEMailInUse = httpsCallable(functions, 'isemailinuse');
@@ -98,6 +99,14 @@ export async function callEnableUser(userId: string): Promise<void> {
         await enableUser({ userId: userId });
     } catch (error) {
         addErrorEvent('Could not enable user', error);
+    }
+}
+
+export async function callDisableUser(userId: string): Promise<void> {
+    try {
+        await disableUser({ userId: userId });
+    } catch (error) {
+        addErrorEvent('Could not disable user', error);
     }
 }
 
