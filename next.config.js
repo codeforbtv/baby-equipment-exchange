@@ -26,8 +26,7 @@ const nextConfig = {
                 pathname: '/v0/b/baby-equipment-exchange.appspot.com/**'
             }
         ]
-    },
-    skipTrailingSlashRedirect: true
+    }
 };
 
 module.exports = nextConfig;
