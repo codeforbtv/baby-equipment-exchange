@@ -35,10 +35,10 @@ export default function PHProvider({ children }: { children: React.ReactNode }) 
             capture_pageleave: true,
             person_profiles: 'always',
             enable_recording_console_log: false,
-            // form inputs masked by maskAllInputs. PII text masked by .ph-mask-pii class.
+
             session_recording: {
                 maskAllInputs: true,
-                // apply 'ph-mask-pii' class to any element displaying PII (names, emails, phones)
+                // PII text masked by .ph-mask-pii class.
                 maskTextSelector: '.ph-mask-pii'
             }
         });
