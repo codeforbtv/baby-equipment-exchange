@@ -29,12 +29,12 @@ export default function PHProvider({ children }: { children: React.ReactNode }) 
         if (!key) return;
 
         posthog.init(key, {
-            api_host: '/ingest',
-            ui_host: 'https://us.posthog.com',
+            api_host: 'https://us.i.posthog.com',
             capture_pageview: false,
             capture_pageleave: true,
             person_profiles: 'always',
             enable_recording_console_log: false,
+            capture_exceptions: true,
 
             session_recording: {
                 maskAllInputs: true,
