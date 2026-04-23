@@ -14,6 +14,7 @@ import CustomDialog from '@/components/CustomDialog';
 //Libs
 import { requestInventoryItems } from '@/api/firebase-donations';
 import { addErrorEvent, callAreDonationsAvailable } from '@/api/firebase';
+import posthog from 'posthog-js';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from './InventoryCart.module.css';
@@ -68,11 +69,16 @@ const InventoryCart = () => {
             };
 
             await requestInventoryItems(requestedItemIds, user);
+            posthog.capture('inventory_items_requested', {
+                item_count: requestedItemIds.length,
+                item_ids: requestedItemIds
+            });
             clearRequestedInventory();
             localStorage.removeItem('requestedInventory');
             setIsSuccessDialogOpen(true);
         } catch (error) {
             addErrorEvent('Handle request items', error);
+            posthog.captureException(error);
         } finally {
             setLoading(false);
         }

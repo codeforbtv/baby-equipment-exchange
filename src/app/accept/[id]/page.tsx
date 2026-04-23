@@ -12,6 +12,7 @@ import ScheduleDropOff from '@/components/ScheduleDropOff';
 //API
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationsByBulkId } from '@/api/firebase-donations';
+import posthog from 'posthog-js';
 //Styles
 import '@/styles/globalStyles.css';
 //types
@@ -45,9 +46,11 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
         if (value === 'accepted' && !accepted.includes(id)) {
             setAccepted([...accepted, id]);
             setRejected(rejected.filter((item) => item !== id));
+            posthog.capture('donation_reviewed', { decision: 'accepted', donation_id: id });
         } else if (value === 'rejected' && !rejected.includes(id)) {
             setRejected([...rejected, id]);
             setAccepted(accepted.filter((item) => item !== id));
+            posthog.capture('donation_reviewed', { decision: 'rejected', donation_id: id });
         } else if (!value) {
             //if deselected remove from both
             setAccepted(accepted.filter((item) => item !== id));

@@ -2,6 +2,7 @@
 //Hooks
 import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
 //Libs
+import posthog from 'posthog-js';
 import { addErrorEvent, checkIsAdmin, checkIsAidWorker } from '@/api/firebase';
 import { onAuthStateChangedListener } from '@/api/firebase-users';
 //Types
@@ -43,9 +44,11 @@ export const UserProvider = ({ children }: Props) => {
             try {
                 if (!user) {
                     setCurrentUser(null);
+                    posthog.reset();
                 }
                 if (user) {
                     setCurrentUser(user);
+                    posthog.identify(user.uid);
                     const adminResult = await checkIsAdmin(user);
                     setIsAdmin(adminResult);
                     const aidWorkerResult = await checkIsAidWorker(user);

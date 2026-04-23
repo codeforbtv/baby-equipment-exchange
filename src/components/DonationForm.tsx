@@ -15,6 +15,7 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
 import { addErrorEvent } from '@/api/firebase';
 import { getAllCategories } from '@/api/firebase-categories';
+import posthog from 'posthog-js';
 //styles
 import styles from './DonationForm.module.css';
 import '../styles/globalStyles.css';
@@ -117,6 +118,12 @@ export default function DonationForm(props: DonationFormProps) {
             images: images
         };
         addPendingDonation(pendingDonation);
+        posthog.capture('donation_item_added_to_queue', {
+            category: pendingDonation.category,
+            brand: pendingDonation.brand,
+            model: pendingDonation.model,
+            image_count: images.length
+        });
         setFormData({
             category: '',
             brand: '',

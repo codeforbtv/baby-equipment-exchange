@@ -33,6 +33,7 @@ import SearchIcon from '@mui/icons-material/Search';
 //Api
 import { getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
+import posthog from 'posthog-js';
 //Constants
 import { categories } from '@/data/html';
 //Styles
@@ -124,6 +125,12 @@ const Inventory = (props: InventoryProps) => {
 
     const handleRequestInventoryItem = (inventoryItem: InventoryItem) => {
         addRequestedInventoryItem(inventoryItem);
+        posthog.capture('inventory_item_added_to_cart', {
+            item_id: inventoryItem.id,
+            category: inventoryItem.category,
+            brand: inventoryItem.brand,
+            model: inventoryItem.model
+        });
         setIsSnackBarOpen(true);
     };
 

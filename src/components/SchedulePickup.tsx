@@ -14,6 +14,7 @@ import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
 import { closeOrder, updateDonationStatus } from '@/api/firebase-donations';
+import posthog from 'posthog-js';
 //styles
 import '@/styles/globalStyles.css';
 //types
@@ -66,9 +67,14 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             );
             await closeOrder(id);
             sendMail(emailMsg);
+            posthog.capture('pickup_scheduled', {
+                order_id: id,
+                item_count: items.length
+            });
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting schedule pickup email', error);
+            posthog.captureException(error);
         } finally {
             setIsLoading(false);
         }
