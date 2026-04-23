@@ -33,8 +33,9 @@ export default function PHProvider({ children }: { children: React.ReactNode }) 
             capture_pageview: false,
             capture_pageleave: true,
             person_profiles: 'always',
-            enable_recording_console_log: false,
+            enable_recording_console_log: true,
             capture_exceptions: true,
+            ip: false,
 
             session_recording: {
                 maskAllInputs: true,
