@@ -9,6 +9,7 @@ import { UserProvider } from '@/contexts/UserContext';
 import { PendingDonationsProvider } from '@/contexts/PendingDonationsContext';
 import { RequestedInventoryProvider } from '@/contexts/RequestedInventoryContext';
 import ThemeProviderWrapper from '@/components/ThemeProviderWrapper';
+import PHProvider from './providers';
 //Styles
 import '../styles/globalStyles.css';
 
@@ -17,19 +18,20 @@ const fontClassNames = [montserrat, garamond].map((font) => font.variable).join(
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="en" className={fontClassNames}>
-            <link rel="icon" href="/src/app/favicon.ico" sizes="any" />
             <body className="body--wrapper">
-                <ThemeProviderWrapper>
-                    <PendingDonationsProvider>
-                        <UserProvider>
-                            <RequestedInventoryProvider>
-                                <Header />
-                                <div className="page--wrapper">{children}</div>
-                                <Footer />
-                            </RequestedInventoryProvider>
-                        </UserProvider>
-                    </PendingDonationsProvider>
-                </ThemeProviderWrapper>
+                <PHProvider>
+                    <ThemeProviderWrapper>
+                        <PendingDonationsProvider>
+                            <UserProvider>
+                                <RequestedInventoryProvider>
+                                    <Header />
+                                    <div className="page--wrapper">{children}</div>
+                                    <Footer />
+                                </RequestedInventoryProvider>
+                            </UserProvider>
+                        </PendingDonationsProvider>
+                    </ThemeProviderWrapper>
+                </PHProvider>
             </body>
         </html>
     );
