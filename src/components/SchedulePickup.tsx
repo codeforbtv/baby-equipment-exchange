@@ -91,7 +91,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const message = (
         <>
-            <p>{`Hello ${requestor.name}`}</p>
+            <p className="ph-mask-pii">{`Hello ${requestor.name}`}</p>
             <p>Your request for the following items has been fulfilled:</p>
             {items.map((item) => (
                 <DonationCardSmall key={item.id} donation={item} />
@@ -120,7 +120,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                 <Loader />
             ) : (
                 <>
-                    <p>{`The following email will be sent to ${requestor.email}`}</p>
+                    <p className="ph-mask-pii">{`The following email will be sent to ${requestor.email}`}</p>
                     <div className="content--container">
                         <Box display={'flex'} flexDirection={'column'}>
                             {message}

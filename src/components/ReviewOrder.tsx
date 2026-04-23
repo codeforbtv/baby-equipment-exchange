@@ -106,7 +106,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     {!isLoading && !currentOrder && <p>Order not found.</p>}
                     {!isLoading && currentOrder && (
                         <div className="content--container">
-                            <h3>
+                            <h3 className="ph-mask-pii">
                                 <b>Requested by:</b> {currentOrder.requestor.name} ({currentOrder.requestor.email})
                             </h3>
                             {currentOrder.items && currentOrder.items.length > 0 && (

@@ -23,7 +23,7 @@ export default function UserCard(props: UserCardProps) {
             <ListItemButton component="a" onClick={() => setIdToDisplay(uid)} sx={{}}>
                 <ListItemText
                     primary={
-                        <p>
+                        <p className="ph-mask-pii">
                             <b>{displayName}</b> ({email})
                         </p>
                     }

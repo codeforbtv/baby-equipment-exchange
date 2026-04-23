@@ -198,7 +198,7 @@ export default function Donate() {
                         For a list of currently accepted items, please see our <a href="/about">about page</a>.
                     </Typography>
                     {pendingDonorEmail.length > 0 && pendingDonorName.length > 0 && (
-                        <Typography variant="h6" sx={{ marginTop: '2em' }}>
+                        <Typography variant="h6" className="ph-mask-pii" sx={{ marginTop: '2em' }}>
                             {`Donor name: ${pendingDonorName} (${pendingDonorEmail}):`}{' '}
                             <Button variant="text" onClick={handleEditName}>
                                 Edit

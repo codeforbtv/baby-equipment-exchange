@@ -186,7 +186,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             </Typography>
                         )}
                         {(donationDetails.donorEmail.length > 0 || donationDetails.donorName.length > 0) && (
-                            <Typography variant="body1">
+                            <Typography variant="body1" className="ph-mask-pii">
                                 <b>Donated by: </b>
                                 {donationDetails.donorName} ({donationDetails.donorEmail})
                             </Typography>
@@ -199,7 +199,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             </Typography>
                         )}
                         {donationDetails.requestor && (
-                            <Typography variant="body1">
+                            <Typography variant="body1" className="ph-mask-pii">
                                 <b>Requested by: </b>
                                 {donationDetails.requestor.name}
                             </Typography>
@@ -211,7 +211,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             </Typography>
                         )}
                         {donationDetails.distributor && (
-                            <Typography variant="body1">
+                            <Typography variant="body1" className="ph-mask-pii">
                                 <b>Distributed by: </b>
                                 {donationDetails.distributor.name} ({donationDetails.distributor.email})
                             </Typography>

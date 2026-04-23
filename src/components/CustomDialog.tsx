@@ -16,7 +16,7 @@ const CustomDialog = (props: CustomDialogProps) => {
         <Dialog open={isOpen} aria-labelledby="dialog-title" aria-describedby="dialog-description">
             <DialogTitle id="dialog-title">{title}</DialogTitle>
             <DialogContent>
-                <DialogContentText id="dialog-description" variant="body1">
+                <DialogContentText id="dialog-description" variant="body1" className="ph-mask-pii">
                     {content}
                 </DialogContentText>
                 <DialogActions>

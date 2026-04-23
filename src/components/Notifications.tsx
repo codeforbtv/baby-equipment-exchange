@@ -162,7 +162,7 @@ const Notifications = (props: NotificationsProps) => {
                             </Typography>
                             {orders.map((order) => (
                                 <Paper className={styles['notification-card--container']} key={order.id} elevation={3}>
-                                    <Typography variant="h6">{`${order.requestor.name} has requested the following items:`}</Typography>
+                                    <Typography variant="h6" className="ph-mask-pii">{`${order.requestor.name} has requested the following items:`}</Typography>
                                     {order.items.map((item) => (
                                         <NotificationCard
                                             key={item.id}

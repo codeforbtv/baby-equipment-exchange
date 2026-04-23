@@ -16,7 +16,7 @@ const UserConfirmationDialogue = (props: UserConfirmationDialogProps) => {
         <Dialog onClose={handleClose} open={open}>
             <DialogTitle>User successfully created</DialogTitle>
             <DialogContent>
-                <DialogContentText>
+                <DialogContentText className="ph-mask-pii">
                     {`A user account for '${displayName}' has been created. You will receive a confirmation email once your account has been approved and made
                     active.`}
                 </DialogContentText>

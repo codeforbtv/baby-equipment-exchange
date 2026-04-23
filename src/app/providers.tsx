@@ -35,11 +35,11 @@ export default function PHProvider({ children }: { children: React.ReactNode }) 
             capture_pageleave: true,
             person_profiles: 'always',
             enable_recording_console_log: false,
-            // all text masked in session recordings for PII safety.
+            // form inputs masked by maskAllInputs. PII text masked by .ph-mask-pii class.
             session_recording: {
                 maskAllInputs: true,
-                // apply 'ph-visible' class to anything you want unmasked
-                maskTextSelector: '*:not(.ph-visible)'
+                // apply 'ph-mask-pii' class to any element displaying PII (names, emails, phones)
+                maskTextSelector: '.ph-mask-pii'
             }
         });
     }, []);
