@@ -13,9 +13,6 @@
         "lint": "next lint",
         "format": "prettier --write ."
     },
-    "eslintConfig": {
-        "extends": "react-app"
-    },
     "browserslist": [
         "defaults",
         "not IE 11"
