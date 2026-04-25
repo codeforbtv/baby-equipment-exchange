@@ -7,12 +7,13 @@ import CustomTabPanel from './CustomTabPanel';
 import ProductLifecycleReport from './reports/ProductLifecycleReport';
 import OrganizationReport from './reports/OrganizationReport';
 import RequestorReport from './reports/RequestorReport';
+import RawExport from './reports/RawExport';
 //Hooks
 import { useState } from 'react';
 //Styles
 import styles from '@/components/Dashboard.module.css';
 
-const reportTabs = ['Product Lifecycle', 'By Organization', 'By Requestor'];
+const reportTabs = ['Product Lifecycle', 'By Organization', 'By Requestor', 'Raw Export'];
 
 export default function Reports() {
     const [currentTab, setCurrentTab] = useState<number>(0);
@@ -92,6 +93,9 @@ export default function Reports() {
             </CustomTabPanel>
             <CustomTabPanel value={currentTab} index={2}>
                 <RequestorReport />
+            </CustomTabPanel>
+            <CustomTabPanel value={currentTab} index={3}>
+                <RawExport />
             </CustomTabPanel>
         </>
     );

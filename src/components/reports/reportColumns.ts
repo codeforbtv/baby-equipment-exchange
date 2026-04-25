@@ -54,7 +54,11 @@ export const allColumns: ReportColumn[] = [...donationColumns, ...organizationCo
 /**
  * Returns the default selected column keys for a given report type.
  */
-export function getDefaultSelectedKeys(reportType: 'lifecycle' | 'organization' | 'requestor'): string[] {
+export type ReportType = 'lifecycle' | 'organization' | 'requestor' | 'raw';
+
+export function getDefaultSelectedKeys(reportType: ReportType): string[] {
+    if (reportType === 'raw') return allColumns.map((col) => col.key);
+
     let columns: ReportColumn[] = [...donationColumns, ...requestorColumns];
 
     if (reportType === 'organization') {
@@ -67,14 +71,12 @@ export function getDefaultSelectedKeys(reportType: 'lifecycle' | 'organization' 
 /**
  * Returns all available columns for a given report type.
  */
-export function getAvailableColumns(reportType: 'lifecycle' | 'organization' | 'requestor'): ReportColumn[] {
-    let columns: ReportColumn[] = [...donationColumns, ...requestorColumns];
-
-    if (reportType === 'organization') {
-        columns = [...columns, ...organizationColumns];
+export function getAvailableColumns(reportType: ReportType): ReportColumn[] {
+    if (reportType === 'raw' || reportType === 'organization') {
+        return [...allColumns];
     }
 
-    return columns;
+    return [...donationColumns, ...requestorColumns];
 }
 
 /**

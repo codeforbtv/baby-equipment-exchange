@@ -23,6 +23,7 @@ import { useState } from 'react';
 //Types
 import {
     ReportColumn,
+    ReportType,
     donationColumns,
     organizationColumns,
     requestorColumns,
@@ -36,7 +37,7 @@ import styles from './Reports.module.css';
 export type ExportFormat = 'csv' | 'xlsx';
 
 interface ReportConfigPanelProps {
-    reportType: 'lifecycle' | 'organization' | 'requestor';
+    reportType: ReportType;
     availableColumns: ReportColumn[];
     selectedColumnKeys: string[];
     onSelectedColumnsChange: (keys: string[]) => void;
@@ -73,16 +74,17 @@ const ReportConfigPanel = (props: ReportConfigPanelProps) => {
         onSelectedRequestorsChange
     } = props;
 
-    const [activeOnly, setActiveOnly] = useState<boolean>(true);
-    const [selectedStatuses, setSelectedStatuses] = useState<string[]>([...activeStatuses]);
-    const [exportFormat, setExportFormat] = useState<ExportFormat>('xlsx');
+    const isRaw = reportType === 'raw';
+    const [activeOnly, setActiveOnly] = useState<boolean>(!isRaw);
+    const [selectedStatuses, setSelectedStatuses] = useState<string[]>(isRaw ? [...allStatuses] : [...activeStatuses]);
+    const [exportFormat, setExportFormat] = useState<ExportFormat>(isRaw ? 'csv' : 'xlsx');
 
     // Column groups
     const columnGroups: { title: string; columns: ReportColumn[] }[] = [
         { title: 'Donation Fields', columns: donationColumns },
         { title: 'Requestor / Distributor', columns: requestorColumns }
     ];
-    if (reportType === 'organization') {
+    if (reportType === 'organization' || reportType === 'raw') {
         columnGroups.push({ title: 'Organization Fields', columns: organizationColumns });
     }
 
