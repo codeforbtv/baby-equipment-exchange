@@ -92,3 +92,56 @@ export function sanitize(string: string) {
 export function extractEmail(text: string) {
     return text.match(/([a-zA-Z0-9+._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
 }
+
+// Calendly URL validation
+
+/** Matches `https://calendly.com/{org_slug}/{event_slug}` with optional trailing slash or query params. */
+const CALENDLY_URL_PATTERN = /^https:\/\/calendly\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+(\/?\??[^\s]*)?\/?$/;
+
+/** Returns true if the URL matches the expected Calendly scheduling link format. */
+export function isValidCalendlyUrl(url: string): boolean {
+    if (!url || typeof url !== 'string') return false;
+    try {
+        const parsed = new URL(url);
+        // Protocol must be https and hostname must be exactly calendly.com
+        if (parsed.protocol !== 'https:' || parsed.hostname !== 'calendly.com') {
+            return false;
+        }
+        return CALENDLY_URL_PATTERN.test(url);
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Returns the URL unchanged if it passes validation, or an empty string if not.
+ * Intended for use in email template builders — an empty return signals
+ * "no scheduling link" and the caller should omit the <a> tag entirely.
+ */
+export function sanitizeCalendlyUrl(url: string | undefined | null): string {
+    if (!url) {
+        return '';
+    }
+    return isValidCalendlyUrl(url) ? url : '';
+}
+
+// Tag number sanitization
+
+/**
+ * Strips all characters that are not alphanumeric, spaces, or hyphens.
+ * Returns the cleaned string, or an empty string if nothing remains.
+ */
+export function sanitizeTagNumber(tag: string): string {
+    if (!tag || typeof tag !== 'string') {
+        return '';
+    }
+    return tag.replace(/[^a-zA-Z0-9 -]/g, '').trim();
+}
+
+/**
+ * Sanitizes each tag number in the array and drops any that become empty
+ * after stripping invalid characters.
+ */
+export function sanitizeTagNumbers(tags: string[]): string[] {
+    return tags.map(sanitizeTagNumber).filter((t) => t.length > 0);
+}

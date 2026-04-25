@@ -61,11 +61,11 @@ const CancelOrder = (props: CancelOrderProps) => {
         try {
             await Promise.all(
                 items.map(async (item) => {
-                    await updateDonationStatus(item.id, 'reserved');
+                    await updateDonationStatus(item.id, 'available');
                 })
             );
             await closeOrder(id);
-            sendMail(emailMsg);
+            await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting order cancellation email', error);

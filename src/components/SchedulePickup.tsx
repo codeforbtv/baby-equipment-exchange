@@ -65,7 +65,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                 })
             );
             await closeOrder(id);
-            sendMail(emailMsg);
+            await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting schedule pickup email', error);

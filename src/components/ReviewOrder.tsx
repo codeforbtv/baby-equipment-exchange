@@ -8,14 +8,13 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import DonationCardMed from './DonationCardMed';
 import DonationDetails from './DonationDetails';
 import { Box, Button, IconButton } from '@mui/material';
-import FinalizeReview from './FinalizeReview';
 import SchedulePickup from './SchedulePickup';
 import CancelOrder from './CancelOrder';
 import CustomDialog from './CustomDialog';
 //Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
-import { closeOrder, updateDonationStatus, getOrderById, removeDonationFromOrder } from '@/api/firebase-donations';
+import { getOrderById, removeDonationFromOrder } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 //Styles
 import '@/styles/globalStyles.css';
