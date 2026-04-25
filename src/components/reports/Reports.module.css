@@ -1,0 +1,138 @@
+/* Reports — Layout, Config Panel & Preview */
+
+/* Layout wrapper — fills available viewport */
+.report-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+}
+
+/* Config panel container */
+.config-panel {
+    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Toggle bar — shown when config is collapsed */
+.config-toggle-bar {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Collapse button — positioned at bottom-right of open config */
+.config-collapse-btn {
+    position: absolute;
+    bottom: 4px;
+    right: 0;
+}
+
+/* Top controls row: active/all toggle + format selector */
+.config-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.config-controls__label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #666;
+    min-width: 60px;
+}
+
+/* Column selector grid inside accordions */
+.column-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0;
+}
+
+.column-grid label {
+    font-size: 0.8125rem;
+}
+
+/* Lifecycle stage chips */
+.status-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+/* Filter section (org/requestor selectors) */
+.filter-section {
+    max-width: 480px;
+}
+
+/* Generate button row */
+.generate-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+/* -------------------------------------------------------
+   Preview — fills remaining viewport
+   Header = 4.5rem, primary navbar = 48px, sub-navbar = 44px
+   Total offset ≈ 4.5rem + 92px + toolbar/padding ≈ 220px
+   ------------------------------------------------------- */
+
+.preview-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.preview-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eaeaea;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.preview-toolbar__count {
+    font-size: 0.75rem;
+    color: #999;
+    margin-left: auto;
+}
+
+.sheet-wrapper {
+    width: 100%;
+    height: calc(100vh - 220px);
+    min-height: 300px;
+    overflow: auto;
+    border: 1px solid #eaeaea;
+    border-radius: 4px;
+}
+
+/* -------------------------------------------------------
+   Empty state
+   ------------------------------------------------------- */
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    color: #999;
+    text-align: center;
+    gap: 8px;
+}
+
+.empty-state__icon {
+    font-size: 48px;
+    color: #ccc;
+}

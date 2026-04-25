@@ -7,6 +7,7 @@
     padding: 1rem;
     z-index: 10;
     background-color: var(--primary);
+    border-bottom: 1px solid #eaeaea;
 }
 
 .header__primary {

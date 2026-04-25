@@ -1,6 +1,69 @@
+/* -------------------------------------------------------
+   Dashboard layout vars
+   Header height = 1rem padding-top + 2.5rem inner + 1rem padding-bottom = 4.5rem
+   Primary navbar  = 48px  (min-height)
+   Sub-navbar      = 44px  (min-height)
+   ------------------------------------------------------- */
+
 .navbar {
-    margin-top: 4em;
+    position: sticky;
+    top: 4.5rem; /* Clears the fixed Header */
+    z-index: 8;
     width: 100%;
     display: flex;
-    background-color: var(--bg-gray);
+    align-items: center;
+    background-color: #ffffff;
+    border-bottom: 1px solid #eaeaea;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 0 4px;
+    margin-top: 4.5rem; /* Push initial content below the fixed Header */
+    min-height: 48px;
+    transition: box-shadow 0.2s ease;
+}
+
+.navbar::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.03), transparent);
+    pointer-events: none;
+}
+
+/* Sub-navigation bar (e.g. Notifications tab bar) */
+.sub-navbar {
+    position: sticky;
+    top: calc(4.5rem + 48px); /* Header height + primary navbar height */
+    z-index: 7;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    background-color: #fafafa;
+    border-bottom: 1px solid #eaeaea;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 0 4px;
+    min-height: 44px;
+    transition: box-shadow 0.2s ease;
+}
+
+.sub-navbar::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), transparent);
+    pointer-events: none;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
 }

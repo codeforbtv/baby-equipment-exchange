@@ -11,6 +11,7 @@ import Loader from './Loader';
 import Notifications from './Notifications';
 import Inventory from './Inventory';
 import Categories from './Categories';
+import Reports from './Reports';
 //Hooks
 import React, { useEffect, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -34,7 +35,7 @@ import { InventoryItem } from '@/models/inventoryItem';
 import { Category } from '@/models/category';
 import { getAllCategories } from '@/api/firebase-categories';
 
-const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations', 'Categories'];
+const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations', 'Categories', 'Reports'];
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -246,6 +247,9 @@ export default function Dashboard() {
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={5}>
                         {categories ? <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} /> : <p>No categories found.</p>}
+                    </CustomTabPanel>
+                    <CustomTabPanel value={currentTab} index={6}>
+                        <Reports />
                     </CustomTabPanel>
                 </>
             )}
