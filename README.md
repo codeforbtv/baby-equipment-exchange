@@ -30,9 +30,6 @@ in your terminal. The app can be accessed at [http://localhost:3000/](http://loc
 
 ## Logging In
 
-Navigate to [http://localhost:3000/login](http://localhost:3000/login) and log in with the following test credentials:
-
-- **Email:** user@email.com
-- **Password:** Password123
+Navigate to [http://localhost:3000/login](http://localhost:3000/login). Ask a team member in the [baby-equipment-exchange Slack channel](https://codeforbtv.slack.com/archives/C04HA6P9Z2R) for login credentials native to your firebase creds.
 
 Note: Creating a new account via the join page won't give you immediate access, as new accounts go through an approval process.
