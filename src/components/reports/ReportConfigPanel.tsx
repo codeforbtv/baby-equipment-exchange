@@ -25,7 +25,6 @@ import {
     ReportColumn,
     donationColumns,
     organizationColumns,
-    storageColumns,
     requestorColumns,
     activeStatuses,
     allStatuses,
@@ -55,7 +54,6 @@ interface ReportConfigPanelProps {
 
 export interface ReportConfig {
     selectedStatuses: string[];
-    activeOnly: boolean;
     exportFormat: ExportFormat;
 }
 
@@ -82,8 +80,7 @@ const ReportConfigPanel = (props: ReportConfigPanelProps) => {
     // Column groups
     const columnGroups: { title: string; columns: ReportColumn[] }[] = [
         { title: 'Donation Fields', columns: donationColumns },
-        { title: 'Requestor / Distributor', columns: requestorColumns },
-        { title: 'Storage Fields', columns: storageColumns }
+        { title: 'Requestor / Distributor', columns: requestorColumns }
     ];
     if (reportType === 'organization') {
         columnGroups.push({ title: 'Organization Fields', columns: organizationColumns });
@@ -117,7 +114,7 @@ const ReportConfigPanel = (props: ReportConfigPanelProps) => {
     };
 
     const handleGenerate = () => {
-        onGenerate({ selectedStatuses, activeOnly, exportFormat });
+        onGenerate({ selectedStatuses, exportFormat });
     };
 
     return (

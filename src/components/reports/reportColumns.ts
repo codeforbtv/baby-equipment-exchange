@@ -6,7 +6,7 @@
 export interface ReportColumn {
     key: string;
     label: string;
-    collection: 'donation' | 'organization' | 'storage' | 'requestor';
+    collection: 'donation' | 'organization' | 'requestor';
     defaultSelected: boolean;
 }
 
@@ -39,12 +39,6 @@ export const organizationColumns: ReportColumn[] = [
     { key: 'orgTags', label: 'Tags', collection: 'organization', defaultSelected: false }
 ];
 
-// Storage Fields
-export const storageColumns: ReportColumn[] = [
-    { key: 'storageName', label: 'Storage Location', collection: 'storage', defaultSelected: false },
-    { key: 'storageDate', label: 'Storage Date', collection: 'storage', defaultSelected: false }
-];
-
 // Requestor / Distributor Fields
 export const requestorColumns: ReportColumn[] = [
     { key: 'requestorName', label: 'Requestor', collection: 'requestor', defaultSelected: true },
@@ -55,13 +49,13 @@ export const requestorColumns: ReportColumn[] = [
 ];
 
 // All columns combined
-export const allColumns: ReportColumn[] = [...donationColumns, ...organizationColumns, ...storageColumns, ...requestorColumns];
+export const allColumns: ReportColumn[] = [...donationColumns, ...organizationColumns, ...requestorColumns];
 
 /**
  * Returns the default selected column keys for a given report type.
  */
 export function getDefaultSelectedKeys(reportType: 'lifecycle' | 'organization' | 'requestor'): string[] {
-    let columns: ReportColumn[] = [...donationColumns, ...storageColumns, ...requestorColumns];
+    let columns: ReportColumn[] = [...donationColumns, ...requestorColumns];
 
     if (reportType === 'organization') {
         columns = [...columns, ...organizationColumns];
@@ -74,7 +68,7 @@ export function getDefaultSelectedKeys(reportType: 'lifecycle' | 'organization' 
  * Returns all available columns for a given report type.
  */
 export function getAvailableColumns(reportType: 'lifecycle' | 'organization' | 'requestor'): ReportColumn[] {
-    let columns: ReportColumn[] = [...donationColumns, ...storageColumns, ...requestorColumns];
+    let columns: ReportColumn[] = [...donationColumns, ...requestorColumns];
 
     if (reportType === 'organization') {
         columns = [...columns, ...organizationColumns];
