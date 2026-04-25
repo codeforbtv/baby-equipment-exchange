@@ -1,9 +1,7 @@
 //Apis
 import { json2csv } from 'json-2-csv';
-import { addErrorEvent } from './firebase';
 import { stripNullUndefined } from '@/utils/utils';
-//Constants
-import { DONATIONS_COLLECTION } from './firebase-donations';
+//Models
 import { Donation } from '@/models/donation';
 
 export function downloadCsv(data: object[], fileName: string) {
@@ -38,7 +36,7 @@ export function productLifeCycleReport(donation: Donation) {
         'Date Distributed': donation.dateDistributed && donation.dateDistributed.toDate().toDateString(),
         'Distributor Name': donation.distributor?.name,
         'Distributor Email': donation.distributor?.email,
-        'Distributor Orginzation': donation.distributor?.organization,
+        'Distributor Organization': donation.distributor?.organization,
         'Days In Storage': donation.getDaysInStorage(),
         'Date Created': donation.createdAt && donation.createdAt.toDate().toDateString(),
         'Last Modified': donation.modifiedAt && donation.modifiedAt.toDate().toDateString()

@@ -8,7 +8,6 @@ import { Timestamp } from 'firebase/firestore';
 import { ReportColumn } from './reportColumns';
 //API
 import * as XLSX from '@e965/xlsx';
-import dayjs from 'dayjs';
 
 // Types
 
@@ -79,7 +78,7 @@ function resolveCellValue(donation: Donation, key: string): string {
         case 'dateDistributed':
             return formatTimestamp(donation.dateDistributed);
         case 'daysInStorage':
-            return donation.dateReceived ? dayjs().diff(donation.dateReceived?.toDate(), 'day').toString() : '';
+            return donation.getDaysInStorage()?.toString() ?? '';
         case 'description':
             return donation.description ?? '';
         case 'notes':

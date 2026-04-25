@@ -4,13 +4,21 @@
 import ReportConfigPanel, { ExportFormat, ReportConfig } from './ReportConfigPanel';
 import ReportLayout from './ReportLayout';
 //Hooks
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 //API
 import { getAvailableColumns, getDefaultSelectedKeys, ReportColumn } from './reportColumns';
 import { buildReport, ReportData } from './reportUtils';
 import { getAllDonations } from '@/api/firebase-donations';
 import { getOrganizations } from '@/api/firebase-organizations';
 import { addErrorEvent } from '@/api/firebase';
+
+interface OrgData {
+    id: string;
+    name: string;
+    county?: string;
+    phoneNumber?: string;
+    tags?: string[];
+}
 
 const OrganizationReport = () => {
     const availableColumns = getAvailableColumns('organization');
@@ -21,11 +29,13 @@ const OrganizationReport = () => {
 
     const [organizations, setOrganizations] = useState<{ id: string; name: string }[]>([]);
     const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
+    const orgDataRef = useRef<OrgData[]>([]);
 
     useEffect(() => {
         const fetchOrgs = async () => {
             try {
                 const orgs = await getOrganizations();
+                orgDataRef.current = orgs.map((o) => ({ id: o.id, name: o.name, county: o.county, phoneNumber: o.phoneNumber, tags: o.tags }));
                 setOrganizations(orgs.map((o) => ({ id: o.id, name: o.name })));
             } catch (error) {
                 addErrorEvent('Error fetching organizations for report filter', error);
@@ -46,11 +56,9 @@ const OrganizationReport = () => {
                 filtered = filtered.filter((d) => d.distributor && orgNames.includes(d.distributor.organization));
             }
 
-            let orgLookup: Record<string, { county?: string; phone?: string; tags?: string[] }> = {};
-            try {
-                const fullOrgs = await getOrganizations();
-                orgLookup = Object.fromEntries(fullOrgs.map((o) => [o.name, { county: o.county, phone: o.phoneNumber, tags: o.tags }]));
-            } catch {}
+            const orgLookup = Object.fromEntries(
+                orgDataRef.current.map((o) => [o.name, { county: o.county, phone: o.phoneNumber, tags: o.tags }])
+            );
 
             const selectedColumns = selectedColumnKeys.map((key) => availableColumns.find((c) => c.key === key)).filter(Boolean) as ReportColumn[];
             setReportData(buildReport({ donations: filtered, selectedColumns, groupByKey: 'orgName', orgLookup }));
