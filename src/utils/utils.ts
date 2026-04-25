@@ -99,7 +99,7 @@ export function extractEmail(text: string) {
 const CALENDLY_URL_PATTERN = /^https:\/\/calendly\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+(\/?\??[^\s]*)?\/?$/;
 
 /** Returns true if the URL matches the expected Calendly scheduling link format. */
-export function isValidCalendlyUrl(url: string): boolean {
+export function isValidSchedulingUrl(url: string): boolean {
     if (!url || typeof url !== 'string') return false;
     try {
         const parsed = new URL(url);
@@ -118,11 +118,11 @@ export function isValidCalendlyUrl(url: string): boolean {
  * Intended for use in email template builders — an empty return signals
  * "no scheduling link" and the caller should omit the <a> tag entirely.
  */
-export function sanitizeCalendlyUrl(url: string | undefined | null): string {
+export function sanitizeSchedulingUrl(url: string | undefined | null): string {
     if (!url) {
         return '';
     }
-    return isValidCalendlyUrl(url) ? url : '';
+    return isValidSchedulingUrl(url) ? url : '';
 }
 
 // Tag number sanitization
