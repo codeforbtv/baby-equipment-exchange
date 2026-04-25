@@ -2,7 +2,6 @@
 
 //Hooks
 import { Dispatch, SetStateAction, useState } from 'react';
-import { useRouter } from 'next/navigation';
 //Components
 import Link from 'next/link';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -18,7 +17,6 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
-    Box
 } from '@mui/material';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
@@ -34,22 +32,30 @@ import styles from '@/components/NotificationCard.module.css';
 import { Donation } from '@/models/donation';
 import { Order } from '@/types/OrdersTypes';
 import { IUser } from '@/models/user';
+import { NotificationCallbacks } from '@/types/NotificationTypes';
 
 import rejectUser from '@/email-templates/rejectUser';
 import userEnabled from '@/email-templates/userEnabled';
 
 type NotificationCardProps = {
     type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
-    donation?: Donation;
-    user?: IUser;
+    donation?: Donation | any;
+    user?: IUser | any;
     order?: Order;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    callbacks?: NotificationCallbacks;
 };
 
-//TO-DO: Set up buttons
+/** Handles both Firestore Timestamp objects and ISO date strings. */
+function formatDate(value: any): string | null {
+    if (!value) return null;
+    if (typeof value === 'string') return new Date(value).toDateString();
+    if (typeof value.toDate === 'function') return value.toDate().toDateString();
+    return null;
+}
+
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated } = props;
+    const { type, donation, user, order, setIdToDisplay, callbacks } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -57,13 +63,10 @@ const NotificationCard = (props: NotificationCardProps) => {
     const [dialogContent, setDialogContent] = useState<string>('');
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
 
-    const router = useRouter();
-
     const handleClose = () => {
         setIsDialogOpen(false);
         setDialogTitle('');
         setDialogContent('');
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
     };
 
     const handleDeleteDialogClose = () => {
@@ -74,8 +77,8 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'available');
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
+            // Remove from feed locally — the donation is no longer pending delivery.
+            callbacks?.onDonationRemoved(id);
         } catch (error) {
             addErrorEvent('Mark donation as received', error);
             throw error;
@@ -88,7 +91,8 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'not-received');
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
+            // Remove from feed locally — the donation is no longer in a notification state.
+            callbacks?.onDonationRemoved(id);
         } catch (error) {
             addErrorEvent('Mark donation as not received', error);
             throw error;
@@ -101,8 +105,8 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await markDonationAsDistributed(donation);
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
+            // Remove from feed locally — no longer reserved.
+            callbacks?.onDonationRemoved(donation.id);
         } catch (error) {
             addErrorEvent('Mark as distributed', error);
             throw error;
@@ -114,11 +118,9 @@ const NotificationCard = (props: NotificationCardProps) => {
     const returnToInventory = async (id: string) => {
         setIsLoading(true);
         try {
-            await updateDonation(id, {
-                status: 'available'
-            });
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
+            await updateDonation(id, { status: 'available' });
+            // Remove from feed locally — no longer reserved.
+            callbacks?.onDonationRemoved(id);
         } catch (error) {
             addErrorEvent('Return to inventory', error);
             throw error;
@@ -150,6 +152,7 @@ const NotificationCard = (props: NotificationCardProps) => {
             const msg = rejectUser(userEmail, userName);
             await sendMail(msg);
             setIsDeleteDialogOpen(false);
+            callbacks?.onUserRemoved(uid);
             setDialogTitle('User deleted');
             setDialogContent(`The user ${userName} has been deleted.`);
             setIsDialogOpen(true);
@@ -200,7 +203,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                     {donation.dateAccepted && (
                                         <>
                                             <Typography variant="caption">Accepted on:</Typography>
-                                            <Typography variant="body1"> {donation.dateAccepted.toDate().toDateString()}</Typography>
+                                            <Typography variant="body1"> {formatDate(donation.dateAccepted)}</Typography>
                                         </>
                                     )}
                                     <Typography variant="caption">Donated by:</Typography>
@@ -239,7 +242,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                     {donation.dateRequested && (
                                         <>
                                             <Typography variant="caption">Requested on:</Typography>
-                                            <Typography variant="body1">{donation.dateRequested.toDate().toDateString()}</Typography>
+                                            <Typography variant="body1">{formatDate(donation.dateRequested)}</Typography>
                                         </>
                                     )}
                                     <Typography variant="caption">Requested by:</Typography>

@@ -88,7 +88,6 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     };
 
     const handleClose = async (): Promise<void> => {
-        // if (setNotificationsUpdated) setNotificationsUpdated(true);
         setIsOrderUpdated(true);
         setIsDialogOpen(false);
     };

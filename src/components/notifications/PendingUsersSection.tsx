@@ -3,14 +3,15 @@ import { Typography } from '@mui/material';
 import NotificationCard from '@/components/NotificationCard';
 import styles from '@/components/NotificationCard.module.css';
 import { IUser } from '@/models/user';
+import { NotificationCallbacks } from '@/types/NotificationTypes';
 
 interface Props {
     users: IUser[];
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    callbacks?: NotificationCallbacks;
 }
 
-const PendingUsersSection = ({ users, setIdToDisplay, setNotificationsUpdated }: Props) => {
+const PendingUsersSection = ({ users, setIdToDisplay, callbacks }: Props) => {
     if (users.length === 0) return null;
 
     return (
@@ -24,7 +25,7 @@ const PendingUsersSection = ({ users, setIdToDisplay, setNotificationsUpdated }:
                     type="pending-user"
                     user={user}
                     setIdToDisplay={setIdToDisplay}
-                    setNotificationsUpdated={setNotificationsUpdated}
+                    callbacks={callbacks}
                 />
             ))}
         </div>

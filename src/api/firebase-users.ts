@@ -114,12 +114,12 @@ export async function getDbUser(uid: string): Promise<UserCollection> {
         if (snapshot.exists()) {
             return snapshot.data();
         } else {
-            Promise.reject('User not found');
+            return Promise.reject(new Error(`User not found: ${uid}`));
         }
     } catch (error) {
         addErrorEvent('Error getting db User', error);
+        throw error;
     }
-    return Promise.reject();
 }
 
 export async function updateDbUser(uid: string, accountInformation: any): Promise<void> {
@@ -183,19 +183,19 @@ export async function getUserDetails(uid: string): Promise<IUser> {
 }
 
 export async function getUsersNotifications(): Promise<IUser[]> {
-    let users: IUser[] = [];
     try {
         const usersRef = collection(db, USERS_COLLECTION);
         const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
         const usersNotificationsSnapshot = await getDocs(usersNotificationsQuery);
+        const users: IUser[] = [];
         for (const doc of usersNotificationsSnapshot.docs) {
             users.push(doc.data());
         }
         return users;
     } catch (error) {
         addErrorEvent('Get users notifications', error);
+        throw error;
     }
-    return Promise.reject();
 }
 
 export function getUserEmail(): string | null | undefined {

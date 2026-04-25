@@ -11,9 +11,6 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
 import { UserRecord } from 'firebase-admin/auth';
-import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
-import { getUsersNotifications } from './firebase-users';
-import { Notification } from '@/types/NotificationTypes';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -139,26 +136,6 @@ export async function callAreDonationsAvailable(ids: string[]): Promise<string[]
         addErrorEvent('Error calling are donations available', error);
         throw error;
     }
-}
-
-//Multi-collection query
-export async function getNotifications(): Promise<Notification> {
-    try {
-        const [donationNotifications, userNotifications, orderNotifications] = await Promise.all([
-            getDonationNotifications(),
-            getUsersNotifications(),
-            getOrdersNotifications()
-        ]);
-
-        return {
-            donations: donationNotifications,
-            users: userNotifications,
-            orders: orderNotifications
-        };
-    } catch (error) {
-        addErrorEvent('Error getting notifications', error);
-    }
-    return Promise.reject();
 }
 
 // Role based claims.

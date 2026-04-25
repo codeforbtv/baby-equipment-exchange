@@ -3,14 +3,15 @@ import { Paper, Typography } from '@mui/material';
 import NotificationCard from '@/components/NotificationCard';
 import styles from '@/components/NotificationCard.module.css';
 import { Donation } from '@/models/donation';
+import { NotificationCallbacks } from '@/types/NotificationTypes';
 
 interface Props {
     donations: Donation[][];
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    callbacks?: NotificationCallbacks;
 }
 
-const PendingDeliveriesSection = ({ donations, setIdToDisplay, setNotificationsUpdated }: Props) => {
+const PendingDeliveriesSection = ({ donations, setIdToDisplay, callbacks }: Props) => {
     if (donations.length === 0) return null;
 
     return (
@@ -29,7 +30,7 @@ const PendingDeliveriesSection = ({ donations, setIdToDisplay, setNotificationsU
                             donation={donation}
                             type="pending-delivery"
                             setIdToDisplay={setIdToDisplay}
-                            setNotificationsUpdated={setNotificationsUpdated}
+                            callbacks={callbacks}
                         />
                     ))}
                 </Paper>

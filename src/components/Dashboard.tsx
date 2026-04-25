@@ -1,7 +1,7 @@
 'use client';
 
 //Components
-import { Badge, Button, IconButton, Menu, MenuItem, Tab, Tabs, Tooltip, useMediaQuery } from '@mui/material';
+import { Button, IconButton, Menu, MenuItem, Tab, Tabs, useMediaQuery } from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';
@@ -12,26 +12,24 @@ import Notifications from './Notifications';
 import Inventory from './Inventory';
 import Categories from './Categories';
 //Hooks
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
-import { useRouter } from 'next/navigation';
 //API
-import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
-import { getAllDonations, getInventory } from '@/api/firebase-donations';
-import { getAllDbUsers } from '@/api/firebase-users';
+import { addErrorEvent, callGetOrganizationNames } from '@/api/firebase';
+import { getAllDonations, getDonationNotifications, getInventory, getOrdersNotifications } from '@/api/firebase-donations';
+import { getAllDbUsers, getUsersNotifications } from '@/api/firebase-users';
 //Icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Dashboard.module.css';
 //Types
 import { Donation } from '@/models/donation';
-import { Notification } from '@/types/NotificationTypes';
 import { IUser } from '@/models/user';
 import { InventoryItem } from '@/models/inventoryItem';
 import { Category } from '@/models/category';
+import { Order } from '@/types/OrdersTypes';
 import { getAllCategories } from '@/api/firebase-categories';
 
 const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations', 'Categories'];
@@ -39,25 +37,40 @@ const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organiz
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [currentTab, setCurrentTab] = useState<number>(0);
+
+    // Tab data
     const [donations, setDonations] = useState<Donation[] | null>(null);
     const [inventory, setInventory] = useState<InventoryItem[] | null>(null);
     const [users, setUsers] = useState<IUser[] | null>(null);
-    const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
-        [key: string]: string;
-    } | null>(null);
-    const [notifications, setNotifications] = useState<Notification | null>(null);
+    const [orgNamesAndIds, setOrgNamesAndIds] = useState<{ [key: string]: string } | null>(null);
     const [categories, setCategories] = useState<Category[] | null>(null);
 
-    const { requestedInventory } = useRequestedInventoryContext();
-    const router = useRouter();
+    // Notification data — three independent slices
+    // Each can be fetched and invalidated independently so a donation change
+    // doesn't trigger a re-read of Users or Orders.
+    const [notifDonations, setNotifDonations] = useState<Donation[] | null>(null);
+    const [notifOrders, setNotifOrders] = useState<Order[] | null>(null);
+    const [notifUsers, setNotifUsers] = useState<IUser[] | null>(null);
 
-    //Track whether updates have been made
-    const [notificationsUpdated, setNotificationsUpdated] = useState<boolean>(false);
+    // Staleness flags
+    // When a child component mutates data (e.g. editing a donation in the
+    // Donations tab), it sets the relevant flag to true. On the next tab visit,
+    // only the stale collection is re-fetched.
+    //
+    // Cross-tab linkage: donationsUpdated also invalidates notifDonations;
+    // usersUpdated also invalidates notifUsers. This ensures the Notifications
+    // tab sees fresh data after mutations in other tabs.
     const [donationsUpdated, setDonationsUpdated] = useState<boolean>(false);
     const [inventoryUpdated, setInventoryUpdated] = useState<boolean>(false);
     const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
     const [orgsUpdated, setOrgsUpdated] = useState<boolean>(false);
     const [categoriesUpdated, setCategoriesUpdated] = useState<boolean>(false);
+
+    // Notification-slice staleness — set by cross-tab linkage or by mutations
+    // within the Notifications tab itself (via NotificationCallbacks).
+    const [notifDonationsStale, setNotifDonationsStale] = useState<boolean>(false);
+    const [notifOrdersStale, setNotifOrdersStale] = useState<boolean>(false);
+    const [notifUsersStale, setNotifUsersStale] = useState<boolean>(false);
 
     //for mobile tab menu
     const matches = useMediaQuery('(min-width:600px)');
@@ -81,18 +94,69 @@ export default function Dashboard() {
         setCurrentTab(target);
     };
 
-    async function fetchNotifications(): Promise<void> {
-        setIsLoading(true);
+    // Notification fetch functions (per-slice)
+
+    const fetchNotifDonations = useCallback(async () => {
         try {
-            const notificationsResult = await getNotifications();
-            setNotifications(notificationsResult);
-            setNotificationsUpdated(false);
+            const result = await getDonationNotifications();
+            setNotifDonations(result);
+            setNotifDonationsStale(false);
         } catch (error) {
-            addErrorEvent('Fetch notifications', error);
-        } finally {
-            setIsLoading(false);
+            addErrorEvent('fetchNotifDonations', error);
         }
-    }
+    }, []);
+
+    const fetchNotifOrders = useCallback(async () => {
+        try {
+            const result = await getOrdersNotifications();
+            setNotifOrders(result);
+            setNotifOrdersStale(false);
+        } catch (error) {
+            addErrorEvent('fetchNotifOrders', error);
+        }
+    }, []);
+
+    const fetchNotifUsers = useCallback(async () => {
+        try {
+            const result = await getUsersNotifications();
+            setNotifUsers(result);
+            setNotifUsersStale(false);
+        } catch (error) {
+            addErrorEvent('fetchNotifUsers', error);
+        }
+    }, []);
+
+    /**
+     * Unconditionally re-fetch all three notification slices.
+     * Used by handleRefresh — no dependency on staleness flags.
+     */
+    const refreshAllNotifications = useCallback(async () => {
+        setIsLoading(true);
+        await Promise.allSettled([
+            fetchNotifDonations(),
+            fetchNotifOrders(),
+            fetchNotifUsers()
+        ]);
+        setIsLoading(false);
+    }, [fetchNotifDonations, fetchNotifOrders, fetchNotifUsers]);
+
+    /**
+     * Selectively fetch only the notification slices that are missing or stale.
+     * Used by the tab-switch useEffect when navigating to the Notifications tab.
+     */
+    const fetchStaleNotifications = useCallback(async () => {
+        const fetches: Promise<void>[] = [];
+        if (!notifDonations || notifDonationsStale) fetches.push(fetchNotifDonations());
+        if (!notifOrders || notifOrdersStale) fetches.push(fetchNotifOrders());
+        if (!notifUsers || notifUsersStale) fetches.push(fetchNotifUsers());
+
+        if (fetches.length === 0) return;
+        setIsLoading(true);
+        await Promise.allSettled(fetches);
+        setIsLoading(false);
+    }, [notifDonations, notifOrders, notifUsers, notifDonationsStale, notifOrdersStale, notifUsersStale, fetchNotifDonations, fetchNotifOrders, fetchNotifUsers]);
+
+    // Tab data fetch functions
 
     async function fetchDonations(): Promise<void> {
         setIsLoading(true);
@@ -158,9 +222,28 @@ export default function Dashboard() {
         }
     }
 
+    // Cross-tab staleness linkage
+    // When a donation is modified in the Donations tab, also mark
+    // notification-donations as stale so only that slice is re-fetched
+    // when the user navigates back to the Notifications tab.
+    useEffect(() => {
+        if (donationsUpdated) {
+            setNotifDonationsStale(true);
+            // Orders contain donation refs, so they may also be stale.
+            setNotifOrdersStale(true);
+        }
+    }, [donationsUpdated]);
+
+    useEffect(() => {
+        if (usersUpdated) {
+            setNotifUsersStale(true);
+        }
+    }, [usersUpdated]);
+
+    // Manual refresh
     function handleRefresh() {
         if (currentTab === 0) {
-            fetchNotifications();
+            refreshAllNotifications();
         } else if (currentTab === 1) {
             fetchDonations();
         } else if (currentTab === 2) {
@@ -174,22 +257,32 @@ export default function Dashboard() {
         }
     }
 
-    // Only fetch collections once when selected unless there's been an update
+    // Tab-switch data loading
+    // Only fetch when the tab is selected AND either the data is missing or
+    // stale. Notifications check per-slice staleness; other tabs check their
+    // own updated flag.
     useEffect(() => {
-        if ((currentTab === 0 && !notifications) || notificationsUpdated || donationsUpdated || usersUpdated) {
-            fetchNotifications();
-        } else if ((currentTab === 1 && !donations) || donationsUpdated) {
+        if (currentTab === 0) {
+            fetchStaleNotifications();
+        } else if (currentTab === 1 && (!donations || donationsUpdated)) {
             fetchDonations();
-        } else if ((currentTab === 2 && !inventory) || inventoryUpdated) {
+        } else if (currentTab === 2 && (!inventory || inventoryUpdated)) {
             fetchInventory();
-        } else if ((currentTab === 3 && !users) || usersUpdated) {
+        } else if (currentTab === 3 && (!users || usersUpdated)) {
             fetchUsers();
-        } else if ((currentTab === 4 && !orgNamesAndIds) || orgsUpdated) {
+        } else if (currentTab === 4 && (!orgNamesAndIds || orgsUpdated)) {
             fetchOrgNames();
-        } else if ((currentTab === 5 && !categories) || categoriesUpdated) {
+        } else if (currentTab === 5 && (!categories || categoriesUpdated)) {
             fetchCategories();
         }
-    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated, categoriesUpdated]);
+    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, categoriesUpdated, fetchStaleNotifications]);
+
+    // Build the NotificationData object for the Notifications component
+    // Only constructed when all three slices have loaded.
+    const notificationData =
+        notifDonations && notifOrders && notifUsers
+            ? { donations: notifDonations, orders: notifOrders, users: notifUsers }
+            : null;
 
     return (
         <ProtectedAdminRoute>
@@ -226,8 +319,8 @@ export default function Dashboard() {
                     </IconButton>
 
                     <CustomTabPanel value={currentTab} index={0}>
-                        {notifications ? (
-                            <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
+                        {notificationData ? (
+                            <Notifications notifications={notificationData} />
                         ) : (
                             <p>No notifications at this time.</p>
                         )}

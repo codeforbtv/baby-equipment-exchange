@@ -3,15 +3,16 @@ import { Button, Paper, Typography } from '@mui/material';
 import NotificationCard from '@/components/NotificationCard';
 import styles from '@/components/NotificationCard.module.css';
 import { Order } from '@/types/OrdersTypes';
+import { NotificationCallbacks } from '@/types/NotificationTypes';
 
 interface Props {
     orders: Order[];
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setOrderIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    callbacks?: NotificationCallbacks;
 }
 
-const RequestedEquipmentSection = ({ orders, setIdToDisplay, setOrderIdToDisplay, setNotificationsUpdated }: Props) => {
+const RequestedEquipmentSection = ({ orders, setIdToDisplay, setOrderIdToDisplay, callbacks }: Props) => {
     if (orders.length === 0) return null;
 
     return (
@@ -31,7 +32,7 @@ const RequestedEquipmentSection = ({ orders, setIdToDisplay, setOrderIdToDisplay
                                 type="order"
                                 donation={item}
                                 setIdToDisplay={setIdToDisplay}
-                                setNotificationsUpdated={setNotificationsUpdated}
+                                callbacks={callbacks}
                             />
                         ))
                     ) : (

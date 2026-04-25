@@ -505,73 +505,87 @@ export async function adminRequestInventoryItems(inventoryItemIds: string[], use
     }
 }
 
-//Get items requested by aid workers
-export async function getOrdersNotifications() {
-    let orders: Order[] = [];
+// Get orders that are open and need action
+export async function getOrdersNotifications(): Promise<Order[]> {
     try {
         const ordersRef = collection(db, ORDERS_COLLECTION);
         const q = query(ordersRef, where('status', '==', 'open'));
         const ordersSnapshot = await getDocs(q);
-        for (const doc of ordersSnapshot.docs) {
-            const orderInfo = doc.data();
-            let order: Order = {
-                id: doc.id,
-                status: orderInfo.status,
-                requestor: orderInfo.requestor,
-                items: [],
-                rejectedItems: []
-            };
-            for (const donation of orderInfo.items) {
-                const donationDetails = await getDoc(donation);
-                order.items.push(donationDetails.data() as Donation);
-            }
-            if (orderInfo.rejectedItems) {
-                for (const donation of orderInfo.rejectedItems) {
-                    const donationDetails = await getDoc(donation);
-                    order.rejectedItems?.push(donationDetails.data() as Donation);
-                }
-            }
 
-            orders.push(order);
-        }
+        const orders = await Promise.all(
+            ordersSnapshot.docs.map(async (doc) => {
+                const orderInfo = doc.data();
+
+                // Fetch all item docs in parallel
+                const itemSnapshots = await Promise.all(
+                    (orderInfo.items ?? []).map((ref: any) => getDoc(ref))
+                );
+                const items = itemSnapshots
+                    .filter((snap) => snap.exists())
+                    .map((snap) => snap.data() as Donation);
+
+                // Fetch all rejected item docs in parallel
+                const rejectedSnapshots = await Promise.all(
+                    (orderInfo.rejectedItems ?? []).map((ref: any) => getDoc(ref))
+                );
+                const rejectedItems = rejectedSnapshots
+                    .filter((snap) => snap.exists())
+                    .map((snap) => snap.data() as Donation);
+
+                const order: Order = {
+                    id: doc.id,
+                    status: orderInfo.status,
+                    requestor: orderInfo.requestor,
+                    items,
+                    rejectedItems
+                };
+                return order;
+            })
+        );
+
         return orders;
     } catch (error) {
-        addErrorEvent('Error geting order notifications', error);
+        addErrorEvent('Error getting order notifications', error);
+        throw error;
     }
-    return Promise.reject();
 }
 
 export async function getOrderById(id: string): Promise<Order> {
     try {
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${id}`);
         const orderSnapShot = await getDoc(orderRef);
-        if (orderSnapShot.exists()) {
-            const orderInfo = orderSnapShot.data();
-            let order: Order = {
-                id: orderRef.id,
-                status: orderInfo.status,
-                requestor: orderInfo.requestor,
-                items: [],
-                rejectedItems: []
-            };
-            for (const donation of orderInfo.items) {
-                const donationDetails = await getDoc(donation);
-                order.items.push(donationDetails.data() as Donation);
-            }
-            if (orderInfo.rejectedItems) {
-                for (const donation of orderInfo.rejectedItems) {
-                    const donationDetails = await getDoc(donation);
-                    order.rejectedItems?.push(donationDetails.data() as Donation);
-                }
-            }
-            return order;
-        } else {
+        if (!orderSnapShot.exists()) {
             return Promise.reject(new Error('Order not found'));
         }
+        const orderInfo = orderSnapShot.data();
+
+        // Fetch all item docs in parallel
+        const itemSnapshots = await Promise.all(
+            (orderInfo.items ?? []).map((ref: any) => getDoc(ref))
+        );
+        const items = itemSnapshots
+            .filter((snap) => snap.exists())
+            .map((snap) => snap.data() as Donation);
+
+        // Fetch all rejected item docs in parallel
+        const rejectedSnapshots = await Promise.all(
+            (orderInfo.rejectedItems ?? []).map((ref: any) => getDoc(ref))
+        );
+        const rejectedItems = rejectedSnapshots
+            .filter((snap) => snap.exists())
+            .map((snap) => snap.data() as Donation);
+
+        return {
+            id: orderRef.id,
+            status: orderInfo.status,
+            requestor: orderInfo.requestor,
+            items,
+            rejectedItems
+        };
     } catch (error) {
         addErrorEvent('Get order by ID', error);
+        throw error;
     }
-    return Promise.reject();
 }
 
 export async function closeOrder(id: string): Promise<void> {
