@@ -4,6 +4,10 @@ import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { useEffect, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { UserProvider } from '@/contexts/UserContext';
+import { PendingDonationsProvider } from '@/contexts/PendingDonationsContext';
+import { RequestedInventoryProvider } from '@/contexts/RequestedInventoryContext';
+import ThemeProviderWrapper from '@/components/ThemeProviderWrapper';
 
 // app router client-side navigations don't trigger full page loads so PostHog's auto-capture misses them. This fires on every route change and tracks
 function PostHogPageView() {
@@ -22,7 +26,7 @@ function PostHogPageView() {
     return null;
 }
 
-export default function Provider({ children }: { children: React.ReactNode }) {
+function PHProvider({ children }: { children: React.ReactNode }) {
     // posthog fetches client level apis, useEffects makes it load in only when browser client does, would otherwise crash if it was done on the server
     useEffect(() => {
         const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -52,5 +56,19 @@ export default function Provider({ children }: { children: React.ReactNode }) {
             </Suspense>
             {children}
         </PostHogProvider>
+    );
+}
+
+export default function Providers({ children }: { children: React.ReactNode }) {
+    return (
+        <PHProvider>
+            <ThemeProviderWrapper>
+                <UserProvider>
+                    <PendingDonationsProvider>
+                        <RequestedInventoryProvider>{children}</RequestedInventoryProvider>
+                    </PendingDonationsProvider>
+                </UserProvider>
+            </ThemeProviderWrapper>
+        </PHProvider>
     );
 }
