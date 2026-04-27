@@ -57,6 +57,7 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
         } catch (error) {
             setIsInvalidLogin(true);
             posthog.capture('login_failed');
+            posthog.captureException(error);
         }
     };
 

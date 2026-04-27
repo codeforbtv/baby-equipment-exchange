@@ -120,8 +120,6 @@ export default function DonationForm(props: DonationFormProps) {
         addPendingDonation(pendingDonation);
         posthog.capture('donation_item_added_to_queue', {
             category: pendingDonation.category,
-            brand: pendingDonation.brand,
-            model: pendingDonation.model,
             image_count: images.length
         });
         setFormData({

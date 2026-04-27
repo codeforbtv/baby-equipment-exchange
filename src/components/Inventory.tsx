@@ -127,9 +127,7 @@ const Inventory = (props: InventoryProps) => {
         addRequestedInventoryItem(inventoryItem);
         posthog.capture('inventory_item_added_to_cart', {
             item_id: inventoryItem.id,
-            category: inventoryItem.category,
-            brand: inventoryItem.brand,
-            model: inventoryItem.model
+            category: inventoryItem.category
         });
         setIsSnackBarOpen(true);
     };
