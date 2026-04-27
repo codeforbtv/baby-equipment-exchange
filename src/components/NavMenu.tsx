@@ -39,7 +39,7 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                 <button className={styles['close__btn']} aria-label="close nav menu" onClick={closeMenu}>
                     <CloseIcon />
                 </button>
-                <div className={styles['nav__menu']}>
+                <div className={`${styles['nav__menu']} ph-unmask-pii`}>
                     <Link className={styles['menu__link']} id="home" href="/" onClick={closeMenu}>
                         <span>Home</span>
                     </Link>

@@ -193,7 +193,7 @@ export default function Dashboard() {
 
     return (
         <ProtectedAdminRoute>
-            <div className={styles['navbar']}>
+            <div className={`${styles['navbar']} ph-unmask-pii`}>
                 {matches ? (
                     <>
                         <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard" variant="scrollable" scrollButtons="auto">

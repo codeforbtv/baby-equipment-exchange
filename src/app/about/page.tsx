@@ -56,7 +56,7 @@ export default function About() {
     });
 
     return (
-        <>
+        <div className="ph-unmask-pii">
             <div className="page--header">
                 <h1>About</h1>
             </div>
@@ -85,6 +85,6 @@ export default function About() {
                     </a>
                 </p>
             </div>
-        </>
+        </div>
     );
 }

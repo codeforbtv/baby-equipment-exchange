@@ -4,7 +4,7 @@ import { Typography } from '@mui/material';
 
 const RecallStatuses = () => {
     return (
-        <>
+        <div className="ph-unmask-pii">
             <Typography variant="body2">Recall statuses can be verified at: </Typography>
             <ul style={{ margin: 0 }}>
                 <li>
@@ -43,7 +43,7 @@ const RecallStatuses = () => {
                     </Typography>
                 </li>
             </ul>
-        </>
+        </div>
     );
 };
 

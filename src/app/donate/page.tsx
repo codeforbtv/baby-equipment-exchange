@@ -176,7 +176,6 @@ export default function Donate() {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting donation', error);
-            posthog.captureException(error);
             throw error;
         } finally {
             setIsLoading(false);
