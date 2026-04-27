@@ -175,7 +175,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                             </Typography>
                             <Typography variant="h6">{donation.tagNumber}</Typography>
                             <Typography variant="caption">Donated by:</Typography>
-                            <Typography variant="subtitle1" className="ph-mask-pii">
+                            <Typography variant="subtitle1">
                                 {donation.donorName} ({donation.donorEmail})
                             </Typography>
                         </CardContent>
@@ -204,7 +204,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                         </>
                                     )}
                                     <Typography variant="caption">Donated by:</Typography>
-                                    <Typography variant="subtitle1" className="ph-mask-pii">
+                                    <Typography variant="subtitle1">
                                         {donation.donorName} ({donation.donorEmail})
                                     </Typography>
                                 </CardContent>
@@ -243,7 +243,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                         </>
                                     )}
                                     <Typography variant="caption">Requested by:</Typography>
-                                    <Typography variant="subtitle1" className="ph-mask-pii">
+                                    <Typography variant="subtitle1">
                                         <Link href={`/users/${donation.requestor?.id}`}>
                                             {donation.requestor?.name} ({donation.requestor?.email})
                                         </Link>
@@ -274,7 +274,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                             </Typography>
                             <Typography variant="h6">{donation.tagNumber}</Typography>
                             <Typography variant="caption">Donated by:</Typography>
-                            <Typography variant="subtitle1" className="ph-mask-pii">
+                            <Typography variant="subtitle1">
                                 {donation.donorName} ({donation.donorEmail})
                             </Typography>
                         </CardContent>
@@ -290,8 +290,8 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <Card className={styles['notification-card']} raised>
                                 <CardActions onClick={() => setIdToDisplay(user.uid)} sx={{ width: '100%' }}>
                                     <CardContent className={styles['notification-card--info']}>
-                                        <Typography variant="h5" className="ph-mask-pii">{user.displayName}</Typography>
-                                        <Typography variant="body1" className="ph-mask-pii">({user.email})</Typography>
+                                        <Typography variant="h5">{user.displayName}</Typography>
+                                        <Typography variant="body1">({user.email})</Typography>
                                         {user.organization ? (
                                             <Typography variant="body1">
                                                 <em>{user.organization.name}</em>

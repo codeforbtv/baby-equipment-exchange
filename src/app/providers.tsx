@@ -22,7 +22,7 @@ function PostHogPageView() {
     return null;
 }
 
-export default function PHProvider({ children }: { children: React.ReactNode }) {
+export default function Provider({ children }: { children: React.ReactNode }) {
     // posthog fetches client level apis, useEffects makes it load in only when browser client does, would otherwise crash if it was done on the server
     useEffect(() => {
         const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -31,16 +31,15 @@ export default function PHProvider({ children }: { children: React.ReactNode }) 
         posthog.init(key, {
             api_host: 'https://us.i.posthog.com',
             capture_pageview: false,
-            capture_pageleave: true,
+            capture_pageleave: false,
             person_profiles: 'always',
-            enable_recording_console_log: true,
-            capture_exceptions: true,
+            enable_recording_console_log: false,
+            capture_exceptions: false,
             ip: false,
 
             session_recording: {
                 maskAllInputs: true,
-                // PII text masked by .ph-mask-pii class.
-                maskTextSelector: '.ph-mask-pii'
+                maskTextSelector: '*:not(.ph-unmask-pii)'
             }
         });
     }, []);

@@ -77,9 +77,9 @@ export default function UserDetails(props: UserDetailsProps) {
                 {!isLoading && !userDetails && <p>User not found</p>}
                 {!isLoading && userDetails && !isEditMode && (
                     <div className="content--container">
-                        <Typography variant="h5" className="ph-mask-pii">{userDetails.displayName}</Typography>
-                        <Typography variant="h6" className="ph-mask-pii">{userDetails.email}</Typography>
-                        <Typography variant="body1" className="ph-mask-pii">{userDetails.phoneNumber}</Typography>
+                        <Typography variant="h5">{userDetails.displayName}</Typography>
+                        <Typography variant="h6">{userDetails.email}</Typography>
+                        <Typography variant="body1">{userDetails.phoneNumber}</Typography>
                         {userDetails.organization === null ? (
                             <p style={{ color: 'red' }}>This user is missing an organization. Click edit user to assign one.</p>
                         ) : (

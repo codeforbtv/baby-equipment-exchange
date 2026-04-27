@@ -104,7 +104,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const message = (
         <>
-            <p className="ph-mask-pii">{`Hello ${donorName},`}</p>
+            <p>{`Hello ${donorName},`}</p>
             <p>Thank you for submitting your donation to the Baby Product Exchange.</p>
             {acceptedDonations && acceptedDonations.length > 0 && (
                 <>
@@ -168,7 +168,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 <Loader />
             ) : (
                 <>
-                    <p className="ph-mask-pii">{`The following email will be sent to ${donorEmail}:`}</p>
+                    <p>{`The following email will be sent to ${donorEmail}:`}</p>
                     <div className="content--container">
                         <Box display={'flex'} flexDirection={'column'}>
                             {message}
