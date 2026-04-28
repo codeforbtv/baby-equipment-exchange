@@ -24,6 +24,7 @@ import styles from '@/components/Dashboard.module.css';
 // Types
 import { NotificationData } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
+import { sortArrayByBulkId } from '@/utils/sortArrayByBulkId';
 
 type NotificationsProps = {
     notifications: NotificationData;
@@ -31,29 +32,6 @@ type NotificationsProps = {
 };
 
 export const RefreshNotificationsContext = createContext<() => void>(() => {});
-
-/**
- * Groups donations by bulkCollection ID.
- * Treats donations with no bulkCollection ID as their own group key.
- * Returns an array of objects with the bulkCollection ID as the key and the array of donationss with that bulkCollection ID as the value.
- */
-const sortArrayByBulkId = (array: Donation[]): { key: string; donations: Donation[] }[] => {
-    const grouped = array.reduce(
-        (acc, item) => {
-            const key = item.bulkCollection ?? item.id;
-            if (!acc[key]) {
-                acc[key] = [];
-            }
-            acc[key].push(item);
-            return acc;
-        },
-        {} as Record<string, Donation[]>
-    );
-    return Object.entries(grouped).map(([key, donations]) => ({
-        key,
-        donations
-    }));
-};
 
 const notificationTabs = ['Pending Approval', 'Pending Deliveries', 'Reserved', 'Requested', 'Pending Users'];
 
