@@ -12,8 +12,7 @@ import Notifications from './Notifications';
 import Inventory from './Inventory';
 import Categories from './Categories';
 //Hooks
-import React, { useCallback, useEffect, useState } from 'react';
-import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 //API
 import { addErrorEvent, callGetOrganizationNames } from '@/api/firebase';
 import { getAllDonations, getDonationNotifications, getInventory, getOrdersNotifications } from '@/api/firebase-donations';
@@ -132,11 +131,7 @@ export default function Dashboard() {
      */
     const refreshAllNotifications = useCallback(async () => {
         setIsLoading(true);
-        await Promise.allSettled([
-            fetchNotifDonations(),
-            fetchNotifOrders(),
-            fetchNotifUsers()
-        ]);
+        await Promise.allSettled([fetchNotifDonations(), fetchNotifOrders(), fetchNotifUsers()]);
         setIsLoading(false);
     }, [fetchNotifDonations, fetchNotifOrders, fetchNotifUsers]);
 
@@ -154,11 +149,21 @@ export default function Dashboard() {
         setIsLoading(true);
         await Promise.allSettled(fetches);
         setIsLoading(false);
-    }, [notifDonations, notifOrders, notifUsers, notifDonationsStale, notifOrdersStale, notifUsersStale, fetchNotifDonations, fetchNotifOrders, fetchNotifUsers]);
+    }, [
+        notifDonations,
+        notifOrders,
+        notifUsers,
+        notifDonationsStale,
+        notifOrdersStale,
+        notifUsersStale,
+        fetchNotifDonations,
+        fetchNotifOrders,
+        fetchNotifUsers
+    ]);
 
     // Tab data fetch functions
 
-    async function fetchDonations(): Promise<void> {
+    const fetchDonations = useCallback(async (): Promise<void> => {
         setIsLoading(true);
         try {
             const donationsResult = await getAllDonations();
@@ -169,9 +174,9 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchInventory(): Promise<void> {
+    const fetchInventory = useCallback(async (): Promise<void> => {
         setIsLoading(true);
         try {
             const inventoryResult = await getInventory();
@@ -181,9 +186,9 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchUsers(): Promise<void> {
+    const fetchUsers = useCallback(async (): Promise<void> => {
         setIsLoading(true);
         try {
             const usersResult = await getAllDbUsers();
@@ -194,9 +199,9 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchOrgNames(): Promise<void> {
+    const fetchOrgNames = useCallback(async (): Promise<void> => {
         setIsLoading(true);
         try {
             const orgNamesResult = await callGetOrganizationNames();
@@ -207,9 +212,9 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchCategories(): Promise<void> {
+    const fetchCategories = useCallback(async (): Promise<void> => {
         setIsLoading(true);
         try {
             const categoriesResult = await getAllCategories();
@@ -220,7 +225,7 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
     // Cross-tab staleness linkage
     // When a donation is modified in the Donations tab, also mark
@@ -241,7 +246,7 @@ export default function Dashboard() {
     }, [usersUpdated]);
 
     // Manual refresh
-    function handleRefresh() {
+    const handleRefresh = useCallback(() => {
         if (currentTab === 0) {
             refreshAllNotifications();
         } else if (currentTab === 1) {
@@ -255,7 +260,7 @@ export default function Dashboard() {
         } else if (currentTab === 5) {
             fetchCategories();
         }
-    }
+    }, [currentTab, refreshAllNotifications, fetchDonations, fetchInventory, fetchUsers, fetchOrgNames, fetchCategories]);
 
     // Tab-switch data loading
     // Only fetch when the tab is selected AND either the data is missing or
@@ -275,14 +280,31 @@ export default function Dashboard() {
         } else if (currentTab === 5 && (!categories || categoriesUpdated)) {
             fetchCategories();
         }
-    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, categoriesUpdated, fetchStaleNotifications]);
+    }, [
+        currentTab,
+        donations,
+        donationsUpdated,
+        inventory,
+        inventoryUpdated,
+        users,
+        usersUpdated,
+        orgNamesAndIds,
+        orgsUpdated,
+        categories,
+        categoriesUpdated,
+        fetchStaleNotifications,
+        fetchDonations,
+        fetchInventory,
+        fetchUsers,
+        fetchOrgNames,
+        fetchCategories
+    ]);
 
     // Build the NotificationData object for the Notifications component
     // Only constructed when all three slices have loaded.
-    const notificationData =
-        notifDonations && notifOrders && notifUsers
-            ? { donations: notifDonations, orders: notifOrders, users: notifUsers }
-            : null;
+    const notificationData = useMemo(() => {
+        return notifDonations && notifOrders && notifUsers ? { donations: notifDonations, orders: notifOrders, users: notifUsers } : null;
+    }, [notifDonations, notifOrders, notifUsers]);
 
     return (
         <ProtectedAdminRoute>
