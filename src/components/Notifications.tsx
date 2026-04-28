@@ -1,6 +1,6 @@
 'use client';
 // Hooks
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, createContext, useEffect, useState } from 'react';
 import React from 'react';
 
 // Components
@@ -22,18 +22,15 @@ import '@/styles/globalStyles.css';
 import styles from '@/components/Dashboard.module.css';
 
 // Types
-import { NotificationData, NotificationCallbacks } from '@/types/NotificationTypes';
+import { NotificationData } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
 
 type NotificationsProps = {
     notifications: NotificationData;
-    /**
-     * Called only when the user explicitly clicks Refresh (Dashboard.handleRefresh).
-     * Mutations use optimistic local removal via NotificationCallbacks instead —
-     * no Firebase re-fetch is triggered when an item is actioned.
-     */
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    refreshNotifications?: () => void;
 };
+
+export const RefreshNotificationsContext = createContext<() => void>(() => {});
 
 /**
  * Groups donations by bulkCollection ID.
@@ -60,16 +57,8 @@ const sortArrayByBulkId = (array: Donation[]): { key: string; donations: Donatio
 
 const notificationTabs = ['Pending Approval', 'Pending Deliveries', 'Reserved', 'Requested', 'Pending Users'];
 
-const Notifications = ({ notifications: notifData, setNotificationsUpdated }: NotificationsProps) => {
-    /**
-     * Local copy of the notification data.
-     * Mutations remove items directly from this state — no Firebase re-fetch.
-     * The parent's `notifications` prop is only used as the initial value;
-     * if the parent re-fetches (handleRefresh), it will pass a new prop value
-     * which React will use to reset this local state on the next render.
-     */
+const Notifications = ({ notifications: notifData, refreshNotifications }: NotificationsProps) => {
     const [data, setData] = useState<NotificationData>(notifData);
-
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
     const [orderIdToDisplay, setOrderIdToDisplay] = useState<string | null>(null);
@@ -78,31 +67,6 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
     useEffect(() => {
         setData(notifData);
     }, [notifData]);
-
-    // Optimistic local-removal callbacks.
-    // These are the ONLY update path after a mutation — zero Firebase reads.
-    const onDonationRemoved = useCallback((id: string) => {
-        setData((prev) => ({
-            ...prev,
-            donations: prev.donations.filter((d) => d.id !== id)
-        }));
-    }, []);
-
-    const onOrderRemoved = useCallback((id: string) => {
-        setData((prev) => ({
-            ...prev,
-            orders: prev.orders.filter((o) => o.id !== id)
-        }));
-    }, []);
-
-    const onUserRemoved = useCallback((uid: string) => {
-        setData((prev) => ({
-            ...prev,
-            users: prev.users.filter((u) => u.uid !== uid)
-        }));
-    }, []);
-
-    const callbacks: NotificationCallbacks = { onDonationRemoved, onOrderRemoved, onUserRemoved };
 
     // Pre-sort data — filtering already done server-side via Firestore query.
     const donationsAwaitingApproval = data.donations.filter((d) => d.status === 'in processing');
@@ -123,24 +87,12 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
 
     const hasNotifications = data.donations.length > 0 || data.orders.length > 0 || data.users.length > 0;
 
-    // ReviewOrder needs to signal the parent to re-fetch after order state changes
-    // (approve / reject) since the order's new state isn't predictable client-side.
-    const handleOrderReviewed = useCallback(
-        (orderId: string) => {
-            // Remove the order locally first for instant feedback...
-            onOrderRemoved(orderId);
-            // ...then signal the parent that a full refresh would be appropriate
-            // on the next manual refresh. We do NOT set notificationsUpdated=true
-            // here to avoid an immediate re-fetch — the removal is sufficient.
-        },
-        [onOrderRemoved]
-    );
-
     return (
-        <ProtectedAdminRoute>
+        <RefreshNotificationsContext.Provider value={refreshNotifications || (() => {})}>
+            <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
             {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
-            {orderIdToDisplay && <ReviewOrder id={orderIdToDisplay} setIdToDisplay={setOrderIdToDisplay} setNotificationsUpdated={setNotificationsUpdated} />}
+            {orderIdToDisplay && <ReviewOrder id={orderIdToDisplay} setIdToDisplay={setOrderIdToDisplay} />}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
                     {!hasNotifications ? (
@@ -211,21 +163,18 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
                                 <PendingDonationsSection
                                     donations={sortedDonationsWaitingApproval}
                                     setIdToDisplay={setDonationIdToDisplay}
-                                    callbacks={callbacks}
                                 />
                             </CustomTabPanel>
                             <CustomTabPanel value={currentTab} index={1}>
                                 <PendingDeliveriesSection
                                     donations={sortedDonationsAwaitingDropoff}
                                     setIdToDisplay={setDonationIdToDisplay}
-                                    callbacks={callbacks}
                                 />
                             </CustomTabPanel>
                             <CustomTabPanel value={currentTab} index={2}>
                                 <ReservedDonationsSection
                                     donations={sortedDonationsAwaitingPickup}
                                     setIdToDisplay={setDonationIdToDisplay}
-                                    callbacks={callbacks}
                                 />
                             </CustomTabPanel>
                             <CustomTabPanel value={currentTab} index={3}>
@@ -233,17 +182,17 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
                                     orders={orders}
                                     setIdToDisplay={setDonationIdToDisplay}
                                     setOrderIdToDisplay={setOrderIdToDisplay}
-                                    callbacks={callbacks}
                                 />
                             </CustomTabPanel>
                             <CustomTabPanel value={currentTab} index={4}>
-                                <PendingUsersSection users={usersAwaitingApproval} setIdToDisplay={setUserIdToDisplay} callbacks={callbacks} />
+                                <PendingUsersSection users={usersAwaitingApproval} setIdToDisplay={setUserIdToDisplay} />
                             </CustomTabPanel>
                         </>
                     )}
                 </>
             )}
         </ProtectedAdminRoute>
+    </RefreshNotificationsContext.Provider>
     );
 };
 

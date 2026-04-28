@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useContext, useEffect, useState } from 'react';
 //Components
 import Loader from './Loader';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -11,6 +11,7 @@ import { Box, Button, IconButton } from '@mui/material';
 import SchedulePickup from './SchedulePickup';
 import CancelOrder from './CancelOrder';
 import CustomDialog from './CustomDialog';
+import { RefreshNotificationsContext } from './Notifications';
 //Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
@@ -26,17 +27,16 @@ type ReviewOrderProps = {
     id: string;
     order?: Order;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const ReviewOrder = (props: ReviewOrderProps) => {
-    const { order, setIdToDisplay, id, setNotificationsUpdated } = props;
+    const { order, setIdToDisplay, id } = props;
+    const refreshNotifications = useContext(RefreshNotificationsContext);
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [activeView, setActiveView] = useState<'review' | 'schedule' | 'cancel'>('review');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [isOrderUpdated, setIsOrderUpdated] = useState<boolean>(false);
 
     const setShowScheduler: Dispatch<SetStateAction<boolean>> = (val) => {
         const willShow = typeof val === 'function' ? val(activeView === 'schedule') : val;
@@ -87,8 +87,8 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     };
 
     const handleClose = async (): Promise<void> => {
-        setIsOrderUpdated(true);
         setIsDialogOpen(false);
+        refreshNotifications();
     };
 
     return (
@@ -100,12 +100,8 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     setIdToDisplay={setDonationIdToDisplay}
                 />
             )}
-            {activeView === 'schedule' && currentOrder && (
-                <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
-            )}
-            {activeView === 'cancel' && currentOrder && (
-                <CancelOrder order={currentOrder} shouldShow={setShowCancelOrder} setNotificationsUpdated={setNotificationsUpdated} />
-            )}
+            {activeView === 'schedule' && currentOrder && <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} />}
+            {activeView === 'cancel' && currentOrder && <CancelOrder order={currentOrder} shouldShow={setShowCancelOrder} />}
             {activeView === 'review' && !donationIdToDisplay && (
                 <>
                     <div className="page--header">

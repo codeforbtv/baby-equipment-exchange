@@ -19,6 +19,7 @@ import '@/styles/globalStyles.css';
 //types
 import { Order } from '@/types/OrdersTypes';
 import { EventType } from '@/types/CalendlyTypes';
+import { Donation } from '@/models/donation';
 import Loader from './Loader';
 
 import schedulePickup from '@/email-templates/schedulePickup';
@@ -26,11 +27,10 @@ import schedulePickup from '@/email-templates/schedulePickup';
 type SchedulePickupProps = {
     order: Order;
     setShowScheduler: Dispatch<SetStateAction<boolean>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const SchedulePickup = (props: SchedulePickupProps) => {
-    const { order, setShowScheduler, setNotificationsUpdated } = props;
+    const { order, setShowScheduler } = props;
     const { requestor, id, items, rejectedItems } = order;
     const router = useRouter();
 

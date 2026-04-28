@@ -1,13 +1,14 @@
 'use client';
 
 //Hooks
-import { useEffect, useState, Dispatch, SetStateAction } from 'react';
+import { useEffect, useState, Dispatch, SetStateAction, useContext } from 'react';
 //Components
 import Loader from '@/components/Loader';
 import EditUser from '@/components/EditUser';
 import { ListItem, Typography, Button, IconButton } from '@mui/material';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
+import { RefreshNotificationsContext } from './Notifications';
 //APIs
 import { addErrorEvent } from '@/api/firebase';
 import { getDbUser } from '@/api/firebase-users';
@@ -28,6 +29,7 @@ type UserDetailsProps = {
 
 export default function UserDetails(props: UserDetailsProps) {
     const { id, setIdToDisplay, setUsersUpdated, user } = props;
+    const refreshNotifications = useContext(RefreshNotificationsContext);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userDetails, setUserDetails] = useState<UserCollection | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -69,7 +71,12 @@ export default function UserDetails(props: UserDetailsProps) {
             <div className="page--header">
                 {isEditMode ? <h3>Edit User</h3> : <h3>User Details</h3>}
                 {setIdToDisplay && (
-                    <IconButton onClick={() => setIdToDisplay(null)}>
+                    <IconButton onClick={() => {
+                        setIdToDisplay(null);
+                        if (userDetailsUpdated) {
+                            refreshNotifications();
+                        }
+                    }}>
                         <ArrowBackIcon />
                     </IconButton>
                 )}

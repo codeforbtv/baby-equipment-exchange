@@ -4,15 +4,13 @@ import { Button, Paper, Typography } from '@mui/material';
 import NotificationCard from '@/components/NotificationCard';
 import styles from '@/components/NotificationCard.module.css';
 import { Donation } from '@/models/donation';
-import { NotificationCallbacks } from '@/types/NotificationTypes';
 
 interface Props {
     donations: { key: string; donations: Donation[] }[];
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    callbacks?: NotificationCallbacks;
 }
 
-const PendingDonationsSection = ({ donations, setIdToDisplay, callbacks }: Props) => {
+const PendingDonationsSection = ({ donations, setIdToDisplay }: Props) => {
     const router = useRouter();
     if (donations.length === 0) return null;
 
@@ -27,7 +25,7 @@ const PendingDonationsSection = ({ donations, setIdToDisplay, callbacks }: Props
                         {`${donations[0].donorName}'s items are waiting to be approved:`}
                     </Typography>
                     {donations.map((donation) => (
-                        <NotificationCard key={donation.id} donation={donation} type="pending-donation" setIdToDisplay={setIdToDisplay} callbacks={callbacks} />
+                        <NotificationCard key={donation.id} donation={donation} type="pending-donation" setIdToDisplay={setIdToDisplay} />
                     ))}
                     <Button className={styles['notification-card--container--btn']} variant="contained" onClick={() => router.push(`/accept/${key}`)}>
                         Review

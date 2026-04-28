@@ -320,7 +320,7 @@ export default function Dashboard() {
 
                     <CustomTabPanel value={currentTab} index={0}>
                         {notificationData ? (
-                            <Notifications notifications={notificationData} />
+                            <Notifications notifications={notificationData} refreshNotifications={refreshAllNotifications} />
                         ) : (
                             <p>No notifications at this time.</p>
                         )}

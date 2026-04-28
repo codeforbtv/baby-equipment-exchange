@@ -19,6 +19,7 @@ import '@/styles/globalStyles.css';
 //types
 import { Order } from '@/types/OrdersTypes';
 import { EventType } from '@/types/CalendlyTypes';
+import { Donation } from '@/models/donation';
 import Loader from './Loader';
 
 import cancelOrder from '@/email-templates/cancelOrder';
@@ -26,11 +27,10 @@ import cancelOrder from '@/email-templates/cancelOrder';
 type CancelOrderProps = {
     order: Order;
     shouldShow: Dispatch<SetStateAction<boolean>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const CancelOrder = (props: CancelOrderProps) => {
-    const { order, shouldShow, setNotificationsUpdated } = props;
+    const { order, shouldShow } = props;
     const { requestor, id, items, rejectedItems } = order;
     const router = useRouter();
 

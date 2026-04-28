@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useContext, useState } from 'react';
 //Components
 import Link from 'next/link';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
+import { RefreshNotificationsContext } from './Notifications';
 //Api
 import { markDonationAsDistributed, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
 import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
@@ -32,7 +33,6 @@ import styles from '@/components/NotificationCard.module.css';
 import { Donation } from '@/models/donation';
 import { Order } from '@/types/OrdersTypes';
 import { IUser } from '@/models/user';
-import { NotificationCallbacks } from '@/types/NotificationTypes';
 
 import rejectUser from '@/email-templates/rejectUser';
 import userEnabled from '@/email-templates/userEnabled';
@@ -43,7 +43,6 @@ type NotificationCardProps = {
     user?: IUser | any;
     order?: Order;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    callbacks?: NotificationCallbacks;
 };
 
 /** Handles both Firestore Timestamp objects and ISO date strings. */
@@ -55,7 +54,8 @@ function formatDate(value: any): string | null {
 }
 
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, order, setIdToDisplay, callbacks } = props;
+    const { type, donation, user, order, setIdToDisplay } = props;
+    const refreshNotifications = useContext(RefreshNotificationsContext);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -77,8 +77,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'available');
-            // Remove from feed locally — the donation is no longer pending delivery.
-            callbacks?.onDonationRemoved(id);
+            refreshNotifications();
         } catch (error) {
             addErrorEvent('Mark donation as received', error);
             throw error;
@@ -91,8 +90,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'not-received');
-            // Remove from feed locally — the donation is no longer in a notification state.
-            callbacks?.onDonationRemoved(id);
+            refreshNotifications();
         } catch (error) {
             addErrorEvent('Mark donation as not received', error);
             throw error;
@@ -105,8 +103,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await markDonationAsDistributed(donation);
-            // Remove from feed locally — no longer reserved.
-            callbacks?.onDonationRemoved(donation.id);
+            refreshNotifications();
         } catch (error) {
             addErrorEvent('Mark as distributed', error);
             throw error;
@@ -119,8 +116,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonation(id, { status: 'available' });
-            // Remove from feed locally — no longer reserved.
-            callbacks?.onDonationRemoved(id);
+            refreshNotifications();
         } catch (error) {
             addErrorEvent('Return to inventory', error);
             throw error;
@@ -138,6 +134,7 @@ const NotificationCard = (props: NotificationCardProps) => {
             setDialogTitle('User enabled');
             setDialogContent(`The user ${userName} has been enabled.`);
             setIsDialogOpen(true);
+            refreshNotifications();
         } catch (error) {
             addErrorEvent('Call enable user', error);
         } finally {
@@ -152,10 +149,10 @@ const NotificationCard = (props: NotificationCardProps) => {
             const msg = rejectUser(userEmail, userName);
             await sendMail(msg);
             setIsDeleteDialogOpen(false);
-            callbacks?.onUserRemoved(uid);
             setDialogTitle('User deleted');
             setDialogContent(`The user ${userName} has been deleted.`);
             setIsDialogOpen(true);
+            refreshNotifications();
         } catch (error) {
             addErrorEvent('Call delete user', error);
             throw error;

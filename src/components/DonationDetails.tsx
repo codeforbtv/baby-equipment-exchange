@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { MouseEventHandler, useEffect, useState, Dispatch, SetStateAction } from 'react';
+import { MouseEventHandler, useEffect, useState, Dispatch, SetStateAction, useContext } from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationById, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
@@ -12,6 +12,7 @@ import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from './CustomDialog';
 import EditDonation from '@/components/EditDonation';
+import { RefreshNotificationsContext } from './Notifications';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
@@ -33,6 +34,7 @@ type DonationDetailsProps = {
 const DonationDetails = (props: DonationDetailsProps) => {
     const { id, setIdToDisplay, donation, setDonationsUpdated } = props;
     const intialDonation = donation ? donation : null;
+    const refreshNotifications = useContext(RefreshNotificationsContext);
     const [donationDetails, setDonationDetails] = useState<Donation | null>(intialDonation);
     const [donationDetailsUpdated, setDonationDetailsUpdated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -97,6 +99,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
         if (donationDetails) await fetchDonation(donationDetails.id);
         setDialogContent('');
         setIsDialogOpen(false);
+        refreshNotifications();
     };
 
     const handleImageClick: MouseEventHandler<HTMLImageElement> = (event) => {
@@ -119,7 +122,12 @@ const DonationDetails = (props: DonationDetailsProps) => {
             <div className="page--header">
                 {!isEditMode ? <h3>Donation Details</h3> : <h3>Edit Donation</h3>}
                 {setIdToDisplay && (
-                    <IconButton onClick={() => setIdToDisplay(null)}>
+                    <IconButton onClick={() => {
+                        setIdToDisplay(null);
+                        if (donationDetailsUpdated) {
+                            refreshNotifications();
+                        }
+                    }}>
                         <ArrowBackIcon />
                     </IconButton>
                 )}
