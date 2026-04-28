@@ -35,18 +35,27 @@ type NotificationsProps = {
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
-/** Groups an array of Donations by bulkCollection ID. Treats null/undefined as its own group key. */
-const sortArrayByBulkId = (array: Donation[]): Donation[][] => {
-    const groupedByField = array.reduce(
+/**
+ * Groups donations by bulkCollection ID.
+ * Treats donations with no bulkCollection ID as their own group key.
+ * Returns an array of objects with the bulkCollection ID as the key and the array of donationss with that bulkCollection ID as the value.
+ */
+const sortArrayByBulkId = (array: Donation[]): { key: string; donations: Donation[] }[] => {
+    const grouped = array.reduce(
         (acc, item) => {
-            const sortByField = item.bulkCollection ?? '__ungrouped__';
-            if (!acc[sortByField]) acc[sortByField] = [];
-            acc[sortByField].push(item);
+            const key = item.bulkCollection ?? item.id;
+            if (!acc[key]) {
+                acc[key] = [];
+            }
+            acc[key].push(item);
             return acc;
         },
         {} as Record<string, Donation[]>
     );
-    return Object.values(groupedByField);
+    return Object.entries(grouped).map(([key, donations]) => ({
+        key,
+        donations
+    }));
 };
 
 const notificationTabs = ['Pending Approval', 'Pending Deliveries', 'Reserved', 'Requested', 'Pending Users'];
@@ -69,27 +78,27 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
     useEffect(() => {
         setData(notifData);
     }, [notifData]);
-    
+
     // Optimistic local-removal callbacks.
     // These are the ONLY update path after a mutation — zero Firebase reads.
     const onDonationRemoved = useCallback((id: string) => {
         setData((prev) => ({
             ...prev,
-            donations: prev.donations.filter((d) => d.id !== id),
+            donations: prev.donations.filter((d) => d.id !== id)
         }));
     }, []);
 
     const onOrderRemoved = useCallback((id: string) => {
         setData((prev) => ({
             ...prev,
-            orders: prev.orders.filter((o) => o.id !== id),
+            orders: prev.orders.filter((o) => o.id !== id)
         }));
     }, []);
 
     const onUserRemoved = useCallback((uid: string) => {
         setData((prev) => ({
             ...prev,
-            users: prev.users.filter((u) => u.uid !== uid),
+            users: prev.users.filter((u) => u.uid !== uid)
         }));
     }, []);
 
@@ -112,8 +121,7 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
 
     const handleTabChange = (_: React.SyntheticEvent, newValue: number) => setCurrentTab(newValue);
 
-    const hasNotifications =
-        data.donations.length > 0 || data.orders.length > 0 || data.users.length > 0;
+    const hasNotifications = data.donations.length > 0 || data.orders.length > 0 || data.users.length > 0;
 
     // ReviewOrder needs to signal the parent to re-fetch after order state changes
     // (approve / reject) since the order's new state isn't predictable client-side.
@@ -132,13 +140,7 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
         <ProtectedAdminRoute>
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
             {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
-            {orderIdToDisplay && (
-                <ReviewOrder
-                    id={orderIdToDisplay}
-                    setIdToDisplay={setOrderIdToDisplay}
-                    setNotificationsUpdated={setNotificationsUpdated}
-                />
-            )}
+            {orderIdToDisplay && <ReviewOrder id={orderIdToDisplay} setIdToDisplay={setOrderIdToDisplay} setNotificationsUpdated={setNotificationsUpdated} />}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
                     {!hasNotifications ? (
@@ -165,13 +167,13 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
                                                 fontSize: '0.8125rem',
                                                 minHeight: 44,
                                                 padding: '8px 14px',
-                                                '&.Mui-selected': { color: '#333', fontWeight: 600 },
+                                                '&.Mui-selected': { color: '#333', fontWeight: 600 }
                                             },
                                             '& .MuiTabs-indicator': {
                                                 height: 2,
                                                 borderRadius: '2px 2px 0 0',
-                                                backgroundColor: '#333',
-                                            },
+                                                backgroundColor: '#333'
+                                            }
                                         }}
                                     >
                                         {notificationTabs.map((tab) => (
@@ -235,11 +237,7 @@ const Notifications = ({ notifications: notifData, setNotificationsUpdated }: No
                                 />
                             </CustomTabPanel>
                             <CustomTabPanel value={currentTab} index={4}>
-                                <PendingUsersSection
-                                    users={usersAwaitingApproval}
-                                    setIdToDisplay={setUserIdToDisplay}
-                                    callbacks={callbacks}
-                                />
+                                <PendingUsersSection users={usersAwaitingApproval} setIdToDisplay={setUserIdToDisplay} callbacks={callbacks} />
                             </CustomTabPanel>
                         </>
                     )}

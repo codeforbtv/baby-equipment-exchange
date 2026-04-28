@@ -6,7 +6,7 @@ import { Donation } from '@/models/donation';
 import { NotificationCallbacks } from '@/types/NotificationTypes';
 
 interface Props {
-    donations: Donation[][];
+    donations: { key: string; donations: Donation[] }[];
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     callbacks?: NotificationCallbacks;
 }
@@ -19,19 +19,13 @@ const PendingDeliveriesSection = ({ donations, setIdToDisplay, callbacks }: Prop
             <Typography sx={{ marginTop: '1rem', marginBottom: '0.5rem' }} variant="h6">
                 Donations waiting to be received
             </Typography>
-            {donations.map((donationArray, i) => (
-                <Paper className={styles['notification-card--container']} key={i} elevation={0}>
+            {donations.map(({ key, donations }) => (
+                <Paper key={key} className={styles['notification-card--container']} elevation={0}>
                     <Typography variant="h6" sx={{ marginBottom: '1rem' }}>
-                        {`${donationArray[0].donorName}'s items are waiting to be received:`}
+                        {`${donations[0].donorName}'s items are waiting to be received:`}
                     </Typography>
-                    {donationArray.map((donation) => (
-                        <NotificationCard
-                            key={donation.id}
-                            donation={donation}
-                            type="pending-delivery"
-                            setIdToDisplay={setIdToDisplay}
-                            callbacks={callbacks}
-                        />
+                    {donations.map((donation) => (
+                        <NotificationCard key={donation.id} donation={donation} type="pending-delivery" setIdToDisplay={setIdToDisplay} callbacks={callbacks} />
                     ))}
                 </Paper>
             ))}
