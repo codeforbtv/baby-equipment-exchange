@@ -56,7 +56,7 @@ export default function About() {
     });
 
     return (
-        <div className="ph-unmask-pii">
+        <div data-unmask="true">
             <div className="page--header">
                 <h1>About</h1>
             </div>

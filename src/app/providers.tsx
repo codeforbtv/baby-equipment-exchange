@@ -43,7 +43,13 @@ function PHProvider({ children }: { children: React.ReactNode }) {
 
             session_recording: {
                 maskAllInputs: true,
-                maskTextSelector: '*:not(.ph-unmask-pii)'
+                maskTextSelector: '*',
+                maskTextFn: (text, element) => {
+                    if (element?.closest('[data-unmask="true"]')) {
+                        return text;
+                    }
+                    return '*'.repeat(text.trim().length);
+                },
             }
         });
     }, []);
