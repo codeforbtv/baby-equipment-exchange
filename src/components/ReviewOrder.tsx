@@ -139,7 +139,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                     {currentOrder.rejectedItems.map((item) => (
                                         <DonationCardMed
                                             key={item.id}
-                                            orderId={item.id}
+                                            orderId={id}
                                             donation={item}
                                             setIdToDisplay={setDonationIdToDisplay}
                                             handleRemoveFromOrder={handleRemoveFromOrder}
