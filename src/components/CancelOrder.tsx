@@ -42,8 +42,7 @@ const CancelOrder = (props: CancelOrderProps) => {
 
     const handleClose = () => {
         setIsDialogOpen(false);
-        router.push('/');
-        window.location.reload();
+        router.refresh();
     };
 
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {

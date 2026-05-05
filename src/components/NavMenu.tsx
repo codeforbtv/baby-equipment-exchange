@@ -8,6 +8,7 @@ import Drawer from '@mui/material/Drawer';
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+import { useRouter } from 'next/navigation';
 //Libs
 import { signOutUser } from '@/api/firebase-users';
 //styles
@@ -22,12 +23,13 @@ interface Props {
 export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
     const { currentUser } = useUserContext();
     const { clearPendingDonations } = usePendingDonationsContext();
+    const router = useRouter();
 
     const handleSignOut = () => {
         clearPendingDonations();
         localStorage.clear();
         signOutUser();
-        window.location.reload();
+        router.refresh();
     };
 
     return (

@@ -2,6 +2,7 @@
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
+import { useRouter } from 'next/navigation';
 //Components
 import Link from 'next/link';
 //Libs
@@ -13,12 +14,13 @@ import { Typography } from '@mui/material';
 export default function Footer() {
     const { currentUser } = useUserContext();
     const { clearPendingDonations } = usePendingDonationsContext();
+    const router = useRouter();
 
     const handleSignOut = () => {
         clearPendingDonations();
         localStorage.clear();
         signOutUser();
-        window.location.reload();
+        router.refresh();
     };
 
     return (
