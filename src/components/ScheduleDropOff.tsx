@@ -41,8 +41,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const router = useRouter();
 
-    const isDisabled = acceptedDonations && acceptedDonations.length > 0 ? !inviteUrl : false;
-
     let donorEmail = '';
     let donorName = '';
     if (acceptedDonations && acceptedDonations.length > 0) {
