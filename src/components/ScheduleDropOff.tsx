@@ -185,7 +185,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                     </InputLabel>
                                     <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
                                         <option value="" disabled>
-                                            Select Calendar
+                                            Select Calendar (Optional)
                                         </option>
                                         {events &&
                                             events.map((event, index) => {
@@ -201,7 +201,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                 </FormControl>
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button onClick={handleSubmit} disabled={isDisabled} variant="contained">
+                                <Button onClick={handleSubmit} variant="contained">
                                     Send Email
                                 </Button>
                                 <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
