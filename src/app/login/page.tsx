@@ -8,6 +8,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
 import { onAuthStateChangedListener, signInAuthUserWithEmailAndPassword } from '@/api/firebase-users';
+import posthog from 'posthog-js';
 //Icons
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 //Styling
@@ -50,10 +51,13 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         try {
-            await signInAuthUserWithEmailAndPassword(email, password);
+            const user = await signInAuthUserWithEmailAndPassword(email, password);
+            posthog.capture('user_logged_in');
             router.push('/');
         } catch (error) {
             setIsInvalidLogin(true);
+            posthog.capture('login_failed');
+            posthog.captureException(error);
         }
     };
 

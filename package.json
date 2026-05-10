@@ -13,9 +13,6 @@
         "lint": "next lint",
         "format": "prettier --write ."
     },
-    "eslintConfig": {
-        "extends": "react-app"
-    },
     "browserslist": [
         "defaults",
         "not IE 11"
@@ -44,6 +41,7 @@
         "json-2-csv": "^5.5.10",
         "next": "^14.2.32",
         "nodemailer": "^7.0.6",
+        "posthog-js": "^1.370.1",
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "react-instantsearch": "^7.13.2",

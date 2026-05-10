@@ -23,7 +23,7 @@ export default function Header() {
     }
 
     return (
-        <div className={styles['header__wrapper']}>
+        <div className={styles['header__wrapper']} data-unmask="true">
             <header className={styles['header__primary']}>
                 <Link className={styles['header__logo']} href="/">
                     <StrollerOutlinedIcon />

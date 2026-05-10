@@ -14,6 +14,7 @@ import CustomDialog from './CustomDialog';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
+import posthog from 'posthog-js';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';
 import { updateDonation, updateDonationStatus } from '@/api/firebase-donations';
@@ -138,9 +139,14 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
                     : reject(donorEmail, renderToString(message), notes);
             await sendMail(emailMsg);
+            posthog.capture('dropoff_scheduled', {
+                accepted_count: acceptedDonations?.length ?? 0,
+                rejected_count: rejectedDonations?.length ?? 0
+            });
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
+            posthog.captureException(error);
             throw error;
         } finally {
             setIsLoading(false);

@@ -22,7 +22,7 @@ export default function Footer() {
     };
 
     return (
-        <footer className={styles['footer-wrapper']}>
+        <footer className={styles['footer-wrapper']} data-unmask="true">
             <div className={styles['footer-links-container']}>
                 <Link className={styles['menu__link']} id="donate" href="/donate">
                     Donate

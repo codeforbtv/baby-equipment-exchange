@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Api
 import { callIsEmailInUse, addErrorEvent, callGetOrganizationNames, callCreateUser } from '@/api/firebase';
+import posthog from 'posthog-js';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
 import '../../styles/globalStyles.css';
@@ -99,9 +100,13 @@ export default function NewAccount() {
         try {
             const newUser = await callCreateUser(accountInfo);
             newUser.displayName && setConfirmedUserName(newUser.displayName);
+            posthog.capture('user_signed_up', {
+                organization: orgValue ?? orgInputValue ?? null
+            });
             setOpenDialog(true);
         } catch (error) {
             addErrorEvent('handleAccountCreate', error);
+            posthog.captureException(error);
             throw error;
         } finally {
             setIsLoading(false);

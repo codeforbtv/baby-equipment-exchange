@@ -18,6 +18,7 @@ import AddIcon from '@mui/icons-material/Add';
 //libs
 import { addDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
+import posthog from 'posthog-js';
 import { uploadImages } from '@/api/firebase-images';
 import { loginAnonymousUser, signOutUser } from '@/api/firebase-users';
 //Constants
@@ -162,6 +163,10 @@ export default function Donate() {
         try {
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
             await addDonation(donationsToUpload, donationDisclaimer);
+            posthog.capture('donation_submitted', {
+                item_count: donationsToUpload.length,
+                categories: donationsToUpload.map((d) => d.category)
+            });
             clearPendingDonations();
             setPendingDonorEmail('');
             setPendingDonorName('');
@@ -171,6 +176,7 @@ export default function Donate() {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting donation', error);
+            posthog.captureException(error);
             throw error;
         } finally {
             setIsLoading(false);

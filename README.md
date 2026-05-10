@@ -16,7 +16,7 @@ Navigate to the cloned repository on your computer, open a terminal and the run 
 npm install
 ```
 
-to install the project dependencies.
+to install the project dependencies. Note: this may hang or take a while due to the large number of dependencies.
 
 Running the app requires an '.env.local' file in the root of the project folder to access the project's environment variables. You can request this file in the [baby-equipment-exchange Slack channel](https://codeforbtv.slack.com/archives/C04HA6P9Z2R).
 
@@ -28,12 +28,8 @@ npm run dev
 
 in your terminal. The app can be accessed at [http://localhost:3000/](http://localhost:3000/).
 
-## Account Creation
+## Logging In
 
-Navigate to [http://localhost:3000/join](http://localhost:3000/join) and create a new user.
+Navigate to [http://localhost:3000/login](http://localhost:3000/login). Ask a team member in the [baby-equipment-exchange Slack channel](https://codeforbtv.slack.com/archives/C04HA6P9Z2R) for login credentials native to your firebase creds.
 
-![Join page](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_1.png)
-
-The landing page should display upon successful account creation.
-
-![Landing Page as standard user](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_1_5.png)
+Note: Creating a new account via the join page won't give you immediate access, as new accounts go through an approval process.

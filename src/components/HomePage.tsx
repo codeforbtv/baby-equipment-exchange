@@ -11,7 +11,7 @@ import '@/styles/globalStyles.css';
 const HomePage = () => {
     const router = useRouter();
     return (
-        <div className={homeStyles['home--wrapper']}>
+        <div className={homeStyles['home--wrapper']} data-unmask="true">
             <div className={homeStyles['home--header']}>
                 <h2>Welcome to the Baby Product Exchange!</h2>
                 <p>If you’d like to <b>donate gear</b>, you don’t need to create an account—just click “Make A Donation” and upload your item details. Please note that any categories <b>greyed out</b> in the donation field indicate items we’re <b>not currently accepting</b>. Once your donation is approved, we’ll email you a link to schedule your drop-off.</p>
