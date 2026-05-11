@@ -57,7 +57,7 @@ export default function DonationForm(props: DonationFormProps) {
     };
 
     const isDisabled =
-        !images || formData.category?.length === 0 || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
+        !images || !formData.category || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
 
     const isCategoryActive = (category: string) => {
         if (categories) {
@@ -167,7 +167,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     disablePortal
                                     options={categories.map((option) => option.name)}
                                     getOptionDisabled={isCategoryActive}
-                                    renderInput={(params) => <TextField {...params} label="Category" />}
+                                    renderInput={(params) => <TextField {...params} label="Category" required />}
                                     value={formData.category}
                                     onChange={handleCategoryChange}
                                     aria-label="Category"
@@ -178,6 +178,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     name="brand"
                                     id="brand"
                                     placeholder=" Brand"
+                                    required
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                     value={formData.brand ? formData.brand : ''}
                                 ></TextField>
@@ -186,6 +187,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     label="Model"
                                     name="model"
                                     id="model"
+                                    required
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                     value={formData.model ? formData.model : ''}
                                 ></TextField>
@@ -193,6 +195,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     multiline={true}
                                     name="description"
                                     label="Description"
+                                    required
                                     rows={12}
                                     placeholder="Key details might include: special features, accessories, how the item works, ease of cleaning, size, and/or information about missing or damaged parts"
                                     id="description"
