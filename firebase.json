@@ -13,14 +13,6 @@
     "storage": {
         "rules": "storage.rules"
     },
-    "functions": [
-        {
-            "source": "functions",
-            "codebase": "default",
-            "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"],
-            "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
-        }
-    ],
     "emulators": {
         "auth": {
             "enabled": true,
@@ -31,11 +23,6 @@
             "enabled": true,
             "host": "0.0.0.0",
             "port": 8080
-        },
-        "functions": {
-            "enabled": true,
-            "host": "0.0.0.0",
-            "port": 5001
         },
         "hosting": {
             "enabled": false,

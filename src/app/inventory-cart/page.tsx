@@ -13,7 +13,8 @@ import Image from 'next/image';
 import CustomDialog from '@/components/CustomDialog';
 //Libs
 import { requestInventoryItems } from '@/api/firebase-donations';
-import { addErrorEvent, callAreDonationsAvailable } from '@/api/firebase';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
+import { areDonationsAvailable } from '@/api/firebaseAdmin';
 import posthog from 'posthog-js';
 //Styles
 import '@/styles/globalStyles.css';
@@ -48,7 +49,7 @@ const InventoryCart = () => {
             const requestedItemIds = requestedInventory.map((item) => item.id);
 
             //Make sure requested items are still available
-            const unavailableItemIds = await callAreDonationsAvailable(requestedItemIds);
+            const unavailableItemIds = await areDonationsAvailable({ idToken: await getAuthIdToken(), ids: requestedItemIds });
 
             if (unavailableItemIds.length > 0) {
                 const unavailableItems: InventoryItem[] = requestedInventory.filter((item) => unavailableItemIds.includes(item.id));

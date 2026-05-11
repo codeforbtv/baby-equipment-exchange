@@ -2,31 +2,20 @@
 
 import 'server-only';
 
-// Libs
-import { setGlobalOptions } from 'firebase-functions/v2';
-import { HttpsError } from 'firebase-functions/v2/https';
-import * as logger from 'firebase-functions/logger';
 import fs from 'fs';
 import path from 'path';
 import * as admin from 'firebase-admin';
 import { getAuth, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
 import { initializeApp } from 'firebase-admin/app';
 
 import { convertToString } from '@/utils/utils';
-import { AuthUserRecord } from '@/types/UserTypes';
-
-const region = 'us-east1';
-
-setGlobalOptions({
-    maxInstances: 10,
-    region: region
-});
+import { AuthUserRecord, NewUserAccountInfo } from '@/types/UserTypes';
 
 const EVENTS_COLLECTION = 'Event';
 const USERS_COLLECTION = 'Users';
-const USER_DETAILS_COLLECTION = 'UserDetails';
+const DONATIONS_COLLECTION = 'Donations';
+const ORGANIZATIONS_COLLECTION = 'Organizations';
 
 type Event = {
     type: string;
@@ -41,19 +30,15 @@ export async function initAdmin() {
         return admin.app();
     }
     if (process.env.NODE_ENV === 'production') {
-        // firestore creds are automatically injected w/ firestory deploy
         return initializeApp();
     }
-    // emulate in every non-prod/staging environment
     return initializeApp({ projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID });
 }
 
 const app = await initAdmin();
 const auth = getAuth(app);
-const storage = getStorage(app);
 const db = getFirestore(app);
 
-//Used for importing images from spreadsheet
 function findPaths(fileNames: string[]): string[] {
     const filePaths = [];
     const directoryPath = process.env.IMPORT_DIRECTORY ? process.env.IMPORT_DIRECTORY : '';
@@ -69,7 +54,7 @@ export const addEvent = async (request: any) => {
     try {
         _addEvent(request);
     } catch (error) {
-        logger.error(error);
+        console.error(error);
     }
 };
 
@@ -81,124 +66,9 @@ export const checkClaims = async (request: any): Promise<any> => {
     } catch (error) {
         addErrorEvent('checkClaims', error);
     }
-    throw new HttpsError('internal', 'Internal error');
+    throw new Error('Internal error');
 };
 
-//Cloud function to create User in Users collection anytime a new User is created in app.
-// export const createNewUser = functionsV1
-//     .region(region)
-//     .auth.user()
-//     .onCreate(async (user: UserRecord) => {
-//         try {
-//             await db
-//                 .runTransaction(async (transaction) => {
-//                     const userRef = db.collection(USERS_COLLECTION).doc(user.uid);
-//                     if ((await userRef.get()).exists) {
-//                         logger.error({ error: `attempt to create an existing user ${user.uid} with https onCall method.`, data: user });
-//                         // Return if the user already exists.
-//                         return;
-//                     }
-
-//                     const userParams: IUser = {
-//                         uid: user.uid,
-//                         phoneNumber: user.phoneNumber,
-//                         requestedItems: [],
-//                         notes: [],
-//                         organization: null,
-//                         modifiedAt: FieldValue.serverTimestamp()
-//                     };
-//                     transaction.create(userRef, userParams);
-//                 })
-//                 .catch((error) => logger.error({ location: 'createNewUser', error: error }));
-//         } catch (error) {
-//             addErrorEvent('createNewUser', { error: error, data: user });
-//         }
-//     });
-
-// export const updateUser = async (request: any): Promise<void> => {
-//     try {
-//         const { uid, accountInformation } = request;
-//         await auth.updateUser(uid, accountInformation);
-//     } catch (error) {
-//         addErrorEvent('updateUser', error);
-//     }
-// };
-
-export const listAllUsers = async (): Promise<AuthUserRecord[]> => {
-    try {
-        const usersList = await auth.listUsers(1000);
-        const listUsersResult: UserRecord[] = usersList.users;
-        const authUsers = listUsersResult.map((user) => {
-            const authUser = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                disabled: user.disabled,
-                metadata: user.metadata,
-                customClaims: user.customClaims
-            };
-            return authUser;
-        });
-
-        //To prevent 'Only plain objects can be passed to Client Components from Server Components' error
-        return JSON.parse(JSON.stringify(authUsers));
-    } catch (error) {
-        addErrorEvent('listAllUsers', error);
-    }
-    return Promise.reject();
-};
-
-//Sync data from firebase auth users to the DB user collection
-export async function syncUsers(): Promise<void> {
-    try {
-        const batch = db.batch();
-        const usersList = await auth.listUsers(1000);
-        const listUsersResult: UserRecord[] = usersList.users.filter((user) => user.providerData && user.providerData.length > 0);
-        for (const user of listUsersResult) {
-            const userParams = {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                customClaims: user.customClaims,
-                isDisabled: user.disabled
-            };
-            const docRef = db.collection(USERS_COLLECTION).doc(user.uid);
-            docRef.set(userParams, { merge: true });
-        }
-        await batch.commit();
-        console.log('Sync completed');
-    } catch (error) {
-        addErrorEvent('Error syncing users', error);
-    }
-}
-
-export async function syncOrgs(): Promise<void> {
-    try {
-        const srcCollectionRef = db.collection('imported_orgs_5');
-        const destCollectionRef = db.collection('Organizations');
-        const srcSnapshot = await srcCollectionRef.get();
-        const batch = db.batch();
-        srcSnapshot.forEach((doc) => {
-            const docData = doc.data();
-            batch.set(
-                destCollectionRef.doc(doc.id),
-                {
-                    name: docData.Organization,
-                    county: docData.County,
-                    emailFooter: docData['Email Footer'],
-                    tags: ['social-services'],
-                    notes: []
-                },
-                { merge: true }
-            );
-        });
-        await batch.commit();
-    } catch (error) {
-        console.log('Error syncing orgs', error);
-    }
-}
-
-//returns client-side safe UserInfo object
 export async function getAuthUserById(uid: string): Promise<AuthUserRecord> {
     try {
         const user = await auth.getUser(uid);
@@ -217,66 +87,104 @@ export async function getAuthUserById(uid: string): Promise<AuthUserRecord> {
     return Promise.reject();
 }
 
-export const getImageAsSignedUrl = async (request: any): Promise<any> => {
-    let fileExists = null;
-    try {
-        _verifyAuthenticated(request);
-        const bucket = storage.bucket().name;
-        const url = request.data.url;
-        const fileName = url.split('/')[3];
-        const file = storage.bucket(bucket).file(fileName);
-        const accessibleAtTime = new Date();
-        const expirationTime = new Date();
-        expirationTime.setMinutes(expirationTime.getMinutes() + 2);
-        fileExists = await file.exists();
-        const signedUrlResponse = await file.getSignedUrl({
-            version: 'v4',
-            action: 'read',
-            accessibleAt: accessibleAtTime,
-            expires: expirationTime
-        });
-        return signedUrlResponse[0];
-    } catch (error: any) {
-        addErrorEvent('getImageAsSignedUrl', {
-            error: error,
-            fileExists: fileExists,
-            auth: request.auth,
-            data: request.data,
-            header: request.rawrequest?.rawHeaders
-        });
+async function _verifyAdminToken(idToken: string): Promise<void> {
+    const decoded = await auth.verifyIdToken(idToken);
+    if (decoded.admin !== true) {
+        throw new Error('permission-denied: admin only');
     }
-    return Promise.reject();
-};
+}
 
-export const getUidByEmail = async (request: any): Promise<string> => {
+export const createUser = async (request: NewUserAccountInfo): Promise<UserRecord> => {
     try {
-        _verifyAuthenticated(request);
-        if (request.data == undefined) {
-            throw new Error('Data was not provided in this request.');
+        const { email, password, displayName, phoneNumber, organization, notes, title, termsAccepted } = request;
+
+        if (!email || email.length === 0) throw new Error('A valid email address is required.');
+        if (!password || password.length === 0) throw new Error('Password is required.');
+        if (!displayName || displayName.length === 0) throw new Error('Display name is required.');
+        if (!phoneNumber || phoneNumber.length === 0) throw new Error('Phone number is required.');
+
+        const userRecord: UserRecord = await auth.createUser({
+            email,
+            password,
+            displayName,
+            disabled: true
+        });
+
+        const userParams = {
+            uid: userRecord.uid,
+            isDisabled: true,
+            email: userRecord.email,
+            organization,
+            title,
+            termsAccepted,
+            displayName: userRecord.displayName,
+            phoneNumber,
+            requestedItems: [],
+            notes,
+            createdAt: FieldValue.serverTimestamp(),
+            modifiedAt: FieldValue.serverTimestamp()
+        };
+
+        const docRef = db.collection(USERS_COLLECTION).doc(userRecord.uid);
+        const doc = await docRef.get();
+
+        if (doc.exists) {
+            console.error('User already exists in database', doc.data());
+            docRef.set(userParams, { merge: true });
+        } else {
+            docRef.set(userParams);
         }
-        const data = request.data;
-        if (request.options == undefined) {
-            throw new Error('Options were not provided in this request.');
-        }
-        const options = data.options;
-        if (options.email == undefined) {
-            throw new Error("'email' is not defined in options.");
-        }
-        const email = options.email;
-        const uid = (await auth.getUserByEmail(email)).uid;
-        return uid;
+        return JSON.parse(JSON.stringify(userRecord));
     } catch (error) {
-        addErrorEvent('getUidByEmail', error);
+        addErrorEvent('createUser', error);
     }
-    return Promise.reject();
+    throw new Error('An error occurred while trying to create a new user.');
 };
 
-export const isEmailInUse = async (request: any) => {
+export const enableUser = async (request: { idToken: string; userId: string }): Promise<void> => {
     try {
-        const email = request.email;
-        const userRecord: UserRecord = await auth.getUserByEmail(email);
-        if (userRecord !== undefined) {
-            logger.info({ error: `${email} was queried via this onCall method.`, data: request.data });
+        await _verifyAdminToken(request.idToken);
+        const userId = request.userId;
+        if (!userId) throw new Error('Must provide a user Id to enable a user account.');
+        const user = await auth.updateUser(userId, { disabled: false });
+        await auth.setCustomUserClaims(user.uid, { 'aid-worker': true });
+    } catch (error) {
+        addErrorEvent('enableUser', error);
+        throw error;
+    }
+};
+
+export const deleteUser = async (request: { idToken: string; userId: string }): Promise<void> => {
+    try {
+        await _verifyAdminToken(request.idToken);
+        const userId = request.userId;
+        if (!userId) throw new Error('Must provide a user Id to delete a user account.');
+        await auth.deleteUser(userId);
+    } catch (error) {
+        addErrorEvent('deleteUser', error);
+        throw error;
+    }
+};
+
+export const updateAuthUser = async (request: {
+    idToken: string;
+    uid: string;
+    accountInformation: { displayName?: string; email?: string };
+}): Promise<UserRecord> => {
+    try {
+        await _verifyAdminToken(request.idToken);
+        const updatedUser = await auth.updateUser(request.uid, request.accountInformation);
+        return JSON.parse(JSON.stringify(updatedUser));
+    } catch (error) {
+        addErrorEvent('updateAuthUser', error);
+    }
+    throw new Error('Error updating user account.');
+};
+
+export const isEmailInUse = async (request: { email: string }): Promise<boolean> => {
+    try {
+        const existingUser = await auth.getUserByEmail(request.email);
+        if (existingUser !== undefined) {
             return true;
         } else {
             return false;
@@ -285,310 +193,76 @@ export const isEmailInUse = async (request: any) => {
         if (error.code === 'auth/user-not-found') {
             return false;
         }
-
         if (error.code !== 'auth/invalid-email') {
-            logger.error(error);
-            addErrorEvent('isEmailInUse', { error: error, data: request.data });
+            addErrorEvent('isEmailInUse', error);
         }
     }
     return true;
 };
 
-export const setClaimForNewUser = async (request: any) => {
+export const listAllUsers = async (request: { idToken: string }): Promise<AuthUserRecord[]> => {
     try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        await auth.setCustomUserClaims(userId, {
-            donor: true,
-            verified: false
+        await _verifyAdminToken(request.idToken);
+        const usersListResult = await auth.listUsers(1000);
+        const authUsers = usersListResult.users.map((user) => {
+            return {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+                disabled: user.disabled,
+                metadata: user.metadata,
+                customClaims: user.customClaims
+            };
         });
+        return JSON.parse(JSON.stringify(authUsers));
     } catch (error) {
-        addErrorEvent('setClaimForNewUser', error);
+        addErrorEvent('listAllUsers', error);
+    }
+    return Promise.reject();
+};
+
+export const setCustomClaims = async (request: { idToken: string; userId: string; claims: any }): Promise<void> => {
+    try {
+        await _verifyAdminToken(request.idToken);
+        await auth.setCustomUserClaims(request.userId, request.claims);
+    } catch (error) {
+        addErrorEvent('setCustomClaims', error);
+        throw error;
     }
 };
 
-//NOTE: Setting claims will overwrite existing claims! Must include all claims in requests.
-export const setClaims = async (request: any) => {
+export const getOrganizationNames = async (): Promise<{ [key: string]: string }> => {
     try {
-        const { userId, claims } = request;
-        auth.setCustomUserClaims(userId, claims);
+        const orgNames: { [key: string]: string } = {};
+        const snapshot = await db.collection(ORGANIZATIONS_COLLECTION).orderBy('name', 'asc').get();
+        snapshot.forEach((snap) => {
+            const { name } = snap.data();
+            orgNames[name] = snap.id;
+        });
+        return orgNames;
     } catch (error) {
-        addErrorEvent('setClaims', error);
+        addErrorEvent('getOrganizationNames', error);
+        throw new Error('Unable to fetch organization names');
     }
 };
 
-// Action based claims.
-export const setClaimForDonationReadAccess = async (request: any) => {
+export const areDonationsAvailable = async (request: { idToken: string; ids: string[] }): Promise<string[]> => {
     try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const canReadDonations = request.data.canReadDonations;
-        const claimName = 'can-read-donations';
-        _setClaim(userId, claimName, canReadDonations);
-    } catch (error) {
-        addErrorEvent('setClaimForDonationReadAccess', error);
-    }
-};
-
-export const toggleCanReadDonations = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const claimName = 'can-read-donations';
-        const currentClaim = await _checkClaim(userId, claimName);
-        _setClaim(userId, claimName, !currentClaim);
-    } catch (error) {
-        addErrorEvent('toggleCanReadDonations', error);
-    }
-};
-
-// Role based claims.
-
-export const setClaimForAdmin = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const isAdmin = request.data.isAdmin;
-        const claimName = 'admin';
-        _setClaim(userId, claimName, isAdmin);
-    } catch (error) {
-        addErrorEvent('setClaimForAdmin', error);
-    }
-};
-
-export const setClaimForAidWorker = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const isAidWorker = request.data.isAidWorker;
-        const claimName = 'aid-worker';
-        _setClaim(userId, claimName, isAidWorker);
-    } catch (error) {
-        addErrorEvent('setClaimForAidWorker', error);
-    }
-};
-
-export const setClaimForDonor = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const isDonor = request.data.isDonor;
-        const claimName = 'donor';
-        _setClaim(userId, claimName, isDonor);
-    } catch (error) {
-        addErrorEvent('setClaimForDonor', error);
-    }
-};
-
-export const setClaimForVerified = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const isVerified = request.data.isVerified;
-        const claimName = 'verified';
-        _setClaim(userId, claimName, isVerified);
-    } catch (error) {
-        addErrorEvent('setClaimForVerified', error);
-    }
-};
-
-export const setClaimForVolunteer = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const isVolunteer = request.data.isVolunteer;
-        const claimName = 'volunteer';
-        _setClaim(userId, claimName, isVolunteer);
-    } catch (error) {
-        addErrorEvent('setClaimForVolunteer', error);
-    }
-};
-
-export const registerNewUser = async (request: any): Promise<any> => {
-    try {
-        const data = request.data;
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        if (data.options == null) {
-            throw new Error('Options were not provided in the request.');
+        await auth.verifyIdToken(request.idToken);
+        const unavailable: string[] = [];
+        for (const id of request.ids) {
+            const snap = await db.collection(DONATIONS_COLLECTION).doc(id).get();
+            if (snap.exists && snap.data()?.status !== 'available') unavailable.push(id);
         }
-        const options = data.options;
-        for (const key of ['displayName', 'email', 'password']) {
-            if (options[key] == null) {
-                throw new Error(`${key} was not provided in the request.`);
-            }
-        }
-        const displayName = options.displayName;
-        const email = options.email;
-        const password = options.password;
-        const properties = {
-            displayName: displayName,
-            email: email,
-            password: password,
-            emailVerified: false,
-            disabled: false
-        };
-        const adminAuth = admin.auth();
-        const userRecord = await adminAuth.createUser(properties);
-        const claims = options.claims;
-        await adminAuth.setCustomUserClaims(userRecord.uid, claims);
-        return { ok: true };
+        return unavailable;
     } catch (error) {
-        addErrorEvent('registerNewUser', error);
-    }
-    return { ok: false };
-};
-
-export const setUserAccount = async (request: any): Promise<any> => {
-    let accountInformation: any = null;
-    let userId: string | null | undefined;
-    try {
-        _verifyAuthenticated(request);
-        const db = getFirestore(app);
-        const data = request.data;
-        userId = data.userId;
-        accountInformation = data.accountInformation;
-        if (userId == null) {
-            throw new Error('userId is not defined.');
-        }
-        const userRef = await db.collection(USERS_COLLECTION).doc(userId);
-        const userDocument = await userRef.get();
-        const userDetailsRef = await db.collection(USER_DETAILS_COLLECTION).doc(userId);
-        const userDetailsDocument = await userDetailsRef.get();
-        if (userDocument.exists && userDetailsDocument.exists) {
-            const userChanges: any = {};
-            const userDetailChanges: any = {};
-            const name: any = accountInformation.name;
-            const photo: any = accountInformation.photo;
-            const primaryContact: any = stripNullUndefined(accountInformation.contact);
-            const primaryLocation: any = stripNullUndefined(accountInformation.location);
-
-            if (name !== null && name !== undefined) {
-                userChanges['name'] = name;
-            }
-
-            if (photo !== null && photo !== undefined) {
-                userChanges['photo'] = photo;
-            }
-
-            if (primaryContact !== null && primaryContact !== undefined) {
-                for (const key in primaryContact) {
-                    if (primaryContact[key] !== null && primaryContact[key] !== undefined) {
-                        userDetailChanges[key] = primaryContact[key];
-                    }
-                }
-
-                if (userDetailChanges.email !== null && userDetailChanges.email !== undefined) {
-                    userDetailChanges.emails = FieldValue.arrayUnion(userDetailChanges.email);
-                }
-
-                if (userDetailChanges.phone !== null && userDetailChanges.phone !== undefined) {
-                    userDetailChanges.phones = FieldValue.arrayUnion(userDetailChanges.phone);
-                }
-
-                if (userDetailChanges.website !== null && userDetailChanges.website !== undefined) {
-                    userDetailChanges.websites = FieldValue.arrayUnion(userDetailChanges.website);
-                }
-            }
-
-            if (primaryLocation !== null && primaryLocation !== undefined) {
-                if (userDetailChanges.address === null || userDetailChanges.address === undefined) {
-                    userDetailChanges.address = {};
-                }
-
-                for (const key in primaryLocation) {
-                    if (primaryLocation[key] !== null && primaryLocation[key] !== undefined) {
-                        userDetailChanges['address'][key] = primaryLocation[key];
-                    }
-                }
-
-                userDetailChanges.addresses = FieldValue.arrayUnion(userDetailChanges.address);
-            }
-
-            if (Object.keys(userChanges).length > 0) {
-                userChanges['modifiedAt'] = FieldValue.serverTimestamp();
-                stripNullUndefined(userChanges);
-            }
-
-            if (Object.keys(userDetailChanges).length > 0) {
-                userDetailChanges['modifiedAt'] = FieldValue.serverTimestamp();
-                stripNullUndefined(userDetailChanges);
-            }
-
-            db.runTransaction(async (transaction) => {
-                transaction.set(userRef, userChanges);
-                transaction.set(userDetailsRef, userDetailChanges);
-                return Promise.resolve();
-            });
-        }
-    } catch (error: any) {
-        addErrorEvent('setUserAccount', { error: error, accountInfo: accountInformation, userId: userId });
-    }
-    return new HttpsError('internal', 'Internal error.');
-};
-
-export const toggleClaimForAdmin = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const claimName = 'admin';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        addErrorEvent('toggleClaimForAdmin', error);
+        addErrorEvent('areDonationsAvailable', error);
+        throw error;
     }
 };
 
-export const toggleClaimForAidWorker = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const claimName = 'aid-worker';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        addErrorEvent('toggleClaimForAidWorker', error);
-    }
-};
+// --- Private helpers ---
 
-export const toggleClaimForDonor = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const claimName = 'donor';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        addErrorEvent('toggleClaimForDonor', error);
-    }
-};
-
-export const toggleClaimForVerified = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        await _verifyAdmin(request);
-        const userId = request.data.userId;
-        const claimName = 'verified';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        addErrorEvent('toggleClaimForVerified', error);
-    }
-};
-
-export const toggleClaimForVolunteer = async (request: any) => {
-    try {
-        _verifyAuthenticated(request);
-        const userId = request.data.userId;
-        const claimName = 'volunteer';
-        _toggleClaim(userId, claimName);
-    } catch (error) {
-        addErrorEvent('toggleClaimForVolunteer', error);
-    }
-};
-
-// Non-exported utility methods
 async function _checkClaims(idToken: string, claimNames: string[]) {
     try {
         const userClaims = {};
@@ -616,7 +290,6 @@ async function _addEvent(object: any) {
     try {
         const currentTime = new Date();
         const currentTimeString = currentTime.toDateString();
-        const db = getFirestore(app);
         const eventParams: Event = {
             type: '',
             note: JSON.stringify(object),
@@ -625,85 +298,12 @@ async function _addEvent(object: any) {
             modifiedAt: currentTimeString
         };
         await db.collection(EVENTS_COLLECTION).add(eventParams);
-
-        logger.warn(`Got event! ${JSON.stringify(object)}`);
+        console.warn(`Got event! ${JSON.stringify(object)}`);
     } catch (error) {
-        logger.error(error);
+        console.error(error);
     }
 }
 
 async function addErrorEvent(location: string, error: any): Promise<void> {
     _addEvent({ location: location, error: convertToString(error) });
-}
-
-async function _checkClaim(userId: string, claimName: string) {
-    try {
-        const claims = (await auth.getUser(userId)).customClaims;
-        if (claims === undefined || claims === null) {
-            return Promise.reject();
-        }
-        const claimValue = claims[claimName];
-        return claimValue !== undefined && claimValue === true ? true : false;
-    } catch (error) {
-        addErrorEvent('checkClaim', error);
-    }
-    return Promise.reject();
-}
-
-async function _toggleClaim(userId: string, claimName: string) {
-    try {
-        const claims = (await auth.getUser(userId)).customClaims;
-        if (claims === undefined || claims === null) {
-            return Promise.reject();
-        }
-        const claimValue = claims[claimName];
-        if (claimValue === undefined || claimValue === null) {
-            _setClaim(userId, claimName, false);
-        } else {
-            _setClaim(userId, claimName, !claimValue);
-        }
-    } catch (error) {
-        addErrorEvent('toggleClaim', error);
-    }
-    return Promise.reject();
-}
-
-async function _setClaim(userId: string, claimName: string, claimValue: any) {
-    try {
-        const customClaims = (await auth.getUser(userId)).customClaims;
-        auth.setCustomUserClaims(userId, {
-            [claimName]: claimValue,
-            ...customClaims
-        });
-    } catch (error) {
-        addErrorEvent('setClaim', error);
-    }
-}
-
-async function _verifyAdmin(request: any): Promise<boolean> {
-    try {
-        const user = await auth.getUser(request.uid);
-        return user.customClaims?.admin === true;
-    } catch (error) {
-        addErrorEvent('Verify admin', error);
-    }
-    return Promise.reject();
-}
-
-function _verifyAuthenticated(request: any) {
-    if (!request?.auth) {
-        throw new HttpsError('internal', 'Internal error.');
-    }
-}
-
-function stripNullUndefined(object: any) {
-    for (const key in object) {
-        if (object[key] instanceof Object) {
-            stripNullUndefined(object[key]);
-        }
-        if (object[key] === undefined || object[key] === null) {
-            delete object[key];
-        }
-    }
-    return object;
 }

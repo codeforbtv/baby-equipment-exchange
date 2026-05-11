@@ -16,7 +16,6 @@ import styles from '@/components/Browse.module.css';
 import '@/styles/globalStyles.css';
 // Types
 import { IUser } from '@/models/user';
-import { user } from 'firebase-functions/v1/auth';
 
 type UserListProps = {
     users: IUser[];

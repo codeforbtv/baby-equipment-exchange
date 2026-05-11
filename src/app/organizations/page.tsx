@@ -7,7 +7,8 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
 import Organizations from '@/components/Organizations';
 //API
-import { addErrorEvent, callGetOrganizationNames } from '@/api/firebase';
+import { addErrorEvent } from '@/api/firebase';
+import { getOrganizationNames } from '@/api/firebaseAdmin';
 //Styles
 import '@/styles/globalStyles.css';
 
@@ -20,7 +21,7 @@ const OrganizationsPage = () => {
     const fetchOrgNames = async (): Promise<void> => {
         setIsLoading(true);
         try {
-            const orgNamesResult = await callGetOrganizationNames();
+            const orgNamesResult = await getOrganizationNames();
             setOrgNamesAndIds(orgNamesResult);
             setIsLoading(false);
         } catch (error) {

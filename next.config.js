@@ -15,6 +15,10 @@ try {
         emulatorEnv.FIRESTORE_EMULATOR_HOST = `localhost:${emu.firestore?.port ?? 8080}`;
         emulatorEnv.FIREBASE_AUTH_EMULATOR_HOST = `localhost:${emu.auth?.port ?? 9099}`;
         emulatorEnv.FIREBASE_STORAGE_EMULATOR_HOST = `localhost:${emu.storage?.port ?? 9199}`;
+        // so externalized node_modules (e.g. @google-cloud/firestore) pick them up at runtime
+        process.env.FIRESTORE_EMULATOR_HOST ??= emulatorEnv.FIRESTORE_EMULATOR_HOST;
+        process.env.FIREBASE_AUTH_EMULATOR_HOST ??= emulatorEnv.FIREBASE_AUTH_EMULATOR_HOST;
+        process.env.FIREBASE_STORAGE_EMULATOR_HOST ??= emulatorEnv.FIREBASE_STORAGE_EMULATOR_HOST;
     }
 } catch {
     // firebase.json missing or malformed, emulator ports wont be set

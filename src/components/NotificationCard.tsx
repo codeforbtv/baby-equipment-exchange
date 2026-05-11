@@ -24,7 +24,8 @@ import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
 import { markDonationAsDistributed, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
-import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
+import { enableUser, deleteUser } from '@/api/firebaseAdmin';
 import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
 import sendMail from '@/api/nodemailer';
 //Styles
@@ -130,7 +131,7 @@ const NotificationCard = (props: NotificationCardProps) => {
     const handleEnableUser = async (uid: string, userName: string, userEmail: string): Promise<void> => {
         setIsLoading(true);
         try {
-            await Promise.all([callEnableUser(uid), enableDbUser(uid)]);
+            await Promise.all([enableUser({ idToken: await getAuthIdToken(), userId: uid }), enableDbUser(uid)]);
             const msg = userEnabled(userEmail, userName);
             await sendMail(msg);
             setDialogTitle('User enabled');
@@ -146,7 +147,7 @@ const NotificationCard = (props: NotificationCardProps) => {
     const handleDeleteUser = async (uid: string, userName: string, userEmail: string): Promise<void> => {
         setIsLoading(true);
         try {
-            await Promise.all([callDeleteUser(uid), deleteDbUser(uid)]);
+            await Promise.all([deleteUser({ idToken: await getAuthIdToken(), userId: uid }), deleteDbUser(uid)]);
             const msg = rejectUser(userEmail, userName);
             await sendMail(msg);
             setIsDeleteDialogOpen(false);

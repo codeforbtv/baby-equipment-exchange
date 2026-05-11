@@ -3,7 +3,8 @@
 //Hooks
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 //API
-import { callGetOrganizationNames, addErrorEvent, callIsEmailInUse, callSetClaims, callUpdateAuthUser, callEnableUser } from '@/api/firebase';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
+import { getOrganizationNames, isEmailInUse as checkEmailInUse, setCustomClaims, updateAuthUser, enableUser } from '@/api/firebaseAdmin';
 import sendMail from '@/api/nodemailer';
 import { enableDbUser, updateDbUser } from '@/api/firebase-users';
 //Components
@@ -69,7 +70,7 @@ const EditUser = (props: EditUserProps) => {
     const getOrgNames = async (): Promise<void> => {
         setIsLoading(true);
         try {
-            const organizationNamesResult = await callGetOrganizationNames();
+            const organizationNamesResult = await getOrganizationNames();
             setOrgNamesAndIds(organizationNamesResult);
         } catch (error) {
             addErrorEvent('Could not fetch org names', error);
@@ -95,7 +96,7 @@ const EditUser = (props: EditUserProps) => {
         validateEmail(newEmail);
         //Only check if email is valid if different from inital email value
         if (!isInvalidEmail && newEmail !== email) {
-            const emailInUse = await callIsEmailInUse(newEmail);
+            const emailInUse = await checkEmailInUse({ email: newEmail });
             setIsEmailInUse(emailInUse);
         }
     };
@@ -115,7 +116,7 @@ const EditUser = (props: EditUserProps) => {
             //If account is inactive, activate and send confirmation email
             if (isDisabled) {
                 try {
-                    await Promise.all([callEnableUser(uid), enableDbUser(uid)]);
+                    await Promise.all([enableUser({ idToken: await getAuthIdToken(), userId: uid }), enableDbUser(uid)]);
                     const emailMsg = userEnabled(email, displayName);
                     await sendMail(emailMsg);
                 } catch (error) {
@@ -125,9 +126,10 @@ const EditUser = (props: EditUserProps) => {
             //if any fields stored in the firebase auth user have changed, update auth user.
             if (email !== newEmail || displayName !== newDisplayName) {
                 try {
-                    const updatedAuthUser = await callUpdateAuthUser(uid, {
-                        email: newEmail,
-                        displayName: newDisplayName
+                    await updateAuthUser({
+                        idToken: await getAuthIdToken(),
+                        uid,
+                        accountInformation: { email: newEmail, displayName: newDisplayName }
                     });
                 } catch (error) {
                     addErrorEvent('Error updating email or display name', error);
@@ -137,7 +139,7 @@ const EditUser = (props: EditUserProps) => {
             if (role !== initialRole) {
                 try {
                     const claims = { [`${role}`]: true };
-                    await Promise.all([callSetClaims(uid, claims), updateDbUser(uid, { customClaims: claims })]);
+                    await Promise.all([setCustomClaims({ idToken: await getAuthIdToken(), userId: uid, claims }), updateDbUser(uid, { customClaims: claims })]);
                 } catch (error) {
                     addErrorEvent('Error updated custom claims', error);
                 }

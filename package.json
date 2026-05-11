@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
-        "emulators": "npm run --prefix functions build && firebase emulators:start --only auth,firestore,functions,storage --project baby-equipment-exchange-dev",
+        "emulators": "firebase emulators:start --only auth,firestore,storage --project baby-equipment-exchange-dev",
         "seed": "node scripts/seed-emulators.js",
         "test:cypress": "npx cypress run --headless --component",
         "test:unit": "jest .*/*.unit.test.ts",
@@ -36,7 +36,6 @@
         "eslint": "^8.51.0",
         "firebase": "^10.6.0",
         "firebase-admin": "^11.11.0",
-        "firebase-functions": "^4.3.1",
         "googleapis": "^164.0.0",
         "json-2-csv": "^5.5.10",
         "next": "^14.2.32",
