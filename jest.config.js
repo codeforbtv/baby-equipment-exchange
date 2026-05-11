@@ -13,7 +13,7 @@ const createJestConfig = nextJest({
 
 /** @type {import('jest').Config} */
 const customJestConfig = {
-    setupFiles: ['<rootDir>/dotenv-config.js'],
+    setupFiles: ['<rootDir>/jest-env-setup.js'],
     setupFilesAfterEnv: ['<rootDir>/setup-tests.ts'],
     verbose: true,
     preset: 'jest-puppeteer',

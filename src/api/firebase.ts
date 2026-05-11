@@ -1,28 +1,36 @@
-import { FirebaseApp, initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { User, getAuth } from 'firebase/auth';
-
-import { firebaseConfig } from './config';
-import { addEvent, checkClaims } from './firebaseAdmin';
-
-import { getFunctions, httpsCallable } from 'firebase/functions';
-
-import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
+import { Notification } from '@/types/NotificationTypes';
+import { AccountInformation, AuthUserRecord, NewUserAccountInfo } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
 import { UserRecord } from 'firebase-admin/auth';
+import { FirebaseApp, initializeApp } from 'firebase/app';
+import { User, connectAuthEmulator, getAuth } from 'firebase/auth';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
+import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
+import { connectStorageEmulator, getStorage } from 'firebase/storage';
+import { firebaseConfig } from './config';
 import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
 import { getUsersNotifications } from './firebase-users';
-import { Notification } from '@/types/NotificationTypes';
+import { addEvent, checkClaims } from './firebaseAdmin';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
-
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
-
-//Cloud functions
 const functions = getFunctions(app);
+
+// client sdk needs explicit connectFirestoreEmulator calls because it's designed for the browser (no env vars).
+// server side sdk auto-detects FIRESTORE_EMULATOR_HOST set by `firebase emulators:exec`.
+// this file is used by both client & server side, so we need to support both types of file access
+const isCallerClientSide = typeof window !== 'undefined';
+// prevents HMR re-init. emulator throws if called twice on the same instance.
+const isFirstLoad = !(db as any)._settingsFrozen;
+if (process.env.NODE_ENV !== 'production' && isCallerClientSide && isFirstLoad) {
+    connectFirestoreEmulator(db, 'localhost', Number(process.env.NEXT_PUBLIC_EMULATOR_FIRESTORE_PORT));
+    connectAuthEmulator(auth, `http://localhost:${process.env.NEXT_PUBLIC_EMULATOR_AUTH_PORT}`);
+    connectStorageEmulator(storage, 'localhost', Number(process.env.NEXT_PUBLIC_EMULATOR_STORAGE_PORT));
+    connectFunctionsEmulator(functions, 'localhost', Number(process.env.NEXT_PUBLIC_EMULATOR_FUNCTIONS_PORT));
+}
+
 const createNewUser = httpsCallable(functions, 'createnewuser');
 const enableUser = httpsCallable(functions, 'enableuser');
 const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');

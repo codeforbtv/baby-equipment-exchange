@@ -12,7 +12,7 @@ import * as admin from 'firebase-admin';
 import { getAuth, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { initializeApp, ServiceAccount } from 'firebase-admin/app';
+import { initializeApp } from 'firebase-admin/app';
 
 import { convertToString } from '@/utils/utils';
 import { AuthUserRecord } from '@/types/UserTypes';
@@ -40,18 +40,12 @@ export async function initAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    if (process.env.NODE_ENV == 'production') {
+    if (process.env.NODE_ENV === 'production') {
+        // firestore creds are automatically injected w/ firestory deploy
         return initializeApp();
-    } else {
-        const credentials: ServiceAccount = {
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY
-        };
-        return initializeApp({
-            credential: admin.credential.cert(credentials)
-        });
     }
+    // emulate in every non-prod/staging environment
+    return initializeApp({ projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID });
 }
 
 const app = await initAdmin();
