@@ -7,12 +7,23 @@ import { User, connectAuthEmulator, getAuth } from 'firebase/auth';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
 import { connectStorageEmulator, getStorage } from 'firebase/storage';
-import { firebaseConfig } from './config';
 import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
 import { getUsersNotifications } from './firebase-users';
 import { addEvent, checkClaims } from './firebaseAdmin';
 
-export const app: FirebaseApp = initializeApp(firebaseConfig);
+function initApp(): FirebaseApp {
+    if (process.env.NODE_ENV === 'production') {
+        // creds automatically injected with firebase app hosting
+        return initializeApp();
+    }
+    // if not prod, then emulator
+    return initializeApp({
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        apiKey: 'emulator-dummy-key'
+    });
+}
+
+export const app = initApp();
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);

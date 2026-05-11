@@ -1,6 +1,5 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-const config = process.env.FIREBASE_CONFIG ?? 'firebase-config.json';
 
 let emulatorEnv = {};
 try {
@@ -24,7 +23,6 @@ try {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     env: {
-        NEXT_PUBLIC_FIREBASE_CONFIG: config,
         ...emulatorEnv
     },
     images: {
