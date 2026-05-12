@@ -142,7 +142,7 @@ const DONOR1_DONATIONS = [
         model: 'SnugRide SnugLock 35',
         description: 'Rear-facing infant seat, base included. Used for 14 months, no accidents.',
         status: 'in processing',
-        images: []
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Car+Seat']
     },
     {
         id: 'donation-mj-002',
@@ -151,7 +151,7 @@ const DONOR1_DONATIONS = [
         model: 'Vista V2',
         description: 'Full-size stroller with bassinet attachment. Rain cover included. Minor scuff on front wheel.',
         status: 'in processing',
-        images: []
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Stroller']
     },
     {
         id: 'donation-mj-003',
@@ -160,7 +160,7 @@ const DONOR1_DONATIONS = [
         model: '?',
         description: 'Colorful activity gym with hanging toys. Batteries not included.',
         status: 'in processing',
-        images: []
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Play+Mat']
     }
 ];
 
@@ -172,7 +172,7 @@ const DONOR2_DONATIONS = [
         model: 'SNIGLAR',
         description: 'Beech wood crib with mattress. Disassembled, all hardware in labeled bags.',
         status: 'in processing',
-        images: []
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
     },
     {
         id: 'donation-sam-002',
@@ -181,7 +181,7 @@ const DONOR2_DONATIONS = [
         model: 'Tripp Trapp',
         description: 'Walnut brown, includes baby set and tray. Some tooth marks on the front rail.',
         status: 'in processing',
-        images: []
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=High+Chair']
     },
     {
         id: 'donation-sam-003',
@@ -190,7 +190,7 @@ const DONOR2_DONATIONS = [
         model: 'DXR-8 PRO',
         description: 'Video monitor with wide-angle lens. Camera, monitor unit, and USB charger.',
         status: 'in processing',
-        images: []
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Monitor']
     }
 ];
 
@@ -205,7 +205,8 @@ const ADMIN_DONATIONS = [
         tagNumber: 'CAR 12',
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
-        donorId: 'admin1'
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Car+Seat']
     },
     {
         id: 'donation-admin-002',
@@ -217,7 +218,8 @@ const ADMIN_DONATIONS = [
         tagNumber: 'STR 7',
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
-        donorId: 'admin1'
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Stroller']
     },
     {
         id: 'donation-admin-003',
@@ -229,7 +231,8 @@ const ADMIN_DONATIONS = [
         tagNumber: 'BPM 5',
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
-        donorId: 'admin1'
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Breast+Pump']
     },
     {
         id: 'donation-admin-004',
@@ -241,7 +244,8 @@ const ADMIN_DONATIONS = [
         tagNumber: 'BCR 2',
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
-        donorId: 'admin1'
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Baby+Carrier']
     },
     {
         id: 'donation-admin-005',
@@ -253,7 +257,8 @@ const ADMIN_DONATIONS = [
         tagNumber: 'CLT 18',
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
-        donorId: 'admin1'
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
     },
     {
         id: 'donation-admin-006',
@@ -265,7 +270,8 @@ const ADMIN_DONATIONS = [
         tagNumber: 'TOY 9',
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
-        donorId: 'admin1'
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Toy']
     }
 ];
 
@@ -280,7 +286,8 @@ const HISTORY_DONATIONS = [
         tagNumber: 'CRB 3',
         donorEmail: 'donor2@email.com',
         donorName: 'Eli Sato',
-        donorId: 'donor2'
+        donorId: 'donor2',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
     }
 ];
 
