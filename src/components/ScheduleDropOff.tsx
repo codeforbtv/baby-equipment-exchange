@@ -39,6 +39,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     const router = useRouter();
 
@@ -147,7 +148,11 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
             posthog.captureException(error);
-            throw error;
+            if (error instanceof Error && error.message.startsWith('Category not found:')) {
+                setErrorMessage(error.message);
+            } else {
+                setErrorMessage('An unexpected error occurred while processing donations. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -217,6 +222,12 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 </>
             )}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${donorEmail}`} />
+            <CustomDialog
+                isOpen={errorMessage !== ''}
+                onClose={() => setErrorMessage('')}
+                title="Error Processing Donations"
+                content={errorMessage}
+            />
         </ProtectedAdminRoute>
     );
 };
