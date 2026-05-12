@@ -25,10 +25,10 @@ import '@/styles/globalStyles.css';
 import { Donation } from '@/models/donation';
 
 type DonationCardMedProps = {
-    orderId: string;
+    orderId?: string;
     donation: Donation;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    handleRemoveFromOrder: (orderId: string, donation: Donation) => Promise<void>;
+    handleRemoveFromOrder?: (orderId: string, donation: Donation) => Promise<void>;
 };
 
 const DonationCardMed = (props: DonationCardMedProps) => {
@@ -37,7 +37,9 @@ const DonationCardMed = (props: DonationCardMedProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleRemove = async (id: string, donation: Donation) => {
-        await handleRemoveFromOrder(id, donation);
+        if (handleRemoveFromOrder) {
+            await handleRemoveFromOrder(id, donation);
+        }
     };
 
     return (
@@ -53,7 +55,7 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                     <Typography variant="h6">{donation.tagNumber}</Typography>
                 </CardContent>
 
-                {donation.status !== 'unavailable' && (
+                {handleRemoveFromOrder && orderId && (
                     <CardActions>
                         <Button variant="contained" startIcon={<RemoveShoppingCartIcon />} color="error" onClick={() => setShowRemoveDialog(true)}>
                             Remove
@@ -61,23 +63,24 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                     </CardActions>
                 )}
             </Card>
-            {/* confirm remove dialog */}
-            <Dialog open={showRemoveDialog} aria-labelledby="dialog-title" aria-describedby="dialog-description">
-                <DialogTitle id="dialog-title">Remove Donation?</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        This will remove {donation.model + ' ' + donation.brand} from this order and change its status to unavailable. Are you sure?
-                    </DialogContentText>
-                    <DialogActions>
-                        <Button variant="contained" onClick={() => handleRemove(orderId, donation)}>
-                            Confirm
-                        </Button>
-                        <Button variant="outlined" onClick={() => setShowRemoveDialog(false)}>
-                            Cancel
-                        </Button>
-                    </DialogActions>
-                </DialogContent>
-            </Dialog>
+            {handleRemoveFromOrder && orderId && (
+                <Dialog open={showRemoveDialog} aria-labelledby="dialog-title" aria-describedby="dialog-description">
+                    <DialogTitle id="dialog-title">Remove Donation?</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            This will remove {donation.model + ' ' + donation.brand} from this order and change its status to unavailable. Are you sure?
+                        </DialogContentText>
+                        <DialogActions>
+                            <Button variant="contained" onClick={() => handleRemove(orderId, donation)}>
+                                Confirm
+                            </Button>
+                            <Button variant="outlined" onClick={() => setShowRemoveDialog(false)}>
+                                Cancel
+                            </Button>
+                        </DialogActions>
+                    </DialogContent>
+                </Dialog>
+            )}
         </ProtectedAdminRoute>
     );
 };
