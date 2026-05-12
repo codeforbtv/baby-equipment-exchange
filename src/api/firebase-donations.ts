@@ -537,12 +537,20 @@ export async function getOrdersNotifications() {
             };
             for (const donation of orderInfo.items) {
                 const donationDetails = await getDoc(donation);
-                order.items.push(donationDetails.data() as Donation);
+                if (donationDetails.exists()) {
+                    order.items.push(donationDetails.data() as Donation);
+                } else {
+                    console.warn(`Order ${doc.id}: referenced donation ${donation.id} not found, skipping`);
+                }
             }
             if (orderInfo.rejectedItems) {
                 for (const donation of orderInfo.rejectedItems) {
                     const donationDetails = await getDoc(donation);
-                    order.rejectedItems?.push(donationDetails.data() as Donation);
+                    if (donationDetails.exists()) {
+                        order.rejectedItems?.push(donationDetails.data() as Donation);
+                    } else {
+                        console.warn(`Order ${doc.id}: referenced rejected donation ${donation.id} not found, skipping`);
+                    }
                 }
             }
 
@@ -570,12 +578,20 @@ export async function getOrderById(id: string): Promise<Order> {
             };
             for (const donation of orderInfo.items) {
                 const donationDetails = await getDoc(donation);
-                order.items.push(donationDetails.data() as Donation);
+                if (donationDetails.exists()) {
+                    order.items.push(donationDetails.data() as Donation);
+                } else {
+                    console.warn(`Order ${id}: referenced donation ${donation.id} not found, skipping`);
+                }
             }
             if (orderInfo.rejectedItems) {
                 for (const donation of orderInfo.rejectedItems) {
                     const donationDetails = await getDoc(donation);
-                    order.rejectedItems?.push(donationDetails.data() as Donation);
+                    if (donationDetails.exists()) {
+                        order.rejectedItems?.push(donationDetails.data() as Donation);
+                    } else {
+                        console.warn(`Order ${id}: referenced rejected donation ${donation.id} not found, skipping`);
+                    }
                 }
             }
             return order;
@@ -614,6 +630,12 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
             modifiedAt: serverTimestamp()
         });
         await batch.commit();
+
+        const updatedOrder = await getDoc(orderRef);
+        const orderData = updatedOrder.data();
+        if (orderData && orderData.items.length === 0 && orderData.rejectedItems?.length > 0) {
+            await closeOrder(orderId);
+        }
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);
     }
