@@ -134,7 +134,10 @@ export async function getTagNumber(category: string): Promise<string> {
         const docRef = docSnap.ref;
         docRefs.push(docRef);
     });
-    //Use first (and only) query to obtain doc ref for transaction
+    if (docRefs.length === 0) {
+        throw new Error(`Category not found: "${category}". No matching category exists.`);
+    }
+
     const categoryRef = docRefs[0];
     let tagNumber = '';
     try {
