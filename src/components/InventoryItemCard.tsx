@@ -25,7 +25,7 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
     const images = inventoryItem.images as string[];
     const image = images ? images[0] : '';
     const canRequest = inventoryItem.status === 'available';
-    const tagLabel = inventoryItem.tagNumber ? `${inventoryItem.tagNumber}` : 'No tag';
+    const tagLabel = inventoryItem.tagNumber ? `TAG ${inventoryItem.tagNumber}` : 'No TAG';
 
     return (
         <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>

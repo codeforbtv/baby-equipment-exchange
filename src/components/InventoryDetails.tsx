@@ -85,8 +85,8 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
                         ))}
                     </ImageList>
                     <h2>
-                        <b>Tag number: </b>
-                        {itemDetails.tagNumber ?? 'No tag'}
+                        <b>TAG: </b>
+                        {itemDetails.tagNumber ?? 'No TAG'}
                     </h2>
                     <h2>
                         <b>Status: </b>

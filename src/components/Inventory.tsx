@@ -187,7 +187,7 @@ const Inventory = (props: InventoryProps) => {
                                 <TextField
                                     label="Search"
                                     id="search-field"
-                                    placeholder="Search by tag, status, brand, model, or category"
+                                    placeholder="Search by TAG, status, brand, model, or category"
                                     value={searchInput}
                                     onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
                                     InputProps={{
