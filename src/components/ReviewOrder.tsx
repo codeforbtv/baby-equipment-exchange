@@ -10,6 +10,7 @@ import DonationDetails from './DonationDetails';
 import { Button, IconButton } from '@mui/material';
 import SchedulePickup from './SchedulePickup';
 import CustomDialog from './CustomDialog';
+import CancelOrder from './CancelOrder';
 //Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
@@ -29,13 +30,13 @@ type ReviewOrderProps = {
 };
 
 const ReviewOrder = (props: ReviewOrderProps) => {
-    const { order, setIdToDisplay, id, setNotificationsUpdated } = props;
+    const { setIdToDisplay, id, setNotificationsUpdated } = props;
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
+    const [showCancelOrder, setShowCancelOrder] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [isOrderUpdated, setIsOrderUpdated] = useState<boolean>(false);
 
     const fetchOrder = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -60,7 +61,11 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     rejectedItems: !currentOrder.rejectedItems ? [donation] : [...currentOrder.rejectedItems, donation]
                 };
                 setCurrentOrder(updatedOrder);
-                setIsDialogOpen(true);
+                if (updatedOrder.items.length === 0) {
+                    setShowCancelOrder(true);
+                } else {
+                    setIsDialogOpen(true);
+                }
             }
         } catch (error) {
             addErrorEvent('Error removing donation from order', error);
@@ -70,14 +75,13 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     };
 
     const handleClose = async (): Promise<void> => {
-        // if (setNotificationsUpdated) setNotificationsUpdated(true);
-        setIsOrderUpdated(true);
+        if (setNotificationsUpdated) setNotificationsUpdated(true);
         setIsDialogOpen(false);
     };
 
     useEffect(() => {
         fetchOrder(id);
-    }, []);
+    }, [id]);
 
     return (
         <ProtectedAdminRoute>
@@ -91,8 +95,18 @@ const ReviewOrder = (props: ReviewOrderProps) => {
             {showScheduler && currentOrder && (
                 <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
             )}
+            {showCancelOrder && currentOrder && (
+                <CancelOrder
+                    order={currentOrder}
+                    shouldShow={setShowCancelOrder}
+                    setNotificationsUpdated={setNotificationsUpdated}
+                    onComplete={() => {
+                        if (setIdToDisplay) setIdToDisplay(null);
+                    }}
+                />
+            )}
 
-            {!showScheduler && !donationIdToDisplay && (
+            {!showScheduler && !showCancelOrder && !donationIdToDisplay && (
                 <>
                     <div className="page--header">
                         <h2>Review Order</h2>
@@ -129,14 +143,20 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                     {currentOrder.rejectedItems.map((item) => (
                                         <DonationCardMed
                                             key={item.id}
+                                            orderId={id}
                                             donation={item}
                                             setIdToDisplay={setDonationIdToDisplay}
                                         />
                                     ))}
                                 </>
                             )}
-                            <Button variant="contained" onClick={() => setShowScheduler(true)}>
-                                Schedule Pickup
+                            {currentOrder.items.length > 0 && (
+                                <Button variant="contained" onClick={() => setShowScheduler(true)}>
+                                    Schedule Pickup
+                                </Button>
+                            )}
+                            <Button variant="outlined" color="error" onClick={() => setShowCancelOrder(true)} sx={{ marginLeft: '1rem' }}>
+                                Cancel Order
                             </Button>
                         </div>
                     )}

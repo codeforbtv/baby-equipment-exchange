@@ -3,37 +3,35 @@
 //Hooks
 import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { renderToString } from 'react-dom/server';
-import { useRouter } from 'next/navigation';
 //Components
 import DonationCardSmall from './DonationCardSmall';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@mui/material';
 import CustomDialog from './CustomDialog';
+import Loader from './Loader';
 //Api
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
+import { closeOrder, updateDonation } from '@/api/firebase-donations';
 import sendMail from '@/api/nodemailer';
-import { closeOrder, updateDonationStatus } from '@/api/firebase-donations';
-import posthog from 'posthog-js';
 //styles
 import '@/styles/globalStyles.css';
 //types
-import { Order } from '@/types/OrdersTypes';
 import { EventType } from '@/types/CalendlyTypes';
-import Loader from './Loader';
+import { Order } from '@/types/OrdersTypes';
 
-import schedulePickup from '@/email-templates/schedulePickup';
+import cancelOrder from '@/email-templates/cancelOrder';
 
-type SchedulePickupProps = {
+type CancelOrderProps = {
     order: Order;
-    setShowScheduler: Dispatch<SetStateAction<boolean>>;
+    shouldShow: Dispatch<SetStateAction<boolean>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onComplete?: () => void;
 };
 
-const SchedulePickup = (props: SchedulePickupProps) => {
-    const { order, setShowScheduler, setNotificationsUpdated } = props;
+const CancelOrder = (props: CancelOrderProps) => {
+    const { order, shouldShow, setNotificationsUpdated, onComplete } = props;
     const { requestor, id, items, rejectedItems } = order;
-    const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [events, setEvents] = useState<EventType[] | null>(null);
@@ -44,37 +42,35 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const handleClose = () => {
         setIsDialogOpen(false);
         if (setNotificationsUpdated) setNotificationsUpdated(true);
-        router.push('/');
+        shouldShow(false);
+        if (onComplete) onComplete();
     };
 
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
         setInviteUrl(event.target.value);
     };
+
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        const tagNumbers: string[] = [];
-        items.map((item) => {
-            if (item.tagNumber) tagNumbers.push(item.tagNumber);
-        });
-        const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), tagNumbers, notes);
+        const tagNumbers = [...items, ...(rejectedItems ?? [])].flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
+        const emailMsg = cancelOrder(requestor.email, renderToString(message), tagNumbers, notes, inviteUrl);
+
         try {
             await Promise.all(
-                items.map(async (item) => {
-                    await updateDonationStatus(item.id, 'reserved');
-                })
+                items.map((item) =>
+                    updateDonation(item.id, {
+                        status: 'available',
+                        requestor: null
+                    })
+                )
             );
             await closeOrder(id);
             await sendMail(emailMsg);
-            posthog.capture('pickup_scheduled', {
-                order_id: id,
-                item_count: items.length
-            });
             setIsDialogOpen(true);
         } catch (error) {
-            addErrorEvent('Error submitting schedule pickup email', error);
-            posthog.captureException(error);
+            addErrorEvent('Error submitting order cancellation email', error);
         } finally {
             setIsLoading(false);
         }
@@ -91,15 +87,19 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const message = (
         <>
-            <p>{`Hello ${requestor.name}`}</p>
-            <p>Your request for the following items has been fulfilled:</p>
-            {items.map((item) => (
-                <DonationCardSmall key={item.id} donation={item} />
-            ))}
+            <p>{`Hello ${requestor.name},`}</p>
+            {items.length > 0 && (
+                <>
+                    <p>Your request for the following items has been cancelled. These items will be returned to available inventory.</p>
+                    {items.map((item) => (
+                        <DonationCardSmall key={item.id} donation={item} />
+                    ))}
+                </>
+            )}
             {rejectedItems && rejectedItems.length > 0 && (
                 <>
-                    <p>Unfortunately, the following items you requested are no longer available:</p>
-                    {rejectedItems?.map((item) => (
+                    <p>Unfortunately, the following requested items are no longer available:</p>
+                    {rejectedItems.map((item) => (
                         <DonationCardSmall key={item.id} donation={item} />
                     ))}
                 </>
@@ -114,7 +114,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                <h3>Send Pickup Scheduling Email</h3>
+                <h3>Send Order Update Email</h3>
             </div>
             {isLoading ? (
                 <Loader />
@@ -138,30 +138,29 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                             />
                             <FormControl fullWidth sx={{ marginTop: '2em' }}>
                                 <InputLabel variant="standard" htmlFor="location" shrink={true}>
-                                    Select calendar for accepted donations
+                                    Select calendar for follow up
                                 </InputLabel>
                                 <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                    <option value="" disabled>
-                                        Select Calendar (Optional)
-                                    </option>
+                                    <option value="">No follow-up calendar</option>
                                     {events &&
-                                        events.map((event, index) => {
+                                        events.map((event) => {
                                             if (event.active === true) {
                                                 return (
-                                                    <option key={index} value={event.scheduling_url}>
+                                                    <option key={event.uri} value={event.scheduling_url}>
                                                         {event.name}
                                                     </option>
                                                 );
                                             }
+                                            return null;
                                         })}
                                 </NativeSelect>
                             </FormControl>
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
                                 <Button variant="contained" onClick={handleSubmit}>
-                                    Send Email
+                                    Send Email and Close Order
                                 </Button>
-                                <Button variant="outlined" onClick={() => setShowScheduler(false)}>
-                                    Cancel
+                                <Button variant="outlined" onClick={() => shouldShow(false)}>
+                                    Back
                                 </Button>
                             </Box>
                         </Box>
@@ -173,4 +172,4 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     );
 };
 
-export default SchedulePickup;
+export default CancelOrder;
