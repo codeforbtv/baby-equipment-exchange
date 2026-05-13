@@ -54,7 +54,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        let tagNumbers: string[] = [];
+        const tagNumbers: string[] = [];
         items.map((item) => {
             if (item.tagNumber) tagNumbers.push(item.tagNumber);
         });

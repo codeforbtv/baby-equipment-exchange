@@ -320,7 +320,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <Dialog open={isDeleteDialogOpen} aria-labelledby="dialog-title" aria-describedby="dialog-description">
                                 <DialogTitle id="dialog-title">Reject pending user?</DialogTitle>
                                 <DialogContent>
-                                    <DialogContentText id="dialog-description">This will delete the user "{user.displayName}." Are you sure?</DialogContentText>
+                                    <DialogContentText id="dialog-description">This will delete the user &quot;{user.displayName}.&quot; Are you sure?</DialogContentText>
                                     <DialogActions>
                                         <Button variant="contained" onClick={() => handleDeleteUser(user.uid, user.displayName, user.email)}>
                                             Confirm
