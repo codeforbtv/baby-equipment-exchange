@@ -4,3 +4,10 @@
     display: flex;
     background-color: var(--bg-gray);
 }
+
+.sub-navbar {
+    width: 100%;
+    display: flex;
+    background-color: var(--bg-gray);
+    margin-top: 1rem;
+}

@@ -21,6 +21,8 @@ import { Order } from '@/types/OrdersTypes';
 type NotificationsProps = {
     notifications: Notification;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    activeSubTab?: number;
+    onSubTabChange?: Dispatch<SetStateAction<number>>;
 };
 
 type DonorGroup = {
@@ -85,12 +87,22 @@ const groupByRequestor = (orders: Order[]): RequestorGroup[] => {
 };
 
 const Notifications = (props: NotificationsProps) => {
-    const { notifications, setNotificationsUpdated } = props;
+    const { notifications, setNotificationsUpdated, activeSubTab, onSubTabChange } = props;
 
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
     const [orderIdToDisplay, setOrderIdToDisplay] = useState<string | null>(null);
-    const [currentTab, setCurrentTab] = useState<number>(0);
+    const [localSubTab, setLocalSubTab] = useState<number>(0);
+    const currentTab = activeSubTab ?? localSubTab;
+
+    const handleSubTabChange = (nextTab: number) => {
+        if (onSubTabChange) {
+            onSubTabChange(nextTab);
+            return;
+        }
+
+        setLocalSubTab(nextTab);
+    };
 
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
     const donorGroupsApproval = groupByDonor(donationsAwaitingApproval);
@@ -142,7 +154,7 @@ const Notifications = (props: NotificationsProps) => {
                         <>
                             <Tabs
                                 value={currentTab}
-                                onChange={(_, v) => setCurrentTab(v)}
+                                onChange={(_, v) => handleSubTabChange(v)}
                                 variant="scrollable"
                                 scrollButtons="auto"
                                 sx={{

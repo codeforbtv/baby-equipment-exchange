@@ -12,7 +12,7 @@ import Notifications from './Notifications';
 import Inventory from './Inventory';
 import Categories from './Categories';
 //Hooks
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useRouter } from 'next/navigation';
 //API
@@ -47,7 +47,9 @@ export default function Dashboard() {
         [key: string]: string;
     } | null>(null);
     const [notifications, setNotifications] = useState<Notification | null>(null);
+    const [notificationsSubTab, setNotificationsSubTab] = useState<number>(0);
     const [categories, setCategories] = useState<Category[] | null>(null);
+    const pendingNotificationScrollTop = useRef<number | null>(null);
 
     const { requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
@@ -83,17 +85,31 @@ export default function Dashboard() {
     };
 
     async function fetchNotifications(showLoader = false): Promise<void> {
-        if (showLoader || !notifications) setIsLoading(true);
+        const shouldBlockContent = showLoader || !notifications;
+        if (shouldBlockContent) setIsLoading(true);
         try {
             const notificationsResult = await getNotifications();
             setNotifications(notificationsResult);
             setNotificationsUpdated(false);
+            if (pendingNotificationScrollTop.current !== null) {
+                const scrollTop = pendingNotificationScrollTop.current;
+                pendingNotificationScrollTop.current = null;
+                requestAnimationFrame(() => window.scrollTo({ top: scrollTop }));
+            }
         } catch (error) {
             addErrorEvent('Fetch notifications', error);
         } finally {
-            setIsLoading(false);
+            if (shouldBlockContent) setIsLoading(false);
         }
     }
+
+    const setNotificationsUpdatedAndPreserveScroll: React.Dispatch<React.SetStateAction<boolean>> = (value) => {
+        const updated = typeof value === 'function' ? value(notificationsUpdated) : value;
+        if (updated && typeof window !== 'undefined') {
+            pendingNotificationScrollTop.current = window.scrollY;
+        }
+        setNotificationsUpdated(updated);
+    };
 
     async function fetchDonations(showLoader = false): Promise<void> {
         if (showLoader || !donations) setIsLoading(true);
@@ -226,7 +242,12 @@ export default function Dashboard() {
 
                     <CustomTabPanel value={currentTab} index={0}>
                         {notifications ? (
-                            <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
+                            <Notifications
+                                notifications={notifications}
+                                setNotificationsUpdated={setNotificationsUpdatedAndPreserveScroll}
+                                activeSubTab={notificationsSubTab}
+                                onSubTabChange={setNotificationsSubTab}
+                            />
                         ) : (
                             <p>No notifications at this time.</p>
                         )}

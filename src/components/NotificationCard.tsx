@@ -2,7 +2,6 @@
 
 //Hooks
 import { Dispatch, SetStateAction, useState } from 'react';
-import { useRouter } from 'next/navigation';
 //Components
 import Link from 'next/link';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -17,8 +16,7 @@ import {
     DialogTitle,
     DialogContent,
     DialogContentText,
-    DialogActions,
-    Box
+    DialogActions
 } from '@mui/material';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
@@ -56,8 +54,6 @@ const NotificationCard = (props: NotificationCardProps) => {
     const [dialogTitle, setDialogTitle] = useState<string>('');
     const [dialogContent, setDialogContent] = useState<string>('');
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
-
-    const router = useRouter();
 
     const handleClose = () => {
         setIsDialogOpen(false);
