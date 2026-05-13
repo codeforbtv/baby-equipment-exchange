@@ -59,7 +59,7 @@ export const PendingDonationsProvider = ({ children }: Props) => {
     const addPendingDonationsToLocalStorage = async (pendingDonations: DonationFormData[]): Promise<void> => {
         try {
             const toLocalStorageArray: DonationFormData[] = [];
-            for (let pendingDonation of pendingDonations) {
+            for (const pendingDonation of pendingDonations) {
                 const toLocalStorageItem: DonationFormData = {
                     category: pendingDonation.category,
                     brand: pendingDonation.brand,
@@ -69,8 +69,8 @@ export const PendingDonationsProvider = ({ children }: Props) => {
                     base64Images: []
                 };
                 if (pendingDonation.images) {
-                    for (let image of pendingDonation.images) {
-                        const extension = /[^\.]*$/.exec(image.name)![0];
+                    for (const image of pendingDonation.images) {
+                        const extension = /[^.]*$/.exec(image.name)![0];
                         const base64Image = await fileToBase64(image);
                         const base64Obj: base64ImageObj = {
                             base64Image: base64Image,
@@ -93,9 +93,9 @@ export const PendingDonationsProvider = ({ children }: Props) => {
         try {
             const existingPendingDonations = localStorage.getItem('pendingDonations');
             if (existingPendingDonations) {
-                let fromLocalStorageArray: DonationFormData[] = [];
+                const fromLocalStorageArray: DonationFormData[] = [];
                 const existingDonations = JSON.parse(existingPendingDonations) as DonationFormData[];
-                for (let existingDonation of existingDonations) {
+                for (const existingDonation of existingDonations) {
                     const fromLocalStorageItem: DonationFormData = {
                         category: existingDonation.category,
                         brand: existingDonation.brand,
@@ -104,7 +104,7 @@ export const PendingDonationsProvider = ({ children }: Props) => {
                         images: []
                     };
                     if (existingDonation.base64Images) {
-                        for (let base64image of existingDonation.base64Images) {
+                        for (const base64image of existingDonation.base64Images) {
                             const image = await base64ObjToFile(base64image);
                             fromLocalStorageItem.images?.push(image);
                         }

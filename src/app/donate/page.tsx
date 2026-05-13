@@ -125,7 +125,7 @@ export default function Donate() {
     }
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
-        let bulkDonations: DonationBody[] = [];
+        const bulkDonations: DonationBody[] = [];
         let anonymousUser;
         try {
             //create anonymous user if not loged in

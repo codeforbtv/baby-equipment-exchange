@@ -29,7 +29,6 @@ import { Order } from '@/types/OrdersTypes';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
-import { getBase64ImagesFromTagnumber } from './firebaseAdmin';
 import { AdminDonationBody, base64ImageObj } from '@/types/DonationTypes';
 import { base64ObjToFile } from '@/utils/utils';
 import { uploadImages } from './firebase-images';
@@ -140,7 +139,7 @@ const inventoryConverter = {
 
 export async function getAllDonations(): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
+        const donations: Donation[] = [];
         const querySnapshot = await getDocs(collection(db, DONATIONS_COLLECTION).withConverter(donationConverter));
         querySnapshot.forEach((snapshot) => {
             donations.push(snapshot.data());
@@ -153,7 +152,7 @@ export async function getAllDonations(): Promise<Donation[]> {
 }
 
 export async function getDonationNotifications(): Promise<Donation[]> {
-    let donations: Donation[] = [];
+    const donations: Donation[] = [];
     try {
         const donationsRef = collection(db, DONATIONS_COLLECTION);
         const donationNotificationsQuery = query(
@@ -173,7 +172,7 @@ export async function getDonationNotifications(): Promise<Donation[]> {
 
 export async function getInventory(): Promise<InventoryItem[]> {
     try {
-        let inventory: InventoryItem[] = [];
+        const inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const contraints: QueryConstraint[] = [where('status', '==', 'available')];
         const q = query(collectionRef, ...contraints).withConverter(inventoryConverter);
@@ -184,6 +183,21 @@ export async function getInventory(): Promise<InventoryItem[]> {
         return inventory;
     } catch (error) {
         addErrorEvent('Get inventory', error);
+    }
+    return Promise.reject();
+}
+
+export async function getAllInventory(): Promise<InventoryItem[]> {
+    try {
+        const inventory: InventoryItem[] = [];
+        const collectionRef = collection(db, DONATIONS_COLLECTION).withConverter(inventoryConverter);
+        const querySnapshot = await getDocs(collectionRef);
+        querySnapshot.forEach((snapshot) => {
+            inventory.push(snapshot.data());
+        });
+        return inventory;
+    } catch (error) {
+        addErrorEvent('Get all inventory', error);
     }
     return Promise.reject();
 }
@@ -207,7 +221,7 @@ export async function getInventoryItemById(id: string): Promise<InventoryItem> {
 export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
     if (inventoryIds.length === 0) return [];
     try {
-        let inventory: InventoryItem[] = [];
+        const inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const q = query(collectionRef, where(documentId(), 'in', inventoryIds)).withConverter(inventoryConverter);
         const querySnapshot = await getDocs(q);
@@ -238,7 +252,7 @@ export async function getDonationById(id: string): Promise<Donation> {
 
 export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
+        const donations: Donation[] = [];
         const bulkRef = doc(db, BULK_DONATIONS_COLLECTION, id);
         const bulkSnapshot = await getDoc(bulkRef);
         if (bulkSnapshot.exists()) {
@@ -422,7 +436,7 @@ export async function deleteDonationById(id: string): Promise<void> {
 
 export async function adminAreDonationsAvailable(ids: string[]): Promise<string[]> {
     try {
-        let unavailableDonations = [];
+        const unavailableDonations = [];
         for (const id of ids) {
             const donationref = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
             const donationSnapshot = await getDoc(donationref);
@@ -507,14 +521,14 @@ export async function adminRequestInventoryItems(inventoryItemIds: string[], use
 
 //Get items requested by aid workers
 export async function getOrdersNotifications() {
-    let orders: Order[] = [];
+    const orders: Order[] = [];
     try {
         const ordersRef = collection(db, ORDERS_COLLECTION);
         const q = query(ordersRef, where('status', '==', 'open'));
         const ordersSnapshot = await getDocs(q);
         for (const doc of ordersSnapshot.docs) {
             const orderInfo = doc.data();
-            let order: Order = {
+            const order: Order = {
                 id: doc.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
@@ -547,7 +561,7 @@ export async function getOrderById(id: string): Promise<Order> {
         const orderSnapShot = await getDoc(orderRef);
         if (orderSnapShot.exists()) {
             const orderInfo = orderSnapShot.data();
-            let order: Order = {
+            const order: Order = {
                 id: orderRef.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
@@ -652,63 +666,5 @@ export async function markDonationAsDistributed(donation: Donation): Promise<voi
         await batch.commit();
     } catch (error) {
         addErrorEvent('Error marking donation as distributed', error);
-    }
-}
-
-//The below functions are for uploading images for donations imported from the original spreadsheet
-export async function uploadImagesFromTagNumber(tagNumber: string) {
-    try {
-        const base64Images: base64ImageObj[] = await getBase64ImagesFromTagnumber(tagNumber);
-        let imageFiles: File[] = [];
-        for (const base64Image of base64Images) {
-            const imageFile = await base64ObjToFile(base64Image);
-            imageFiles.push(imageFile);
-        }
-        const imageUrls = await uploadImages(imageFiles);
-        return imageUrls;
-    } catch (error) {
-        throw error;
-    }
-}
-
-export async function convertImportedDonations(): Promise<void> {
-    try {
-        const importsSnapshot = await getDocs(collection(db, 'BEE_Data_2025-11-19_v1'));
-        const batch = writeBatch(db);
-        for (const doc of importsSnapshot.docs) {
-            const docData = doc.data();
-            const images = await uploadImagesFromTagNumber(docData['tagNumber']);
-            if (docData['donorEmail'] === undefined) {
-                batch.update(doc.ref, {
-                    donorEmail: ''
-                });
-            }
-            if (docData['donorName'] === undefined) {
-                batch.update(doc.ref, {
-                    donorName: ''
-                });
-            }
-            batch.update(doc.ref, {
-                images:
-                    images.length > 0
-                        ? images
-                        : [
-                              'https://firebasestorage.googleapis.com/v0/b/baby-equipment-exchange.appspot.com/o/77def461-02a2-4667-b7cf-6a9d94306823-1763596581708.jpg?alt=media&token=46d43d52-3c5d-4808-8ec5-0bb244d43405'
-                          ],
-                status: docData['status'] === 'Available' ? 'available' : 'unavailable',
-                id: doc.id,
-                dateAccepted: null,
-                dateRequested: null,
-                dateDistributed: null,
-                requestor: null,
-                notes: null,
-                modifiedAt: serverTimestamp()
-            });
-        }
-        await batch.commit();
-        console.log('Done!');
-    } catch (error) {
-        console.log('Not done!');
-        throw error;
     }
 }

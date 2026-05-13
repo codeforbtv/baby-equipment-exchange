@@ -24,6 +24,8 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
     //Images were previously document references. Ensure they are now all strings. TO-DO remove all doc refs from images
     const images = inventoryItem.images as string[];
     const image = images ? images[0] : '';
+    const canRequest = inventoryItem.status === 'available';
+    const tagLabel = inventoryItem.tagNumber ? `${inventoryItem.tagNumber}` : 'No tag';
 
     return (
         <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>
@@ -34,14 +36,15 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
                 onClick={() => setIdToDisplay(inventoryItem.id)}
             />
             <ImageListItemBar
-                title={`${inventoryItem.brand} - ${inventoryItem.model}`}
-                subtitle={inventoryItem.category}
+                title={`${tagLabel} - ${inventoryItem.brand} ${inventoryItem.model}`}
+                subtitle={`${inventoryItem.category} - ${inventoryItem.status}`}
                 actionIcon={
-                    <Tooltip title="Add to order">
+                    <Tooltip title={canRequest ? 'Add to order' : 'Only available items can be added to an order'}>
                         <IconButton
                             sx={{ color: 'rgb(255, 255, 255)' }}
                             aria-label={`details about ${inventoryItem.brand} ${inventoryItem.model}`}
                             size="large"
+                            disabled={!canRequest}
                             onClick={() => handleRequestInventoryItem(inventoryItem)}
                         >
                             <AddShoppingCartIcon />

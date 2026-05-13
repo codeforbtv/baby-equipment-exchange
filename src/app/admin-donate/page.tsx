@@ -41,7 +41,7 @@ export default function AdminDonate() {
     };
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<AdminDonationBody[]> {
-        let bulkDonations: AdminDonationBody[] = [];
+        const bulkDonations: AdminDonationBody[] = [];
         if (currentUser && currentUser.uid && currentUser.displayName && currentUser.email) {
             try {
                 for (const donation of pendingDonations) {

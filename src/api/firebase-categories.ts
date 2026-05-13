@@ -55,7 +55,7 @@ const categoryConverter = {
 
 export async function getAllCategories(): Promise<Category[]> {
     try {
-        let categories: Category[] = [];
+        const categories: Category[] = [];
         const q = query(collection(db, CATEGORIES_COLLECTION), orderBy('name')).withConverter(categoryConverter);
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((snapshot) => {

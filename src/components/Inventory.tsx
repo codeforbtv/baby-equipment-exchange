@@ -42,6 +42,10 @@ import styles from './Inventory.module.css';
 //Types
 import { InventoryItem } from '@/models/inventoryItem';
 import InventoryDetails from './InventoryDetails';
+import { donationStatuses, DonationStatuses } from '@/models/donation';
+
+const statusSelectOptions = Object.keys(donationStatuses);
+
 type InventoryProps = {
     inventory?: InventoryItem[];
     setInventoryUpdated?: Dispatch<SetStateAction<boolean>>;
@@ -53,6 +57,7 @@ const Inventory = (props: InventoryProps) => {
     const [currentInventory, setCurrentInventory] = useState<InventoryItem[]>(inventory ?? []);
     const [searchInput, setSearchInput] = useState<string>('');
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
+    const [statusFilter, setStatusFilter] = useState<string[] | undefined>([]);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
 
@@ -101,21 +106,28 @@ const Inventory = (props: InventoryProps) => {
         }
     };
 
-    //Filters by category and search input and prevents items in cart from appearing in inventory list
+    //Filters by category/status/search input and prevents items in cart from appearing in inventory list
     const inventoryToDisplay = useMemo(() => {
         const requestedInventoryIds = requestedInventory.map((i) => i.id);
         let filteredInventory = currentInventory.filter((item) => !requestedInventoryIds.includes(item.id));
 
         if (searchInput.length > 0) {
-            filteredInventory = filteredInventory.filter((item) =>
-                Object.values(item).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))
-            );
+            const search = searchInput.toLowerCase();
+            filteredInventory = filteredInventory.filter((item) => {
+                const searchableValues = [item.tagNumber, item.status, item.category, item.brand, item.model, item.description, item.id];
+                return searchableValues.some((value) => String(value ?? '').toLowerCase().includes(search));
+            });
         }
         if (categoryFilter && categoryFilter.length > 0) {
             filteredInventory = filteredInventory.filter((item) => categoryFilter.includes(item.category));
         }
+        if (statusFilter && statusFilter.length > 0) {
+            filteredInventory = filteredInventory.filter((item) =>
+                statusFilter.some((filter) => donationStatuses[filter as keyof DonationStatuses] === item.status)
+            );
+        }
         return filteredInventory;
-    }, [requestedInventory, currentInventory, categoryFilter, searchInput]);
+    }, [requestedInventory, currentInventory, categoryFilter, statusFilter, searchInput]);
 
     useEffect(() => {
         if (!inventory) fetchInventory();
@@ -175,6 +187,7 @@ const Inventory = (props: InventoryProps) => {
                                 <TextField
                                     label="Search"
                                     id="search-field"
+                                    placeholder="Search by tag, status, brand, model, or category"
                                     value={searchInput}
                                     onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
                                     InputProps={{
@@ -193,6 +206,21 @@ const Inventory = (props: InventoryProps) => {
                                     value={categoryFilter}
                                     onChange={(event, newValue) => setCategoryFilter(newValue)}
                                     renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
+                                    renderTags={(value, getTagProps) =>
+                                        value.map((option, index) => {
+                                            const { key, ...tagProps } = getTagProps({ index });
+                                            return <Chip key={key} label={option} {...tagProps} />;
+                                        })
+                                    }
+                                />
+                                <Autocomplete
+                                    sx={{ maxWidth: '80vw' }}
+                                    multiple
+                                    id="status-filter"
+                                    options={statusSelectOptions}
+                                    value={statusFilter}
+                                    onChange={(_event, newValue) => setStatusFilter(newValue)}
+                                    renderInput={(params) => <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" />}
                                     renderTags={(value, getTagProps) =>
                                         value.map((option, index) => {
                                             const { key, ...tagProps } = getTagProps({ index });
