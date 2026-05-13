@@ -9,7 +9,7 @@ type TabPanelProps = {
 const styles = {
     width: '100%',
     display: 'flex',
-    flexDirection: 'column' as 'column',
+    flexDirection: 'column' as const,
     gap: '1em'
 };
 

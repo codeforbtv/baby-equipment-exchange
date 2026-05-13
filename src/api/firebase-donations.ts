@@ -139,7 +139,7 @@ const inventoryConverter = {
 
 export async function getAllDonations(): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
+        const donations: Donation[] = [];
         const querySnapshot = await getDocs(collection(db, DONATIONS_COLLECTION).withConverter(donationConverter));
         querySnapshot.forEach((snapshot) => {
             donations.push(snapshot.data());
@@ -152,7 +152,7 @@ export async function getAllDonations(): Promise<Donation[]> {
 }
 
 export async function getDonationNotifications(): Promise<Donation[]> {
-    let donations: Donation[] = [];
+    const donations: Donation[] = [];
     try {
         const donationsRef = collection(db, DONATIONS_COLLECTION);
         const donationNotificationsQuery = query(
@@ -172,7 +172,7 @@ export async function getDonationNotifications(): Promise<Donation[]> {
 
 export async function getInventory(): Promise<InventoryItem[]> {
     try {
-        let inventory: InventoryItem[] = [];
+        const inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const contraints: QueryConstraint[] = [where('status', '==', 'available')];
         const q = query(collectionRef, ...contraints).withConverter(inventoryConverter);
@@ -221,7 +221,7 @@ export async function getInventoryItemById(id: string): Promise<InventoryItem> {
 export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
     if (inventoryIds.length === 0) return [];
     try {
-        let inventory: InventoryItem[] = [];
+        const inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const q = query(collectionRef, where(documentId(), 'in', inventoryIds)).withConverter(inventoryConverter);
         const querySnapshot = await getDocs(q);
@@ -252,7 +252,7 @@ export async function getDonationById(id: string): Promise<Donation> {
 
 export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
+        const donations: Donation[] = [];
         const bulkRef = doc(db, BULK_DONATIONS_COLLECTION, id);
         const bulkSnapshot = await getDoc(bulkRef);
         if (bulkSnapshot.exists()) {
@@ -436,7 +436,7 @@ export async function deleteDonationById(id: string): Promise<void> {
 
 export async function adminAreDonationsAvailable(ids: string[]): Promise<string[]> {
     try {
-        let unavailableDonations = [];
+        const unavailableDonations = [];
         for (const id of ids) {
             const donationref = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
             const donationSnapshot = await getDoc(donationref);
@@ -521,14 +521,14 @@ export async function adminRequestInventoryItems(inventoryItemIds: string[], use
 
 //Get items requested by aid workers
 export async function getOrdersNotifications() {
-    let orders: Order[] = [];
+    const orders: Order[] = [];
     try {
         const ordersRef = collection(db, ORDERS_COLLECTION);
         const q = query(ordersRef, where('status', '==', 'open'));
         const ordersSnapshot = await getDocs(q);
         for (const doc of ordersSnapshot.docs) {
             const orderInfo = doc.data();
-            let order: Order = {
+            const order: Order = {
                 id: doc.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
@@ -561,7 +561,7 @@ export async function getOrderById(id: string): Promise<Order> {
         const orderSnapShot = await getDoc(orderRef);
         if (orderSnapShot.exists()) {
             const orderInfo = orderSnapShot.data();
-            let order: Order = {
+            const order: Order = {
                 id: orderRef.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,

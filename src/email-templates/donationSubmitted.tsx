@@ -6,7 +6,7 @@ import { renderToString } from 'react-dom/server';
 import { emailSender, emailCc } from '@/data/emailSender';
 
 export default function donationsSubmitted(donorEmail: string, donorName: string, donations: DonationBody[]) {
-    const donationCards = donations.map((donation) => <DonationCardSmall donation={donation} />);
+    const donationCards = donations.map((donation, index) => <DonationCardSmall key={index} donation={donation} />);
 
     let html = `<p>Hello ${donorName},</p>
         <p>We have received your request to donate the following items:</p>
