@@ -17,7 +17,7 @@ import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryConte
 import { useRouter } from 'next/navigation';
 //API
 import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
-import { getAllDonations, getInventory } from '@/api/firebase-donations';
+import { getAllDonations, getAllInventory } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
 //Icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -110,7 +110,7 @@ export default function Dashboard() {
     async function fetchInventory(): Promise<void> {
         setIsLoading(true);
         try {
-            const inventoryResult = await getInventory();
+            const inventoryResult = await getAllInventory();
             setInventory(inventoryResult);
         } catch (error) {
             addErrorEvent('Could not fetch inventory', error);

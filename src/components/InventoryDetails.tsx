@@ -54,6 +54,7 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
     const handleImageClose = () => setIsImageOpen(false);
 
     const handleAddItemToCart = (item: InventoryItem) => {
+        if (item.status !== 'available') return;
         handleRequestInventoryItem(item);
         if (setIdToDisplay) setIdToDisplay(null);
     };
@@ -84,6 +85,14 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
                         ))}
                     </ImageList>
                     <h2>
+                        <b>Tag number: </b>
+                        {itemDetails.tagNumber ?? 'No tag'}
+                    </h2>
+                    <h2>
+                        <b>Status: </b>
+                        {itemDetails.status}
+                    </h2>
+                    <h2>
                         <b>Brand: </b>
                         {itemDetails.brand}
                     </h2>
@@ -95,7 +104,12 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
                         <b>Description: </b>
                         {itemDetails.description}
                     </p>
-                    <Button variant="contained" onClick={() => handleAddItemToCart(itemDetails)} endIcon={<AddShoppingCartIcon />}>
+                    <Button
+                        variant="contained"
+                        onClick={() => handleAddItemToCart(itemDetails)}
+                        endIcon={<AddShoppingCartIcon />}
+                        disabled={itemDetails.status !== 'available'}
+                    >
                         Add to order
                     </Button>
 
