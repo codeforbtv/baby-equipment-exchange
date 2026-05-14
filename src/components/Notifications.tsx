@@ -41,7 +41,7 @@ type RequestorGroup = {
 const groupByDonor = (donations: Donation[]): DonorGroup[] => {
     const bulkMap = new Map<string, Donation[]>();
     for (const d of donations) {
-        const key = d.bulkCollection;
+        const key = d.bulkCollection || `standalone-${d.id}`;
         if (!bulkMap.has(key)) bulkMap.set(key, []);
         bulkMap.get(key)!.push(d);
     }
