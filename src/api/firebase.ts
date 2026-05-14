@@ -6,7 +6,7 @@ import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectStorageEmulator, getStorage } from 'firebase/storage';
 import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
 import { getUsersNotifications } from './firebase-users';
-import { addEvent, checkClaims } from './firebaseAdmin';
+import { addEvent, checkClaims } from '@/app/actions/firebase';
 
 function initApp(): FirebaseApp {
     if (process.env.NODE_ENV === 'production') {
@@ -43,13 +43,12 @@ export async function getAuthIdToken(): Promise<string> {
     return token;
 }
 
-export async function callCheckClaims(...claimNames: string[]): Promise<any> {
+export async function callCheckClaims(...claimNames: string[]): Promise<Record<string, boolean>> {
     if (claimNames.length === 0) {
         claimNames = ['admin', 'aid-worker'];
     }
-    const idToken = await auth.currentUser?.getIdToken();
-    const response = await checkClaims({ idToken: idToken, claimNames: claimNames });
-    return response;
+    const idToken = await getAuthIdToken();
+    return checkClaims({ idToken, claimNames });
 }
 
 //Multi-collection query
@@ -96,8 +95,8 @@ export async function checkIsAidWorker(user: User): Promise<boolean> {
 // Utilitarian
 export async function addErrorEvent(location: string, error: any): Promise<void> {
     try {
-        await addEvent({ location: location, error: convertToString(error) });
-    } catch (error) {
-        console.log(error);
+        await addEvent({ location, error: convertToString(error) });
+    } catch (err) {
+        console.log(err);
     }
 }

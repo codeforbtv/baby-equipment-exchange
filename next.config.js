@@ -8,8 +8,7 @@ try {
     emulatorEnv = {
         NEXT_PUBLIC_EMULATOR_FIRESTORE_PORT: String(emu.firestore?.port ?? 8080),
         NEXT_PUBLIC_EMULATOR_AUTH_PORT: String(emu.auth?.port ?? 9099),
-        NEXT_PUBLIC_EMULATOR_STORAGE_PORT: String(emu.storage?.port ?? 9199),
-        NEXT_PUBLIC_EMULATOR_FUNCTIONS_PORT: String(emu.functions?.port ?? 5001)
+        NEXT_PUBLIC_EMULATOR_STORAGE_PORT: String(emu.storage?.port ?? 9199)
     };
     if (process.env.NODE_ENV !== 'production') {
         emulatorEnv.FIRESTORE_EMULATOR_HOST = `localhost:${emu.firestore?.port ?? 8080}`;

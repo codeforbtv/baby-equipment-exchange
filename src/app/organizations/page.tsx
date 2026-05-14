@@ -8,7 +8,7 @@ import Loader from '@/components/Loader';
 import Organizations from '@/components/Organizations';
 //API
 import { addErrorEvent } from '@/api/firebase';
-import { getOrganizationNames } from '@/api/firebaseAdmin';
+import { getOrganizationNames } from '@/app/actions/firebase';
 //Styles
 import '@/styles/globalStyles.css';
 

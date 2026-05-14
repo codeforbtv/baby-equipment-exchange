@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Api
 import { addErrorEvent } from '@/api/firebase';
-import { isEmailInUse as checkEmailInUse, getOrganizationNames, createUser } from '@/api/firebaseAdmin';
+import { isEmailInUse as checkEmailInUse, getOrganizationNames, createUser } from '@/app/actions/firebase';
 import posthog from 'posthog-js';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling

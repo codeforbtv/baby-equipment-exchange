@@ -4,7 +4,7 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 //API
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
-import { getOrganizationNames, isEmailInUse as checkEmailInUse, setCustomClaims, updateAuthUser, enableUser } from '@/api/firebaseAdmin';
+import { getOrganizationNames, isEmailInUse as checkEmailInUse, setCustomClaims, updateAuthUser, enableUser } from '@/app/actions/firebase';
 import sendMail from '@/api/nodemailer';
 import { enableDbUser, updateDbUser } from '@/api/firebase-users';
 //Components

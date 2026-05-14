@@ -14,7 +14,7 @@ import CustomDialog from '@/components/CustomDialog';
 //Libs
 import { requestInventoryItems } from '@/api/firebase-donations';
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
-import { areDonationsAvailable } from '@/api/firebaseAdmin';
+import { areDonationsAvailable } from '@/app/actions/firebase';
 import posthog from 'posthog-js';
 //Styles
 import '@/styles/globalStyles.css';

@@ -25,7 +25,7 @@ import CustomDialog from './CustomDialog';
 //Api
 import { markDonationAsDistributed, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
-import { enableUser, deleteUser } from '@/api/firebaseAdmin';
+import { enableUser, deleteUser } from '@/app/actions/firebase';
 import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
 import sendMail from '@/api/nodemailer';
 //Styles

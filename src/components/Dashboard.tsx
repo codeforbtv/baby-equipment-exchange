@@ -17,7 +17,7 @@ import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryConte
 import { useRouter } from 'next/navigation';
 //API
 import { addErrorEvent, getNotifications } from '@/api/firebase';
-import { getOrganizationNames } from '@/api/firebaseAdmin';
+import { getOrganizationNames } from '@/app/actions/firebase';
 import { getAllDonations, getAllInventory } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
 //Icons
