@@ -66,7 +66,16 @@ const USERS = {
         displayName: 'Ash Linden',
         phoneNumber: '+10000000006',
         claims: { donor: true, verified: false },
-        organization: null
+        organization: { id: 'org-vt-connector', name: 'Vermont Connector' }
+    },
+    pendingUser2: {
+        uid: 'pending2',
+        email: 'pending2@email.com',
+        password: 'password',
+        displayName: 'Drew Patel',
+        phoneNumber: '+10000000007',
+        claims: { 'aid-worker': true, verified: false },
+        organization: { id: 'org-cvoeo', name: 'CVOEO' }
     }
 };
 
@@ -161,6 +170,27 @@ const DONOR1_DONATIONS = [
         description: 'Colorful activity gym with hanging toys. Batteries not included.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Play+Mat']
+    }
+];
+
+const DONOR1_DONATIONS_BATCH2 = [
+    {
+        id: 'donation-mj-004',
+        category: 'High Chairs',
+        brand: 'IKEA',
+        model: 'ANTILOP',
+        description: 'White high chair with tray and inflatable cushion. Legs detach for transport.',
+        status: 'in processing',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=High+Chair']
+    },
+    {
+        id: 'donation-mj-005',
+        category: 'Clothing',
+        brand: 'Mixed',
+        model: '12-18 months bundle',
+        description: '15-piece lot: pants, long-sleeve tops, fleece jacket. Gender neutral colors.',
+        status: 'in processing',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
     }
 ];
 
@@ -275,6 +305,99 @@ const ADMIN_DONATIONS = [
     }
 ];
 
+const DONOR1_PENDING_DELIVERY = [
+    {
+        id: 'donation-pd-001',
+        category: 'Cribs',
+        brand: 'Graco',
+        model: 'Pack \'n Play',
+        description: 'Portable playard with bassinet attachment. Includes carry bag.',
+        status: 'pending delivery',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Pack-n-Play']
+    },
+    {
+        id: 'donation-pd-002',
+        category: 'Baby Carriers',
+        brand: 'Tula',
+        model: 'Free-to-Grow',
+        description: 'Mesh carrier, newborn to toddler. Coast line pattern.',
+        status: 'pending delivery',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Baby+Carrier']
+    }
+];
+
+const DONOR2_PENDING_DELIVERY = [
+    {
+        id: 'donation-pd-003',
+        category: 'Toys',
+        brand: 'Melissa & Doug',
+        model: 'Wooden Activity Cube',
+        description: 'Five-sided play cube with bead maze, shape sorter, spinning gears.',
+        status: 'pending delivery',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Activity+Cube']
+    },
+    {
+        id: 'donation-pd-004',
+        category: 'Changing Tables',
+        brand: 'Keekaroo',
+        model: 'Peanut Changer',
+        description: 'Contoured changing pad, vanilla color. Wipeable surface, no cover needed.',
+        status: 'pending delivery',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Changing+Pad']
+    },
+    {
+        id: 'donation-pd-005',
+        category: 'Monitors',
+        brand: 'Nanit',
+        model: 'Pro Camera',
+        description: 'Wall-mount smart camera with breathing band. Factory reset complete.',
+        status: 'pending delivery',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Monitor']
+    }
+];
+
+const RESERVED_DONATIONS_ANON = [
+    {
+        id: 'donation-res-001',
+        category: 'Strollers',
+        brand: 'Baby Jogger',
+        model: 'City Mini GT2',
+        description: 'All-terrain stroller, hand brake, one-hand fold.',
+        status: 'reserved',
+        tagNumber: 'STR 7',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Stroller']
+    },
+    {
+        id: 'donation-res-002',
+        category: 'Clothing',
+        brand: 'Mixed',
+        model: '6-12 months bundle',
+        description: '20-piece lot: onesies, sleepers, bibs.',
+        status: 'reserved',
+        tagNumber: 'CLT 19',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
+    }
+];
+
+const RESERVED_DONATIONS_DONOR2 = [
+    {
+        id: 'donation-res-003',
+        category: 'Cribs',
+        brand: 'Babyletto',
+        model: 'Lolly 3-in-1',
+        description: 'White and natural finish. Toddler bed conversion kit included.',
+        status: 'reserved',
+        tagNumber: 'CRB 4',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
+    }
+];
+
 const HISTORY_DONATIONS = [
     {
         id: 'donation-hist-001',
@@ -317,7 +440,7 @@ async function createFirestoreUser(userData) {
         email: userData.email,
         displayName: userData.displayName,
         customClaims: userData.claims,
-        isDisabled: false,
+        isDisabled: !userData.claims.verified,
         phoneNumber: userData.phoneNumber,
         requestedItems: [],
         distributedItems: [],
@@ -430,6 +553,9 @@ async function seed() {
     console.log(`  Bulk from ${USERS.donor1.displayName}: ${DONOR1_DONATIONS.length} items (in processing)`);
     console.log('    ** donation-mj-003 has category "Play Mats" — Bug 1 repro **');
 
+    await createBulkDonation('bulk-donor1-002', USERS.donor1, DONOR1_DONATIONS_BATCH2);
+    console.log(`  Bulk #2 from ${USERS.donor1.displayName}: ${DONOR1_DONATIONS_BATCH2.length} items (in processing) — same donor, separate submission`);
+
     await createBulkDonation('bulk-donor2-001', USERS.donor2, DONOR2_DONATIONS);
     console.log(`  Bulk from ${USERS.donor2.displayName}: ${DONOR2_DONATIONS.length} items (in processing)`);
 
@@ -444,6 +570,34 @@ async function seed() {
         const donDoc = makeDonationDoc(d, USERS.admin);
         await db.collection('Donations').doc(d.id).set(donDoc);
         console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}]`);
+    }
+
+    await createBulkDonation('bulk-pd-donor1-001', USERS.donor1, DONOR1_PENDING_DELIVERY);
+    console.log(`  Bulk pending delivery from ${USERS.donor1.displayName}: ${DONOR1_PENDING_DELIVERY.length} items`);
+
+    await createBulkDonation('bulk-pd-donor2-001', USERS.donor2, DONOR2_PENDING_DELIVERY);
+    console.log(`  Bulk pending delivery from ${USERS.donor2.displayName}: ${DONOR2_PENDING_DELIVERY.length} items`);
+
+    for (const d of RESERVED_DONATIONS_ANON) {
+        d.requestor = {
+            id: USERS.aidWorker.uid,
+            name: USERS.aidWorker.displayName,
+            email: USERS.aidWorker.email
+        };
+        const donDoc = makeDonationDoc(d, USERS.admin);
+        await db.collection('Donations').doc(d.id).set(donDoc);
+        console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}] — reserved for ${USERS.aidWorker.displayName}`);
+    }
+
+    for (const d of RESERVED_DONATIONS_DONOR2) {
+        d.requestor = {
+            id: USERS.aidWorker2.uid,
+            name: USERS.aidWorker2.displayName,
+            email: USERS.aidWorker2.email
+        };
+        const donDoc = makeDonationDoc(d, USERS.donor2);
+        await db.collection('Donations').doc(d.id).set(donDoc);
+        console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}] — reserved for ${USERS.aidWorker2.displayName}`);
     }
 
     for (const d of HISTORY_DONATIONS) {
@@ -498,6 +652,58 @@ async function seed() {
 
     await db
         .collection('Orders')
+        .doc('order-normal-002')
+        .set({
+            status: 'open',
+            requestor: {
+                id: USERS.aidWorker.uid,
+                name: USERS.aidWorker.displayName,
+                email: USERS.aidWorker.email
+            },
+            items: [db.collection('Donations').doc('donation-admin-004')],
+            createdAt: FieldValue.serverTimestamp(),
+            modifiedAt: FieldValue.serverTimestamp()
+        });
+    await db.collection('Donations').doc('donation-admin-004').update({
+        status: 'requested',
+        requestor: {
+            id: USERS.aidWorker.uid,
+            name: USERS.aidWorker.displayName,
+            email: USERS.aidWorker.email
+        },
+        dateRequested: FieldValue.serverTimestamp(),
+        modifiedAt: FieldValue.serverTimestamp()
+    });
+    console.log('  order-normal-002: Ergobaby Omni 360 [open, 1 item] — second order from Noor');
+
+    await db
+        .collection('Orders')
+        .doc('order-normal-003')
+        .set({
+            status: 'open',
+            requestor: {
+                id: USERS.aidWorker2.uid,
+                name: USERS.aidWorker2.displayName,
+                email: USERS.aidWorker2.email
+            },
+            items: [db.collection('Donations').doc('donation-admin-005')],
+            createdAt: FieldValue.serverTimestamp(),
+            modifiedAt: FieldValue.serverTimestamp()
+        });
+    await db.collection('Donations').doc('donation-admin-005').update({
+        status: 'requested',
+        requestor: {
+            id: USERS.aidWorker2.uid,
+            name: USERS.aidWorker2.displayName,
+            email: USERS.aidWorker2.email
+        },
+        dateRequested: FieldValue.serverTimestamp(),
+        modifiedAt: FieldValue.serverTimestamp()
+    });
+    console.log('  order-normal-003: Mixed Clothing bundle [open, 1 item] — order from Jules');
+
+    await db
+        .collection('Orders')
         .doc('order-stuck-001')
         .set({
             status: 'open',
@@ -524,7 +730,8 @@ async function seed() {
         .update({
             requestedItems: [
                 { id: 'donation-admin-001', model: 'KeyFit 35' },
-                { id: 'donation-admin-003', model: 'S1 Plus' }
+                { id: 'donation-admin-003', model: 'S1 Plus' },
+                { id: 'donation-admin-004', model: 'Omni 360' }
             ],
             modifiedAt: FieldValue.serverTimestamp()
         });
@@ -532,6 +739,7 @@ async function seed() {
         .collection('Users')
         .doc(USERS.aidWorker2.uid)
         .update({
+            requestedItems: [{ id: 'donation-admin-005', model: '0-6 months bundle' }],
             distributedItems: [{ id: 'donation-hist-001', tagNumber: 'CRB 3' }],
             modifiedAt: FieldValue.serverTimestamp()
         });

@@ -2,8 +2,8 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin-bottom: 8px;
-    border-radius: 25px;
+    margin-bottom: 4px;
+    border-radius: 8px;
 }
 
 .notification-card--no-btn {
@@ -26,7 +26,7 @@
 }
 
 .notification-card--image {
-    width: 160px;
+    width: 100px;
     display: flex;
     justify-content: center;
     align-items: center;

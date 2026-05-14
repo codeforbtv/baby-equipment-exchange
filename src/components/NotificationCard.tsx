@@ -158,7 +158,7 @@ const NotificationCard = (props: NotificationCardProps) => {
     return (
         <ProtectedAdminRoute>
             {type === 'pending-donation' && donation && (
-                <Card className={styles['notification-card']} raised>
+                <Card className={styles['notification-card']} variant="outlined">
                     <div className={styles['notification-card--group']}>
                         <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
                             <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
@@ -181,7 +181,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card className={styles['notification-card']} raised>
+                        <Card className={styles['notification-card']} variant="outlined">
                             <div className={styles['notification-card--group']}>
                                 <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
                                     <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
@@ -220,7 +220,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card className={styles['notification-card']} raised>
+                        <Card className={styles['notification-card']} variant="outlined">
                             <div className={styles['notification-card--group']}>
                                 <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
                                     <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
@@ -257,7 +257,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                 </>
             )}
             {type === 'order' && donation && (
-                <Card className={styles['notification-card']} raised>
+                <Card className={styles['notification-card']} variant="outlined">
                     <div className={styles['notification-card--group']}>
                         <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
                             <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
@@ -281,7 +281,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <Loader />
                     ) : (
                         <>
-                            <Card className={styles['notification-card']} raised>
+                            <Card className={styles['notification-card']} variant="outlined">
                                 <CardActions onClick={() => setIdToDisplay(user.uid)} sx={{ width: '100%' }}>
                                     <CardContent className={styles['notification-card--info']}>
                                         <Typography variant="h5">{user.displayName}</Typography>
