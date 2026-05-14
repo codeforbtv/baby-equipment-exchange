@@ -251,17 +251,64 @@ export async function setCustomClaims(request: SetCustomClaimsRequest): Promise<
     }
 }
 
-export async function areDonationsAvailable(request: { idToken: string; ids: string[] }): Promise<string[]> {
+export async function requestInventory(request: {
+    idToken: string;
+    donationIds: string[];
+    user: { name: string; email: string };
+}): Promise<{ orderId: string } | { unavailableIds: string[] }> {
+    const decoded = await auth.verifyIdToken(request.idToken, true);
+    const userId = decoded.uid;
+
     try {
-        await auth.verifyIdToken(request.idToken, true);
-        const unavailable: string[] = [];
-        for (const id of request.ids) {
-            const snap = await db.collection(DONATIONS_COLLECTION).doc(id).get();
-            if (snap.exists && snap.data()?.status !== 'available') unavailable.push(id);
+        const orderId = await db.runTransaction(async (transaction) => {
+            const donationRefs = request.donationIds.map(id =>
+                db.collection(DONATIONS_COLLECTION).doc(id)
+            );
+            const donationSnaps = await Promise.all(
+                donationRefs.map(ref => transaction.get(ref))
+            );
+
+            const unavailableIds: string[] = [];
+            for (let i = 0; i < donationSnaps.length; i++) {
+                const snap = donationSnaps[i];
+                if (!snap.exists || snap.data()?.status !== 'available') {
+                    unavailableIds.push(request.donationIds[i]);
+                }
+            }
+            if (unavailableIds.length > 0) {
+                throw { unavailableIds };
+            }
+
+            const orderRef = db.collection(ORDERS_COLLECTION).doc();
+            const user = { id: userId, name: request.user.name, email: request.user.email };
+
+            transaction.set(orderRef, {
+                status: 'open',
+                requestor: user,
+                items: donationRefs,
+                rejectedItems: [],
+                createdAt: FieldValue.serverTimestamp(),
+                modifiedAt: FieldValue.serverTimestamp()
+            });
+
+            for (const ref of donationRefs) {
+                transaction.update(ref, {
+                    status: 'requested',
+                    requestor: user,
+                    dateRequested: FieldValue.serverTimestamp(),
+                    modifiedAt: FieldValue.serverTimestamp()
+                });
+            }
+
+            return orderRef.id;
+        });
+
+        return { orderId };
+    } catch (error: any) {
+        if (error.unavailableIds) {
+            return { unavailableIds: error.unavailableIds };
         }
-        return unavailable;
-    } catch (error) {
-        addErrorEvent('areDonationsAvailable', error);
+        addErrorEvent('requestInventory', error);
         throw error;
     }
 }
