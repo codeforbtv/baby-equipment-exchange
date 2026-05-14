@@ -1,13 +1,14 @@
 'use client';
 
 //Hooks
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //components
 import PendingDonations from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
+import AdminDonationFlow from '@/components/AdminDonationFlow';
 import { Button, Box, TextField, Typography, Paper, FormControlLabel, Checkbox } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from '@/components/CustomDialog';
@@ -45,8 +46,8 @@ export default function Donate() {
     const [hasAgreed, setHasAgreed] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    const { currentUser } = useUserContext();
-    const { pendingDonations, removePendingDonation, clearPendingDonations, pendingDonorEmail, setPendingDonorEmail, pendingDonorName, setPendingDonorName } =
+    const { currentUser, isAdmin, isLoading: isUserLoading } = useUserContext();
+    const { pendingDonations, clearPendingDonations, pendingDonorEmail, setPendingDonorEmail, pendingDonorName, setPendingDonorName } =
         usePendingDonationsContext();
     const router = useRouter();
 
@@ -78,17 +79,7 @@ export default function Donate() {
         setHasAgreed(event.target.checked);
     };
 
-    useEffect(() => {
-        getDonorFromLocalStorage();
-    }, []);
-
-    useEffect(() => {
-        if (pendingDonations.length === 0 && pendingDonorEmail.length > 0) {
-            setShowForm(true);
-        }
-    }, [pendingDonations, pendingDonorEmail]);
-
-    function getDonorFromLocalStorage() {
+    const getDonorFromLocalStorage = useCallback(() => {
         const donorNameFromLocalStorage = localStorage.getItem('donorName');
         if (donorNameFromLocalStorage) {
             setDonorName(donorNameFromLocalStorage);
@@ -100,7 +91,17 @@ export default function Donate() {
             setConfirmEmail(donorEmailFromLocalStorage);
             setPendingDonorEmail(donorEmailFromLocalStorage);
         }
-    }
+    }, [setPendingDonorEmail, setPendingDonorName]);
+
+    useEffect(() => {
+        getDonorFromLocalStorage();
+    }, [getDonorFromLocalStorage]);
+
+    useEffect(() => {
+        if (pendingDonations.length === 0 && pendingDonorEmail.length > 0) {
+            setShowForm(true);
+        }
+    }, [pendingDonations, pendingDonorEmail]);
 
     function validateEmail(email: string): void {
         if (email.length === 0 || !emailRegex.test(email)) {
@@ -112,7 +113,7 @@ export default function Donate() {
 
     function handleEmailInput(event: React.ChangeEvent<HTMLInputElement>): void {
         setDonorEmail(event.target.value);
-        validateEmail(donorEmail);
+        validateEmail(event.target.value);
     }
 
     function handleConfirmEmail(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -182,6 +183,10 @@ export default function Donate() {
             setIsLoading(false);
         }
     }
+
+    if (isUserLoading) return <Loader />;
+
+    if (isAdmin) return <AdminDonationFlow />;
 
     return (
         <>
