@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { useState, useEffect, ReactElement, SetStateAction, Dispatch } from 'react';
+import { useState, useEffect, ReactElement, SetStateAction, Dispatch, useCallback } from 'react';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //Components
 import ImageThumbnail from './ImageThumbnail';
@@ -25,6 +25,9 @@ import { Category } from '@/models/category';
 
 export type DonationFormProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
+    keepFormOpenAfterAdd?: boolean;
+    keepFormOpenAfterCancel?: boolean;
+    includeInactiveCategories?: boolean;
 };
 
 export default function DonationForm(props: DonationFormProps) {
@@ -43,7 +46,7 @@ export default function DonationForm(props: DonationFormProps) {
 
     const { addPendingDonation, pendingDonations } = usePendingDonationsContext();
 
-    const fetchCategories = async (): Promise<void> => {
+    const fetchCategories = useCallback(async (): Promise<void> => {
         try {
             setIsLoading(true);
             const categoriesResult = await getAllCategories();
@@ -54,12 +57,13 @@ export default function DonationForm(props: DonationFormProps) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const isDisabled =
         !images || !formData.category || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
 
     const isCategoryActive = (category: string) => {
+        if (props.includeInactiveCategories) return false;
         if (categories) {
             const currentCategory = categories.find((cat) => cat.name === category);
             return !currentCategory?.active;
@@ -131,7 +135,9 @@ export default function DonationForm(props: DonationFormProps) {
         });
         setImages(null);
         setImageElements([]);
-        props.setShowForm(false);
+        if (!props.keepFormOpenAfterAdd) {
+            props.setShowForm(false);
+        }
     }
 
     function handleCancel(e: React.SyntheticEvent) {
@@ -145,12 +151,14 @@ export default function DonationForm(props: DonationFormProps) {
         });
         setImages(null);
         setImageElements([]);
-        props.setShowForm(false);
+        if (!props.keepFormOpenAfterCancel) {
+            props.setShowForm(false);
+        }
     }
 
     useEffect(() => {
         if (!categories) fetchCategories();
-    }, []);
+    }, [categories, fetchCategories]);
 
     return (
         <>
