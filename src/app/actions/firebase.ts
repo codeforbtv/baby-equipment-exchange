@@ -12,6 +12,11 @@ import {
 import { FieldValue } from 'firebase-admin/firestore';
 import { UserRecord } from 'firebase-admin/auth';
 import { AuthUserRecord, NewUserAccountInfo } from '@/types/UserTypes';
+import sendMail from '@/api/nodemailer';
+import adminUserCreated from '@/email-templates/adminUserCreated';
+import adminUserEnabled from '@/email-templates/adminUserEnabled';
+import userEnabled from '@/email-templates/userEnabled';
+import type { IUser } from '@/models/user';
 
 type RoleClaim = 'admin' | 'aid-worker' | 'donor' | 'verified' | 'volunteer';
 
@@ -38,6 +43,27 @@ async function _verifyAdminToken(idToken: string): Promise<void> {
     }
 }
 
+async function sendAdminNotificationEmail(message: ReturnType<typeof adminUserCreated> | ReturnType<typeof adminUserEnabled>, location: string): Promise<void> {
+    try {
+        await sendMail(message);
+    } catch (emailError) {
+        addErrorEvent(location, emailError);
+    }
+}
+
+function serializeFirestoreData<T>(value: T): T {
+    if (value == null) return value;
+    if (typeof value === 'object' && 'toDate' in value && typeof value.toDate === 'function') {
+        return value.toDate().toISOString() as T;
+    }
+    if (Array.isArray(value)) {
+        return value.map((item) => serializeFirestoreData(item)) as T;
+    }
+    if (typeof value === 'object') {
+        return Object.fromEntries(Object.entries(value).map(([key, nestedValue]) => [key, serializeFirestoreData(nestedValue)])) as T;
+    }
+    return value;
+}
 
 export async function addEvent(request: EventRequest): Promise<void> {
     try {
@@ -66,6 +92,20 @@ export async function getOrganizationNames(): Promise<{ [key: string]: string }>
     } catch (error) {
         addErrorEvent('getOrganizationNames', error);
         throw new Error('Unable to fetch organization names');
+    }
+}
+
+export async function getUserDetails(request: { idToken: string; userId: string }): Promise<IUser> {
+    try {
+        await _verifyAdminToken(request.idToken);
+        const userSnapshot = await db.collection(USERS_COLLECTION).doc(request.userId).get();
+        if (!userSnapshot.exists) {
+            throw new Error('User not found');
+        }
+        return serializeFirestoreData({ uid: userSnapshot.id, ...userSnapshot.data() } as IUser);
+    } catch (error) {
+        addErrorEvent('getUserDetails', error);
+        throw error;
     }
 }
 
@@ -128,6 +168,8 @@ export async function createUser(request: NewUserAccountInfo): Promise<UserRecor
         throw new Error('An error occurred while trying to create a new user.');
     }
 
+    await sendAdminNotificationEmail(adminUserCreated(userRecord.uid, request), 'createUser admin notification email');
+
     return JSON.parse(JSON.stringify(userRecord));
 }
 
@@ -160,6 +202,8 @@ export async function enableUser(request: { idToken: string; userId: string }): 
             customClaims: { 'aid-worker': true },
             modifiedAt: FieldValue.serverTimestamp()
         });
+        await sendAdminNotificationEmail(adminUserEnabled({ uid: user.uid, email: user.email, displayName: user.displayName }), 'enableUser admin notification email');
+        await sendMail(userEnabled(user.email ?? '', user.displayName ?? ''));
     } catch (error) {
         addErrorEvent('enableUser', error);
         throw error;

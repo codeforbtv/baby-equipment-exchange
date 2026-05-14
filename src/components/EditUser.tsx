@@ -4,32 +4,29 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 //API
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
-import { getOrganizationNames, isEmailInUse as checkEmailInUse, setCustomClaims, updateAuthUser, enableUser } from '@/app/actions/firebase';
-import sendMail from '@/api/nodemailer';
+import { getOrganizationNames, isEmailInUse as checkEmailInUse, setCustomClaims, updateAuthUser } from '@/app/actions/firebase';
 //Components
 import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from './CustomDialog';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-//Constants
-import userEnabled from '@/email-templates/userEnabled';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { PatternFormat, OnValueChange } from 'react-number-format';
 
-import { UserCollection } from '@/models/user';
+import { IUser } from '@/models/user';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type EditUserProps = {
-    userDetails: UserCollection;
+    userDetails: IUser;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
     setUserDetailsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const EditUser = (props: EditUserProps) => {
-    const { uid, email, displayName, customClaims, phoneNumber, notes, organization, isDisabled, title } = props.userDetails;
+    const { uid, email, displayName, customClaims, phoneNumber, organization, isDisabled, title } = props.userDetails;
     const { setIsEditMode, setUserDetailsUpdated } = props;
 
     let initialRole = '';
@@ -87,8 +84,10 @@ const EditUser = (props: EditUserProps) => {
     };
 
     const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-        setNewEmail(event.target.value);
-        validateEmail(newEmail);
+        const nextEmail = event.target.value;
+        setNewEmail(nextEmail);
+        validateEmail(nextEmail);
+        if (nextEmail === email) setIsEmailInUse(false);
     };
 
     const handleBlur = async (): Promise<void> => {
@@ -112,15 +111,6 @@ const EditUser = (props: EditUserProps) => {
         event.preventDefault();
         setIsLoading(true);
         try {
-            if (isDisabled) {
-                try {
-                    await enableUser({ idToken: await getAuthIdToken(), userId: uid });
-                    const emailMsg = userEnabled(email, displayName);
-                    await sendMail(emailMsg);
-                } catch (error) {
-                    addErrorEvent('Error enable user', error);
-                }
-            }
             if (role !== initialRole) {
                 try {
                     const claims: Partial<Record<string, boolean>> = { [role]: true };
@@ -228,6 +218,11 @@ const EditUser = (props: EditUserProps) => {
                             displayType="input"
                             customInput={TextField}
                         />
+                        {isDisabled && (
+                            <Typography variant="body2" color="text.secondary">
+                                Saving these changes will not enable this user account.
+                            </Typography>
+                        )}
                         <FormControl disabled={!customClaims}>
                             <FormLabel id="role-radio-buttons-label">Role:</FormLabel>
                             <RadioGroup aria-labelledby="role-radio-buttons-label" name="role-radio-buttons-group" value={role} onChange={handleRadioChange}>
@@ -236,15 +231,9 @@ const EditUser = (props: EditUserProps) => {
                             </RadioGroup>
                         </FormControl>
                         <Box display={'flex'} gap={2}>
-                            {!initialOrg ? (
-                                <Button variant="contained" type="submit" disabled={!selectedOrg}>
-                                    Enable User
-                                </Button>
-                            ) : (
-                                <Button variant="contained" type="submit">
-                                    Update User
-                                </Button>
-                            )}
+                            <Button variant="contained" type="submit" disabled={isEmailInUse || isInvalidEmail}>
+                                Update User
+                            </Button>
 
                             <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
                                 Cancel
