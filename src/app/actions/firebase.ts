@@ -48,12 +48,10 @@ async function _verifyAdminToken(idToken: string): Promise<void> {
     }
 }
 
-async function sendAdminNotificationEmail(message: ReturnType<typeof adminUserCreated> | ReturnType<typeof adminUserEnabled>, location: string): Promise<void> {
-    try {
-        await sendMail(message);
-    } catch (emailError) {
+function sendAdminNotificationEmail(message: ReturnType<typeof adminUserCreated> | ReturnType<typeof adminUserEnabled>, location: string): void {
+    void sendMail(message).catch((emailError) => {
         addErrorEvent(location, emailError);
-    }
+    });
 }
 
 function serializeFirestoreData<T>(value: T): T {
@@ -253,7 +251,7 @@ export async function createUser(request: NewUserAccountInfo): Promise<UserRecor
         throw new Error('An error occurred while trying to create a new user.');
     }
 
-    await sendAdminNotificationEmail(adminUserCreated(userRecord.uid, request), 'createUser admin notification email');
+    sendAdminNotificationEmail(adminUserCreated(userRecord.uid, request), 'createUser admin notification email');
 
     return JSON.parse(JSON.stringify(userRecord));
 }
@@ -287,8 +285,10 @@ export async function enableUser(request: { idToken: string; userId: string }): 
             customClaims: { 'aid-worker': true },
             modifiedAt: FieldValue.serverTimestamp()
         });
-        await sendAdminNotificationEmail(adminUserEnabled({ uid: user.uid, email: user.email, displayName: user.displayName }), 'enableUser admin notification email');
-        await sendMail(userEnabled(user.email ?? '', user.displayName ?? ''));
+        sendAdminNotificationEmail(adminUserEnabled({ uid: user.uid, email: user.email, displayName: user.displayName }), 'enableUser admin notification email');
+        void sendMail(userEnabled(user.email ?? '', user.displayName ?? '')).catch((emailError) => {
+            addErrorEvent('enableUser notification email', emailError);
+        });
     } catch (error) {
         addErrorEvent('enableUser', error);
         throw error;

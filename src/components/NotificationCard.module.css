@@ -1,9 +1,21 @@
 .notification-card {
+    --notification-scroll-margin: calc(4.5rem + 48px + 44px + 16px);
+
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     margin-bottom: 4px;
     border-radius: 8px;
+    scroll-margin-top: var(--notification-scroll-margin);
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.notification-scroll-anchor {
+    --notification-scroll-margin: calc(4.5rem + 48px + 44px + 16px);
+
+    scroll-margin-top: var(--notification-scroll-margin);
 }
 
 .notification-card--no-btn {
@@ -23,6 +35,8 @@
 
 .notification-card--group {
     display: flex;
+    min-width: 0;
+    width: 100%;
 }
 
 .notification-card--image {
@@ -44,6 +58,8 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .notification-card--container--btn {
@@ -73,5 +89,19 @@
 
     .notification-card {
         flex-direction: column;
+    }
+
+    .notification-card--group {
+        flex-direction: column;
+    }
+
+    .notification-card--image {
+        width: 100%;
+        max-width: 220px;
+        align-self: center;
+    }
+
+    .notification-card--info {
+        width: 100%;
     }
 }

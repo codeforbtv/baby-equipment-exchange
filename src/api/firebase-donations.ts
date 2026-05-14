@@ -410,6 +410,81 @@ export async function updateDonationStatus(id: string, status: DonationStatusVal
     }
 }
 
+export async function updateDropOffDonationStatuses(params: {
+    acceptedDonations: { id: string; tagNumber: string }[];
+    rejectedDonationIds: string[];
+    schedulingLink?: string;
+}): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        const schedulingFields = params.schedulingLink
+            ? {
+                  schedulingLink: params.schedulingLink,
+                  schedulingEmailSentAt: serverTimestamp()
+              }
+            : {
+                  schedulingLink: null,
+                  schedulingEmailSentAt: null
+              };
+
+        params.acceptedDonations.forEach((donation) => {
+            const donationRef = doc(db, DONATIONS_COLLECTION, donation.id).withConverter(donationConverter);
+            batch.update(donationRef, {
+                status: 'pending delivery',
+                dateAccepted: serverTimestamp(),
+                tagNumber: donation.tagNumber,
+                ...schedulingFields,
+                modifiedAt: serverTimestamp()
+            });
+        });
+
+        params.rejectedDonationIds.forEach((donationId) => {
+            const donationRef = doc(db, DONATIONS_COLLECTION, donationId).withConverter(donationConverter);
+            batch.update(donationRef, {
+                status: 'rejected',
+                modifiedAt: serverTimestamp()
+            });
+        });
+
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('updateDropOffDonationStatuses', error);
+        throw error;
+    }
+}
+
+export async function schedulePickupForOrder(order: Order, schedulingLink?: string): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        const schedulingFields = schedulingLink
+            ? {
+                  schedulingLink,
+                  schedulingEmailSentAt: serverTimestamp()
+              }
+            : {};
+
+        order.items.forEach((item) => {
+            const donationRef = doc(db, DONATIONS_COLLECTION, item.id).withConverter(donationConverter);
+            batch.update(donationRef, {
+                status: 'reserved',
+                ...schedulingFields,
+                modifiedAt: serverTimestamp()
+            });
+        });
+
+        const orderRef = doc(db, ORDERS_COLLECTION, order.id);
+        batch.update(orderRef, {
+            status: 'closed',
+            modifiedAt: serverTimestamp()
+        });
+
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('schedulePickupForOrder', error);
+        throw error;
+    }
+}
+
 export async function deleteDonationById(id: string): Promise<void> {
     //to-do make admin only
     try {

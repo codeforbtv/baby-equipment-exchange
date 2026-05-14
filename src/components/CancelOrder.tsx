@@ -6,9 +6,10 @@ import { renderToString } from 'react-dom/server';
 //Components
 import DonationCardSmall from './DonationCardSmall';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@mui/material';
+import { Box, Button, FormControl, IconButton, InputLabel, NativeSelect, TextField } from '@mui/material';
 import CustomDialog from './CustomDialog';
 import Loader from './Loader';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
@@ -76,15 +77,6 @@ const CancelOrder = (props: CancelOrderProps) => {
         }
     };
 
-    const fetchEvents = async () => {
-        try {
-            const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
-        } catch (error) {
-            addErrorEvent('Fetch Calendly Scheduling Links', error);
-        }
-    };
-
     const message = (
         <>
             <p>{`Hello ${requestor.name},`}</p>
@@ -108,12 +100,24 @@ const CancelOrder = (props: CancelOrderProps) => {
     );
 
     useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const eventResult = await getSchedulingPageLink();
+                setEvents(eventResult);
+            } catch (error) {
+                addErrorEvent('Fetch Calendly Scheduling Links', error);
+            }
+        };
+
         fetchEvents();
     }, []);
 
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
+                <IconButton aria-label="Back to order review" onClick={() => shouldShow(false)}>
+                    <ArrowBackIcon />
+                </IconButton>
                 <h3>Send Order Update Email</h3>
             </div>
             {isLoading ? (

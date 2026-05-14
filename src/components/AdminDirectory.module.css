@@ -1,0 +1,182 @@
+.directory {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px 0 28px;
+}
+
+.header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0 12px;
+    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.045);
+}
+
+.titleCluster {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.eyebrow {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.titleIcon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+    color: #1f2937;
+    background: #f8fafc;
+}
+
+.summary {
+    margin: 0;
+    color: #4b5563;
+    font-size: 0.875rem;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #fafafa;
+    box-shadow: inset 0 0 0 1px rgba(17, 24, 39, 0.035);
+}
+
+.searchField {
+    flex: 1;
+    min-width: 220px;
+}
+
+.metrics {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.metricText {
+    color: #6b7280;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+}
+
+.row {
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(17, 24, 39, 0.045);
+}
+
+.rowButton {
+    width: 100%;
+    min-height: 66px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+}
+
+.rowMain {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.rowTitle {
+    margin: 0;
+    color: #111827;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.rowMeta {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+}
+
+.rowSubMeta {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.75rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.rowActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.emptyState {
+    padding: 28px 16px;
+    border-radius: 8px;
+    color: #64748b;
+    text-align: center;
+    background: #f8fafc;
+    box-shadow: inset 0 0 0 1px rgba(100, 116, 139, 0.12);
+}
+
+@media screen and (max-width: 700px) {
+    .header,
+    .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .searchField {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .rowButton {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .rowActions {
+        justify-content: flex-start;
+        width: 100%;
+    }
+}

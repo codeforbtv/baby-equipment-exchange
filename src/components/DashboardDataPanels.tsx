@@ -1,0 +1,245 @@
+'use client';
+
+import { Dispatch, SetStateAction, useCallback, useMemo, useRef } from 'react';
+import useSWR, { useSWRConfig } from 'swr';
+import { addErrorEvent, getNotifications } from '@/api/firebase';
+import { fetchNotificationFeedData, getOrganizationNames } from '@/app/actions/firebase';
+import { getAllDonations, getAllInventory } from '@/api/firebase-donations';
+import { getAllDbUsers } from '@/api/firebase-users';
+import { getAllCategories } from '@/api/firebase-categories';
+import Notifications from '@/components/Notifications';
+import Donations from '@/components/Donations';
+import Inventory from '@/components/Inventory';
+import Users from '@/components/Users';
+import Organizations from '@/components/Organizations';
+import Categories from '@/components/Categories';
+import NotificationFeed from '@/components/NotificationFeed';
+import Loader from '@/components/Loader';
+import { CalendlyTimeRange } from '@/types/CalendlyTypes';
+import { NotificationData, NotificationItem } from '@/types/NotificationTypes';
+
+const calendlyTimeRange: CalendlyTimeRange = '30days';
+const swrOptions = { revalidateOnFocus: false };
+
+export const dashboardDataKeys = {
+    notifications: 'dashboard:notifications',
+    notificationFeed: `dashboard:notification-feed:${calendlyTimeRange}`,
+    donations: 'dashboard:donations',
+    inventory: 'dashboard:inventory',
+    users: 'dashboard:users',
+    organizations: 'dashboard:organizations',
+    categories: 'dashboard:categories'
+} as const;
+
+const notificationRefreshKeys = [dashboardDataKeys.notifications, dashboardDataKeys.notificationFeed] as const;
+const donationRefreshKeys = [dashboardDataKeys.donations, dashboardDataKeys.inventory, ...notificationRefreshKeys] as const;
+const inventoryRefreshKeys = [dashboardDataKeys.inventory, dashboardDataKeys.donations, ...notificationRefreshKeys] as const;
+const userRefreshKeys = [dashboardDataKeys.users, ...notificationRefreshKeys] as const;
+
+async function fetchWithLogging<T>(location: string, fetcher: () => Promise<T>): Promise<T> {
+    try {
+        return await fetcher();
+    } catch (error) {
+        addErrorEvent(location, error);
+        throw error;
+    }
+}
+
+function toRefreshDispatcher(refresh: () => void): Dispatch<SetStateAction<boolean>> {
+    return (value) => {
+        const shouldRefresh = typeof value === 'function' ? value(true) : value;
+        if (shouldRefresh) refresh();
+    };
+}
+
+function useSWRRefreshDispatcher(keys: string | readonly string[]): Dispatch<SetStateAction<boolean>> {
+    const { mutate } = useSWRConfig();
+    const keysToRefresh = useMemo(() => (Array.isArray(keys) ? keys : [keys]), [keys]);
+
+    return useMemo(
+        () =>
+            toRefreshDispatcher(() => {
+                void Promise.all(keysToRefresh.map((key) => mutate(key)));
+            }),
+        [keysToRefresh, mutate]
+    );
+}
+
+function useNotificationRefreshDispatcher(): Dispatch<SetStateAction<boolean>> {
+    const { mutate } = useSWRConfig();
+    const pendingScrollTop = useRef<number | null>(null);
+
+    const refreshNotifications = useCallback(() => {
+        if (typeof window !== 'undefined') {
+            pendingScrollTop.current = window.scrollY;
+        }
+
+        void Promise.all(notificationRefreshKeys.map((key) => mutate(key))).finally(() => {
+            if (pendingScrollTop.current === null) return;
+
+            const scrollTop = pendingScrollTop.current;
+            pendingScrollTop.current = null;
+            window.requestAnimationFrame(() => window.scrollTo({ top: scrollTop }));
+        });
+    }, [mutate]);
+
+    return useMemo(() => toRefreshDispatcher(refreshNotifications), [refreshNotifications]);
+}
+
+export async function refreshDashboardTab(mutate: (key: string) => Promise<unknown>, tabIndex: number): Promise<void> {
+    const keysByTab = [
+        notificationRefreshKeys,
+        [dashboardDataKeys.donations],
+        [dashboardDataKeys.inventory],
+        [dashboardDataKeys.users],
+        [dashboardDataKeys.organizations],
+        [dashboardDataKeys.categories]
+    ] as const;
+
+    await Promise.all(keysByTab[tabIndex]?.map((key) => mutate(key)) ?? []);
+}
+
+export function DashboardNotificationFeed({ onNavigate }: { onNavigate: (tabIndex: number, entityId: string) => void }) {
+    const { data: notifications } = useSWR(
+        dashboardDataKeys.notifications,
+        () => fetchWithLogging('Dashboard notification feed notifications', getNotifications),
+        swrOptions
+    );
+    const { data: feedData } = useSWR(
+        dashboardDataKeys.notificationFeed,
+        () => fetchWithLogging('Dashboard notification feed data', () => fetchNotificationFeedData(calendlyTimeRange)),
+        swrOptions
+    );
+
+    const notificationItems = useMemo<NotificationItem[]>(
+        () => feedData?.items.map((item) => ({ ...item, timestamp: new Date(item.timestamp) })) ?? [],
+        [feedData]
+    );
+
+    const notificationData = useMemo<NotificationData | null>(() => {
+        if (!notifications || !feedData) return null;
+
+        return {
+            ...notifications,
+            pickupBookingStatus: feedData.pickupBookingStatus,
+            dropOffBookingStatus: feedData.dropOffBookingStatus,
+            calendlyTimeRange
+        };
+    }, [feedData, notifications]);
+
+    return <NotificationFeed items={notificationItems} onNavigate={onNavigate} notificationData={notificationData} />;
+}
+
+export function DashboardNotificationsTab(props: {
+    activeSubTab: number;
+    onSubTabChange: Dispatch<SetStateAction<number>>;
+    highlightedEntityId: string | null;
+}) {
+    const { activeSubTab, onSubTabChange, highlightedEntityId } = props;
+    const { data: notifications, isLoading: isLoadingNotifications } = useSWR(
+        dashboardDataKeys.notifications,
+        () => fetchWithLogging('Dashboard notifications', getNotifications),
+        swrOptions
+    );
+    const { data: feedData, isLoading: isLoadingFeedData } = useSWR(
+        dashboardDataKeys.notificationFeed,
+        () => fetchWithLogging('Dashboard notification details', () => fetchNotificationFeedData(calendlyTimeRange)),
+        swrOptions
+    );
+    const setNotificationsUpdated = useNotificationRefreshDispatcher();
+
+    const notificationData = useMemo<NotificationData | null>(() => {
+        if (!notifications || !feedData) return null;
+
+        return {
+            ...notifications,
+            pickupBookingStatus: feedData.pickupBookingStatus,
+            dropOffBookingStatus: feedData.dropOffBookingStatus,
+            calendlyTimeRange
+        };
+    }, [feedData, notifications]);
+
+    if (isLoadingNotifications || isLoadingFeedData) return <Loader />;
+    if (!notifications) return <p>No notifications at this time.</p>;
+
+    return (
+        <Notifications
+            notifications={notifications}
+            setNotificationsUpdated={setNotificationsUpdated}
+            activeSubTab={activeSubTab}
+            onSubTabChange={onSubTabChange}
+            notificationData={notificationData}
+            highlightedEntityId={highlightedEntityId}
+        />
+    );
+}
+
+export function DashboardDonationsTab() {
+    const { data: donations, isLoading } = useSWR(
+        dashboardDataKeys.donations,
+        () => fetchWithLogging('Dashboard donations', getAllDonations),
+        swrOptions
+    );
+    const setDonationsUpdated = useSWRRefreshDispatcher(donationRefreshKeys);
+
+    if (isLoading) return <Loader />;
+    if (!donations) return <p>No donations found.</p>;
+
+    return <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} />;
+}
+
+export function DashboardInventoryTab() {
+    const { data: inventory, isLoading } = useSWR(
+        dashboardDataKeys.inventory,
+        () => fetchWithLogging('Dashboard inventory', getAllInventory),
+        swrOptions
+    );
+    const setInventoryUpdated = useSWRRefreshDispatcher(inventoryRefreshKeys);
+
+    if (isLoading) return <Loader />;
+    if (!inventory) return <p>No inventory found.</p>;
+
+    return <Inventory inventory={inventory} setInventoryUpdated={setInventoryUpdated} />;
+}
+
+export function DashboardUsersTab() {
+    const { data: users, isLoading } = useSWR(
+        dashboardDataKeys.users,
+        () => fetchWithLogging('Dashboard users', async () => (await getAllDbUsers()).filter((user) => !user.isDeleted)),
+        swrOptions
+    );
+    const setUsersUpdated = useSWRRefreshDispatcher(userRefreshKeys);
+
+    if (isLoading) return <Loader />;
+    if (!users) return <p>No users found.</p>;
+
+    return <Users users={users} setUsersUpdated={setUsersUpdated} />;
+}
+
+export function DashboardOrganizationsTab() {
+    const { data: orgNamesAndIds, isLoading } = useSWR(
+        dashboardDataKeys.organizations,
+        () => fetchWithLogging('Dashboard organizations', getOrganizationNames),
+        swrOptions
+    );
+    const setOrgsUpdated = useSWRRefreshDispatcher(dashboardDataKeys.organizations);
+
+    if (isLoading) return <Loader />;
+    if (!orgNamesAndIds) return <p>No organizations found.</p>;
+
+    return <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} />;
+}
+
+export function DashboardCategoriesTab() {
+    const { data: categories, isLoading } = useSWR(
+        dashboardDataKeys.categories,
+        () => fetchWithLogging('Dashboard categories', getAllCategories),
+        swrOptions
+    );
+    const setCategoriesUpdated = useSWRRefreshDispatcher(dashboardDataKeys.categories);
+
+    if (isLoading) return <Loader />;
+    if (!categories) return <p>No categories found.</p>;
+
+    return <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} />;
+}

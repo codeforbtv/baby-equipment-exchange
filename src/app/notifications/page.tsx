@@ -1,6 +1,6 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
@@ -16,19 +16,19 @@ const NotificationsPage = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [notifications, setNotifications] = useState<Notification | null>(null);
 
-    async function fetchNotifications(): Promise<void> {
-        setIsLoading(true);
-        try {
-            const notificationsResult = await getNotifications();
-            setNotifications(notificationsResult);
-        } catch (error) {
-            addErrorEvent('Fetch notifications', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
     useEffect(() => {
+        const fetchNotifications = async (): Promise<void> => {
+            setIsLoading(true);
+            try {
+                const notificationsResult = await getNotifications();
+                setNotifications(notificationsResult);
+            } catch (error) {
+                addErrorEvent('Fetch notifications', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         fetchNotifications();
     }, []);
 

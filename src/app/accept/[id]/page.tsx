@@ -33,29 +33,9 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const [openSecheduler, setOpenScheduler] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[]>([]);
 
-    const router = useRouter();
-
     //disable btton unless all donations are accepted or rejected
     const isDisabled = donations ? accepted.length + rejected.length !== donations.length : false;
 
-    const fetchDonationsByBulkId = async (id: string): Promise<void> => {
-        setIsLoading(true);
-        try {
-            const donationsResult = await getDonationsByBulkId(id);
-            const pendingDonations = donationsResult.filter((d) => d.status === 'in processing');
-
-            if (pendingDonations.length === 0) {
-                alert('All items in this donation have already been processed.');
-                router.push('/');
-                return;
-            }
-            setDonations(pendingDonations);
-        } catch (error) {
-            addErrorEvent('Fetch donations by bulk id', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
     type ButtonStatus = 'accepted' | 'rejected' | null;
 
     const handleAcceptReject = (value: ButtonStatus, id: string): void => {
@@ -79,11 +59,30 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     };
 
     useEffect(() => {
+        const fetchDonationsByBulkId = async (id: string): Promise<void> => {
+            setIsLoading(true);
+            try {
+                const donationsResult = await getDonationsByBulkId(id);
+                const pendingDonations = donationsResult.filter((d) => d.status === 'in processing');
+
+                if (pendingDonations.length === 0) {
+                    alert('All items in this donation have already been processed.');
+                    router.push('/');
+                    return;
+                }
+                setDonations(pendingDonations);
+            } catch (error) {
+                addErrorEvent('Fetch donations by bulk id', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         fetchDonationsByBulkId(params.id);
         getAllCategories()
             .then(setCategories)
             .catch((err) => addErrorEvent('Fetch categories', err));
-    }, []);
+    }, [params.id, router]);
 
     return (
         <ProtectedAdminRoute>

@@ -7,13 +7,14 @@ import { useRouter } from 'next/navigation';
 //Components
 import DonationCardSmall from './DonationCardSmall';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@mui/material';
+import { Box, Button, FormControl, IconButton, InputLabel, NativeSelect, TextField } from '@mui/material';
 import CustomDialog from './CustomDialog';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
-import { closeOrder, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
+import { schedulePickupForOrder } from '@/api/firebase-donations';
 import posthog from 'posthog-js';
 //styles
 import '@/styles/globalStyles.css';
@@ -54,24 +55,10 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        const tagNumbers: string[] = [];
-        items.map((item) => {
-            if (item.tagNumber) tagNumbers.push(item.tagNumber);
-        });
+        const tagNumbers = items.flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
         const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), tagNumbers, notes);
         try {
-            await Promise.all(
-                items.map(async (item) => {
-                    await updateDonationStatus(item.id, 'reserved');
-                    if (inviteUrl) {
-                        await updateDonation(item.id, {
-                            schedulingLink: inviteUrl,
-                            schedulingEmailSentAt: new Date()
-                        });
-                    }
-                })
-            );
-            await closeOrder(id);
+            await schedulePickupForOrder(order, inviteUrl || undefined);
             await sendMail(emailMsg);
             posthog.capture('pickup_scheduled', {
                 order_id: id,
@@ -83,15 +70,6 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             posthog.captureException(error);
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const fetchEvents = async () => {
-        try {
-            const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
-        } catch (error) {
-            addErrorEvent('Fetch Calendly Scheduling Links', error);
         }
     };
 
@@ -114,12 +92,24 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     );
 
     useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const eventResult = await getSchedulingPageLink();
+                setEvents(eventResult);
+            } catch (error) {
+                addErrorEvent('Fetch Calendly Scheduling Links', error);
+            }
+        };
+
         fetchEvents();
     }, []);
 
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
+                <IconButton aria-label="Back to order review" onClick={() => setShowScheduler(false)}>
+                    <ArrowBackIcon />
+                </IconButton>
                 <h3>Send Pickup Scheduling Email</h3>
             </div>
             {isLoading ? (
@@ -150,16 +140,13 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                     <option value="" disabled>
                                         Select Calendar (Optional)
                                     </option>
-                                    {events &&
-                                        events.map((event, index) => {
-                                            if (event.active === true) {
-                                                return (
-                                                    <option key={index} value={event.scheduling_url}>
-                                                        {event.name}
-                                                    </option>
-                                                );
-                                            }
-                                        })}
+                                    {events
+                                        ?.filter((event) => event.active === true)
+                                        .map((event) => (
+                                            <option key={event.uri || event.scheduling_url || event.name} value={event.scheduling_url}>
+                                                {event.name}
+                                            </option>
+                                        ))}
                                 </NativeSelect>
                             </FormControl>
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>

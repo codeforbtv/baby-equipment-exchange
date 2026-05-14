@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { SetStateAction, useState, Dispatch, useMemo, useEffect } from 'react';
+import { SetStateAction, useState, Dispatch, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography, InputAdornment, useMediaQuery } from '@mui/material';
@@ -33,7 +33,6 @@ const Donations = (props: DonationsProps) => {
     const { donations, setDonationsUpdated } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [searchInput, setSearchInput] = useState<string>('');
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[] | null>(null);
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
     const [statusFilter, setStatusFilter] = useState<string[] | undefined>([]);
@@ -42,18 +41,15 @@ const Donations = (props: DonationsProps) => {
     //Media query for imagelist grid
     const isMobile = useMediaQuery('(max-width:600px)');
 
-    const fetchCategories = async (): Promise<void> => {
+    const fetchCategories = useCallback(async (): Promise<void> => {
         try {
-            setIsLoading(true);
             const categoriesResult = await getAllCategories();
             setCategories(categoriesResult);
         } catch (error) {
             addErrorEvent('Error fetching all categories: ', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
-    };
+    }, []);
 
     //Updates displayed donations anytimes filters or search field changes
     const donationsToDisplay = useMemo(() => {
@@ -77,11 +73,11 @@ const Donations = (props: DonationsProps) => {
             );
         }
         return currentDonations;
-    }, [categoryFilter, statusFilter, searchInput]);
+    }, [categoryFilter, donations, statusFilter, searchInput]);
 
     useEffect(() => {
         if (!categories) fetchCategories();
-    }, []);
+    }, [categories, fetchCategories]);
 
     return (
         <ProtectedAdminRoute>

@@ -34,7 +34,6 @@ import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
 //Types
 import { Donation } from '@/models/donation';
-import { Order } from '@/types/OrdersTypes';
 import { IUser } from '@/models/user';
 import { BookingMatchConfidence } from '@/types/CalendlyTypes';
 
@@ -45,7 +44,6 @@ type NotificationCardProps = {
     type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
     donation?: Donation;
     user?: IUser;
-    order?: Order;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
     calendlyStatus?: BookingMatchConfidence;
@@ -85,7 +83,7 @@ const CalendlyStatusChip = ({ status }: { status?: BookingMatchConfidence }) => 
 };
 
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated, calendlyStatus, isHighlighted } = props;
+    const { type, donation, user, setIdToDisplay, setNotificationsUpdated, calendlyStatus, isHighlighted } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -96,8 +94,12 @@ const NotificationCard = (props: NotificationCardProps) => {
     const highlightedSx = isHighlighted ? { boxShadow: '0 0 0 2px #ffc107, 0 4px 16px rgba(255, 193, 7, 0.25)', transition: 'box-shadow 0.4s ease' } : undefined;
 
     useEffect(() => {
-        if (isHighlighted) {
-            cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (isHighlighted && cardRef.current) {
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            cardRef.current.scrollIntoView({
+                block: 'start',
+                behavior: prefersReducedMotion ? 'auto' : 'smooth'
+            });
         }
     }, [isHighlighted]);
 

@@ -24,6 +24,8 @@ import { NotificationItem, NotificationFilterType, NotificationData } from '@/ty
 //Styles
 import styles from './NotificationFeed.module.css';
 
+type FeedCardType = 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
+
 // Types
 interface NotificationFeedProps {
     items: NotificationItem[];
@@ -145,9 +147,8 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
     const handleItemClick = useCallback(
         (item: NotificationItem) => {
             onNavigate(item.tabIndex, item.entityId);
-            handleClose();
         },
-        [onNavigate, handleClose]
+        [onNavigate]
     );
 
     // Close on Escape key
@@ -163,7 +164,7 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
         <>
             {/* Bell Icon with Badge */}
             <Tooltip title="Notifications">
-                <IconButton onClick={handleOpen} size="small" sx={{ ml: 'auto', mr: 0.5, color: '#666' }} id="notification-feed-icon">
+                <IconButton onClick={handleOpen} size="small" sx={{ color: '#666' }} id="notification-feed-icon" aria-label="Open notifications feed">
                     <Badge
                         badgeContent={badgeCount}
                         color="error"
@@ -188,7 +189,12 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                     <>
                         <div className={styles['feed-backdrop']} onClick={handleClose} />
 
-                        <div className={`${styles['feed-panel']} ${isExpanded ? styles['feed-panel--expanded'] : styles['feed-panel--partial']}`}>
+                        <div
+                            className={`${styles['feed-panel']} ${isExpanded ? styles['feed-panel--expanded'] : styles['feed-panel--partial']}`}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Notifications"
+                        >
                             {/* Header */}
                             <div className={styles['feed-header']}>
                                 <h3>Notifications</h3>
@@ -228,9 +234,7 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                                         if (isExpanded && notificationData) {
                                             const donation = notificationData.donations?.find((d) => d.id === item.entityId);
                                             const user = notificationData.users?.find((u) => u.uid === item.entityId);
-                                            const order = notificationData.orders?.find((o) => o.id === item.entityId);
-
-                                            let cardType: any = null;
+                                            let cardType: FeedCardType | null = null;
                                             if (item.type === 'pending-donations') cardType = 'pending-donation';
                                             else if (item.type === 'pending-deliveries') cardType = 'pending-delivery';
                                             else if (item.type === 'reserved') cardType = 'reserved';
@@ -241,14 +245,13 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                                                 return (
                                                     <div
                                                         key={item.id}
-                                                        style={{ marginBottom: 16, padding: '0 20px', display: 'flex', flexDirection: 'column' }}
+                                                        className={styles['feed-card-item']}
                                                     >
                                                         <NotificationCard
                                                             type={cardType}
                                                             donation={donation}
                                                             user={user}
-                                                            order={order}
-                                                            setIdToDisplay={(() => handleItemClick(item)) as any} // Clicking card natively acts as navigate
+                                                            setIdToDisplay={() => handleItemClick(item)}
                                                             calendlyStatus={item.calendlyStatus}
                                                         />
                                                     </div>

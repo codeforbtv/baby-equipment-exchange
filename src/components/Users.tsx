@@ -1,11 +1,9 @@
 'use client';
 
 // Hooks
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useMemo, useState } from 'react';
 // Components
 import { InputAdornment, List, TextField, Typography } from '@mui/material';
-import SearchBar from '@/components/SearchBar';
-import Filter from '@/components/Filter';
 import UserCard from '@/components/UserCard';
 import UserDetails from '@/components/UserDetails';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -26,11 +24,10 @@ export default function Users(props: UserListProps) {
     const { users, setUsersUpdated } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [searchInput, setSearchInput] = useState<string>('');
-    const [filteredUsers, setFilteredUsers] = useState<IUser[]>(users);
-
-    useEffect(() => {
-        setFilteredUsers(users.filter((user) => Object.values(user).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))));
-    }, [searchInput]);
+    const filteredUsers = useMemo(
+        () => users.filter((user) => Object.values(user).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))),
+        [searchInput, users]
+    );
 
     return (
         <ProtectedAdminRoute>

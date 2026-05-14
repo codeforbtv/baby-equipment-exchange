@@ -1,33 +1,27 @@
 'use client';
-import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
-import { useContext, useEffect, useState, ChangeEvent } from 'react';
-import { UserContext } from '@/contexts/UserContext';
+
+//Hooks
+import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSchedulingPageLink } from '@/api/calendly';
-import { getDonationById } from '@/api/firebase-donations';
+//Components
+import Loader from '@/components/Loader';
+import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+import ScheduleDropOff from '@/components/ScheduleDropOff';
+//Contexts
+import { UserContext } from '@/contexts/UserContext';
+//Api
 import { addErrorEvent } from '@/api/firebase';
-
-import { EventType } from '@/types/CalendlyTypes';
-
+import { getDonationById } from '@/api/firebase-donations';
+//Styles
 import '../../../styles/globalStyles.css';
-
-import { Box, Button, NativeSelect, TextField } from '@mui/material';
+//Types
+import { Donation } from '@/models/donation';
 
 export default function ScheduleDropoff({ params }: { params: { id: string } }) {
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
-    const [events, setEvents] = useState<EventType[]>([]);
-    const [inviteUrl, setInviteUrl] = useState<string>('');
-    const [donorEmail, setDonorEmail] = useState<string>('');
-    const [notes, sentNotes] = useState<string>('');
-
-    const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
-        setInviteUrl(event.target.value);
-    };
-
-    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
-
-    const handleSubmit = async () => {};
+    const [donation, setDonation] = useState<Donation | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
         if (!isAdmin) {
@@ -38,69 +32,28 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
     useEffect(() => {
         if (!isAdmin) return;
 
-        const fetchEvents = async () => {
+        const fetchDonation = async () => {
+            setIsLoading(true);
             try {
-                const eventResult = await getSchedulingPageLink();
-                setEvents(eventResult);
+                const donationResult = await getDonationById(params.id);
+                setDonation(donationResult);
             } catch (error) {
-                addErrorEvent('Fetch Calendly Scheduling Links', error);
+                addErrorEvent('Fetch donation for scheduling', error);
+            } finally {
+                setIsLoading(false);
             }
         };
-        const fetchDonorEmail = async () => {
-            try {
-                const donation = await getDonationById(params.id);
-                setDonorEmail(donation.donorEmail);
-            } catch (error) {
-                addErrorEvent('Fetch donor email', error);
-            }
-        };
-        fetchEvents();
-        fetchDonorEmail();
+
+        fetchDonation();
     }, [isAdmin, params.id]);
 
-    if (!isAdmin) {
-        return null;
-    }
+    if (!isAdmin) return null;
 
     return (
         <ProtectedAdminRoute>
-            <div className="page--header">
-                <h1>Accept Donation</h1>
-                <h4>Select a calendar to send a scheduling link</h4>
-            </div>
-            <div className="content--container">
-                <Box display={'flex'} flexDirection={'column'} gap={4}>
-                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                        <option value="" disabled>
-                            Select an Drop Off Location
-                        </option>
-                        {events.map((event, index) => {
-                            if (event.active === true) {
-                                return (
-                                    <option key={index} value={event.scheduling_url}>
-                                        {event.name}
-                                    </option>
-                                );
-                            }
-                        })}
-                    </NativeSelect>
-                    <TextField
-                        type="text"
-                        label="Notes"
-                        name="notes"
-                        id="notes"
-                        value={notes}
-                        multiline={true}
-                        minRows={8}
-                        maxRows={Infinity}
-                        placeholder="Add notes here"
-                        onChange={handleInputChange}
-                    ></TextField>
-                    <Button onClick={handleSubmit} disabled={!inviteUrl}>
-                        Send scheduling Link
-                    </Button>
-                </Box>
-            </div>
+            {isLoading && <Loader />}
+            {!isLoading && !donation && <p>Donation not found.</p>}
+            {!isLoading && donation && <ScheduleDropOff acceptedDonations={[donation]} setOpenScheduler={() => router.push('/')} />}
         </ProtectedAdminRoute>
     );
 }

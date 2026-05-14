@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -84,7 +84,7 @@ const Inventory = (props: InventoryProps) => {
     const { addRequestedInventoryItem, requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
 
-    async function fetchInventory(): Promise<void> {
+    const fetchInventory = useCallback(async (): Promise<void> => {
         if (isAidWorker) {
             setIsLoading(true);
             try {
@@ -96,7 +96,7 @@ const Inventory = (props: InventoryProps) => {
                 setIsLoading(false);
             }
         }
-    }
+    }, [isAidWorker]);
 
     const handleOpenCart = () => {
         if (isAdmin) {
@@ -130,8 +130,13 @@ const Inventory = (props: InventoryProps) => {
     }, [requestedInventory, currentInventory, categoryFilter, statusFilter, searchInput]);
 
     useEffect(() => {
-        if (!inventory) fetchInventory();
-    }, []);
+        if (inventory) {
+            setCurrentInventory(inventory);
+            return;
+        }
+
+        fetchInventory();
+    }, [fetchInventory, inventory]);
 
     if (isLoading) return <Loader />;
 

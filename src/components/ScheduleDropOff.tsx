@@ -6,7 +6,7 @@ import { renderToString } from 'react-dom/server';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Alert, Box, Button, FormControl, IconButton, InputLabel, MenuItem, NativeSelect, Select, TextField, Typography } from '@mui/material';
+import { Box, Button, FormControl, NativeSelect, TextField, InputLabel, IconButton } from '@mui/material';
 import DonationCardSmall from './DonationCardSmall';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
@@ -19,27 +19,18 @@ import sendMail from '@/api/nodemailer';
 import posthog from 'posthog-js';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';
-import { updateDonation, updateDonationStatus } from '@/api/firebase-donations';
-import { getAllCategories, getTagNumber } from '@/api/firebase-categories';
+import { updateDropOffDonationStatuses } from '@/api/firebase-donations';
+import { getTagNumber } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
 //types
 import { EventType } from '@/types/CalendlyTypes';
 import { Donation } from '@/models/donation';
-import { Category } from '@/models/category';
-import { serverTimestamp } from 'firebase/firestore';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
     rejectedDonations?: Donation[];
     setOpenScheduler: Dispatch<SetStateAction<boolean>>;
-};
-
-type CategoryError = {
-    id: string;
-    brand: string;
-    model: string;
-    invalidCategory: string;
 };
 
 const ScheduleDropOff = (props: ScheduleDropOffProps) => {
@@ -50,9 +41,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [categoryErrors, setCategoryErrors] = useState<CategoryError[]>([]);
-    const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string>>({});
 
     const router = useRouter();
 
@@ -77,63 +65,12 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
-    const fetchEvents = async () => {
-        try {
-            const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
-        } catch (error) {
-            addErrorEvent('Fetch Calendly Scheduling Links', error);
-        }
-    };
-
-    const acceptPromise = async (donations: Donation[]): Promise<string[]> => {
-        const tagNumbers: string[] = [];
-        const writtenIds: string[] = [];
-
-        try {
-            for (const donation of donations) {
-                const effectiveCategory = categoryOverrides[donation.id] || donation.category;
-                const newTagNumber = await getTagNumber(effectiveCategory);
-                tagNumbers.push(newTagNumber);
-
-                const updates: Record<string, any> = {
-                    status: 'pending delivery',
-                    dateAccepted: serverTimestamp(),
-                    tagNumber: newTagNumber,
-                    schedulingLink: inviteUrl || null,
-                    schedulingEmailSentAt: inviteUrl ? new Date() : null
-                };
-                if (categoryOverrides[donation.id]) {
-                    updates.category = effectiveCategory;
-                }
-
-                await updateDonation(donation.id, updates);
-                writtenIds.push(donation.id);
-            }
-            return tagNumbers;
-        } catch (error) {
-            for (const id of writtenIds) {
-                try {
-                    await updateDonation(id, {
-                        status: 'in processing',
-                        dateAccepted: null,
-                        tagNumber: null,
-                        schedulingLink: null,
-                        schedulingEmailSentAt: null
-                    });
-                } catch (rollbackError) {
-                    addErrorEvent('Rollback failed for donation', rollbackError);
-                }
-            }
-            throw error;
-        }
-    };
-
-    const rejectPromise = async (donations: Donation[]) => {
-        await Promise.all(
-            donations.map(async (donation) => {
-                await updateDonationStatus(donation.id, 'rejected');
-            })
+    const assignAcceptedTags = async (donations: Donation[]): Promise<{ id: string; tagNumber: string }[]> => {
+        return Promise.all(
+            donations.map(async (donation) => ({
+                id: donation.id,
+                tagNumber: await getTagNumber(donation.category)
+            }))
         );
     };
 
@@ -165,33 +102,16 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     );
 
     const handleSubmit = async () => {
+        //send email with renderToString(message) and update donation statuses. If donation is accepted, assign a tagNumber
         setIsLoading(true);
-        setErrorMessage('');
-        setCategoryErrors([]);
-
         try {
-            let tagNumbers: string[] = [];
-            if (acceptedDonations && acceptedDonations.length > 0) {
-                if (categories.length > 0) {
-                    const validNames = new Set(categories.map((c) => c.getName()));
-                    const errors: CategoryError[] = acceptedDonations
-                        .filter((d) => !validNames.has(categoryOverrides[d.id] || d.category))
-                        .map((d) => ({
-                            id: d.id,
-                            brand: d.brand,
-                            model: d.model,
-                            invalidCategory: d.category
-                        }));
-
-                    if (errors.length > 0) {
-                        setCategoryErrors(errors);
-                        setIsLoading(false);
-                        return;
-                    }
-                }
-                tagNumbers = await acceptPromise(acceptedDonations);
-            }
-            if (rejectedDonations) await rejectPromise(rejectedDonations);
+            const acceptedDonationUpdates = acceptedDonations ? await assignAcceptedTags(acceptedDonations) : [];
+            const tagNumbers = acceptedDonationUpdates.map((donation) => donation.tagNumber);
+            await updateDropOffDonationStatuses({
+                acceptedDonations: acceptedDonationUpdates,
+                rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
+                schedulingLink: inviteUrl || undefined
+            });
             const emailMsg =
                 acceptedDonations && acceptedDonations.length > 0
                     ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
@@ -205,24 +125,28 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
             posthog.captureException(error);
-            setErrorMessage('An unexpected error occurred while processing donations. Please try again.');
+            if (error instanceof Error && error.message.startsWith('Category not found:')) {
+                setErrorMessage(error.message);
+            } else {
+                setErrorMessage('An unexpected error occurred while processing donations. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleCategoryOverride = (donationId: string, newCategory: string) => {
-        setCategoryOverrides((prev) => ({ ...prev, [donationId]: newCategory }));
-    };
-
     useEffect(() => {
-        fetchEvents();
-        getAllCategories()
-            .then(setCategories)
-            .catch((err) => addErrorEvent('Fetch categories', err));
-    }, []);
+        const fetchEvents = async () => {
+            try {
+                const eventResult = await getSchedulingPageLink();
+                setEvents(eventResult);
+            } catch (error) {
+                addErrorEvent('Fetch Calendly Scheduling Links', error);
+            }
+        };
 
-    const allErrorsCorrected = categoryErrors.length > 0 && categoryErrors.every((err) => categoryOverrides[err.id]);
+        fetchEvents();
+    }, []);
 
     return (
         <ProtectedAdminRoute>
@@ -240,51 +164,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     <div className="content--container">
                         <Box display={'flex'} flexDirection={'column'}>
                             {message}
-
-                            {categoryErrors.length > 0 && (
-                                <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
-                                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                                        {categoryErrors.length === 1
-                                            ? '1 item has an unrecognized category'
-                                            : `${categoryErrors.length} items have unrecognized categories`}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mb: 2 }}>
-                                        Select a valid category for each item, then click &ldquo;Send Email&rdquo; again.
-                                    </Typography>
-                                    {categoryErrors.map((err) => (
-                                        <Box key={err.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
-                                            <Box sx={{ minWidth: 160 }}>
-                                                <Typography variant="body2" fontWeight="bold">
-                                                    {err.brand} {err.model}
-                                                </Typography>
-                                                <Typography
-                                                    variant="caption"
-                                                    sx={{ textDecoration: 'line-through', color: 'var(--error)' }}
-                                                >
-                                                    {err.invalidCategory}
-                                                </Typography>
-                                            </Box>
-                                            <FormControl size="small" sx={{ minWidth: 200 }}>
-                                                <Select
-                                                    value={categoryOverrides[err.id] || ''}
-                                                    onChange={(e) => handleCategoryOverride(err.id, e.target.value as string)}
-                                                    displayEmpty
-                                                >
-                                                    <MenuItem value="" disabled>
-                                                        Select category
-                                                    </MenuItem>
-                                                    {categories.map((cat) => (
-                                                        <MenuItem key={cat.getId()} value={cat.getName()}>
-                                                            {cat.getName()}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-                                        </Box>
-                                    ))}
-                                </Alert>
-                            )}
-
                             <TextField
                                 type="text"
                                 label="Additional notes"
@@ -306,26 +185,19 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                         <option value="" disabled>
                                             Select Calendar (Optional)
                                         </option>
-                                        {events &&
-                                            events.map((event, index) => {
-                                                if (event.active === true) {
-                                                    return (
-                                                        <option key={index} value={event.scheduling_url}>
-                                                            {event.name}
-                                                        </option>
-                                                    );
-                                                }
-                                            })}
+                                        {events
+                                            ?.filter((event) => event.active === true)
+                                            .map((event) => (
+                                                <option key={event.uri || event.scheduling_url || event.name} value={event.scheduling_url}>
+                                                    {event.name}
+                                                </option>
+                                            ))}
                                     </NativeSelect>
                                 </FormControl>
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button
-                                    onClick={handleSubmit}
-                                    variant="contained"
-                                    disabled={categoryErrors.length > 0 && !allErrorsCorrected}
-                                >
-                                    {allErrorsCorrected ? 'Retry & Send Email' : 'Send Email'}
+                                <Button onClick={handleSubmit} variant="contained">
+                                    Send Email
                                 </Button>
                                 <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
                                     Cancel
