@@ -569,7 +569,7 @@ export async function deleteDonationById(id: string): Promise<void> {
 
 export async function adminAreDonationsAvailable(ids: string[]): Promise<string[]> {
     try {
-        const unavailableDonations = [];
+        const unavailableDonations: string[] = [];
         for (const id of ids) {
             const donationref = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
             const donationSnapshot = await getDoc(donationref);
@@ -581,8 +581,8 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
         return unavailableDonations;
     } catch (error) {
         addErrorEvent('Admin are donations available', error);
+        throw error;
     }
-    return Promise.reject();
 }
 
 export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<Order> {
