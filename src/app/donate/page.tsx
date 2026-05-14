@@ -249,7 +249,7 @@ export default function Donate() {
                                     helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
                                     required
                                     onChange={handleConfirmEmail}
-                                    onBlur={() => handleConfirmEmail}
+                                    onBlur={(e:any) => handleConfirmEmail(e )}
                                 />
                                 <Button type="button" variant="contained" onClick={handleSave} disabled={isDisabled} sx={{ marginTop: '1em' }}>
                                     Save
