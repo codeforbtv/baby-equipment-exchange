@@ -13,7 +13,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
-import { closeOrder, updateDonation } from '@/api/firebase-donations';
+import { cancelOrderAndReturnItems } from '@/api/firebase-donations';
 import sendMail from '@/api/nodemailer';
 //styles
 import '@/styles/globalStyles.css';
@@ -26,13 +26,13 @@ import cancelOrder from '@/email-templates/cancelOrder';
 type CancelOrderProps = {
     order: Order;
     shouldShow: Dispatch<SetStateAction<boolean>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onNotificationsChanged?: () => void;
     onComplete?: () => void;
 };
 
 const CancelOrder = (props: CancelOrderProps) => {
-    const { order, shouldShow, setNotificationsUpdated, onComplete } = props;
-    const { requestor, id, items, rejectedItems } = order;
+    const { order, shouldShow, onNotificationsChanged, onComplete } = props;
+    const { requestor, items, rejectedItems } = order;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [events, setEvents] = useState<EventType[] | null>(null);
@@ -42,7 +42,7 @@ const CancelOrder = (props: CancelOrderProps) => {
 
     const handleClose = () => {
         setIsDialogOpen(false);
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
+        if (onNotificationsChanged) onNotificationsChanged();
         shouldShow(false);
         if (onComplete) onComplete();
     };
@@ -59,15 +59,7 @@ const CancelOrder = (props: CancelOrderProps) => {
         const emailMsg = cancelOrder(requestor.email, renderToString(message), tagNumbers, notes, inviteUrl);
 
         try {
-            await Promise.all(
-                items.map((item) =>
-                    updateDonation(item.id, {
-                        status: 'available',
-                        requestor: null
-                    })
-                )
-            );
-            await closeOrder(id);
+            await cancelOrderAndReturnItems(order);
             await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {

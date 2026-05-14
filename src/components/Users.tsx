@@ -1,7 +1,7 @@
 'use client';
 
 // Hooks
-import React, { Dispatch, SetStateAction, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 // Components
 import { InputAdornment, List, TextField, Typography } from '@mui/material';
 import UserCard from '@/components/UserCard';
@@ -17,11 +17,11 @@ import { IUser } from '@/models/user';
 
 type UserListProps = {
     users: IUser[];
-    setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
+    onUsersChanged?: () => void;
 };
 
 export default function Users(props: UserListProps) {
-    const { users, setUsersUpdated } = props;
+    const { users, onUsersChanged } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [searchInput, setSearchInput] = useState<string>('');
     const filteredUsers = useMemo(
@@ -31,7 +31,7 @@ export default function Users(props: UserListProps) {
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && <UserDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setUsersUpdated={setUsersUpdated} />}
+            {idToDisplay && <UserDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} onUsersChanged={onUsersChanged} />}
 
             {!idToDisplay && (
                 <>

@@ -1,6 +1,7 @@
 // Modules
 import {
     DocumentData,
+    DocumentReference,
     QueryConstraint,
     QueryDocumentSnapshot,
     SnapshotOptions,
@@ -18,7 +19,8 @@ import {
     where,
     writeBatch,
     documentId,
-    arrayRemove
+    arrayRemove,
+    runTransaction
 } from 'firebase/firestore';
 // Models
 import { Donation, IDonation } from '@/models/donation';
@@ -30,6 +32,7 @@ import { Order } from '@/types/OrdersTypes';
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
 import { AdminDonationBody } from '@/types/DonationTypes';
+import { CATEGORIES_COLLECTION } from './firebase-categories';
 
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
@@ -411,12 +414,11 @@ export async function updateDonationStatus(id: string, status: DonationStatusVal
 }
 
 export async function updateDropOffDonationStatuses(params: {
-    acceptedDonations: { id: string; tagNumber: string }[];
+    acceptedDonations: { id: string; category: string }[];
     rejectedDonationIds: string[];
     schedulingLink?: string;
-}): Promise<void> {
+}): Promise<{ id: string; tagNumber: string }[]> {
     try {
-        const batch = writeBatch(db);
         const schedulingFields = params.schedulingLink
             ? {
                   schedulingLink: params.schedulingLink,
@@ -427,26 +429,84 @@ export async function updateDropOffDonationStatuses(params: {
                   schedulingEmailSentAt: null
               };
 
-        params.acceptedDonations.forEach((donation) => {
-            const donationRef = doc(db, DONATIONS_COLLECTION, donation.id).withConverter(donationConverter);
-            batch.update(donationRef, {
-                status: 'pending delivery',
-                dateAccepted: serverTimestamp(),
-                tagNumber: donation.tagNumber,
-                ...schedulingFields,
-                modifiedAt: serverTimestamp()
-            });
-        });
+        const categoryRefsByName = new Map<string, DocumentReference>();
+        const uniqueCategories = [...new Set(params.acceptedDonations.map((donation) => donation.category))];
 
-        params.rejectedDonationIds.forEach((donationId) => {
-            const donationRef = doc(db, DONATIONS_COLLECTION, donationId).withConverter(donationConverter);
-            batch.update(donationRef, {
-                status: 'rejected',
-                modifiedAt: serverTimestamp()
-            });
-        });
+        await Promise.all(
+            uniqueCategories.map(async (category) => {
+                const categoryQuery = query(collection(db, CATEGORIES_COLLECTION), where('name', '==', category));
+                const categorySnapshot = await getDocs(categoryQuery);
+                const categoryRef = categorySnapshot.docs[0]?.ref;
+                if (!categoryRef) {
+                    throw new Error(`Category not found: "${category}". No matching category exists.`);
+                }
+                categoryRefsByName.set(category, categoryRef);
+            })
+        );
 
-        await batch.commit();
+        return await runTransaction(db, async (transaction) => {
+            const categoryDataByName = new Map<string, { ref: DocumentReference; tagCount: number; tagPrefix: string }>();
+
+            for (const category of uniqueCategories) {
+                const categoryRef = categoryRefsByName.get(category);
+                if (!categoryRef) {
+                    throw new Error(`Category not found: "${category}". No matching category exists.`);
+                }
+
+                const categoryDoc = await transaction.get(categoryRef);
+                if (!categoryDoc.exists()) {
+                    throw new Error(`Category not found: "${category}". No matching category exists.`);
+                }
+
+                const categoryData = categoryDoc.data();
+                categoryDataByName.set(category, {
+                    ref: categoryRef,
+                    tagCount: Number(categoryData.tagCount ?? 0),
+                    tagPrefix: String(categoryData.tagPrefix ?? '').trim()
+                });
+            }
+
+            const acceptedDonationUpdates = params.acceptedDonations.map((donation) => {
+                const categoryData = categoryDataByName.get(donation.category);
+                if (!categoryData) {
+                    throw new Error(`Category not found: "${donation.category}". No matching category exists.`);
+                }
+
+                categoryData.tagCount += 1;
+                return {
+                    id: donation.id,
+                    tagNumber: `${categoryData.tagPrefix} ${categoryData.tagCount}`.trim()
+                };
+            });
+
+            categoryDataByName.forEach((categoryData) => {
+                transaction.update(categoryData.ref, {
+                    tagCount: categoryData.tagCount,
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            acceptedDonationUpdates.forEach((donation) => {
+                const donationRef = doc(db, DONATIONS_COLLECTION, donation.id).withConverter(donationConverter);
+                transaction.update(donationRef, {
+                    status: 'pending delivery',
+                    dateAccepted: serverTimestamp(),
+                    tagNumber: donation.tagNumber,
+                    ...schedulingFields,
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            params.rejectedDonationIds.forEach((donationId) => {
+                const donationRef = doc(db, DONATIONS_COLLECTION, donationId).withConverter(donationConverter);
+                transaction.update(donationRef, {
+                    status: 'rejected',
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            return acceptedDonationUpdates;
+        });
     } catch (error) {
         addErrorEvent('updateDropOffDonationStatuses', error);
         throw error;
@@ -651,6 +711,32 @@ export async function closeOrder(id: string): Promise<void> {
         await updateDoc(orderRef, { status: 'closed', modifiedAt: serverTimestamp() });
     } catch (error) {
         addErrorEvent('Error closing', error);
+    }
+}
+
+export async function cancelOrderAndReturnItems(order: Order): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        const orderRef = doc(db, `${ORDERS_COLLECTION}/${order.id}`);
+
+        order.items.forEach((item) => {
+            const donationRef = doc(db, `${DONATIONS_COLLECTION}/${item.id}`).withConverter(donationConverter);
+            batch.update(donationRef, {
+                status: 'available',
+                requestor: null,
+                modifiedAt: serverTimestamp()
+            });
+        });
+
+        batch.update(orderRef, {
+            status: 'closed',
+            modifiedAt: serverTimestamp()
+        });
+
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('cancelOrderAndReturnItems', error);
+        throw error;
     }
 }
 

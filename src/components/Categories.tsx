@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import SearchIcon from '@mui/icons-material/Search';
@@ -18,11 +18,11 @@ import CategoryIcon from '@mui/icons-material/Category';
 
 type CategoryProps = {
     categories: Category[];
-    setCategoriesUpdated?: Dispatch<SetStateAction<boolean>>;
+    onCategoriesChanged?: () => void;
 };
 
 const Categories = (props: CategoryProps) => {
-    const { categories, setCategoriesUpdated } = props;
+    const { categories, onCategoriesChanged } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [searchInput, setSearchInput] = useState<string>('');
@@ -52,10 +52,10 @@ const Categories = (props: CategoryProps) => {
                     id={idToDisplay}
                     category={categories.find((c) => c.id === idToDisplay)}
                     setIdToDisplay={setIdToDisplay}
-                    setCategoriesUpdated={setCategoriesUpdated}
+                    onCategoriesChanged={onCategoriesChanged}
                 />
             )}
-            {showForm && <CategoryForm setShowForm={setShowForm} setCategoriesUpdated={setCategoriesUpdated} />}
+            {showForm && <CategoryForm setShowForm={setShowForm} onCategoriesChanged={onCategoriesChanged} />}
             {!idToDisplay && !showForm && (
                 <div className={styles['directory']}>
                     <div className={styles['header']}>

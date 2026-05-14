@@ -21,13 +21,13 @@ import { orgTags, OrganizationTagKeys, IOrganization } from '@/models/organizati
 type OrganizationDetailsProps = {
     id: string;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setOrgsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onOrganizationsChanged?: () => void;
 };
 
 const tagNames: OrganizationTagKeys[] = Object.keys(orgTags) as OrganizationTagKeys[];
 
 const OrganizationDetails = (props: OrganizationDetailsProps) => {
-    const { id, setIdToDisplay, setOrgsUpdated } = props;
+    const { id, setIdToDisplay, onOrganizationsChanged } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -50,7 +50,7 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
 
     const handleClose = () => {
         if (setIdToDisplay) setIdToDisplay(null);
-        if (setOrgsUpdated) setOrgsUpdated(true);
+        if (onOrganizationsChanged) onOrganizationsChanged();
         setIsDialogOpen(false);
     };
 
@@ -163,7 +163,7 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
                         organizationDetails={organizationDetails}
                         setIsEditMode={setIsEditMode}
                         fetchDonationDetails={fetchOrganizationById}
-                        setOrgsUpdated={setOrgsUpdated}
+                        onOrganizationsChanged={onOrganizationsChanged}
                     />
                 )}
             </div>

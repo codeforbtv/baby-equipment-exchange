@@ -21,7 +21,6 @@ type InventoryDetailsProps = {
     id: string | null;
     inventoryItem?: InventoryItem;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setInvetoryUpdated?: Dispatch<SetStateAction<boolean>>;
     handleRequestInventoryItem: (inventoryItem: InventoryItem) => void;
 };
 

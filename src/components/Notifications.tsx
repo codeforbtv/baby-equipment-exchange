@@ -23,7 +23,7 @@ import { BookingMatchConfidence } from '@/types/CalendlyTypes';
 
 type NotificationsProps = {
     notifications: Notification;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onNotificationsChanged?: () => void;
     activeSubTab?: number;
     onSubTabChange?: Dispatch<SetStateAction<number>>;
     notificationData?: NotificationData | null;
@@ -124,7 +124,7 @@ const groupByRequestor = (orders: Order[]): RequestorGroup[] => {
 };
 
 const Notifications = (props: NotificationsProps) => {
-    const { notifications, setNotificationsUpdated, activeSubTab, onSubTabChange, notificationData, highlightedEntityId } = props;
+    const { notifications, onNotificationsChanged, activeSubTab, onSubTabChange, notificationData, highlightedEntityId } = props;
 
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
@@ -265,7 +265,7 @@ const Notifications = (props: NotificationsProps) => {
                 <ReviewOrder
                     id={orderIdToDisplay}
                     setIdToDisplay={setOrderIdToDisplayWithScroll}
-                    setNotificationsUpdated={setNotificationsUpdated}
+                    onNotificationsChanged={onNotificationsChanged}
                 />
             )}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
@@ -362,7 +362,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             donation={donation}
                                                             type="pending-donation"
                                                             setIdToDisplay={setDonationIdToDisplayWithScroll}
-                                                            setNotificationsUpdated={setNotificationsUpdated}
+                                                            onNotificationsChanged={onNotificationsChanged}
                                                             isHighlighted={highlightedEntityId === donation.id}
                                                         />
                                                     ))}
@@ -399,7 +399,7 @@ const Notifications = (props: NotificationsProps) => {
                                                                     donation={donation}
                                                                     type="pending-donation"
                                                                     setIdToDisplay={setDonationIdToDisplayWithScroll}
-                                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                                    onNotificationsChanged={onNotificationsChanged}
                                                                     isHighlighted={highlightedEntityId === donation.id}
                                                                 />
                                                             ))}
@@ -431,7 +431,7 @@ const Notifications = (props: NotificationsProps) => {
                                                     donation={donation}
                                                     type="pending-delivery"
                                                     setIdToDisplay={setDonationIdToDisplayWithScroll}
-                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                    onNotificationsChanged={onNotificationsChanged}
                                                     calendlyStatus={getBookingStatus(donation.id, 'dropoff')}
                                                     isHighlighted={highlightedEntityId === donation.id}
                                                 />
@@ -469,7 +469,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             type="order"
                                                             donation={item}
                                                             setIdToDisplay={setDonationIdToDisplayWithScroll}
-                                                            setNotificationsUpdated={setNotificationsUpdated}
+                                                            onNotificationsChanged={onNotificationsChanged}
                                                             isHighlighted={highlightedEntityId === group.orders[0].id || highlightedEntityId === item.id}
                                                         />
                                                     ))}
@@ -512,7 +512,7 @@ const Notifications = (props: NotificationsProps) => {
                                                                     type="order"
                                                                     donation={item}
                                                                     setIdToDisplay={setDonationIdToDisplayWithScroll}
-                                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                                    onNotificationsChanged={onNotificationsChanged}
                                                                     isHighlighted={highlightedEntityId === order.id || highlightedEntityId === item.id}
                                                                 />
                                                             ))}
@@ -544,7 +544,7 @@ const Notifications = (props: NotificationsProps) => {
                                                     donation={donation}
                                                     type="reserved"
                                                     setIdToDisplay={setDonationIdToDisplayWithScroll}
-                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                    onNotificationsChanged={onNotificationsChanged}
                                                     calendlyStatus={getBookingStatus(donation.id, 'pickup')}
                                                     isHighlighted={highlightedEntityId === donation.id}
                                                 />
@@ -565,7 +565,7 @@ const Notifications = (props: NotificationsProps) => {
                                             type="pending-user"
                                             user={user}
                                             setIdToDisplay={setUserIdToDisplayWithScroll}
-                                            setNotificationsUpdated={setNotificationsUpdated}
+                                            onNotificationsChanged={onNotificationsChanged}
                                             isHighlighted={highlightedEntityId === user.uid}
                                         />
                                     ))

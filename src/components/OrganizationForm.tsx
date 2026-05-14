@@ -25,11 +25,11 @@ import '@/styles/globalStyles.css';
 
 type DonationFormProps = {
     setShowForm?: Dispatch<SetStateAction<boolean>>;
-    setOrgsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onOrganizationsChanged?: () => void;
 };
 
 export default function OrganizationForm(props: DonationFormProps) {
-    const { setShowForm, setOrgsUpdated } = props;
+    const { setShowForm, onOrganizationsChanged } = props;
     const defaultAddress: IAddress = {
         line_1: '',
         line_2: '',
@@ -112,7 +112,7 @@ export default function OrganizationForm(props: DonationFormProps) {
     };
 
     const handleClose = () => {
-        if (setOrgsUpdated) setOrgsUpdated(true);
+        if (onOrganizationsChanged) onOrganizationsChanged();
         if (setShowForm) {
             setIsDialogOpen(false);
             setShowForm(false);

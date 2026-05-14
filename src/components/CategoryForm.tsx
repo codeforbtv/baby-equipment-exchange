@@ -17,11 +17,11 @@ import { categoryBody } from '@/types/CategoryTypes';
 
 type CategoryFormProps = {
     setShowForm?: Dispatch<SetStateAction<boolean>>;
-    setCategoriesUpdated?: Dispatch<SetStateAction<boolean>>;
+    onCategoriesChanged?: () => void;
 };
 
 const CategoryForm = (props: CategoryFormProps) => {
-    const { setShowForm, setCategoriesUpdated } = props;
+    const { setShowForm, onCategoriesChanged } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [name, setName] = useState<string>('');
@@ -32,7 +32,7 @@ const CategoryForm = (props: CategoryFormProps) => {
     const router = useRouter();
 
     const handleClose = () => {
-        if (setCategoriesUpdated) setCategoriesUpdated(true);
+        if (onCategoriesChanged) onCategoriesChanged();
         if (setShowForm) {
             setIsDialogOpen(false);
             setShowForm(false);

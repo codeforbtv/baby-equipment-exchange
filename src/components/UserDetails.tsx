@@ -23,12 +23,11 @@ type UserDetailsProps = {
     id: string;
     user?: IUser;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
     onUsersChanged?: () => void;
 };
 
 export default function UserDetails(props: UserDetailsProps) {
-    const { id, setIdToDisplay, setUsersUpdated, onUsersChanged, user } = props;
+    const { id, setIdToDisplay, onUsersChanged, user } = props;
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [userDetails, setUserDetails] = useState<IUser | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -39,18 +38,16 @@ export default function UserDetails(props: UserDetailsProps) {
 
     const handleClose = () => {
         if (onUsersChanged) onUsersChanged();
-        if (setUsersUpdated) setUsersUpdated(true);
-        //Re-fetch user to show updated details
         if (userDetails) {
             fetchUserDetails(userDetails.uid);
         }
         setIsDialogOpen(false);
     };
 
-    async function fetchUserDetails(id: string): Promise<void> {
+    async function fetchUserDetails(userId: string): Promise<void> {
         setIsLoading(true);
         try {
-            const userDetailsResult = await getUserDetails({ idToken: await getAuthIdToken(), userId: id });
+            const userDetailsResult = await getUserDetails({ idToken: await getAuthIdToken(), userId });
             setUserDetails(userDetailsResult);
         } catch (error) {
             addErrorEvent('Fetch user details', error);
@@ -79,12 +76,12 @@ export default function UserDetails(props: UserDetailsProps) {
         }
     };
 
-    //Re-fetch user if user has been updated.
     useEffect(() => {
         if (!user || userDetailsUpdated) {
             fetchUserDetails(id);
         } else {
             setUserDetails(user);
+            setIsLoading(false);
         }
     }, [id, user, userDetailsUpdated]);
 

@@ -263,8 +263,8 @@ function normalize(str: string): string {
 }
 
 /**
- * Check if two names are a fuzzy match.
- * Handles: exact match, first-name-only match, last-name-only match, reversed order.
+ * Check if two names are a reasonable fallback match after email matching fails.
+ * Handles exact and reversed full-name matches without matching on a lone common first name.
  */
 function fuzzyNameMatch(firebaseName: string, calendlyName: string): boolean {
     const a = normalize(firebaseName);
@@ -272,19 +272,17 @@ function fuzzyNameMatch(firebaseName: string, calendlyName: string): boolean {
 
     if (a === b) return true;
 
-    const aParts = a.split(' ');
-    const bParts = b.split(' ');
+    const aParts = a.split(' ').filter(Boolean);
+    const bParts = b.split(' ').filter(Boolean);
 
-    // Check if any parts overlap (first name or last name match)
-    for (const ap of aParts) {
-        for (const bp of bParts) {
-            if (ap.length > 1 && bp.length > 1 && ap === bp) {
-                return true;
-            }
-        }
-    }
+    if (aParts.length < 2 || bParts.length < 2) return false;
 
-    return false;
+    const aFirst = aParts[0];
+    const aLast = aParts[aParts.length - 1];
+    const bFirst = bParts[0];
+    const bLast = bParts[bParts.length - 1];
+
+    return (aFirst === bFirst && aLast === bLast) || (aFirst === bLast && aLast === bFirst);
 }
 
 /**
@@ -374,24 +372,7 @@ export async function matchDonationsToBookings(
  * Matches requestor emails/names against Calendly invitees.
  */
 export async function getPickupBookingStatus(donations: Donation[], timeRange: CalendlyTimeRange): Promise<BookingStatusResult> {
-    try {
-        const allEvents = await getAllScheduledEventsWithInvitees(timeRange);
-
-        // Filter to pickup events (or unknown — since we can't be sure)
-        const classifiedEvents: ScheduledEventWithInvitees[] = [];
-        for (const event of allEvents) {
-            const category = await classifyEventType(event);
-            if (category === 'pickup' || category === 'unknown') {
-                classifiedEvents.push(event);
-            }
-        }
-
-        const reservedDonations = donations.filter((d) => d.status === 'reserved');
-        return matchDonationsToBookings(reservedDonations, classifiedEvents, 'pickup');
-    } catch (error) {
-        addErrorEvent('getPickupBookingStatus', error);
-        return { confirmed: [], possibleMatches: [], unconfirmed: [], byDonationId: {} };
-    }
+    return (await getBookingStatuses(donations, timeRange)).pickupBookingStatus;
 }
 
 /**
@@ -399,22 +380,43 @@ export async function getPickupBookingStatus(donations: Donation[], timeRange: C
  * Matches donor emails/names against Calendly invitees.
  */
 export async function getDropOffBookingStatus(donations: Donation[], timeRange: CalendlyTimeRange): Promise<BookingStatusResult> {
+    return (await getBookingStatuses(donations, timeRange)).dropOffBookingStatus;
+}
+
+export async function getBookingStatuses(
+    donations: Donation[],
+    timeRange: CalendlyTimeRange
+): Promise<{ pickupBookingStatus: BookingStatusResult; dropOffBookingStatus: BookingStatusResult }> {
+    const emptyStatus: BookingStatusResult = { confirmed: [], possibleMatches: [], unconfirmed: [], byDonationId: {} };
+
     try {
         const allEvents = await getAllScheduledEventsWithInvitees(timeRange);
+        const pickupEvents: ScheduledEventWithInvitees[] = [];
+        const dropOffEvents: ScheduledEventWithInvitees[] = [];
 
-        // Filter to drop-off events (or unknown)
-        const classifiedEvents: ScheduledEventWithInvitees[] = [];
         for (const event of allEvents) {
             const category = await classifyEventType(event);
+            if (category === 'pickup' || category === 'unknown') {
+                pickupEvents.push(event);
+            }
             if (category === 'dropoff' || category === 'unknown') {
-                classifiedEvents.push(event);
+                dropOffEvents.push(event);
             }
         }
 
-        const pendingDeliveryDonations = donations.filter((d) => d.status === 'pending delivery');
-        return matchDonationsToBookings(pendingDeliveryDonations, classifiedEvents, 'dropoff');
+        const reservedDonations = donations.filter((donation) => donation.status === 'reserved');
+        const pendingDeliveryDonations = donations.filter((donation) => donation.status === 'pending delivery');
+        const [pickupBookingStatus, dropOffBookingStatus] = await Promise.all([
+            matchDonationsToBookings(reservedDonations, pickupEvents, 'pickup'),
+            matchDonationsToBookings(pendingDeliveryDonations, dropOffEvents, 'dropoff')
+        ]);
+
+        return { pickupBookingStatus, dropOffBookingStatus };
     } catch (error) {
-        addErrorEvent('getDropOffBookingStatus', error);
-        return { confirmed: [], possibleMatches: [], unconfirmed: [], byDonationId: {} };
+        addErrorEvent('getBookingStatuses', error);
+        return {
+            pickupBookingStatus: emptyStatus,
+            dropOffBookingStatus: emptyStatus
+        };
     }
 }

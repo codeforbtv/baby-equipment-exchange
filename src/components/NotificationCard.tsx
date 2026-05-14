@@ -45,7 +45,7 @@ type NotificationCardProps = {
     donation?: Donation;
     user?: IUser;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onNotificationsChanged?: () => void;
     calendlyStatus?: BookingMatchConfidence;
     isHighlighted?: boolean;
 };
@@ -83,7 +83,7 @@ const CalendlyStatusChip = ({ status }: { status?: BookingMatchConfidence }) => 
 };
 
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, setIdToDisplay, setNotificationsUpdated, calendlyStatus, isHighlighted } = props;
+    const { type, donation, user, setIdToDisplay, onNotificationsChanged, calendlyStatus, isHighlighted } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -107,7 +107,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsDialogOpen(false);
         setDialogTitle('');
         setDialogContent('');
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
+        if (onNotificationsChanged) onNotificationsChanged();
     };
 
     const handleDeleteDialogClose = () => {
@@ -118,7 +118,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'available');
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
+            if (onNotificationsChanged) onNotificationsChanged();
         } catch (error) {
             setIsLoading(false);
             addErrorEvent('Mark donation as received', error);
@@ -130,7 +130,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'not-received');
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
+            if (onNotificationsChanged) onNotificationsChanged();
         } catch (error) {
             addErrorEvent('Mark donation as not received', error);
             throw error;
@@ -143,7 +143,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await markDonationAsDistributed(donation);
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
+            if (onNotificationsChanged) onNotificationsChanged();
         } catch (error) {
             setIsLoading(false);
             addErrorEvent('Mark as distributed', error);
@@ -157,7 +157,7 @@ const NotificationCard = (props: NotificationCardProps) => {
             await updateDonation(id, {
                 status: 'available'
             });
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
+            if (onNotificationsChanged) onNotificationsChanged();
         } catch (error) {
             setIsLoading(false);
             addErrorEvent('Return to inventory', error);

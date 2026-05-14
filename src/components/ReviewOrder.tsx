@@ -26,11 +26,11 @@ type ReviewOrderProps = {
     id: string;
     order?: Order;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onNotificationsChanged?: () => void;
 };
 
 const ReviewOrder = (props: ReviewOrderProps) => {
-    const { setIdToDisplay, id, setNotificationsUpdated } = props;
+    const { setIdToDisplay, id, onNotificationsChanged } = props;
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
@@ -75,7 +75,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     };
 
     const handleClose = async (): Promise<void> => {
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
+        if (onNotificationsChanged) onNotificationsChanged();
         setIsDialogOpen(false);
     };
 
@@ -93,13 +93,13 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                 />
             )}
             {showScheduler && currentOrder && (
-                <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
+                <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} onNotificationsChanged={onNotificationsChanged} />
             )}
             {showCancelOrder && currentOrder && (
                 <CancelOrder
                     order={currentOrder}
                     shouldShow={setShowCancelOrder}
-                    setNotificationsUpdated={setNotificationsUpdated}
+                    onNotificationsChanged={onNotificationsChanged}
                     onComplete={() => {
                         if (setIdToDisplay) setIdToDisplay(null);
                     }}

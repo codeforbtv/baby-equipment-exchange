@@ -20,7 +20,6 @@ import posthog from 'posthog-js';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';
 import { updateDropOffDonationStatuses } from '@/api/firebase-donations';
-import { getTagNumber } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
 //types
@@ -65,15 +64,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
-    const assignAcceptedTags = async (donations: Donation[]): Promise<{ id: string; tagNumber: string }[]> => {
-        return Promise.all(
-            donations.map(async (donation) => ({
-                id: donation.id,
-                tagNumber: await getTagNumber(donation.category)
-            }))
-        );
-    };
-
     const message = (
         <>
             <p>{`Hello ${donorName},`}</p>
@@ -105,13 +95,16 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         //send email with renderToString(message) and update donation statuses. If donation is accepted, assign a tagNumber
         setIsLoading(true);
         try {
-            const acceptedDonationUpdates = acceptedDonations ? await assignAcceptedTags(acceptedDonations) : [];
-            const tagNumbers = acceptedDonationUpdates.map((donation) => donation.tagNumber);
-            await updateDropOffDonationStatuses({
-                acceptedDonations: acceptedDonationUpdates,
+            const acceptedDonationUpdates = await updateDropOffDonationStatuses({
+                acceptedDonations:
+                    acceptedDonations?.map((donation) => ({
+                        id: donation.id,
+                        category: donation.category
+                    })) ?? [],
                 rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
                 schedulingLink: inviteUrl || undefined
             });
+            const tagNumbers = acceptedDonationUpdates.map((donation) => donation.tagNumber);
             const emailMsg =
                 acceptedDonations && acceptedDonations.length > 0
                     ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)

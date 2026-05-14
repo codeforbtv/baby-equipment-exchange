@@ -23,7 +23,7 @@ const tagNames: OrganizationTagKeys[] = Object.keys(orgTags) as OrganizationTagK
 type EditOrganizationProps = {
     organizationDetails: IOrganization;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
-    setOrgsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onOrganizationsChanged?: () => void;
     fetchDonationDetails: (id: string) => void;
 };
 
@@ -37,7 +37,7 @@ const defaultAddress: IAddress = {
 
 const EditOrganization = (props: EditOrganizationProps) => {
     const { id, name, address, county, phoneNumber, tags } = props.organizationDetails;
-    const { setIsEditMode, fetchDonationDetails, setOrgsUpdated } = props;
+    const { setIsEditMode, fetchDonationDetails, onOrganizationsChanged } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newName, setNewName] = useState<string>(name);
@@ -49,7 +49,7 @@ const EditOrganization = (props: EditOrganizationProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleClose = () => {
-        if (setOrgsUpdated) setOrgsUpdated(true);
+        if (onOrganizationsChanged) onOrganizationsChanged();
         setIsDialogOpen(false);
         setIsEditMode(false);
         fetchDonationDetails(id);

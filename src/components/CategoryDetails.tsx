@@ -22,11 +22,11 @@ type CategoryDetailsProps = {
     id: string;
     category?: Category;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setCategoriesUpdated?: Dispatch<SetStateAction<boolean>>;
+    onCategoriesChanged?: () => void;
 };
 
 const CategoryDetails = (props: CategoryDetailsProps) => {
-    const { id, category, setIdToDisplay, setCategoriesUpdated } = props;
+    const { id, category, setIdToDisplay, onCategoriesChanged } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -62,6 +62,7 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
                     active: true
                 });
             }
+            if (onCategoriesChanged) onCategoriesChanged();
             setCategoryDetailsUpdated(true);
         } catch (error) {
             addErrorEvent('Error toggling category active status: ', error);
@@ -129,7 +130,12 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
                 </div>
             )}
             {!isLoading && categoryDetails && isEditMode && (
-                <EditCategory category={categoryDetails} setIsEditMode={setIsEditMode} setCategoryDetailsUpdated={setCategoryDetailsUpdated} />
+                <EditCategory
+                    category={categoryDetails}
+                    setIsEditMode={setIsEditMode}
+                    setCategoryDetailsUpdated={setCategoryDetailsUpdated}
+                    onCategoriesChanged={onCategoriesChanged}
+                />
             )}
         </ProtectedAdminRoute>
     );

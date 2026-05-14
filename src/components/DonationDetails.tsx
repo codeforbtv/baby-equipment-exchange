@@ -28,11 +28,11 @@ type DonationDetailsProps = {
     id: string | null;
     donation?: Donation;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onDonationsChanged?: () => void;
 };
 
 const DonationDetails = (props: DonationDetailsProps) => {
-    const { id, setIdToDisplay, donation, setDonationsUpdated } = props;
+    const { id, setIdToDisplay, donation, onDonationsChanged } = props;
     const intialDonation = donation ? donation : null;
     const [donationDetails, setDonationDetails] = useState<Donation | null>(intialDonation);
     const [donationDetailsUpdated, setDonationDetailsUpdated] = useState<boolean>(false);
@@ -96,6 +96,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
 
     const handleClose = async (): Promise<void> => {
         if (donationDetails) await fetchDonation(donationDetails.id);
+        if (onDonationsChanged) onDonationsChanged();
         setDialogContent('');
         setIsDialogOpen(false);
     };
@@ -260,7 +261,12 @@ const DonationDetails = (props: DonationDetailsProps) => {
                     </div>
                 )}
                 {!isLoading && donationDetails && isEditMode && (
-                    <EditDonation donationDetails={donationDetails} setIsEditMode={setIsEditMode} setDonationDetailsUpdated={setDonationDetailsUpdated} />
+                    <EditDonation
+                        donationDetails={donationDetails}
+                        setIsEditMode={setIsEditMode}
+                        setDonationDetailsUpdated={setDonationDetailsUpdated}
+                        onDonationsChanged={onDonationsChanged}
+                    />
                 )}
             </div>
         </ProtectedAdminRoute>

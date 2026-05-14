@@ -45,27 +45,19 @@ async function fetchWithLogging<T>(location: string, fetcher: () => Promise<T>):
     }
 }
 
-function toRefreshDispatcher(refresh: () => void): Dispatch<SetStateAction<boolean>> {
-    return (value) => {
-        const shouldRefresh = typeof value === 'function' ? value(true) : value;
-        if (shouldRefresh) refresh();
-    };
-}
-
-function useSWRRefreshDispatcher(keys: string | readonly string[]): Dispatch<SetStateAction<boolean>> {
+function useSWRRefreshHandler(keys: string | readonly string[]): () => void {
     const { mutate } = useSWRConfig();
     const keysToRefresh = useMemo(() => (Array.isArray(keys) ? keys : [keys]), [keys]);
 
     return useMemo(
-        () =>
-            toRefreshDispatcher(() => {
-                void Promise.all(keysToRefresh.map((key) => mutate(key)));
-            }),
+        () => () => {
+            void Promise.all(keysToRefresh.map((key) => mutate(key))).catch((error) => addErrorEvent('Dashboard SWR refresh', error));
+        },
         [keysToRefresh, mutate]
     );
 }
 
-function useNotificationRefreshDispatcher(): Dispatch<SetStateAction<boolean>> {
+function useNotificationRefreshHandler(): () => void {
     const { mutate } = useSWRConfig();
     const pendingScrollTop = useRef<number | null>(null);
 
@@ -74,16 +66,18 @@ function useNotificationRefreshDispatcher(): Dispatch<SetStateAction<boolean>> {
             pendingScrollTop.current = window.scrollY;
         }
 
-        void Promise.all(notificationRefreshKeys.map((key) => mutate(key))).finally(() => {
-            if (pendingScrollTop.current === null) return;
+        void Promise.all(notificationRefreshKeys.map((key) => mutate(key)))
+            .catch((error) => addErrorEvent('Dashboard notification refresh', error))
+            .finally(() => {
+                if (pendingScrollTop.current === null) return;
 
-            const scrollTop = pendingScrollTop.current;
-            pendingScrollTop.current = null;
-            window.requestAnimationFrame(() => window.scrollTo({ top: scrollTop }));
-        });
+                const scrollTop = pendingScrollTop.current;
+                pendingScrollTop.current = null;
+                window.requestAnimationFrame(() => window.scrollTo({ top: scrollTop }));
+            });
     }, [mutate]);
 
-    return useMemo(() => toRefreshDispatcher(refreshNotifications), [refreshNotifications]);
+    return refreshNotifications;
 }
 
 export async function refreshDashboardTab(mutate: (key: string) => Promise<unknown>, tabIndex: number): Promise<void> {
@@ -146,7 +140,7 @@ export function DashboardNotificationsTab(props: {
         () => fetchWithLogging('Dashboard notification details', () => fetchNotificationFeedData(calendlyTimeRange)),
         swrOptions
     );
-    const setNotificationsUpdated = useNotificationRefreshDispatcher();
+    const onNotificationsChanged = useNotificationRefreshHandler();
 
     const notificationData = useMemo<NotificationData | null>(() => {
         if (!notifications || !feedData) return null;
@@ -165,7 +159,7 @@ export function DashboardNotificationsTab(props: {
     return (
         <Notifications
             notifications={notifications}
-            setNotificationsUpdated={setNotificationsUpdated}
+            onNotificationsChanged={onNotificationsChanged}
             activeSubTab={activeSubTab}
             onSubTabChange={onSubTabChange}
             notificationData={notificationData}
@@ -180,12 +174,12 @@ export function DashboardDonationsTab() {
         () => fetchWithLogging('Dashboard donations', getAllDonations),
         swrOptions
     );
-    const setDonationsUpdated = useSWRRefreshDispatcher(donationRefreshKeys);
+    const onDonationsChanged = useSWRRefreshHandler(donationRefreshKeys);
 
     if (isLoading) return <Loader />;
     if (!donations) return <p>No donations found.</p>;
 
-    return <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} />;
+    return <Donations donations={donations} onDonationsChanged={onDonationsChanged} />;
 }
 
 export function DashboardInventoryTab() {
@@ -194,12 +188,12 @@ export function DashboardInventoryTab() {
         () => fetchWithLogging('Dashboard inventory', getAllInventory),
         swrOptions
     );
-    const setInventoryUpdated = useSWRRefreshDispatcher(inventoryRefreshKeys);
+    const onInventoryChanged = useSWRRefreshHandler(inventoryRefreshKeys);
 
     if (isLoading) return <Loader />;
     if (!inventory) return <p>No inventory found.</p>;
 
-    return <Inventory inventory={inventory} setInventoryUpdated={setInventoryUpdated} />;
+    return <Inventory inventory={inventory} onInventoryChanged={onInventoryChanged} />;
 }
 
 export function DashboardUsersTab() {
@@ -208,12 +202,12 @@ export function DashboardUsersTab() {
         () => fetchWithLogging('Dashboard users', async () => (await getAllDbUsers()).filter((user) => !user.isDeleted)),
         swrOptions
     );
-    const setUsersUpdated = useSWRRefreshDispatcher(userRefreshKeys);
+    const onUsersChanged = useSWRRefreshHandler(userRefreshKeys);
 
     if (isLoading) return <Loader />;
     if (!users) return <p>No users found.</p>;
 
-    return <Users users={users} setUsersUpdated={setUsersUpdated} />;
+    return <Users users={users} onUsersChanged={onUsersChanged} />;
 }
 
 export function DashboardOrganizationsTab() {
@@ -222,12 +216,12 @@ export function DashboardOrganizationsTab() {
         () => fetchWithLogging('Dashboard organizations', getOrganizationNames),
         swrOptions
     );
-    const setOrgsUpdated = useSWRRefreshDispatcher(dashboardDataKeys.organizations);
+    const onOrganizationsChanged = useSWRRefreshHandler(dashboardDataKeys.organizations);
 
     if (isLoading) return <Loader />;
     if (!orgNamesAndIds) return <p>No organizations found.</p>;
 
-    return <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} />;
+    return <Organizations orgNamesAndIds={orgNamesAndIds} onOrganizationsChanged={onOrganizationsChanged} />;
 }
 
 export function DashboardCategoriesTab() {
@@ -236,10 +230,10 @@ export function DashboardCategoriesTab() {
         () => fetchWithLogging('Dashboard categories', getAllCategories),
         swrOptions
     );
-    const setCategoriesUpdated = useSWRRefreshDispatcher(dashboardDataKeys.categories);
+    const onCategoriesChanged = useSWRRefreshHandler(dashboardDataKeys.categories);
 
     if (isLoading) return <Loader />;
     if (!categories) return <p>No categories found.</p>;
 
-    return <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} />;
+    return <Categories categories={categories} onCategoriesChanged={onCategoriesChanged} />;
 }

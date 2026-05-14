@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { SetStateAction, useState, Dispatch, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography, InputAdornment, useMediaQuery } from '@mui/material';
@@ -24,13 +24,13 @@ import { addErrorEvent } from '@/api/firebase';
 
 type DonationsProps = {
     donations: Donation[];
-    setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onDonationsChanged?: () => void;
 };
 
 const statusSelectOptions = Object.keys(donationStatuses);
 
 const Donations = (props: DonationsProps) => {
-    const { donations, setDonationsUpdated } = props;
+    const { donations, onDonationsChanged } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [searchInput, setSearchInput] = useState<string>('');
     const [categories, setCategories] = useState<Category[] | null>(null);
@@ -81,7 +81,7 @@ const Donations = (props: DonationsProps) => {
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setDonationsUpdated={setDonationsUpdated} />}
+            {idToDisplay && <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} onDonationsChanged={onDonationsChanged} />}
 
             {!idToDisplay && (
                 <>

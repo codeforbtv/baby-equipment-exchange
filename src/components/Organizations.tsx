@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { useMemo, useState, Dispatch, SetStateAction } from 'react';
+import { useMemo, useState } from 'react';
 
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -18,11 +18,11 @@ import SearchIcon from '@mui/icons-material/Search';
 //Types
 type OrganizationsProps = {
     orgNamesAndIds: { [key: string]: string };
-    setOrgsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onOrganizationsChanged?: () => void;
 };
 
 const Organizations = (props: OrganizationsProps) => {
-    const { orgNamesAndIds, setOrgsUpdated } = props;
+    const { orgNamesAndIds, onOrganizationsChanged } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [searchInput, setSearchInput] = useState<string>('');
@@ -42,8 +42,8 @@ const Organizations = (props: OrganizationsProps) => {
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && <OrganizationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setOrgsUpdated={setOrgsUpdated} />}
-            {showForm && <OrganizationForm setShowForm={setShowForm} setOrgsUpdated={setOrgsUpdated} />}
+            {idToDisplay && <OrganizationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} onOrganizationsChanged={onOrganizationsChanged} />}
+            {showForm && <OrganizationForm setShowForm={setShowForm} onOrganizationsChanged={onOrganizationsChanged} />}
             {!idToDisplay && !showForm && (
                 <div className={styles['directory']}>
                     <div className={styles['header']}>

@@ -28,11 +28,11 @@ import schedulePickup from '@/email-templates/schedulePickup';
 type SchedulePickupProps = {
     order: Order;
     setShowScheduler: Dispatch<SetStateAction<boolean>>;
-    setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onNotificationsChanged?: () => void;
 };
 
 const SchedulePickup = (props: SchedulePickupProps) => {
-    const { order, setShowScheduler, setNotificationsUpdated } = props;
+    const { order, setShowScheduler, onNotificationsChanged } = props;
     const { requestor, id, items, rejectedItems } = order;
     const router = useRouter();
 
@@ -44,7 +44,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleClose = () => {
         setIsDialogOpen(false);
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
+        if (onNotificationsChanged) onNotificationsChanged();
         router.push('/');
     };
 

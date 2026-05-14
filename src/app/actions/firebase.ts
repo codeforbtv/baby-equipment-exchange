@@ -12,12 +12,12 @@ import {
 import { FieldValue } from 'firebase-admin/firestore';
 import { UserRecord } from 'firebase-admin/auth';
 import { AuthUserRecord, NewUserAccountInfo } from '@/types/UserTypes';
+import { getBookingStatuses } from '@/api/calendly';
+import { computeNotificationItems } from '@/api/notificationData';
 import sendMail from '@/api/nodemailer';
 import adminUserCreated from '@/email-templates/adminUserCreated';
 import adminUserEnabled from '@/email-templates/adminUserEnabled';
 import userEnabled from '@/email-templates/userEnabled';
-import { getDropOffBookingStatus, getPickupBookingStatus } from '@/api/calendly';
-import { computeNotificationItems } from '@/api/notificationData';
 import type { BookingStatusResult, CalendlyTimeRange } from '@/types/CalendlyTypes';
 import type { Donation } from '@/models/donation';
 import type { IUser } from '@/models/user';
@@ -164,10 +164,9 @@ export async function fetchNotificationFeedData(timeRange: CalendlyTimeRange = '
         let dropOffBookingStatus: BookingStatusResult | null = null;
 
         try {
-            [pickupBookingStatus, dropOffBookingStatus] = await Promise.all([
-                getPickupBookingStatus(donations, timeRange),
-                getDropOffBookingStatus(donations, timeRange)
-            ]);
+            const bookingStatuses = await getBookingStatuses(donations, timeRange);
+            pickupBookingStatus = bookingStatuses.pickupBookingStatus;
+            dropOffBookingStatus = bookingStatuses.dropOffBookingStatus;
         } catch (error) {
             addErrorEvent('fetchNotificationFeedData Calendly status', error);
         }

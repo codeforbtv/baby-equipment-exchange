@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -48,11 +48,11 @@ const statusSelectOptions = Object.keys(donationStatuses);
 
 type InventoryProps = {
     inventory?: InventoryItem[];
-    setInventoryUpdated?: Dispatch<SetStateAction<boolean>>;
+    onInventoryChanged?: () => void;
 };
 
 const Inventory = (props: InventoryProps) => {
-    const { inventory, setInventoryUpdated } = props;
+    const { inventory } = props;
     const [isLoading, setIsLoading] = useState(false);
     const [currentInventory, setCurrentInventory] = useState<InventoryItem[]>(inventory ?? []);
     const [searchInput, setSearchInput] = useState<string>('');
@@ -156,7 +156,6 @@ const Inventory = (props: InventoryProps) => {
                     id={idToDisplay}
                     inventoryItem={currentInventory.find((i) => i.id === idToDisplay)}
                     setIdToDisplay={setIdToDisplay}
-                    setInvetoryUpdated={setInventoryUpdated}
                     handleRequestInventoryItem={handleRequestInventoryItem}
                 />
             )}

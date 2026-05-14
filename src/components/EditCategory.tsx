@@ -19,10 +19,11 @@ type EditCategoryProps = {
     category: Category;
     setIsEditMode: Dispatch<SetStateAction<boolean>>;
     setCategoryDetailsUpdated: Dispatch<SetStateAction<boolean>>;
+    onCategoriesChanged?: () => void;
 };
 
 const EditCategory = (props: EditCategoryProps) => {
-    const { category, setIsEditMode, setCategoryDetailsUpdated } = props;
+    const { category, setIsEditMode, setCategoryDetailsUpdated, onCategoriesChanged } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newName, setNewName] = useState<string>(category.name);
@@ -40,6 +41,7 @@ const EditCategory = (props: EditCategoryProps) => {
         setIsDialogOpen(false);
         setIsEditMode(false);
         setCategoryDetailsUpdated(true);
+        if (onCategoriesChanged) onCategoriesChanged();
     };
 
     const handleSubmit = async (event: React.FormEvent): Promise<void> => {
