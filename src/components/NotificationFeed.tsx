@@ -94,6 +94,25 @@ function getNotificationSearchText(item: NotificationItem, notificationData?: No
     return fields.map(normalizeSearchValue).join(' ');
 }
 
+function getNotificationTagNumbers(item: NotificationItem, notificationData?: NotificationData | null): string[] {
+    if (!notificationData) return [];
+
+    if (item.entityType === 'donation') {
+        const tagNumber = notificationData.donations?.find((donation) => donation.id === item.entityId)?.tagNumber;
+        return tagNumber ? [tagNumber] : [];
+    }
+
+    if (item.entityType === 'order') {
+        const order = notificationData.orders?.find((o) => o.id === item.entityId);
+        const tagNumbers = [...(order?.items ?? []), ...(order?.rejectedItems ?? [])].flatMap((donation) =>
+            donation.tagNumber ? [donation.tagNumber] : []
+        );
+        return [...new Set(tagNumbers)];
+    }
+
+    return [];
+}
+
 function timeAgo(date: Date): string {
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
     if (seconds < 60) return 'just now';
@@ -315,6 +334,7 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                                     </div>
                                 ) : (
                                     filteredItems.map((item) => {
+                                        const tagNumbers = getNotificationTagNumbers(item, notificationData);
                                         if (isExpanded && notificationData) {
                                             const donation = notificationData.donations?.find((d) => d.id === item.entityId);
                                             const user = notificationData.users?.find((u) => u.uid === item.entityId);
@@ -378,6 +398,11 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                                                     >
                                                         {item.subtitle}
                                                     </p>
+                                                    {tagNumbers.length > 0 && (
+                                                        <p className={styles['feed-item-tags']}>
+                                                            <span>TAG</span> {tagNumbers.join(', ')}
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <span className={styles['feed-item-time']}>{timeAgo(item.timestamp)}</span>
                                             </div>
