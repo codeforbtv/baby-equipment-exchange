@@ -75,12 +75,10 @@ const NotificationCard = (props: NotificationCardProps) => {
         try {
             await updateDonationStatus(id, 'available');
             if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
         } catch (error) {
+            setIsLoading(false);
             addErrorEvent('Mark donation as received', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -102,12 +100,10 @@ const NotificationCard = (props: NotificationCardProps) => {
         try {
             await markDonationAsDistributed(donation);
             if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
         } catch (error) {
+            setIsLoading(false);
             addErrorEvent('Mark as distributed', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -118,12 +114,10 @@ const NotificationCard = (props: NotificationCardProps) => {
                 status: 'available'
             });
             if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
         } catch (error) {
+            setIsLoading(false);
             addErrorEvent('Return to inventory', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 

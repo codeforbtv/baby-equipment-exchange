@@ -81,8 +81,8 @@ export default function Dashboard() {
         setCurrentTab(target);
     };
 
-    async function fetchNotifications(): Promise<void> {
-        setIsLoading(true);
+    async function fetchNotifications(showLoader = false): Promise<void> {
+        if (showLoader || !notifications) setIsLoading(true);
         try {
             const notificationsResult = await getNotifications();
             setNotifications(notificationsResult);
@@ -94,8 +94,8 @@ export default function Dashboard() {
         }
     }
 
-    async function fetchDonations(): Promise<void> {
-        setIsLoading(true);
+    async function fetchDonations(showLoader = false): Promise<void> {
+        if (showLoader || !donations) setIsLoading(true);
         try {
             const donationsResult = await getAllDonations();
             setDonations(donationsResult);
@@ -107,8 +107,8 @@ export default function Dashboard() {
         }
     }
 
-    async function fetchInventory(): Promise<void> {
-        setIsLoading(true);
+    async function fetchInventory(showLoader = false): Promise<void> {
+        if (showLoader || !inventory) setIsLoading(true);
         try {
             const inventoryResult = await getAllInventory();
             setInventory(inventoryResult);
@@ -119,8 +119,8 @@ export default function Dashboard() {
         }
     }
 
-    async function fetchUsers(): Promise<void> {
-        setIsLoading(true);
+    async function fetchUsers(showLoader = false): Promise<void> {
+        if (showLoader || !users) setIsLoading(true);
         try {
             const usersResult = await getAllDbUsers();
             setUsers(usersResult.filter((user) => !user.isDeleted));
@@ -132,8 +132,8 @@ export default function Dashboard() {
         }
     }
 
-    async function fetchOrgNames(): Promise<void> {
-        setIsLoading(true);
+    async function fetchOrgNames(showLoader = false): Promise<void> {
+        if (showLoader || !orgNamesAndIds) setIsLoading(true);
         try {
             const orgNamesResult = await callGetOrganizationNames();
             setOrgNamesAndIds(orgNamesResult);
@@ -145,8 +145,8 @@ export default function Dashboard() {
         }
     }
 
-    async function fetchCategories(): Promise<void> {
-        setIsLoading(true);
+    async function fetchCategories(showLoader = false): Promise<void> {
+        if (showLoader || !categories) setIsLoading(true);
         try {
             const categoriesResult = await getAllCategories();
             setCategories(categoriesResult);
@@ -160,17 +160,17 @@ export default function Dashboard() {
 
     function handleRefresh() {
         if (currentTab === 0) {
-            fetchNotifications();
+            fetchNotifications(true);
         } else if (currentTab === 1) {
-            fetchDonations();
+            fetchDonations(true);
         } else if (currentTab === 2) {
-            fetchInventory();
+            fetchInventory(true);
         } else if (currentTab === 3) {
-            fetchUsers();
+            fetchUsers(true);
         } else if (currentTab === 4) {
-            fetchOrgNames();
+            fetchOrgNames(true);
         } else if (currentTab === 5) {
-            fetchCategories();
+            fetchCategories(true);
         }
     }
 
