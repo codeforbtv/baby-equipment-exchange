@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom';
 import { Badge, IconButton, Tooltip } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
@@ -46,6 +47,52 @@ const FILTERS: { key: NotificationFilterType; label: string }[] = [
 ];
 
 // Helpers
+
+function normalizeSearchValue(value: unknown): string {
+    return String(value ?? '').toLowerCase().trim();
+}
+
+function getDonationSearchFields(donation?: NotificationData['donations'][number]): unknown[] {
+    if (!donation) return [];
+
+    return [
+        donation.tagNumber,
+        donation.model,
+        donation.brand,
+        donation.category,
+        donation.description,
+        donation.id,
+        donation.donorName,
+        donation.donorEmail,
+        donation.requestor?.name,
+        donation.requestor?.email
+    ];
+}
+
+function getNotificationSearchText(item: NotificationItem, notificationData?: NotificationData | null): string {
+    const fields: unknown[] = [item.title, item.subtitle, item.entityId, item.tab, item.type];
+
+    if (!notificationData) return fields.map(normalizeSearchValue).join(' ');
+
+    if (item.entityType === 'donation') {
+        const donation = notificationData.donations?.find((d) => d.id === item.entityId);
+        fields.push(...getDonationSearchFields(donation));
+    }
+
+    if (item.entityType === 'order') {
+        const order = notificationData.orders?.find((o) => o.id === item.entityId);
+        fields.push(order?.requestor.name, order?.requestor.email);
+        order?.items.forEach((donation) => fields.push(...getDonationSearchFields(donation)));
+        order?.rejectedItems?.forEach((donation) => fields.push(...getDonationSearchFields(donation)));
+    }
+
+    if (item.entityType === 'user') {
+        const user = notificationData.users?.find((u) => u.uid === item.entityId);
+        fields.push(user?.displayName, user?.email, user?.organization?.name, user?.phoneNumber);
+    }
+
+    return fields.map(normalizeSearchValue).join(' ');
+}
 
 function timeAgo(date: Date): string {
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -119,14 +166,26 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
     const [isOpen, setIsOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [activeFilter, setActiveFilter] = useState<NotificationFilterType>('all');
+    const [searchInput, setSearchInput] = useState('');
+
+    const normalizedSearchInput = normalizeSearchValue(searchInput);
+
+    const searchableItems = useMemo(() => {
+        return new Map(items.map((item) => [item.id, getNotificationSearchText(item, notificationData)]));
+    }, [items, notificationData]);
 
     const filteredItems = useMemo(() => {
-        if (activeFilter === 'all') return items;
-        if (activeFilter === 'unconfirmed-bookings') {
-            return items.filter((i) => i.calendlyStatus === 'unconfirmed' || i.calendlyStatus === 'possible-match');
-        }
-        return items.filter((i) => i.type === activeFilter);
-    }, [items, activeFilter]);
+        const itemsMatchingFilter =
+            activeFilter === 'all'
+                ? items
+                : activeFilter === 'unconfirmed-bookings'
+                  ? items.filter((i) => i.calendlyStatus === 'unconfirmed' || i.calendlyStatus === 'possible-match')
+                  : items.filter((i) => i.type === activeFilter);
+
+        if (!normalizedSearchInput) return itemsMatchingFilter;
+
+        return itemsMatchingFilter.filter((item) => searchableItems.get(item.id)?.includes(normalizedSearchInput));
+    }, [items, activeFilter, normalizedSearchInput, searchableItems]);
 
     const badgeCount = items.length;
 
@@ -212,6 +271,29 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                                 </div>
                             </div>
 
+                            {/* Search */}
+                            <div className={styles['feed-search']}>
+                                <SearchIcon className={styles['feed-search-icon']} fontSize="small" />
+                                <input
+                                    aria-label="Search notifications"
+                                    className={styles['feed-search-input']}
+                                    type="search"
+                                    placeholder="Search TAG, model, brand, or person"
+                                    value={searchInput}
+                                    onChange={(event) => setSearchInput(event.target.value)}
+                                />
+                                {searchInput && (
+                                    <button
+                                        aria-label="Clear notification search"
+                                        className={styles['feed-search-clear']}
+                                        type="button"
+                                        onClick={() => setSearchInput('')}
+                                    >
+                                        <CloseIcon fontSize="small" />
+                                    </button>
+                                )}
+                            </div>
+
                             {/* Filter Chips */}
                             <div className={styles['feed-filters']}>
                                 {FILTERS.map((f) => (
@@ -228,12 +310,15 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                             {/* Feed Items */}
                             <div className={styles['feed-list']}>
                                 {filteredItems.length === 0 ? (
-                                    <div className={styles['feed-empty']}>No notifications matching this filter.</div>
+                                    <div className={styles['feed-empty']}>
+                                        {normalizedSearchInput ? 'No notifications match this search.' : 'No notifications matching this filter.'}
+                                    </div>
                                 ) : (
                                     filteredItems.map((item) => {
                                         if (isExpanded && notificationData) {
                                             const donation = notificationData.donations?.find((d) => d.id === item.entityId);
                                             const user = notificationData.users?.find((u) => u.uid === item.entityId);
+                                            const order = notificationData.orders?.find((o) => o.id === item.entityId);
                                             let cardType: FeedCardType | null = null;
                                             if (item.type === 'pending-donations') cardType = 'pending-donation';
                                             else if (item.type === 'pending-deliveries') cardType = 'pending-delivery';
@@ -241,12 +326,29 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                                             else if (item.type === 'requested-equipment') cardType = 'order';
                                             else if (item.type === 'pending-users') cardType = 'pending-user';
 
-                                            if (cardType) {
+                                            if (cardType === 'order' && order) {
                                                 return (
-                                                    <div
-                                                        key={item.id}
-                                                        className={styles['feed-card-item']}
-                                                    >
+                                                    <div key={item.id} className={styles['feed-card-item']}>
+                                                        <p className={styles['feed-item-title']}>{order.requestor.name} requested:</p>
+                                                        {order.items.length > 0 ? (
+                                                            order.items.map((orderItem) => (
+                                                                <NotificationCard
+                                                                    key={orderItem.id}
+                                                                    type="order"
+                                                                    donation={orderItem}
+                                                                    setIdToDisplay={() => handleItemClick(item)}
+                                                                />
+                                                            ))
+                                                        ) : (
+                                                            <div className={styles['feed-empty']}>No items available for this order.</div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            }
+
+                                            if (cardType && (donation || user)) {
+                                                return (
+                                                    <div key={item.id} className={styles['feed-card-item']}>
                                                         <NotificationCard
                                                             type={cardType}
                                                             donation={donation}
