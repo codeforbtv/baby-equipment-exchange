@@ -65,7 +65,7 @@ export default function ResetPassword() {
                 <>
                     <div className="page--header">
                         <h1>Reset Password</h1>
-                        <h4>Enter an email and instructions for restting your password will be sent to you.</h4>
+                        <h4>Enter an email and instructions for resetting your password will be sent to you.</h4>
                     </div>
                     <div className="content--container">
                         <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handlePasswordReset}>
@@ -78,7 +78,7 @@ export default function ResetPassword() {
                                 autoComplete="email"
                                 value={email}
                                 error={isInvalidEmail}
-                                helperText={isInvalidEmail ? 'Please enter a valid email addres' : undefined}
+                                helperText={isInvalidEmail ? 'Please enter a valid email address' : undefined}
                                 required
                                 onChange={handleEmailInput}
                                 onBlur={handleBlur}

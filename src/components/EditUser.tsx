@@ -203,7 +203,7 @@ const EditUser = (props: EditUserProps) => {
                             autoComplete="email"
                             value={newEmail}
                             error={isEmailInUse || isInvalidEmail}
-                            helperText={(isInvalidEmail && 'Please enter a valid email addres') || (isEmailInUse && 'This email is already in use')}
+                            helperText={(isInvalidEmail && 'Please enter a valid email address') || (isEmailInUse && 'This email is already in use')}
                             required
                             onChange={handleEmailInput}
                             onBlur={handleBlur}

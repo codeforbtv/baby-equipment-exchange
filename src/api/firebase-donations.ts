@@ -389,19 +389,19 @@ export async function updateDonationStatus(id: string, status: DonationStatusVal
         if (status === 'available') {
             statusUpdate = {
                 status: status,
-                modfiedAt: serverTimestamp(),
+                modifiedAt: serverTimestamp(),
                 dateReceived: serverTimestamp()
             };
         } else if (status === 'distributed') {
             statusUpdate = {
                 status: status,
-                modfiedAt: serverTimestamp(),
+                modifiedAt: serverTimestamp(),
                 dateDistributed: serverTimestamp()
             };
         } else {
             statusUpdate = {
                 status: status,
-                modfiedAt: serverTimestamp()
+                modifiedAt: serverTimestamp()
             };
         }
         await updateDoc(donationRef, statusUpdate);
@@ -444,8 +444,8 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
             if (donation && donation.status !== 'available') {
                 unavailableDonations.push(donation.id);
             }
-            return unavailableDonations;
         }
+        return unavailableDonations;
     } catch (error) {
         addErrorEvent('Admin are donations available', error);
     }
