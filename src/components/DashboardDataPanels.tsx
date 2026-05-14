@@ -2,8 +2,8 @@
 
 import { Dispatch, SetStateAction, useCallback, useMemo, useRef } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import { addErrorEvent, getNotifications } from '@/api/firebase';
-import { fetchNotificationFeedData, getOrganizationNames } from '@/app/actions/firebase';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
+import { fetchNotificationFeedData, getDashboardNotifications, getOrganizationNames } from '@/app/actions/firebase';
 import { getAllDonations, getAllInventory } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
 import { getAllCategories } from '@/api/firebase-categories';
@@ -43,6 +43,11 @@ async function fetchWithLogging<T>(location: string, fetcher: () => Promise<T>):
         addErrorEvent(location, error);
         throw error;
     }
+}
+
+async function fetchDashboardNotifications() {
+    const idToken = await getAuthIdToken();
+    return getDashboardNotifications({ idToken });
 }
 
 function useSWRRefreshHandler(keys: string | readonly string[]): () => void {
@@ -96,7 +101,7 @@ export async function refreshDashboardTab(mutate: (key: string) => Promise<unkno
 export function DashboardNotificationFeed({ onNavigate }: { onNavigate: (tabIndex: number, entityId: string) => void }) {
     const { data: notifications } = useSWR(
         dashboardDataKeys.notifications,
-        () => fetchWithLogging('Dashboard notification feed notifications', getNotifications),
+        () => fetchWithLogging('Dashboard notification feed notifications', fetchDashboardNotifications),
         swrOptions
     );
     const { data: feedData } = useSWR(
@@ -132,7 +137,7 @@ export function DashboardNotificationsTab(props: {
     const { activeSubTab, onSubTabChange, highlightedEntityId } = props;
     const { data: notifications, isLoading: isLoadingNotifications } = useSWR(
         dashboardDataKeys.notifications,
-        () => fetchWithLogging('Dashboard notifications', getNotifications),
+        () => fetchWithLogging('Dashboard notifications', fetchDashboardNotifications),
         swrOptions
     );
     const { data: feedData, isLoading: isLoadingFeedData } = useSWR(

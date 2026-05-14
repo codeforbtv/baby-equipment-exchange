@@ -76,6 +76,7 @@ export default function UserDetails(props: UserDetailsProps) {
         }
     };
 
+    //Re-fetch user if user has been updated.
     useEffect(() => {
         if (!user || userDetailsUpdated) {
             fetchUserDetails(id);

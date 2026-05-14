@@ -38,7 +38,6 @@ import { IUser } from '@/models/user';
 import { BookingMatchConfidence } from '@/types/CalendlyTypes';
 
 import rejectUser from '@/email-templates/rejectUser';
-import userEnabled from '@/email-templates/userEnabled';
 
 type NotificationCardProps = {
     type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
@@ -81,6 +80,15 @@ const CalendlyStatusChip = ({ status }: { status?: BookingMatchConfidence }) => 
         </Box>
     );
 };
+
+type DisplayDate = string | { toDate?: () => Date } | null | undefined;
+
+function formatDisplayDate(date: DisplayDate): string {
+    if (!date) return '';
+    if (typeof date === 'string') return new Date(date).toDateString();
+    if (date.toDate) return date.toDate().toDateString();
+    return '';
+}
 
 const NotificationCard = (props: NotificationCardProps) => {
     const { type, donation, user, setIdToDisplay, onNotificationsChanged, calendlyStatus, isHighlighted } = props;
@@ -165,12 +173,10 @@ const NotificationCard = (props: NotificationCardProps) => {
         }
     };
 
-    const handleEnableUser = async (uid: string, userName: string, userEmail: string): Promise<void> => {
+    const handleEnableUser = async (uid: string, userName: string): Promise<void> => {
         setIsLoading(true);
         try {
             await enableUser({ idToken: await getAuthIdToken(), userId: uid });
-            const msg = userEnabled(userEmail, userName);
-            await sendMail(msg);
             setDialogTitle('User enabled');
             setDialogContent(`The user ${userName} has been enabled.`);
             setIsDialogOpen(true);
@@ -240,7 +246,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                     {donation.dateAccepted && (
                                         <>
                                             <Typography variant="caption">Accepted on:</Typography>
-                                            <Typography variant="body1"> {donation.dateAccepted.toDate().toDateString()}</Typography>
+                                            <Typography variant="body1"> {formatDisplayDate(donation.dateAccepted)}</Typography>
                                         </>
                                     )}
                                     <Typography variant="caption">Donated by:</Typography>
@@ -280,7 +286,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                     {donation.dateRequested && (
                                         <>
                                             <Typography variant="caption">Requested on:</Typography>
-                                            <Typography variant="body1">{donation.dateRequested.toDate().toDateString()}</Typography>
+                                            <Typography variant="body1">{formatDisplayDate(donation.dateRequested)}</Typography>
                                         </>
                                     )}
                                     <Typography variant="caption">Requested by:</Typography>
@@ -347,7 +353,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                 <CardActions className={styles['notification-card--container--btn']}>
                                     <Button
                                         variant="contained"
-                                        onClick={() => handleEnableUser(user.uid, user.displayName, user.email)}
+                                        onClick={() => handleEnableUser(user.uid, user.displayName)}
                                         disabled={!user.organization}
                                     >
                                         Approve
