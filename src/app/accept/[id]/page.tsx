@@ -6,10 +6,12 @@ import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
-import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, IconButton } from '@mui/material';
 import AcceptRejectCard from '@/components/AcceptRejectCard';
 import DonationDetails from '@/components/DonationDetails';
 import ScheduleDropOff from '@/components/ScheduleDropOff';
+//Icons
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //API
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationsByBulkId } from '@/api/firebase-donations';
@@ -24,6 +26,7 @@ import { Category } from '@/models/category';
 const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donations, setDonations] = useState<Donation[] | null>(null);
+    const router = useRouter();
     const [accepted, setAccepted] = useState<string[]>([]);
     const [rejected, setRejected] = useState<string[]>([]);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
@@ -94,6 +97,9 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                 ) : (
                     <>
                         <div className="page--header">
+                            <IconButton onClick={() => router.push('/')}>
+                                <ArrowBackIcon />
+                            </IconButton>
                             <h3>Review donation</h3>
                         </div>
                         {isLoading && !idToDisplay && <Loader />}

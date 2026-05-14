@@ -6,10 +6,12 @@ import { renderToString } from 'react-dom/server';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Alert, Box, Button, FormControl, InputLabel, MenuItem, NativeSelect, Select, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, FormControl, IconButton, InputLabel, MenuItem, NativeSelect, Select, TextField, Typography } from '@mui/material';
 import DonationCardSmall from './DonationCardSmall';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
+//Icons
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
@@ -221,6 +223,9 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
+                <IconButton onClick={() => setOpenScheduler(false)}>
+                    <ArrowBackIcon />
+                </IconButton>
                 <h3>Send Accept/Reject Email</h3>
             </div>
             {isLoading ? (
