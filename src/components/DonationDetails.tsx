@@ -17,6 +17,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import AddIcon from '@mui/icons-material/Add';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import DownloadIcon from '@mui/icons-material/Download';
 //Styles
 import '@/styles/globalStyles.css';
@@ -104,6 +105,26 @@ const DonationDetails = (props: DonationDetailsProps) => {
         setIsImageOpen(true);
     };
 
+    const resetToInProcessing = async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+            if (donationDetails) {
+                await updateDonationStatus(donationDetails.id, 'in processing');
+                await updateDonation(donationDetails.id, {
+                    dateAccepted: null,
+                    tagNumber: null
+                });
+                setDialogContent(`'${donationDetails.brand} - ${donationDetails.model}' has been returned to the approval queue.`);
+                setIsDialogOpen(true);
+            }
+        } catch (error) {
+            addErrorEvent('Error resetting donation to in processing', error);
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleImageClose = () => setIsImageOpen(false);
 
     const generateProductLifeCycleReport = (donation: Donation) => {
@@ -151,6 +172,11 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             {donationDetails.status === 'unavailable' && (
                                 <Button variant="contained" startIcon={<AddIcon />} color="error" onClick={addToInventory}>
                                     Add to inventory
+                                </Button>
+                            )}
+                            {donationDetails.status !== 'in processing' && donationDetails.status !== 'distributed' && (
+                                <Button variant="outlined" startIcon={<RestartAltIcon />} color="warning" onClick={resetToInProcessing}>
+                                    Return to Approval Queue
                                 </Button>
                             )}
                         </Stack>

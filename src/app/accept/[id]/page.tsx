@@ -2,6 +2,7 @@
 
 //Hoooks
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
@@ -12,11 +13,13 @@ import ScheduleDropOff from '@/components/ScheduleDropOff';
 //API
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationsByBulkId } from '@/api/firebase-donations';
+import { getAllCategories } from '@/api/firebase-categories';
 import posthog from 'posthog-js';
 //Styles
 import '@/styles/globalStyles.css';
 //types
 import { Donation } from '@/models/donation';
+import { Category } from '@/models/category';
 
 const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -25,6 +28,9 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const [rejected, setRejected] = useState<string[]>([]);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [openSecheduler, setOpenScheduler] = useState<boolean>(false);
+    const [categories, setCategories] = useState<Category[]>([]);
+
+    const router = useRouter();
 
     //disable btton unless all donations are accepted or rejected
     const isDisabled = donations ? accepted.length + rejected.length !== donations.length : false;
@@ -33,7 +39,14 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
         setIsLoading(true);
         try {
             const donationsResult = await getDonationsByBulkId(id);
-            setDonations(donationsResult);
+            const pendingDonations = donationsResult.filter((d) => d.status === 'in processing');
+
+            if (pendingDonations.length === 0) {
+                alert('All items in this donation have already been processed.');
+                router.push('/');
+                return;
+            }
+            setDonations(pendingDonations);
         } catch (error) {
             addErrorEvent('Fetch donations by bulk id', error);
         } finally {
@@ -58,8 +71,15 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
         }
     };
 
+    const handleCategoryFixed = (donationId: string, newCategory: string) => {
+        setDonations((prev) => prev && prev.map((d) => (d.id === donationId ? Object.assign(Object.create(Object.getPrototypeOf(d)), d, { category: newCategory }) : d)));
+    };
+
     useEffect(() => {
         fetchDonationsByBulkId(params.id);
+        getAllCategories()
+            .then(setCategories)
+            .catch((err) => addErrorEvent('Fetch categories', err));
     }, []);
 
     return (
@@ -101,6 +121,8 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                                         donation={donation}
                                         handleAcceptReject={handleAcceptReject}
                                         setIdToDisplay={setIdToDisplay}
+                                        categories={categories}
+                                        onCategoryFixed={handleCategoryFixed}
                                     />
                                 ))}
                                 <Button type="button" variant="contained" disabled={isDisabled} onClick={() => setOpenScheduler(true)}>
