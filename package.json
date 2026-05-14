@@ -2,10 +2,11 @@
     "name": "baby-equipment-exchange",
     "version": "0.1.0",
     "private": true,
+    "type": "module",
     "scripts": {
         "dev": "next dev",
         "emulators": "firebase emulators:start --only auth,firestore,storage --project baby-equipment-exchange-dev",
-        "seed": "node scripts/seed-emulators.js",
+        "seed": "node scripts/seed-emulators.cjs",
         "test:cypress": "npx cypress run --headless --component",
         "test:unit": "jest .*/*.unit.test.ts",
         "build": "next build",
