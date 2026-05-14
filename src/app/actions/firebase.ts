@@ -81,50 +81,54 @@ export async function isEmailInUse(request: { email: string }): Promise<boolean>
 }
 
 export async function createUser(request: NewUserAccountInfo): Promise<UserRecord> {
+    const { email, password, displayName, phoneNumber, organization, notes, title, termsAccepted } = request;
+
+    if (!email || email.length === 0) throw new Error('A valid email address is required.');
+    if (!password || password.length === 0) throw new Error('Password is required.');
+    if (!displayName || displayName.length === 0) throw new Error('Display name is required.');
+    if (!phoneNumber || phoneNumber.length === 0) throw new Error('Phone number is required.');
+
+    let userRecord: UserRecord;
     try {
-        const { email, password, displayName, phoneNumber, organization, notes, title, termsAccepted } = request;
-
-        if (!email || email.length === 0) throw new Error('A valid email address is required.');
-        if (!password || password.length === 0) throw new Error('Password is required.');
-        if (!displayName || displayName.length === 0) throw new Error('Display name is required.');
-        if (!phoneNumber || phoneNumber.length === 0) throw new Error('Phone number is required.');
-
-        const userRecord: UserRecord = await auth.createUser({
+        userRecord = await auth.createUser({
             email,
             password,
             displayName,
             disabled: true
         });
-
-        const userParams = {
-            uid: userRecord.uid,
-            isDisabled: true,
-            email: userRecord.email,
-            organization,
-            title,
-            termsAccepted,
-            displayName: userRecord.displayName,
-            phoneNumber,
-            requestedItems: [],
-            notes,
-            createdAt: FieldValue.serverTimestamp(),
-            modifiedAt: FieldValue.serverTimestamp()
-        };
-
-        const docRef = db.collection(USERS_COLLECTION).doc(userRecord.uid);
-        const doc = await docRef.get();
-
-        if (doc.exists) {
-            console.error('User already exists in database', doc.data());
-            docRef.set(userParams, { merge: true });
-        } else {
-            docRef.set(userParams);
-        }
-        return JSON.parse(JSON.stringify(userRecord));
     } catch (error) {
         addErrorEvent('createUser', error);
+        throw new Error('An error occurred while trying to create a new user.');
     }
-    throw new Error('An error occurred while trying to create a new user.');
+
+    const userParams = {
+        uid: userRecord.uid,
+        isDisabled: true,
+        email: userRecord.email,
+        organization,
+        title,
+        termsAccepted,
+        displayName: userRecord.displayName,
+        phoneNumber,
+        requestedItems: [],
+        notes,
+        createdAt: FieldValue.serverTimestamp(),
+        modifiedAt: FieldValue.serverTimestamp()
+    };
+
+    try {
+        await db.collection(USERS_COLLECTION).doc(userRecord.uid).set(userParams);
+    } catch (firestoreError) {
+        try {
+            await auth.deleteUser(userRecord.uid);
+        } catch (rollbackError) {
+            addErrorEvent('createUser rollback failed', rollbackError);
+        }
+        addErrorEvent('createUser', firestoreError);
+        throw new Error('An error occurred while trying to create a new user.');
+    }
+
+    return JSON.parse(JSON.stringify(userRecord));
 }
 
 
