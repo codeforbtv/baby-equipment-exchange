@@ -1,6 +1,6 @@
 import { Notification } from '@/types/NotificationTypes';
 import { convertToString } from '@/utils/utils';
-import { FirebaseApp, initializeApp } from 'firebase/app';
+import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
 import { User, connectAuthEmulator, getAuth } from 'firebase/auth';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectStorageEmulator, getStorage } from 'firebase/storage';
@@ -9,14 +9,15 @@ import { getUsersNotifications } from './firebase-users';
 import { addEvent, checkClaims } from '@/app/actions/firebase';
 
 function initApp(): FirebaseApp {
-    if (process.env.NODE_ENV === 'production') {
-        // creds automatically injected with firebase app hosting
-        return initializeApp();
-    }
-    // if not prod, then emulator
+    if (getApps().length > 0) return getApp();
+
     return initializeApp({
+        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+        authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        apiKey: 'emulator-dummy-key'
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     });
 }
 

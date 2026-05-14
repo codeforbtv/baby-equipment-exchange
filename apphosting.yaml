@@ -1,4 +1,40 @@
 env:
+    - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+      secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_API_KEY
+      availability:
+          - BUILD
+          - RUNTIME
+
+    - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+      secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+      availability:
+          - BUILD
+          - RUNTIME
+
+    - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      availability:
+          - BUILD
+          - RUNTIME
+
+    - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      availability:
+          - BUILD
+          - RUNTIME
+
+    - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+      secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+      availability:
+          - BUILD
+          - RUNTIME
+
+    - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+      secret: projects/375825360663/secrets/NEXT_PUBLIC_FIREBASE_APP_ID
+      availability:
+          - BUILD
+          - RUNTIME
+
     - variable: CALENDLY_API_KEY
       secret: projects/375825360663/secrets/CALENDLY_API_KEY
 

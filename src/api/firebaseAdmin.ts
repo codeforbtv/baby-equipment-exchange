@@ -20,9 +20,6 @@ export async function initAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    if (process.env.NODE_ENV === 'production') {
-        return initializeApp();
-    }
     return initializeApp({ projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID });
 }
 
