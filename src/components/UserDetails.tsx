@@ -5,36 +5,40 @@ import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 //Components
 import Loader from '@/components/Loader';
 import EditUser from '@/components/EditUser';
-import { ListItem, Typography, Button, IconButton } from '@mui/material';
+import { ListItem, Typography, Button, IconButton, Box } from '@mui/material';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
 //APIs
-import { addErrorEvent } from '@/api/firebase';
-import { getDbUser } from '@/api/firebase-users';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
+import { enableUser, getUserDetails } from '@/app/actions/firebase';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 //styles
 import '@/styles/globalStyles.css';
 //Types
-import { UserCollection } from '@/models/user';
+import { IUser } from '@/models/user';
 
 type UserDetailsProps = {
     id: string;
-    user?: UserCollection;
+    user?: IUser;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
     setUsersUpdated?: Dispatch<SetStateAction<boolean>>;
+    onUsersChanged?: () => void;
 };
 
 export default function UserDetails(props: UserDetailsProps) {
-    const { id, setIdToDisplay, setUsersUpdated, user } = props;
+    const { id, setIdToDisplay, setUsersUpdated, onUsersChanged, user } = props;
     const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [userDetails, setUserDetails] = useState<UserCollection | null>(null);
+    const [userDetails, setUserDetails] = useState<IUser | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [dialogTitle, setDialogTitle] = useState<string>('User updated');
+    const [dialogContent, setDialogContent] = useState<string>('');
     const [userDetailsUpdated, setUserDetailsUpdated] = useState<boolean>(false);
 
     const handleClose = () => {
+        if (onUsersChanged) onUsersChanged();
         if (setUsersUpdated) setUsersUpdated(true);
         //Re-fetch user to show updated details
         if (userDetails) {
@@ -46,7 +50,7 @@ export default function UserDetails(props: UserDetailsProps) {
     async function fetchUserDetails(id: string): Promise<void> {
         setIsLoading(true);
         try {
-            const userDetailsResult: UserCollection = await getDbUser(id);
+            const userDetailsResult = await getUserDetails({ idToken: await getAuthIdToken(), userId: id });
             setUserDetails(userDetailsResult);
         } catch (error) {
             addErrorEvent('Fetch user details', error);
@@ -55,6 +59,26 @@ export default function UserDetails(props: UserDetailsProps) {
         }
     }
 
+    const handleEnableUser = async (): Promise<void> => {
+        if (!userDetails) return;
+
+        setIsLoading(true);
+        try {
+            await enableUser({ idToken: await getAuthIdToken(), userId: userDetails.uid });
+            setDialogTitle('User enabled');
+            setDialogContent(`User ${userDetails.displayName} has been enabled.`);
+            setUserDetailsUpdated(true);
+            setIsDialogOpen(true);
+        } catch (error) {
+            addErrorEvent('Enable user from user details', error);
+            setDialogTitle('Unable to enable user');
+            setDialogContent(`User ${userDetails.displayName} could not be enabled. Please try again.`);
+            setIsDialogOpen(true);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     //Re-fetch user if user has been updated.
     useEffect(() => {
         if (!user || userDetailsUpdated) {
@@ -62,7 +86,7 @@ export default function UserDetails(props: UserDetailsProps) {
         } else {
             setUserDetails(user);
         }
-    }, [userDetailsUpdated]);
+    }, [id, user, userDetailsUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -117,15 +141,22 @@ export default function UserDetails(props: UserDetailsProps) {
                                 </ul>
                             </>
                         )}
-                        <Button variant="contained" type="button" onClick={() => setIsEditMode(true)} sx={{ marginTop: '2em' }} startIcon={<EditIcon />}>
-                            Edit User
-                        </Button>
+                        <Box display="flex" gap={2} flexWrap="wrap" sx={{ marginTop: '2em' }}>
+                            <Button variant="contained" type="button" onClick={() => setIsEditMode(true)} startIcon={<EditIcon />}>
+                                Edit User
+                            </Button>
+                            {userDetails.isDisabled && (
+                                <Button variant="outlined" type="button" onClick={handleEnableUser}>
+                                    Enable User
+                                </Button>
+                            )}
+                        </Box>
                     </div>
                 )}
                 {!isLoading && userDetails && isEditMode && (
                     <EditUser userDetails={userDetails} setIsEditMode={setIsEditMode} setUserDetailsUpdated={setUserDetailsUpdated} />
                 )}
-                <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="User enabled" content={`User ${userDetails?.displayName} has been enabled.`} />
+                <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title={dialogTitle} content={dialogContent} />
             </div>
         </ProtectedAdminRoute>
     );
