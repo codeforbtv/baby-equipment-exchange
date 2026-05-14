@@ -151,6 +151,11 @@ export async function enableUser(request: { idToken: string; userId: string }): 
         if (!userId) throw new Error('Must provide a user Id to enable a user account.');
         const user = await auth.updateUser(userId, { disabled: false });
         await auth.setCustomUserClaims(user.uid, { 'aid-worker': true });
+        await db.collection(USERS_COLLECTION).doc(userId).update({
+            isDisabled: false,
+            customClaims: { 'aid-worker': true },
+            modifiedAt: FieldValue.serverTimestamp()
+        });
     } catch (error) {
         addErrorEvent('enableUser', error);
         throw error;
@@ -163,6 +168,7 @@ export async function deleteUser(request: { idToken: string; userId: string }): 
         const userId = request.userId;
         if (!userId) throw new Error('Must provide a user Id to delete a user account.');
         await auth.deleteUser(userId);
+        await db.collection(USERS_COLLECTION).doc(userId).delete();
     } catch (error) {
         addErrorEvent('deleteUser', error);
         throw error;
@@ -172,11 +178,33 @@ export async function deleteUser(request: { idToken: string; userId: string }): 
 export async function updateAuthUser(request: {
     idToken: string;
     uid: string;
-    accountInformation: { displayName?: string; email?: string };
+    accountInformation: {
+        displayName?: string;
+        email?: string;
+        phoneNumber?: string;
+        organization?: { id: string; name: string } | null;
+        title?: string;
+    };
 }): Promise<UserRecord> {
     try {
         await _verifyAdminToken(request.idToken);
-        const updatedUser = await auth.updateUser(request.uid, request.accountInformation);
+        const { displayName, email, ...firestoreOnlyFields } = request.accountInformation;
+
+        const authUpdate: { displayName?: string; email?: string } = {};
+        if (displayName !== undefined) authUpdate.displayName = displayName;
+        if (email !== undefined) authUpdate.email = email;
+        const updatedUser = Object.keys(authUpdate).length > 0
+            ? await auth.updateUser(request.uid, authUpdate)
+            : await auth.getUser(request.uid);
+
+        const firestoreUpdate: Record<string, any> = { modifiedAt: FieldValue.serverTimestamp() };
+        if (displayName !== undefined) firestoreUpdate.displayName = displayName;
+        if (email !== undefined) firestoreUpdate.email = email;
+        for (const [key, value] of Object.entries(firestoreOnlyFields)) {
+            if (value !== undefined) firestoreUpdate[key] = value;
+        }
+        await db.collection(USERS_COLLECTION).doc(request.uid).update(firestoreUpdate);
+
         return JSON.parse(JSON.stringify(updatedUser));
     } catch (error) {
         addErrorEvent('updateAuthUser', error);
@@ -209,6 +237,10 @@ export async function setCustomClaims(request: SetCustomClaimsRequest): Promise<
     try {
         await _verifyAdminToken(request.idToken);
         await auth.setCustomUserClaims(request.userId, request.claims);
+        await db.collection(USERS_COLLECTION).doc(request.userId).update({
+            customClaims: request.claims,
+            modifiedAt: FieldValue.serverTimestamp()
+        });
     } catch (error) {
         addErrorEvent('setCustomClaims', error);
         throw error;

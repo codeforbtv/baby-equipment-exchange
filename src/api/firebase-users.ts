@@ -5,14 +5,11 @@ import {
     DocumentData,
     getDoc,
     QueryDocumentSnapshot,
-    serverTimestamp,
     SnapshotOptions,
-    updateDoc,
     where,
     collection,
     query,
-    getDocs,
-    deleteDoc
+    getDocs
 } from 'firebase/firestore';
 import {
     NextOrObserver,
@@ -120,38 +117,6 @@ export async function getDbUser(uid: string): Promise<UserCollection> {
         addErrorEvent('Error getting db User', error);
     }
     return Promise.reject();
-}
-
-export async function updateDbUser(uid: string, accountInformation: any): Promise<void> {
-    if (!auth.currentUser) {
-        return Promise.reject(new Error('Must be logged in to update db user'));
-    }
-    try {
-        const userRef = doc(db, USERS_COLLECTION, uid).withConverter(userConverter);
-        await updateDoc(userRef, {
-            ...accountInformation,
-            modifiedAt: serverTimestamp()
-        });
-    } catch (error) {
-        addErrorEvent('Error updating db user', error);
-    }
-}
-
-export async function deleteDbUser(uid: string): Promise<void> {
-    try {
-        await deleteDoc(doc(db, USERS_COLLECTION, uid));
-    } catch (error) {
-        addErrorEvent('Error deleting db User', error);
-    }
-}
-
-export async function enableDbUser(uid: string): Promise<void> {
-    try {
-        const docRef = doc(db, USERS_COLLECTION, uid);
-        await updateDoc(docRef, { isDisabled: false, customClaims: { 'aid-worker': true } });
-    } catch (error) {
-        addErrorEvent('Error enabling db User', error);
-    }
 }
 
 //returns Auth User and db User details combined

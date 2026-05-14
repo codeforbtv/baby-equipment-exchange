@@ -6,7 +6,6 @@ import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
 import { getOrganizationNames, isEmailInUse as checkEmailInUse, setCustomClaims, updateAuthUser, enableUser } from '@/app/actions/firebase';
 import sendMail from '@/api/nodemailer';
-import { enableDbUser, updateDbUser } from '@/api/firebase-users';
 //Components
 import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
@@ -113,56 +112,41 @@ const EditUser = (props: EditUserProps) => {
         event.preventDefault();
         setIsLoading(true);
         try {
-            //If account is inactive, activate and send confirmation email
             if (isDisabled) {
                 try {
-                    await Promise.all([enableUser({ idToken: await getAuthIdToken(), userId: uid }), enableDbUser(uid)]);
+                    await enableUser({ idToken: await getAuthIdToken(), userId: uid });
                     const emailMsg = userEnabled(email, displayName);
                     await sendMail(emailMsg);
                 } catch (error) {
                     addErrorEvent('Error enable user', error);
                 }
             }
-            //if any fields stored in the firebase auth user have changed, update auth user.
-            if (email !== newEmail || displayName !== newDisplayName) {
-                try {
-                    await updateAuthUser({
-                        idToken: await getAuthIdToken(),
-                        uid,
-                        accountInformation: { email: newEmail, displayName: newDisplayName }
-                    });
-                } catch (error) {
-                    addErrorEvent('Error updating email or display name', error);
-                }
-            }
-            //If user role has changed it requires a separate API call
             if (role !== initialRole) {
                 try {
-                    const claims = { [`${role}`]: true };
-                    await Promise.all([setCustomClaims({ idToken: await getAuthIdToken(), userId: uid, claims }), updateDbUser(uid, { customClaims: claims })]);
+                    const claims: Partial<Record<string, boolean>> = { [role]: true };
+                    await setCustomClaims({ idToken: await getAuthIdToken(), userId: uid, claims });
                 } catch (error) {
                     addErrorEvent('Error updated custom claims', error);
                 }
             }
-            //If any fields in User collection in DB, update db user
-            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || email !== newEmail || displayName !== newDisplayName || title !== newTitle) {
+            if (email !== newEmail || displayName !== newDisplayName || phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || title !== newTitle) {
                 try {
                     const updatedOrganization = selectedOrg
-                        ? {
-                              id: orgNamesAndIds[selectedOrg],
-                              name: selectedOrg
-                          }
+                        ? { id: orgNamesAndIds[selectedOrg], name: selectedOrg }
                         : null;
-
-                    await updateDbUser(uid, {
-                        phoneNumber: newPhoneNumber,
-                        organization: updatedOrganization,
-                        title: newTitle,
-                        email: newEmail,
-                        displayName: newDisplayName
+                    await updateAuthUser({
+                        idToken: await getAuthIdToken(),
+                        uid,
+                        accountInformation: {
+                            email: newEmail,
+                            displayName: newDisplayName,
+                            phoneNumber: newPhoneNumber,
+                            organization: updatedOrganization,
+                            title: newTitle
+                        }
                     });
                 } catch (error) {
-                    addErrorEvent('Error updating DB user', error);
+                    addErrorEvent('Error updating user', error);
                     throw error;
                 }
             }
