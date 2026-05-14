@@ -2,8 +2,6 @@
 
 import 'server-only';
 import * as nodemailer from 'nodemailer';
-import { google } from 'googleapis';
-const OAuth2 = google.auth.OAuth2;
 
 const transporter = nodemailer.createTransport({
     service: process.env.SMTP_HOST,

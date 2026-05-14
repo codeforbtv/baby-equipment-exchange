@@ -13,7 +13,6 @@ import posthog from 'posthog-js';
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 //Styling
 import '../../styles/globalStyles.css';
-import styles from './Login.module.css';
 
 export default function Login() {
     const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('pending');
@@ -46,12 +45,12 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
             if (user) router.push('/');
             else setLoginState('loggedOut');
         });
-    }, [router]);
+    }, [router, setLoginState]);
 
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
         try {
-            const user = await signInAuthUserWithEmailAndPassword(email, password);
+            await signInAuthUserWithEmailAndPassword(email, password);
             posthog.capture('user_logged_in');
             router.push('/');
         } catch (error) {

@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 // Styles
 import styles from './Browse.module.css';
 
-import { donationStatuses, DonationStatusValues } from '@/models/donation';
+import { DonationStatusValues } from '@/models/donation';
 
 export default function ExistingDonationDialog({
     initialParameters,
@@ -137,6 +137,7 @@ export default function ExistingDonationDialog({
                     {donation.images &&
                         donation.images.map((image) => {
                             return (
+                                // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                     key={image}
                                     src={image}

@@ -74,7 +74,7 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
 
     useEffect(() => {
         if (!categoryDetails || categoryDetailsUpdated) fetchCategory(id);
-    }, [categoryDetailsUpdated]);
+    }, [categoryDetails, categoryDetailsUpdated, id]);
 
     return (
         <ProtectedAdminRoute>

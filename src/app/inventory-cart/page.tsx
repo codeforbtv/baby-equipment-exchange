@@ -40,7 +40,7 @@ const InventoryCart = () => {
         setIsUnavailableDialogOpen(false);
     };
 
-    const handleRequestItems = async (event: React.MouseEvent<HTMLElement>): Promise<void> => {
+    const handleRequestItems = async (): Promise<void> => {
         if (!requestedInventory || requestedInventory.length == 0 || !currentUser) return;
         setLoading(true);
         try {

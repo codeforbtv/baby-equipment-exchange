@@ -23,7 +23,7 @@ const defaultRequestedInventory: InventoryItem[] = [];
 
 export const RequestedInventoryContext = createContext<RequestedInventoryContextType>({
     requestedInventory: [],
-    addRequestedInventoryItem: (inventoryItem: InventoryItem) => {},
+    addRequestedInventoryItem: () => {},
     removeRequestedInventoryItem: () => {},
     clearRequestedInventory: () => {},
     isLoading: false

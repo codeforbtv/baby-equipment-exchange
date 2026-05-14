@@ -68,7 +68,7 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
 
     useEffect(() => {
         fetchOrganizationById(id);
-    }, []);
+    }, [id]);
 
     return (
         <ProtectedAdminRoute>

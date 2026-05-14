@@ -16,7 +16,7 @@ export default function ProtectedAidWorkerRoute({ children }: { children: React.
         if ((!isLoading && !currentUser) || (currentUser && !isAidWorker && !isAdmin)) {
             router.push('/login');
         }
-    }, [currentUser, isLoading]);
+    }, [currentUser, isAdmin, isAidWorker, isLoading, router]);
 
     if (isLoading) {
         return (

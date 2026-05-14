@@ -134,7 +134,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
 
     useEffect(() => {
         if ((id && !donation) || (id && donationDetailsUpdated)) fetchDonation(id);
-    }, [donationDetailsUpdated]);
+    }, [donation, donationDetailsUpdated, id]);
 
     return (
         <ProtectedAdminRoute>
@@ -153,6 +153,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                         <ImageList>
                             {donationDetails.images.map((image) => (
                                 <ImageListItem key={image as string}>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={`${image}`} alt={donationDetails.model} loading="lazy" onClick={handleImageClick} />
                                 </ImageListItem>
                             ))}
@@ -250,6 +251,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             </Typography>
                         )}
                         <Dialog open={isImageOpen} onClose={handleImageClose} sx={{ width: '100%' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={openImageURL} alt={openImageURL} style={{ maxWidth: '100%' }} />
                             <DialogActions>
                                 <Button type="button" onClick={handleImageClose}>

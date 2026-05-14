@@ -2,7 +2,6 @@
 import { Timestamp } from 'firebase/firestore';
 //Plain JavaScript objects
 import { IAddress } from '@/models/address';
-import { Donation } from './donation';
 
 export const orgTags = {
     'Social Services': 'social-services',

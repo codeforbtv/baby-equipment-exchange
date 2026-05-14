@@ -4,9 +4,9 @@
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useUserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 //Components
-import { Card, Button, Box, Typography, Stack, Autocomplete, InputBaseProps, TextField } from '@mui/material';
+import { Card, Button, Box, Typography, Stack, Autocomplete, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Loader from '@/components/Loader';
 import Image from 'next/image';
@@ -53,7 +53,7 @@ const AdminCart = () => {
         setIsUnavailableDialogOpen(false);
     };
 
-    const fetchActiveUsers = async (): Promise<void> => {
+    const fetchActiveUsers = useCallback(async (): Promise<void> => {
         setLoading(true);
         try {
             const activeUsersReuslt = await getAllActiveDbUsers();
@@ -63,9 +63,9 @@ const AdminCart = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const handleAdminRequestItems = async (event: React.MouseEvent<HTMLElement>): Promise<void> => {
+    const handleAdminRequestItems = async (): Promise<void> => {
         if (!isAdmin || !selectedUser) return;
         setLoading(true);
         try {
@@ -112,7 +112,7 @@ const AdminCart = () => {
 
     useEffect(() => {
         if (!activeUsers) fetchActiveUsers();
-    }, []);
+    }, [activeUsers, fetchActiveUsers]);
 
     return (
         <ProtectedAdminRoute>

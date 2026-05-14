@@ -31,7 +31,8 @@ export default function ImageThumbnail(props: ImageThumbnailProps) {
     if (props.file) {
         return (
             <div className={styles['thumbnail__container']} style={{ width: `${props.width}`, margin: `${props.margin}` }}>
-                <img className={styles['thumbnail']} src={URL.createObjectURL(props.file)} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className={styles['thumbnail']} src={URL.createObjectURL(props.file)} alt={props.file.name} />
                 {removeButton}
             </div>
         );
@@ -39,7 +40,8 @@ export default function ImageThumbnail(props: ImageThumbnailProps) {
     if (props.url) {
         return (
             <div className={styles['thumbnail__container']} style={{ width: `${props.width}`, margin: `${props.margin}` }}>
-                <img className={styles['thumbnail']} src={props.url} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className={styles['thumbnail']} src={props.url} alt="Selected upload preview" />
                 {removeButton}
             </div>
         );

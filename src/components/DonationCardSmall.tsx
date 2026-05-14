@@ -29,6 +29,7 @@ export default function DonationCardSmall(props: DonationCardSmallProps) {
                 border: '0.5px solid black'
             }}
         >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={image} alt={donation.model} style={thumbnailStyles} />
             <div>
                 <p>

@@ -111,7 +111,7 @@ const EditDonation = (props: EditDonationProps) => {
 
     useEffect(() => {
         if (!categories) fetchCategories();
-    }, []);
+    }, [categories]);
 
     return (
         <ProtectedAdminRoute>

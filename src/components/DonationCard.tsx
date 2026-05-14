@@ -3,14 +3,13 @@
 // Hooks
 import { Dispatch, SetStateAction } from 'react';
 // Components
-import { Box, IconButton, ImageListItem, ImageListItemBar } from '@mui/material';
-import Loader from './Loader';
+import { IconButton, ImageListItem, ImageListItemBar } from '@mui/material';
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
 // Styles
 import styles from './Card.module.css';
 // Types
-import { Donation, donationStatuses, DonationStatusKeys, DonationStatusValues } from '@/models/donation';
+import { Donation, donationStatuses, DonationStatusKeys } from '@/models/donation';
 
 type DonationCardProps = {
     donation: Donation;
@@ -25,6 +24,7 @@ export default function DonationCard(props: DonationCardProps) {
 
     return (
         <ImageListItem key={donation.id} className={styles['grid__item']}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={image}
                 style={{ minWidth: '100%', height: '100%', objectFit: 'cover' }}

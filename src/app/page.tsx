@@ -2,7 +2,6 @@
 
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
-import { redirect } from 'next/navigation';
 
 //Components
 import HomePage from '@/components/HomePage';

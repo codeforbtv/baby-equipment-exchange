@@ -16,7 +16,7 @@ export default function ProtectedAdminRoute({ children }: { children: React.Reac
         if ((!isLoading && !currentUser) || (currentUser && !isAdmin)) {
             router.push('/login');
         }
-    }, [currentUser, isLoading]);
+    }, [currentUser, isAdmin, isLoading, router]);
 
     if (isLoading) {
         return (

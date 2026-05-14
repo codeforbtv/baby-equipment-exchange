@@ -34,7 +34,6 @@ type DonationCardMedProps = {
 const DonationCardMed = (props: DonationCardMedProps) => {
     const { orderId, donation, setIdToDisplay, handleRemoveFromOrder } = props;
     const [showRemoveDialog, setShowRemoveDialog] = useState<boolean>(false);
-    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleRemove = async (id: string, donation: Donation) => {
         if (handleRemoveFromOrder) {

@@ -1,6 +1,6 @@
 //Icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 //Styles
 import styles from './SearchBar.module.css';
 export default function SearchBar() {

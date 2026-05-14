@@ -188,7 +188,7 @@ export async function addNote(note: NoteBody) {
             createdAt: currentTimeString,
             modifiedAt: currentTimeString
         };
-        const event = new Event(eventParams);
+        return new Event(eventParams);
     } catch (error) {
         addErrorEvent('addNote', { error: error, note: note });
     }

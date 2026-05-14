@@ -60,7 +60,7 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
 
     useEffect(() => {
         if (id && !inventoryItem) fetchInventoryItem(id);
-    }, []);
+    }, [id, inventoryItem]);
 
     return (
         <ProtectedAidWorkerRoute>
@@ -79,6 +79,7 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
                     <ImageList>
                         {itemDetails.images.map((image) => (
                             <ImageListItem key={image as string}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={`${image}`} alt={itemDetails.model} loading="lazy" onClick={handleImageClick} />
                             </ImageListItem>
                         ))}
@@ -113,6 +114,7 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
                     </Button>
 
                     <Dialog open={isImageOpen} onClose={handleImageClose} sx={{ width: '100%' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={openImageURL} alt={openImageURL} style={{ maxWidth: '100%' }} />
                         <DialogActions>
                             <Button type="button" onClick={handleImageClose}>

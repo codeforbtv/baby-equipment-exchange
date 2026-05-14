@@ -1,9 +1,8 @@
 //Firebase types
-import { Timestamp, serverTimestamp } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore';
 //Plain JavaScript objects
 import { IAddress } from './address';
 import { IContact } from './contact';
-import { StorageBody } from '@/types/post-data';
 
 export interface IStorage {
     [key: string]:

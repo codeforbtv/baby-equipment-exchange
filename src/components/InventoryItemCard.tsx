@@ -1,7 +1,5 @@
 'use client';
 
-//Hooks
-import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 //Components
 import { ImageListItem, ImageListItemBar, IconButton, Tooltip } from '@mui/material';
 // Icons
@@ -29,6 +27,7 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
 
     return (
         <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={image}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}

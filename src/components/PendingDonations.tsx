@@ -8,20 +8,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 //Styles
 import styles from './PendingDonations.module.css';
 
-//Types
-import { DonationFormData } from '@/types/DonationTypes';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 
 export default function PendingDonations() {
-    const { pendingDonations, removePendingDonation, pendingDonorEmail, pendingDonorName, setPendingDonorEmail, setPendingDonorName } =
-        usePendingDonationsContext();
-
-    const handleEditName = () => {
-        setPendingDonorEmail('');
-        setPendingDonorName('');
-        localStorage.removeItem('donorEmail');
-        localStorage.removeItem('donorName');
-    };
+    const { pendingDonations, removePendingDonation } = usePendingDonationsContext();
 
     return (
         <Box className={styles['pendingDonation--container']}>

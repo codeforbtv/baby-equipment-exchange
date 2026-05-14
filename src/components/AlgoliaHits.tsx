@@ -4,7 +4,7 @@ import AlgoliaHitCard from './AlgoliaHitCard';
 import styles from './AlgoliaHits.module.css';
 
 export default function AlgoliaHits(props: UseHitsProps) {
-    const { hits, sendEvent } = useHits(props);
+    const { hits } = useHits(props);
 
     return (
         <div className={styles['hits__container']}>

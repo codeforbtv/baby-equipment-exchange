@@ -30,8 +30,8 @@ const defaultPendingDonations: DonationFormData[] = [];
 
 export const PendingDonationsContext = createContext<PendingDonationsContextType>({
     pendingDonations: [],
-    addPendingDonation: (pendingDonation: DonationFormData) => {},
-    removePendingDonation: (index: number) => {},
+    addPendingDonation: () => {},
+    removePendingDonation: () => {},
     clearPendingDonations: () => {},
     getPendingDonationsFromLocalStorage: () => {},
     pendingDonorName: '',

@@ -1,7 +1,7 @@
 import { IAddress } from '@/models/address';
 import { IContact } from '@/models/contact';
 import { DocumentReference } from 'firebase/firestore';
-import { UserMetadata, UserRecord } from 'firebase-admin/auth';
+import { UserMetadata } from 'firebase-admin/auth';
 
 export type UserCardProps = {
     readonly uid: string;
