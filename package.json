@@ -6,7 +6,6 @@
         "node": ">=22.0.0",
         "npm": ">=10.0.0"
     },
-    "type": "module",
     "scripts": {
         "dev": "next dev",
         "emulators": "firebase emulators:start --only auth,firestore,storage --project baby-equipment-exchange-dev",
