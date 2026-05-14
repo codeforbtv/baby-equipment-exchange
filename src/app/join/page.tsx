@@ -7,7 +7,8 @@ import Loader from '@/components/Loader';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Api
-import { callIsEmailInUse, addErrorEvent, callGetOrganizationNames, callCreateUser } from '@/api/firebase';
+import { addErrorEvent } from '@/api/firebase';
+import { isEmailInUse as checkEmailInUse, getOrganizationNames, createUser } from '@/app/actions/firebase';
 import posthog from 'posthog-js';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
@@ -61,7 +62,7 @@ export default function NewAccount() {
 
     const getOrgNames = async (): Promise<void> => {
         try {
-            const organizationNames = await callGetOrganizationNames();
+            const organizationNames = await getOrganizationNames();
             setOrgNamesAndIds(organizationNames);
         } catch (error) {
             addErrorEvent('Could not fetch org names', error);
@@ -98,7 +99,7 @@ export default function NewAccount() {
             notes: notes
         };
         try {
-            const newUser = await callCreateUser(accountInfo);
+            const newUser = await createUser(accountInfo);
             newUser.displayName && setConfirmedUserName(newUser.displayName);
             posthog.capture('user_signed_up', {
                 organization: orgValue ?? orgInputValue ?? null
@@ -147,7 +148,7 @@ export default function NewAccount() {
     const handleBlur = async (): Promise<void> => {
         validateEmail(email);
         if (!isInvalidEmail) {
-            const emailInUse = await callIsEmailInUse(email);
+            const emailInUse = await checkEmailInUse({ email });
             setIsEmailInUse(emailInUse);
         }
     };

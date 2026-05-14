@@ -29,9 +29,7 @@ import { Order } from '@/types/OrdersTypes';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
-import { AdminDonationBody, base64ImageObj } from '@/types/DonationTypes';
-import { base64ObjToFile } from '@/utils/utils';
-import { uploadImages } from './firebase-images';
+import { AdminDonationBody } from '@/types/DonationTypes';
 
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
@@ -450,38 +448,6 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
         addErrorEvent('Admin are donations available', error);
     }
     return Promise.reject();
-}
-
-export async function requestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
-    try {
-        const orderRef = doc(collection(db, ORDERS_COLLECTION));
-        const batch = writeBatch(db);
-        //Create a new order collection doc
-        batch.set(orderRef, {
-            status: 'open',
-            requestor: user,
-            items: [],
-            createdAt: serverTimestamp()
-        });
-        for (const inventoryItemId of inventoryItemIds) {
-            const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
-            //Update state of each requested item to 'requested'
-            batch.update(inventoryItemRef, {
-                status: 'requested',
-                requestor: user,
-                dateRequested: serverTimestamp(),
-                modifiedAt: serverTimestamp()
-            });
-            //Add donation ref to items array
-            batch.update(orderRef, {
-                items: arrayUnion(inventoryItemRef),
-                modifiedAt: serverTimestamp()
-            });
-        }
-        await batch.commit();
-    } catch (error) {
-        addErrorEvent('Request inventory items', error);
-    }
 }
 
 export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<Order> {

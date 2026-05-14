@@ -5,14 +5,11 @@ import {
     DocumentData,
     getDoc,
     QueryDocumentSnapshot,
-    serverTimestamp,
     SnapshotOptions,
-    updateDoc,
     where,
     collection,
     query,
-    getDocs,
-    deleteDoc
+    getDocs
 } from 'firebase/firestore';
 import {
     NextOrObserver,
@@ -24,8 +21,6 @@ import {
     User,
     UserCredential
 } from 'firebase/auth';
-//API
-import { getAuthUserById } from './firebaseAdmin';
 // Models
 import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
@@ -122,65 +117,6 @@ export async function getDbUser(uid: string): Promise<UserCollection> {
     return Promise.reject();
 }
 
-export async function updateDbUser(uid: string, accountInformation: any): Promise<void> {
-    if (!auth.currentUser) {
-        return Promise.reject(new Error('Must be logged in to update db user'));
-    }
-    try {
-        const userRef = doc(db, USERS_COLLECTION, uid).withConverter(userConverter);
-        await updateDoc(userRef, {
-            ...accountInformation,
-            modifiedAt: serverTimestamp()
-        });
-    } catch (error) {
-        addErrorEvent('Error updating db user', error);
-    }
-}
-
-export async function deleteDbUser(uid: string): Promise<void> {
-    try {
-        await deleteDoc(doc(db, USERS_COLLECTION, uid));
-    } catch (error) {
-        addErrorEvent('Error deleting db User', error);
-    }
-}
-
-export async function enableDbUser(uid: string): Promise<void> {
-    try {
-        const docRef = doc(db, USERS_COLLECTION, uid);
-        await updateDoc(docRef, { isDisabled: false, customClaims: { 'aid-worker': true } });
-    } catch (error) {
-        addErrorEvent('Error enabling db User', error);
-    }
-}
-
-//returns Auth User and db User details combined
-export async function getUserDetails(uid: string): Promise<IUser> {
-    try {
-        const [authUser, dbUser] = await Promise.all([getAuthUserById(uid), getDbUser(uid)]);
-        const userDetails: IUser = {
-            uid: authUser.uid,
-            email: authUser.email,
-            displayName: authUser.displayName,
-            disabled: authUser.disabled,
-            metadata: authUser.metadata,
-            customClaims: authUser.customClaims,
-            phoneNumber: dbUser.phoneNumber,
-            requestedItems: dbUser.requestedItems,
-            distributedItems: dbUser.distributedItems,
-            notes: dbUser.notes,
-            organization: dbUser.organization,
-            title: dbUser.title,
-            termsAccepted: dbUser.termsAccepted,
-            createdAt: dbUser.createdAt,
-            modifiedAt: dbUser.modifiedAt
-        };
-        return userDetails;
-    } catch (error) {
-        addErrorEvent('Get User Details', error);
-    }
-    return Promise.reject();
-}
 
 export async function getUsersNotifications(): Promise<IUser[]> {
     const users: IUser[] = [];
@@ -208,15 +144,6 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject();
 }
 
-export async function getUserEmailById(id: string): Promise<string> {
-    try {
-        const user = await getAuthUserById(id);
-        if (user.email) return user.email;
-    } catch (error) {
-        addErrorEvent('Get user email by ID', error);
-    }
-    return Promise.reject();
-}
 
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
     if (!email || !password) {

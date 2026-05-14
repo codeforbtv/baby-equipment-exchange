@@ -16,7 +16,8 @@ import React, { useEffect, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useRouter } from 'next/navigation';
 //API
-import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
+import { addErrorEvent, getNotifications } from '@/api/firebase';
+import { getOrganizationNames } from '@/app/actions/firebase';
 import { getAllDonations, getAllInventory } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
 //Icons
@@ -135,7 +136,7 @@ export default function Dashboard() {
     async function fetchOrgNames(): Promise<void> {
         setIsLoading(true);
         try {
-            const orgNamesResult = await callGetOrganizationNames();
+            const orgNamesResult = await getOrganizationNames();
             setOrgNamesAndIds(orgNamesResult);
             setOrgsUpdated(false);
         } catch (error) {

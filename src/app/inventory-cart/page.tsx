@@ -12,13 +12,12 @@ import Loader from '@/components/Loader';
 import Image from 'next/image';
 import CustomDialog from '@/components/CustomDialog';
 //Libs
-import { requestInventoryItems } from '@/api/firebase-donations';
-import { addErrorEvent, callAreDonationsAvailable } from '@/api/firebase';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
+import { requestInventory } from '@/app/actions/firebase';
 import posthog from 'posthog-js';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from './InventoryCart.module.css';
-import { InventoryItem } from '@/models/inventoryItem';
 
 const InventoryCart = () => {
     const { requestedInventory, removeRequestedInventoryItem, isLoading, clearRequestedInventory } = useRequestedInventoryContext();
@@ -47,14 +46,22 @@ const InventoryCart = () => {
         try {
             const requestedItemIds = requestedInventory.map((item) => item.id);
 
-            //Make sure requested items are still available
-            const unavailableItemIds = await callAreDonationsAvailable(requestedItemIds);
+            const result = await requestInventory({
+                idToken: await getAuthIdToken(),
+                donationIds: requestedItemIds,
+                user: {
+                    name: currentUser.displayName ?? '',
+                    email: currentUser.email ?? ''
+                }
+            });
 
-            if (unavailableItemIds.length > 0) {
-                const unavailableItems: InventoryItem[] = requestedInventory.filter((item) => unavailableItemIds.includes(item.id));
+            if ('unavailableIds' in result) {
+                const unavailableItems = requestedInventory.filter((item) => result.unavailableIds.includes(item.id));
                 let dialogContent = 'The following items are no longer available: ';
-                unavailableItems.map((item, i) => {
-                    dialogContent += i < unavailableItems.length - 1 ? `"${item.brand} ${item.model}," ` : `"${item.brand} ${item.model}." `;
+                unavailableItems.forEach((item, i) => {
+                    dialogContent += i < unavailableItems.length - 1
+                        ? `"${item.brand} ${item.model}," `
+                        : `"${item.brand} ${item.model}." `;
                 });
                 dialogContent += 'Please remove them from your cart and try again.';
                 setUnavailableDialogContent(dialogContent);
@@ -62,13 +69,6 @@ const InventoryCart = () => {
                 return;
             }
 
-            const user = {
-                id: currentUser.uid,
-                name: currentUser.displayName ?? '',
-                email: currentUser.email ?? ''
-            };
-
-            await requestInventoryItems(requestedItemIds, user);
             posthog.capture('inventory_items_requested', {
                 item_count: requestedItemIds.length,
                 item_ids: requestedItemIds
