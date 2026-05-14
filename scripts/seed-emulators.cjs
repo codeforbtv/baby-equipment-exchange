@@ -66,7 +66,16 @@ const USERS = {
         displayName: 'Ash Linden',
         phoneNumber: '+10000000006',
         claims: { donor: true, verified: false },
-        organization: null
+        organization: { id: 'org-vt-connector', name: 'Vermont Connector' }
+    },
+    pendingUser2: {
+        uid: 'pending2',
+        email: 'pending2@email.com',
+        password: 'password',
+        displayName: 'Drew Patel',
+        phoneNumber: '+10000000007',
+        claims: { 'aid-worker': true, verified: false },
+        organization: { id: 'org-cvoeo', name: 'CVOEO' }
     }
 };
 
@@ -275,6 +284,62 @@ const ADMIN_DONATIONS = [
     }
 ];
 
+const PENDING_DELIVERY_DONATIONS = [
+    {
+        id: 'donation-pd-001',
+        category: 'Cribs',
+        brand: 'Graco',
+        model: 'Pack \'n Play',
+        description: 'Portable playard with bassinet attachment. Includes carry bag.',
+        status: 'pending delivery',
+        donorEmail: 'dana@email.com',
+        donorName: 'Dana Torres',
+        donorId: 'donor1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Pack-n-Play']
+    },
+    {
+        id: 'donation-pd-002',
+        category: 'Baby Carriers',
+        brand: 'Tula',
+        model: 'Free-to-Grow',
+        description: 'Mesh carrier, newborn to toddler. Coast line pattern.',
+        status: 'pending delivery',
+        donorEmail: 'dana@email.com',
+        donorName: 'Dana Torres',
+        donorId: 'donor1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Baby+Carrier']
+    }
+];
+
+const RESERVED_DONATIONS = [
+    {
+        id: 'donation-res-001',
+        category: 'Strollers',
+        brand: 'Baby Jogger',
+        model: 'City Mini GT2',
+        description: 'All-terrain stroller, hand brake, one-hand fold.',
+        status: 'reserved',
+        tagNumber: 'STR 7',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Stroller']
+    },
+    {
+        id: 'donation-res-002',
+        category: 'Clothing',
+        brand: 'Mixed',
+        model: '6-12 months bundle',
+        description: '20-piece lot: onesies, sleepers, bibs.',
+        status: 'reserved',
+        tagNumber: 'CLT 19',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
+    }
+];
+
 const HISTORY_DONATIONS = [
     {
         id: 'donation-hist-001',
@@ -317,7 +382,7 @@ async function createFirestoreUser(userData) {
         email: userData.email,
         displayName: userData.displayName,
         customClaims: userData.claims,
-        isDisabled: false,
+        isDisabled: !userData.claims.verified,
         phoneNumber: userData.phoneNumber,
         requestedItems: [],
         distributedItems: [],
@@ -444,6 +509,20 @@ async function seed() {
         const donDoc = makeDonationDoc(d, USERS.admin);
         await db.collection('Donations').doc(d.id).set(donDoc);
         console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}]`);
+    }
+
+    await createBulkDonation('bulk-pd-001', USERS.donor1, PENDING_DELIVERY_DONATIONS);
+    console.log(`  Bulk pending delivery from Dana Torres: ${PENDING_DELIVERY_DONATIONS.length} items`);
+
+    for (const d of RESERVED_DONATIONS) {
+        d.requestor = {
+            id: USERS.aidWorker.uid,
+            name: USERS.aidWorker.displayName,
+            email: USERS.aidWorker.email
+        };
+        const donDoc = makeDonationDoc(d, USERS.admin);
+        await db.collection('Donations').doc(d.id).set(donDoc);
+        console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}] — reserved for ${USERS.aidWorker.displayName}`);
     }
 
     for (const d of HISTORY_DONATIONS) {

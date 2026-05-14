@@ -157,7 +157,7 @@ const Inventory = (props: InventoryProps) => {
             )}
             {!idToDisplay && (
                 <>
-                    <div className="page--header" style={{ marginTop: '4em', display: 'flex', flexDirection: 'column', gap: '1em' }}>
+                    <div className="page--header" style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
                         <Typography variant="h5">Inventory</Typography>
                         <Paper variant="outlined" sx={{ padding: '2px' }}>
                             <Typography variant="body1">
