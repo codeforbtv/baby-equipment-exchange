@@ -9,47 +9,79 @@ import DonationDetails from '@/components/DonationDetails';
 import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
 import CustomTabPanel from './CustomTabPanel';
-import { Box, Button, Chip, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Chip, Divider, Paper, Tab, Tabs, Typography } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
+import { Order } from '@/types/OrdersTypes';
 
 type NotificationsProps = {
     notifications: Notification;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
-const sortArrayByBulkId = (array: Donation[]): Donation[][] => {
-    const groupedByField = array.reduce(
-        (acc, item) => {
-            const sortByField = item.bulkCollection;
-            if (!acc[sortByField]) {
-                acc[sortByField] = [];
-            }
-            acc[sortByField].push(item);
-            return acc;
-        },
-        {} as Record<string, Donation[]>
-    );
-    return Object.values(groupedByField);
+type DonorGroup = {
+    donorName: string;
+    donorEmail: string;
+    donorId: string;
+    submissions: Donation[][];
+    totalItems: number;
 };
 
-const sortArrayByRequestor = (array: Donation[]): Donation[][] => {
-    const groupedByField = array.reduce(
-        (acc, item) => {
-            const sortByField = item.requestor ? item.requestor.id : '';
-            if (!acc[sortByField]) {
-                acc[sortByField] = [];
-            }
-            acc[sortByField].push(item);
-            return acc;
-        },
-        {} as Record<string, Donation[]>
-    );
-    return Object.values(groupedByField);
+type RequestorGroup = {
+    requestorName: string;
+    requestorId: string;
+    orders: Order[];
+    totalItems: number;
+};
+
+const groupByDonor = (donations: Donation[]): DonorGroup[] => {
+    const bulkMap = new Map<string, Donation[]>();
+    for (const d of donations) {
+        const key = d.bulkCollection;
+        if (!bulkMap.has(key)) bulkMap.set(key, []);
+        bulkMap.get(key)!.push(d);
+    }
+
+    const donorMap = new Map<string, { donorName: string; donorEmail: string; submissions: Donation[][] }>();
+    for (const bulk of bulkMap.values()) {
+        const { donorId, donorName, donorEmail } = bulk[0];
+        if (!donorMap.has(donorId)) {
+            donorMap.set(donorId, { donorName, donorEmail, submissions: [] });
+        }
+        donorMap.get(donorId)!.submissions.push(bulk);
+    }
+
+    return Array.from(donorMap.entries())
+        .map(([donorId, data]) => ({
+            donorId,
+            donorName: data.donorName,
+            donorEmail: data.donorEmail,
+            submissions: data.submissions,
+            totalItems: data.submissions.reduce((sum, s) => sum + s.length, 0),
+        }))
+        .sort((a, b) => a.donorName.localeCompare(b.donorName));
+};
+
+const groupByRequestor = (orders: Order[]): RequestorGroup[] => {
+    const map = new Map<string, { name: string; orders: Order[] }>();
+    for (const order of orders) {
+        const { id, name } = order.requestor;
+        if (!map.has(id)) map.set(id, { name, orders: [] });
+        map.get(id)!.orders.push(order);
+    }
+
+    return Array.from(map.entries())
+        .map(([requestorId, data]) => ({
+            requestorId,
+            requestorName: data.name,
+            orders: data.orders,
+            totalItems: data.orders.reduce((sum, o) => sum + o.items.length, 0),
+        }))
+        .sort((a, b) => a.requestorName.localeCompare(b.requestorName));
 };
 
 const Notifications = (props: NotificationsProps) => {
@@ -61,15 +93,13 @@ const Notifications = (props: NotificationsProps) => {
     const [currentTab, setCurrentTab] = useState<number>(0);
 
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
-    const sortedDonationsWaitingApproval = sortArrayByBulkId(donationsAwaitingApproval);
+    const donorGroupsApproval = groupByDonor(donationsAwaitingApproval);
     const donationsAwaitingDropoff = notifications.donations.filter((donation) => donation.status === 'pending delivery');
-    const sortedDonationsAwaitingDropoff = sortArrayByBulkId(donationsAwaitingDropoff);
+    const donorGroupsDelivery = groupByDonor(donationsAwaitingDropoff);
     const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
-    const sortedDonationsAwaitingPickup = sortArrayByBulkId(donationsAwaitingPickup);
+    const donorGroupsPickup = groupByDonor(donationsAwaitingPickup);
     const orders = notifications.orders.filter((order) => order.items.length > 0);
-    const sortedOrders = [...orders].sort((a, b) =>
-        a.requestor.name.localeCompare(b.requestor.name)
-    );
+    const requestorGroups = groupByRequestor(orders);
     const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted);
 
     const router = useRouter();
@@ -77,10 +107,19 @@ const Notifications = (props: NotificationsProps) => {
     const tabConfig = [
         { label: 'Pending Approval', count: donationsAwaitingApproval.length },
         { label: 'Pending Delivery', count: donationsAwaitingDropoff.length },
-        { label: 'Requested', count: sortedOrders.length },
+        { label: 'Requested', count: orders.length },
         { label: 'Pending Pickup', count: donationsAwaitingPickup.length },
         { label: 'Pending Users', count: usersAwaitingApproval.length },
     ];
+
+    const donorHeader = (name: string, count: number) => (
+        <Typography variant="body2" fontWeight={600}>
+            {name}
+            <Typography component="span" variant="body2" color="text.secondary">
+                {` — ${count} item${count !== 1 ? 's' : ''}`}
+            </Typography>
+        </Typography>
+    );
 
     return (
         <ProtectedAdminRoute>
@@ -145,37 +184,75 @@ const Notifications = (props: NotificationsProps) => {
                                 ))}
                             </Tabs>
 
+                            {/* Tab 0: Pending Approval — grouped by donor, sub-grouped by bulk submission */}
                             <CustomTabPanel value={currentTab} index={0}>
-                                {sortedDonationsWaitingApproval.length > 0 ? (
-                                    sortedDonationsWaitingApproval.map((donationArray, i) => (
-                                        <Paper key={i} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
-                                            <Box sx={{
-                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
-                                            }}>
-                                                <Typography variant="body2" fontWeight={600}>
-                                                    {donationArray[0].donorName}
-                                                    <Typography component="span" variant="body2" color="text.secondary">
-                                                        {` — ${donationArray.length} item${donationArray.length !== 1 ? 's' : ''}`}
-                                                    </Typography>
-                                                </Typography>
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    onClick={() => router.push(`/accept/${donationArray[0].bulkCollection}`)}
-                                                >
-                                                    Review
-                                                </Button>
-                                            </Box>
-                                            {donationArray.map((donation) => (
-                                                <NotificationCard
-                                                    key={donation.id}
-                                                    donation={donation}
-                                                    type="pending-donation"
-                                                    setIdToDisplay={setDonationIdToDisplay}
-                                                    setNotificationsUpdated={setNotificationsUpdated}
-                                                />
-                                            ))}
+                                {donorGroupsApproval.length > 0 ? (
+                                    donorGroupsApproval.map((group) => (
+                                        <Paper key={group.donorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                            {group.submissions.length === 1 ? (
+                                                <>
+                                                    <Box sx={{
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
+                                                    }}>
+                                                        {donorHeader(group.donorName, group.totalItems)}
+                                                        <Button
+                                                            size="small"
+                                                            variant="contained"
+                                                            onClick={() => router.push(`/accept/${group.submissions[0][0].bulkCollection}`)}
+                                                        >
+                                                            Review
+                                                        </Button>
+                                                    </Box>
+                                                    {group.submissions[0].map((donation) => (
+                                                        <NotificationCard
+                                                            key={donation.id}
+                                                            donation={donation}
+                                                            type="pending-donation"
+                                                            setIdToDisplay={setDonationIdToDisplay}
+                                                            setNotificationsUpdated={setNotificationsUpdated}
+                                                        />
+                                                    ))}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Box sx={{
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
+                                                    }}>
+                                                        {donorHeader(group.donorName, group.totalItems)}
+                                                    </Box>
+                                                    {group.submissions.map((submission, si) => (
+                                                        <Box key={submission[0].bulkCollection}>
+                                                            {si > 0 && <Divider />}
+                                                            <Box sx={{
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                                bgcolor: '#fafafa', px: 2, py: 0.75, borderBottom: '1px solid #f0f0f0',
+                                                            }}>
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    {`${submission.length} item${submission.length !== 1 ? 's' : ''}`}
+                                                                </Typography>
+                                                                <Button
+                                                                    size="small"
+                                                                    variant="contained"
+                                                                    onClick={() => router.push(`/accept/${submission[0].bulkCollection}`)}
+                                                                >
+                                                                    Review
+                                                                </Button>
+                                                            </Box>
+                                                            {submission.map((donation) => (
+                                                                <NotificationCard
+                                                                    key={donation.id}
+                                                                    donation={donation}
+                                                                    type="pending-donation"
+                                                                    setIdToDisplay={setDonationIdToDisplay}
+                                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                                />
+                                                            ))}
+                                                        </Box>
+                                                    ))}
+                                                </>
+                                            )}
                                         </Paper>
                                     ))
                                 ) : (
@@ -185,22 +262,18 @@ const Notifications = (props: NotificationsProps) => {
                                 )}
                             </CustomTabPanel>
 
+                            {/* Tab 1: Pending Delivery — grouped by donor, flat card list */}
                             <CustomTabPanel value={currentTab} index={1}>
-                                {sortedDonationsAwaitingDropoff.length > 0 ? (
-                                    sortedDonationsAwaitingDropoff.map((donationArray, i) => (
-                                        <Paper key={i} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                {donorGroupsDelivery.length > 0 ? (
+                                    donorGroupsDelivery.map((group) => (
+                                        <Paper key={group.donorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
                                             <Box sx={{
                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                                 bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
                                             }}>
-                                                <Typography variant="body2" fontWeight={600}>
-                                                    {donationArray[0].donorName}
-                                                    <Typography component="span" variant="body2" color="text.secondary">
-                                                        {` — ${donationArray.length} item${donationArray.length !== 1 ? 's' : ''}`}
-                                                    </Typography>
-                                                </Typography>
+                                                {donorHeader(group.donorName, group.totalItems)}
                                             </Box>
-                                            {donationArray.map((donation) => (
+                                            {group.submissions.flat().map((donation) => (
                                                 <NotificationCard
                                                     key={donation.id}
                                                     donation={donation}
@@ -218,37 +291,81 @@ const Notifications = (props: NotificationsProps) => {
                                 )}
                             </CustomTabPanel>
 
+                            {/* Tab 2: Requested — grouped by requestor, sub-grouped by order */}
                             <CustomTabPanel value={currentTab} index={2}>
-                                {sortedOrders.length > 0 ? (
-                                    sortedOrders.map((order) => (
-                                        <Paper key={order.id} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
-                                            <Box sx={{
-                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
-                                            }}>
-                                                <Typography variant="body2" fontWeight={600}>
-                                                    {order.requestor.name}
-                                                    <Typography component="span" variant="body2" color="text.secondary">
-                                                        {` — ${order.items.length} item${order.items.length !== 1 ? 's' : ''}`}
-                                                    </Typography>
-                                                </Typography>
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    onClick={() => setOrderIdToDisplay(order.id)}
-                                                >
-                                                    Review
-                                                </Button>
-                                            </Box>
-                                            {order.items.map((item) => (
-                                                <NotificationCard
-                                                    key={item.id}
-                                                    type="order"
-                                                    donation={item}
-                                                    setIdToDisplay={setDonationIdToDisplay}
-                                                    setNotificationsUpdated={setNotificationsUpdated}
-                                                />
-                                            ))}
+                                {requestorGroups.length > 0 ? (
+                                    requestorGroups.map((group) => (
+                                        <Paper key={group.requestorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                            {group.orders.length === 1 ? (
+                                                <>
+                                                    <Box sx={{
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
+                                                    }}>
+                                                        {donorHeader(group.requestorName, group.totalItems)}
+                                                        <Button
+                                                            size="small"
+                                                            variant="contained"
+                                                            onClick={() => setOrderIdToDisplay(group.orders[0].id)}
+                                                        >
+                                                            Review
+                                                        </Button>
+                                                    </Box>
+                                                    {group.orders[0].items.map((item) => (
+                                                        <NotificationCard
+                                                            key={item.id}
+                                                            type="order"
+                                                            donation={item}
+                                                            setIdToDisplay={setDonationIdToDisplay}
+                                                            setNotificationsUpdated={setNotificationsUpdated}
+                                                        />
+                                                    ))}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Box sx={{
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
+                                                    }}>
+                                                        <Typography variant="body2" fontWeight={600}>
+                                                            {group.requestorName}
+                                                            <Typography component="span" variant="body2" color="text.secondary">
+                                                                {` — ${group.orders.length} orders, ${group.totalItems} item${group.totalItems !== 1 ? 's' : ''}`}
+                                                            </Typography>
+                                                        </Typography>
+                                                    </Box>
+                                                    {group.orders.map((order, oi) => (
+                                                        <Box key={order.id}>
+                                                            {oi > 0 && <Divider />}
+                                                            <Box sx={{
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                                bgcolor: '#fafafa', px: 2, py: 0.75, borderBottom: '1px solid #f0f0f0',
+                                                            }}>
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    {`${order.items.length} item${order.items.length !== 1 ? 's' : ''}`}
+                                                                    {order.createdAt && ` — ${order.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                                                                </Typography>
+                                                                <Button
+                                                                    size="small"
+                                                                    variant="contained"
+                                                                    onClick={() => setOrderIdToDisplay(order.id)}
+                                                                >
+                                                                    Review
+                                                                </Button>
+                                                            </Box>
+                                                            {order.items.map((item) => (
+                                                                <NotificationCard
+                                                                    key={item.id}
+                                                                    type="order"
+                                                                    donation={item}
+                                                                    setIdToDisplay={setDonationIdToDisplay}
+                                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                                />
+                                                            ))}
+                                                        </Box>
+                                                    ))}
+                                                </>
+                                            )}
                                         </Paper>
                                     ))
                                 ) : (
@@ -258,22 +375,18 @@ const Notifications = (props: NotificationsProps) => {
                                 )}
                             </CustomTabPanel>
 
+                            {/* Tab 3: Pending Pickup — grouped by donor, flat card list */}
                             <CustomTabPanel value={currentTab} index={3}>
-                                {sortedDonationsAwaitingPickup.length > 0 ? (
-                                    sortedDonationsAwaitingPickup.map((donationArray, i) => (
-                                        <Paper key={i} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                {donorGroupsPickup.length > 0 ? (
+                                    donorGroupsPickup.map((group) => (
+                                        <Paper key={group.donorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
                                             <Box sx={{
                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                                 bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
                                             }}>
-                                                <Typography variant="body2" fontWeight={600}>
-                                                    {donationArray[0].donorName}
-                                                    <Typography component="span" variant="body2" color="text.secondary">
-                                                        {` — ${donationArray.length} item${donationArray.length !== 1 ? 's' : ''}`}
-                                                    </Typography>
-                                                </Typography>
+                                                {donorHeader(group.donorName, group.totalItems)}
                                             </Box>
-                                            {donationArray.map((donation) => (
+                                            {group.submissions.flat().map((donation) => (
                                                 <NotificationCard
                                                     key={donation.id}
                                                     donation={donation}
@@ -291,6 +404,7 @@ const Notifications = (props: NotificationsProps) => {
                                 )}
                             </CustomTabPanel>
 
+                            {/* Tab 4: Pending Users — no grouping */}
                             <CustomTabPanel value={currentTab} index={4}>
                                 {usersAwaitingApproval.length > 0 ? (
                                     usersAwaitingApproval.map((user) => (
