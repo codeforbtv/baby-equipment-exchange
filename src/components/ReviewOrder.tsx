@@ -38,6 +38,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
     const [showCancelOrder, setShowCancelOrder] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [dialogContent, setDialogContent] = useState<string>('Donation successfully removed from order');
 
     const fetchOrder = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -55,23 +56,20 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         setIsLoading(true);
         try {
             await removeDonationFromOrder(orderId, donation, resolution);
-            if (currentOrder) {
-                const rejectedDonation = new Donation({
-                    ...donation,
-                    status: resolution.action === 'available' ? 'available' : resolution.action === 'requested' ? 'requested' : 'unavailable',
-                    requestor: resolution.action === 'requested' ? resolution.requestor : null
-                });
-                const updatedOrder: Order = {
-                    ...currentOrder,
-                    items: currentOrder.items.filter((item) => item.id !== donation.id),
-                    rejectedItems: !currentOrder.rejectedItems ? [rejectedDonation] : [...currentOrder.rejectedItems, rejectedDonation]
-                };
-                setCurrentOrder(updatedOrder);
-                if (updatedOrder.items.length === 0) {
-                    setShowCancelOrder(true);
-                } else {
-                    setIsDialogOpen(true);
-                }
+            const updatedOrder = await getOrderById(orderId);
+            setCurrentOrder(updatedOrder);
+            setNotificationsUpdated?.(true);
+            if (updatedOrder.items.length === 0) {
+                setShowCancelOrder(true);
+            } else {
+                setDialogContent(
+                    resolution.action === 'available'
+                        ? 'Donation returned to available inventory.'
+                        : resolution.action === 'requested'
+                          ? `Donation reassigned to ${resolution.requestor.name}.`
+                          : 'Donation marked as unavailable.'
+                );
+                setIsDialogOpen(true);
             }
         } catch (error) {
             addErrorEvent('Error removing donation from order', error);
@@ -94,7 +92,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
             {donationIdToDisplay && currentOrder && (
                 <DonationDetails
                     id={donationIdToDisplay}
-                    donation={currentOrder?.items.find((i) => i.id === donationIdToDisplay)}
+                    donation={[...currentOrder.items, ...(currentOrder.rejectedItems ?? [])].find((i) => i.id === donationIdToDisplay)}
                     setIdToDisplay={setDonationIdToDisplay}
                 />
             )}
@@ -156,14 +154,17 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                     Schedule Pickup
                                 </Button>
                             )}
+<<<<<<< HEAD
                             <Button variant="outlined" color="error" onClick={() => setShowCancelOrder(true)} sx={{ marginLeft: '1rem' }}>
                                 Cancel Order
                             </Button>
+=======
+>>>>>>> 4eef46c (fix: transactional order updates.)
                         </div>
                     )}
                 </>
             )}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content="Donation successfully removed from order" />
+            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content={dialogContent} />
         </ProtectedAdminRoute>
     );
 };
