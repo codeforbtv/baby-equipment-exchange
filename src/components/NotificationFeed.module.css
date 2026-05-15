@@ -136,9 +136,9 @@
 
 .feed-filters {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     padding: 10px 20px;
-    overflow-x: auto;
     flex-shrink: 0;
     border-bottom: 1px solid #f0f0f0;
     -ms-overflow-style: none;
