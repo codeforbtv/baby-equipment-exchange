@@ -7,6 +7,7 @@ import { fetchNotificationFeedData, getDashboardNotifications, getOrganizationNa
 import { getAllDonations, getAllInventory } from '@/api/firebase-donations';
 import { getAllDbUsers } from '@/api/firebase-users';
 import { getAllCategories } from '@/api/firebase-categories';
+import { useUserContext } from '@/contexts/UserContext';
 import Notifications from '@/components/Notifications';
 import Donations from '@/components/Donations';
 import Inventory from '@/components/Inventory';
@@ -43,6 +44,11 @@ async function fetchWithLogging<T>(location: string, fetcher: () => Promise<T>):
         addErrorEvent(location, error);
         throw error;
     }
+}
+
+function useCanFetchNotifications(): boolean {
+    const { currentUser, isAdmin, isLoading } = useUserContext();
+    return Boolean(currentUser && isAdmin && !isLoading);
 }
 
 async function fetchDashboardNotifications() {
@@ -99,13 +105,15 @@ export async function refreshDashboardTab(mutate: (key: string) => Promise<unkno
 }
 
 export function DashboardNotificationFeed({ onNavigate }: { onNavigate: (tabIndex: number, entityId: string) => void }) {
+    const canFetch = useCanFetchNotifications();
+
     const { data: notifications } = useSWR(
-        dashboardDataKeys.notifications,
+        canFetch ? dashboardDataKeys.notifications : null,
         () => fetchWithLogging('Dashboard notification feed notifications', fetchDashboardNotifications),
         swrOptions
     );
     const { data: feedData } = useSWR(
-        dashboardDataKeys.notificationFeed,
+        canFetch ? dashboardDataKeys.notificationFeed : null,
         () => fetchWithLogging('Dashboard notification feed data', () => fetchNotificationFeedData(calendlyTimeRange)),
         swrOptions
     );
@@ -135,13 +143,15 @@ export function DashboardNotificationsTab(props: {
     highlightedEntityId: string | null;
 }) {
     const { activeSubTab, onSubTabChange, highlightedEntityId } = props;
+    const canFetch = useCanFetchNotifications();
+
     const { data: notifications, isLoading: isLoadingNotifications } = useSWR(
-        dashboardDataKeys.notifications,
+        canFetch ? dashboardDataKeys.notifications : null,
         () => fetchWithLogging('Dashboard notifications', fetchDashboardNotifications),
         swrOptions
     );
     const { data: feedData, isLoading: isLoadingFeedData } = useSWR(
-        dashboardDataKeys.notificationFeed,
+        canFetch ? dashboardDataKeys.notificationFeed : null,
         () => fetchWithLogging('Dashboard notification details', () => fetchNotificationFeedData(calendlyTimeRange)),
         swrOptions
     );
@@ -174,11 +184,7 @@ export function DashboardNotificationsTab(props: {
 }
 
 export function DashboardDonationsTab() {
-    const { data: donations, isLoading } = useSWR(
-        dashboardDataKeys.donations,
-        () => fetchWithLogging('Dashboard donations', getAllDonations),
-        swrOptions
-    );
+    const { data: donations, isLoading } = useSWR(dashboardDataKeys.donations, () => fetchWithLogging('Dashboard donations', getAllDonations), swrOptions);
     const onDonationsChanged = useSWRRefreshHandler(donationRefreshKeys);
 
     if (isLoading) return <Loader />;
@@ -188,11 +194,7 @@ export function DashboardDonationsTab() {
 }
 
 export function DashboardInventoryTab() {
-    const { data: inventory, isLoading } = useSWR(
-        dashboardDataKeys.inventory,
-        () => fetchWithLogging('Dashboard inventory', getAllInventory),
-        swrOptions
-    );
+    const { data: inventory, isLoading } = useSWR(dashboardDataKeys.inventory, () => fetchWithLogging('Dashboard inventory', getAllInventory), swrOptions);
     const onInventoryChanged = useSWRRefreshHandler(inventoryRefreshKeys);
 
     if (isLoading) return <Loader />;
@@ -230,11 +232,7 @@ export function DashboardOrganizationsTab() {
 }
 
 export function DashboardCategoriesTab() {
-    const { data: categories, isLoading } = useSWR(
-        dashboardDataKeys.categories,
-        () => fetchWithLogging('Dashboard categories', getAllCategories),
-        swrOptions
-    );
+    const { data: categories, isLoading } = useSWR(dashboardDataKeys.categories, () => fetchWithLogging('Dashboard categories', getAllCategories), swrOptions);
     const onCategoriesChanged = useSWRRefreshHandler(dashboardDataKeys.categories);
 
     if (isLoading) return <Loader />;
