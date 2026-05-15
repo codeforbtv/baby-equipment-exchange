@@ -19,6 +19,20 @@ function daysSince(timestamp: Date): number {
     return Math.floor((Date.now() - timestamp.getTime()) / 86400000);
 }
 
+type DateLike = string | Date | { toDate?: () => Date; toMillis?: () => number } | null | undefined;
+
+function toDateValue(timestamp: DateLike): Date {
+    if (!timestamp) return new Date();
+    if (timestamp instanceof Date) return timestamp;
+    if (typeof timestamp === 'string') {
+        const parsed = new Date(timestamp);
+        return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+    }
+    if (timestamp.toMillis) return new Date(timestamp.toMillis());
+    if (timestamp.toDate) return timestamp.toDate();
+    return new Date();
+}
+
 function getCalendlyStatusForDonation(
     donationId: string,
     pickupStatus: BookingStatusResult | null,
@@ -42,14 +56,15 @@ export async function computeNotificationItems(data: NotificationData): Promise<
     // Pending donations (in processing)
     const pendingDonations = data.donations.filter((d) => d.status === 'in processing');
     for (const donation of pendingDonations) {
-        const age = donation.createdAt ? daysSince(donation.createdAt.toDate()) : 0;
+        const createdAt = toDateValue(donation.createdAt);
+        const age = daysSince(createdAt);
         items.push({
             id: `pending-donation-${donation.id}`,
             type: 'pending-donations',
             priority: 20 - Math.min(age, 10), // Older = more urgent
             title: `${donation.brand} - ${donation.model}`,
             subtitle: `Donated by ${donation.donorName} — awaiting approval`,
-            timestamp: donation.createdAt ? donation.createdAt.toDate() : new Date(),
+            timestamp: createdAt,
             entityId: donation.id,
             entityType: 'donation',
             tab: 'Pending Approval',
@@ -63,7 +78,8 @@ export async function computeNotificationItems(data: NotificationData): Promise<
     for (const donation of pendingDeliveries) {
         const calendlyStatus = getCalendlyStatusForDonation(donation.id, data.pickupBookingStatus, data.dropOffBookingStatus, 'dropoff');
         const basePriority = calendlyStatus === 'unconfirmed' ? 10 : calendlyStatus === 'possible-match' ? 15 : 30;
-        const age = donation.dateAccepted ? daysSince(donation.dateAccepted.toDate()) : 0;
+        const dateAccepted = toDateValue(donation.dateAccepted);
+        const age = daysSince(dateAccepted);
 
         items.push({
             id: `pending-delivery-${donation.id}`,
@@ -71,7 +87,7 @@ export async function computeNotificationItems(data: NotificationData): Promise<
             priority: basePriority - Math.min(age, 5),
             title: `${donation.brand} - ${donation.model}`,
             subtitle: `From ${donation.donorName}${calendlyStatus === 'unconfirmed' ? ' — ⚠ NO booking scheduled' : ''}`,
-            timestamp: donation.dateAccepted ? donation.dateAccepted.toDate() : new Date(),
+            timestamp: dateAccepted,
             entityId: donation.id,
             entityType: 'donation',
             tab: 'Pending Deliveries',
@@ -86,7 +102,8 @@ export async function computeNotificationItems(data: NotificationData): Promise<
     for (const donation of reservedDonations) {
         const calendlyStatus = getCalendlyStatusForDonation(donation.id, data.pickupBookingStatus, data.dropOffBookingStatus, 'pickup');
         const basePriority = calendlyStatus === 'unconfirmed' ? 10 : calendlyStatus === 'possible-match' ? 15 : 30;
-        const age = donation.dateRequested ? daysSince(donation.dateRequested.toDate()) : 0;
+        const dateRequested = toDateValue(donation.dateRequested);
+        const age = daysSince(dateRequested);
 
         items.push({
             id: `reserved-${donation.id}`,
@@ -94,7 +111,7 @@ export async function computeNotificationItems(data: NotificationData): Promise<
             priority: basePriority - Math.min(age, 5),
             title: `${donation.brand} - ${donation.model}`,
             subtitle: `Reserved by ${donation.requestor?.name ?? 'Unknown'}${calendlyStatus === 'unconfirmed' ? ' — ⚠ NO pickup scheduled' : ''}`,
-            timestamp: donation.dateRequested ? donation.dateRequested.toDate() : new Date(),
+            timestamp: dateRequested,
             entityId: donation.id,
             entityType: 'donation',
             tab: 'Reserved',
@@ -106,13 +123,14 @@ export async function computeNotificationItems(data: NotificationData): Promise<
 
     // Requested equipment (orders)
     for (const order of data.orders) {
+        const createdAt = toDateValue(order.createdAt);
         items.push({
             id: `order-${order.id}`,
             type: 'requested-equipment',
             priority: 20,
             title: `${order.requestor.name} — ${order.items.length} items`,
             subtitle: `Equipment request pending review`,
-            timestamp: order.createdAt ? order.createdAt.toDate() : new Date(),
+            timestamp: createdAt,
             entityId: order.id,
             entityType: 'order',
             tab: 'Requested',
@@ -124,7 +142,7 @@ export async function computeNotificationItems(data: NotificationData): Promise<
     // Pending users
     const pendingUsers = data.users.filter((u) => !u.isDeleted);
     for (const user of pendingUsers) {
-        const created = user.createdAt && 'toDate' in user.createdAt ? (user.createdAt as any).toDate() : new Date();
+        const created = toDateValue(user.createdAt as DateLike);
         const age = daysSince(created);
 
         items.push({

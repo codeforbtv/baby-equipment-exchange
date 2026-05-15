@@ -52,13 +52,24 @@ const getRelatedPersonName = (person: RelatedPerson): string => {
     return (person?.name || person?.email || 'Unknown').trim().toLocaleLowerCase();
 };
 
+const toDateValue = (date: DateLike): Date | null => {
+    if (!date) return null;
+    if (date instanceof Date) return date;
+    if (typeof date === 'string') {
+        const parsed = new Date(date);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    if (date.toMillis) return new Date(date.toMillis());
+    if (date.toDate) return date.toDate();
+    return null;
+};
+
 const getDateTime = (date: DateLike): number => {
-    if (!date) return 0;
-    if (date instanceof Date) return date.getTime();
-    if (typeof date === 'string') return new Date(date).getTime() || 0;
-    if (date.toMillis) return date.toMillis();
-    if (date.toDate) return date.toDate().getTime();
-    return 0;
+    return toDateValue(date)?.getTime() ?? 0;
+};
+
+const formatShortDate = (date: DateLike): string => {
+    return toDateValue(date)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) ?? '';
 };
 
 const compareByPersonAndDate = (personA: RelatedPerson, dateA: DateLike, personB: RelatedPerson, dateB: DateLike): number => {
@@ -496,7 +507,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             }}>
                                                                 <Typography variant="caption" color="text.secondary">
                                                                     {`${order.items.length} item${order.items.length !== 1 ? 's' : ''}`}
-                                                                    {order.createdAt && ` - ${order.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                                                                    {order.createdAt && ` - ${formatShortDate(order.createdAt)}`}
                                                                 </Typography>
                                                                 <Button
                                                                     size="small"
