@@ -1,3 +1,3 @@
-export const emailSender: string = 'thebabyproductexchange@gmail.com';
+export const emailSender: string = process.env.EMAIL_SENDER ?? '';
 
-export const emailCc: string = 'wendy@vermontconnector.org, erinegeib@gmail.com';
+export const emailCc: string = process.env.EMAIL_CC ?? '';
