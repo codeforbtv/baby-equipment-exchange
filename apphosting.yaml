@@ -38,5 +38,11 @@ env:
     - variable: CALENDLY_API_KEY
       secret: CALENDLY_API_KEY
 
+    - variable: NEXT_PUBLIC_POSTHOG_KEY
+      secret: NEXT_PUBLIC_POSTHOG_KEY
+      availability:
+          - BUILD
+          - RUNTIME
+
     - variable: GOOGLE_APP_PASSWORD
       secret: GOOGLE_APP_PASSWORD
