@@ -11,8 +11,9 @@ import Loader from './Loader';
 import Notifications from './Notifications';
 import Inventory from './Inventory';
 import Categories from './Categories';
+import NotificationFeed from './NotificationFeed';
 //Hooks
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useRouter } from 'next/navigation';
 //API
@@ -47,7 +48,10 @@ export default function Dashboard() {
         [key: string]: string;
     } | null>(null);
     const [notifications, setNotifications] = useState<Notification | null>(null);
+    const [highlightedEntityId, setHighlightedEntityId] = useState<string | null>(null);
+    const [notificationsSubTab, setNotificationsSubTab] = useState<number>(0);
     const [categories, setCategories] = useState<Category[] | null>(null);
+    const pendingNotificationScrollTop = useRef<number | null>(null);
 
     const { requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
@@ -82,16 +86,37 @@ export default function Dashboard() {
         setCurrentTab(target);
     };
 
+    const handleFeedNavigation = useCallback((tabIndex: number, entityId: string) => {
+        setCurrentTab(0);
+        setNotificationsSubTab(tabIndex);
+        setHighlightedEntityId(entityId);
+        window.setTimeout(() => setHighlightedEntityId(null), 5000);
+    }, []);
+
+    const setNotificationsUpdatedAndPreserveScroll: React.Dispatch<React.SetStateAction<boolean>> = (value) => {
+        const updated = typeof value === 'function' ? value(notificationsUpdated) : value;
+        if (updated && typeof window !== 'undefined') {
+            pendingNotificationScrollTop.current = window.scrollY;
+        }
+        setNotificationsUpdated(updated);
+    };
+
     async function fetchNotifications(showLoader = false): Promise<void> {
-        if (showLoader || !notifications) setIsLoading(true);
+        const shouldBlockContent = showLoader || !notifications;
+        if (shouldBlockContent) setIsLoading(true);
         try {
             const notificationsResult = await getNotifications();
             setNotifications(notificationsResult);
             setNotificationsUpdated(false);
+            if (pendingNotificationScrollTop.current !== null) {
+                const scrollTop = pendingNotificationScrollTop.current;
+                pendingNotificationScrollTop.current = null;
+                requestAnimationFrame(() => window.scrollTo({ top: scrollTop }));
+            }
         } catch (error) {
             addErrorEvent('Fetch notifications', error);
         } finally {
-            setIsLoading(false);
+            if (shouldBlockContent) setIsLoading(false);
         }
     }
 
@@ -215,7 +240,8 @@ export default function Dashboard() {
                         </Menu>
                     </>
                 )}
-                <IconButton onClick={handleRefresh} size="small" sx={{ ml: 'auto' }}>
+                <NotificationFeed notifications={notifications} onNavigate={handleFeedNavigation} />
+                <IconButton onClick={handleRefresh} size="small" sx={{ ml: 0.5 }}>
                     <RefreshIcon fontSize="small" />
                 </IconButton>
             </div>
@@ -226,7 +252,13 @@ export default function Dashboard() {
 
                     <CustomTabPanel value={currentTab} index={0}>
                         {notifications ? (
-                            <Notifications notifications={notifications} setNotificationsUpdated={setNotificationsUpdated} />
+                            <Notifications
+                                notifications={notifications}
+                                setNotificationsUpdated={setNotificationsUpdatedAndPreserveScroll}
+                                activeSubTab={notificationsSubTab}
+                                onSubTabChange={setNotificationsSubTab}
+                                highlightedEntityId={highlightedEntityId}
+                            />
                         ) : (
                             <p>No notifications at this time.</p>
                         )}

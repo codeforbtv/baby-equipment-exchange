@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import Link from 'next/link';
@@ -45,19 +45,30 @@ type NotificationCardProps = {
     order?: Order;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    isHighlighted?: boolean;
 };
 
 //TO-DO: Set up buttons
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated } = props;
+    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated, isHighlighted } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogTitle, setDialogTitle] = useState<string>('');
     const [dialogContent, setDialogContent] = useState<string>('');
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const highlightedSx = isHighlighted
+        ? { boxShadow: '0 0 0 2px #ffc107, 0 4px 16px rgba(255, 193, 7, 0.25)', transition: 'box-shadow 0.4s ease' }
+        : undefined;
 
     const router = useRouter();
+
+    useEffect(() => {
+        if (isHighlighted) {
+            cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, [isHighlighted]);
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -158,7 +169,7 @@ const NotificationCard = (props: NotificationCardProps) => {
     return (
         <ProtectedAdminRoute>
             {type === 'pending-donation' && donation && (
-                <Card className={styles['notification-card']} variant="outlined">
+                <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
                     <div className={styles['notification-card--group']}>
                         <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
                             <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
@@ -181,7 +192,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card className={styles['notification-card']} variant="outlined">
+                        <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
                             <div className={styles['notification-card--group']}>
                                 <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
                                     <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
@@ -220,7 +231,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card className={styles['notification-card']} variant="outlined">
+                        <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
                             <div className={styles['notification-card--group']}>
                                 <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
                                     <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
@@ -257,7 +268,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                 </>
             )}
             {type === 'order' && donation && (
-                <Card className={styles['notification-card']} variant="outlined">
+                <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
                     <div className={styles['notification-card--group']}>
                         <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
                             <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
@@ -281,7 +292,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <Loader />
                     ) : (
                         <>
-                            <Card className={styles['notification-card']} variant="outlined">
+                            <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
                                 <CardActions onClick={() => setIdToDisplay(user.uid)} sx={{ width: '100%' }}>
                                     <CardContent className={styles['notification-card--info']}>
                                         <Typography variant="h5">{user.displayName}</Typography>
