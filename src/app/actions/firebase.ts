@@ -69,20 +69,6 @@ function serializeFirestoreData<T>(value: T): T {
     return value;
 }
 
-function serializeFirestoreData<T>(value: T): T {
-    if (value == null) return value;
-    if (typeof value === 'object' && 'toDate' in value && typeof value.toDate === 'function') {
-        return value.toDate().toISOString() as T;
-    }
-    if (Array.isArray(value)) {
-        return value.map((item) => serializeFirestoreData(item)) as T;
-    }
-    if (typeof value === 'object') {
-        return Object.fromEntries(Object.entries(value).map(([key, nestedValue]) => [key, serializeFirestoreData(nestedValue)])) as T;
-    }
-    return value;
-}
-
 export async function addEvent(request: EventRequest): Promise<void> {
     try {
         const currentTime = new Date().toDateString();
@@ -135,20 +121,6 @@ async function getNotificationDonations(): Promise<Donation[]> {
 async function getNotificationUsers(): Promise<IUser[]> {
     const snapshot = await db.collection(USERS_COLLECTION).where('isDisabled', '==', true).get();
     return snapshot.docs.map((doc) => ({ uid: doc.id, ...doc.data() }) as IUser);
-}
-
-export async function getUserDetails(request: { idToken: string; userId: string }): Promise<IUser> {
-    try {
-        await _verifyAdminToken(request.idToken);
-        const userSnapshot = await db.collection(USERS_COLLECTION).doc(request.userId).get();
-        if (!userSnapshot.exists) {
-            throw new Error('User not found');
-        }
-        return serializeFirestoreData({ uid: userSnapshot.id, ...userSnapshot.data() } as IUser);
-    } catch (error) {
-        addErrorEvent('getUserDetails', error);
-        throw error;
-    }
 }
 
 async function getNotificationOrders(): Promise<Order[]> {

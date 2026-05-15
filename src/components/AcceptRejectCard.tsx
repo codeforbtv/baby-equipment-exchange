@@ -48,7 +48,7 @@ const AcceptRejectCard = (props: AcceptRejectCardProps) => {
     const validCategoryNames = categories?.map((c) => c.getName()) || [];
     const hasInvalidCategory = categories && categories.length > 0 && !validCategoryNames.includes(donation.category);
 
-    const handleToggle = (event: React.MouseEvent<HTMLElement>, value: ButtonStatus) => {
+    const handleToggle = (_event: React.MouseEvent<HTMLElement>, value: ButtonStatus) => {
         setStatus(value);
     };
 
@@ -65,7 +65,7 @@ const AcceptRejectCard = (props: AcceptRejectCardProps) => {
 
     useEffect(() => {
         handleAcceptReject(status, donation.id);
-    }, [status]);
+    }, [donation.id, handleAcceptReject, status]);
 
     return (
         <ProtectedAdminRoute>

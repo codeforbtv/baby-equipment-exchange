@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 //Components
-import { Badge, IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
@@ -206,7 +206,19 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
         return itemsMatchingFilter.filter((item) => searchableItems.get(item.id)?.includes(normalizedSearchInput));
     }, [items, activeFilter, normalizedSearchInput, searchableItems]);
 
-    const badgeCount = items.length;
+    const notificationCount = items.length;
+    const filterCounts = useMemo<Record<NotificationFilterType, number>>(
+        () => ({
+            all: items.length,
+            'pending-deliveries': items.filter((item) => item.type === 'pending-deliveries').length,
+            'pending-donations': items.filter((item) => item.type === 'pending-donations').length,
+            'pending-users': items.filter((item) => item.type === 'pending-users').length,
+            'requested-equipment': items.filter((item) => item.type === 'requested-equipment').length,
+            reserved: items.filter((item) => item.type === 'reserved').length,
+            'unconfirmed-bookings': items.filter((item) => item.calendlyStatus === 'unconfirmed' || item.calendlyStatus === 'possible-match').length
+        }),
+        [items]
+    );
 
     const handleOpen = useCallback(() => {
         setIsOpen(true);
@@ -240,23 +252,18 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
 
     return (
         <>
-            {/* Bell Icon with Badge */}
+            {/* Notification feed button */}
             <Tooltip title="Notifications">
-                <IconButton onClick={handleOpen} size="small" sx={{ color: '#666' }} id="notification-feed-icon" aria-label="Open notifications feed">
-                    <Badge
-                        badgeContent={badgeCount}
-                        color="error"
-                        max={99}
-                        sx={{
-                            '& .MuiBadge-badge': {
-                                fontSize: '0.65rem',
-                                height: 18,
-                                minWidth: 18
-                            }
-                        }}
-                    >
-                        <NotificationsIcon fontSize="small" />
-                    </Badge>
+                <IconButton
+                    className={styles['feed-trigger']}
+                    onClick={handleOpen}
+                    size="small"
+                    sx={{ color: '#666' }}
+                    id="notification-feed-icon"
+                    aria-label={`Open notifications feed, ${notificationCount} notifications`}
+                >
+                    <NotificationsIcon fontSize="small" />
+                    <span className={styles['feed-trigger-count']}>{notificationCount}</span>
                 </IconButton>
             </Tooltip>
 
@@ -313,7 +320,7 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                                 )}
                             </div>
 
-                            {/* Filter Chips */}
+                            {/* Filters */}
                             <div className={styles['feed-filters']}>
                                 {FILTERS.map((f) => (
                                     <button
@@ -321,7 +328,8 @@ export default function NotificationFeed({ items, onNavigate, notificationData }
                                         className={`${styles['feed-chip']} ${activeFilter === f.key ? styles['feed-chip--active'] : ''}`}
                                         onClick={() => setActiveFilter(f.key)}
                                     >
-                                        {f.label}
+                                        <span>{f.label}</span>
+                                        <span className={styles['feed-chip-count']}>{filterCounts[f.key]}</span>
                                     </button>
                                 ))}
                             </div>

@@ -119,7 +119,20 @@
     color: #333;
 }
 
-/* Filter Chips */
+.feed-trigger {
+    gap: 4px;
+    border-radius: 8px;
+}
+
+.feed-trigger-count {
+    min-width: 1.25rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1;
+    color: #555;
+}
+
+/* Filters */
 
 .feed-filters {
     display: flex;
@@ -137,9 +150,12 @@
 }
 
 .feed-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     white-space: nowrap;
     padding: 4px 12px;
-    border-radius: 20px;
+    border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
@@ -148,6 +164,13 @@
     color: #666;
     transition: all 0.15s ease;
     user-select: none;
+}
+
+.feed-chip-count {
+    color: inherit;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    opacity: 0.72;
 }
 
 .feed-chip:hover {
@@ -376,12 +399,6 @@
 .feed-expand-btn:hover {
     background: #f5f5f5;
     border-color: #ccc;
-}
-
-/* Badge */
-
-.notification-badge {
-    position: relative;
 }
 
 /* Responsivity */
