@@ -21,6 +21,7 @@ import '@/styles/globalStyles.css';
 //Types
 import { Order } from '@/types/OrdersTypes';
 import { Donation } from '@/models/donation';
+import type { OrderItemRejectionResolution } from '@/api/firebase-donations';
 
 type ReviewOrderProps = {
     id: string;
@@ -50,15 +51,20 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         }
     };
 
-    const handleRemoveFromOrder = async (orderId: string, donation: Donation): Promise<void> => {
+    const handleRemoveFromOrder = async (orderId: string, donation: Donation, resolution: OrderItemRejectionResolution): Promise<void> => {
         setIsLoading(true);
         try {
-            await removeDonationFromOrder(orderId, donation);
+            await removeDonationFromOrder(orderId, donation, resolution);
             if (currentOrder) {
+                const rejectedDonation = new Donation({
+                    ...donation,
+                    status: resolution.action === 'available' ? 'available' : resolution.action === 'requested' ? 'requested' : 'unavailable',
+                    requestor: resolution.action === 'requested' ? resolution.requestor : null
+                });
                 const updatedOrder: Order = {
                     ...currentOrder,
                     items: currentOrder.items.filter((item) => item.id !== donation.id),
-                    rejectedItems: !currentOrder.rejectedItems ? [donation] : [...currentOrder.rejectedItems, donation]
+                    rejectedItems: !currentOrder.rejectedItems ? [rejectedDonation] : [...currentOrder.rejectedItems, rejectedDonation]
                 };
                 setCurrentOrder(updatedOrder);
                 if (updatedOrder.items.length === 0) {

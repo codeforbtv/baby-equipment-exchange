@@ -39,6 +39,11 @@ export const DONATIONS_COLLECTION = 'Donations';
 export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
 export const ORDERS_COLLECTION = 'Orders';
 
+export type OrderItemRejectionResolution =
+    | { action: 'available' }
+    | { action: 'unavailable' }
+    | { action: 'requested'; requestor: { id: string; name: string; email: string } };
+
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
         const donationData: IDonation = {
@@ -580,8 +585,12 @@ export async function closeOrder(id: string): Promise<void> {
     }
 }
 
-//Removes rejected donation from order, add to rejectedItems array, and changes status to 'unavailable'.
-export async function removeDonationFromOrder(orderId: string, donation: Donation): Promise<void> {
+//Removes rejected donation from order, adds it to rejectedItems, and applies the selected next step.
+export async function removeDonationFromOrder(
+    orderId: string,
+    donation: Donation,
+    resolution: OrderItemRejectionResolution = { action: 'unavailable' }
+): Promise<void> {
     try {
         const batch = writeBatch(db);
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${orderId}`);
@@ -591,11 +600,38 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
             rejectedItems: arrayUnion(donationRef),
             modifiedAt: serverTimestamp()
         });
-        batch.update(donationRef, {
-            status: 'unavailable',
-            requestor: null,
-            modifiedAt: serverTimestamp()
-        });
+
+        if (resolution.action === 'available') {
+            batch.update(donationRef, {
+                status: 'available',
+                requestor: null,
+                dateRequested: null,
+                modifiedAt: serverTimestamp()
+            });
+        } else if (resolution.action === 'requested') {
+            const reassignedOrderRef = doc(collection(db, ORDERS_COLLECTION));
+            batch.set(reassignedOrderRef, {
+                status: 'open',
+                requestor: resolution.requestor,
+                items: [donationRef],
+                rejectedItems: [],
+                createdAt: serverTimestamp(),
+                modifiedAt: serverTimestamp()
+            });
+            batch.update(donationRef, {
+                status: 'requested',
+                requestor: resolution.requestor,
+                dateRequested: serverTimestamp(),
+                modifiedAt: serverTimestamp()
+            });
+        } else {
+            batch.update(donationRef, {
+                status: 'unavailable',
+                requestor: null,
+                modifiedAt: serverTimestamp()
+            });
+        }
+
         await batch.commit();
 
         const updatedOrder = await getDoc(orderRef);
@@ -605,6 +641,7 @@ export async function removeDonationFromOrder(orderId: string, donation: Donatio
         }
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);
+        throw error;
     }
 }
 
