@@ -39,18 +39,18 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     type ButtonStatus = 'accepted' | 'rejected' | null;
 
     const handleAcceptReject = (value: ButtonStatus, id: string): void => {
-        if (value === 'accepted' && !accepted.includes(id)) {
-            setAccepted([...accepted, id]);
-            setRejected(rejected.filter((item) => item !== id));
+        if (value === 'accepted') {
+            setAccepted((current) => (current.includes(id) ? current : [...current, id]));
+            setRejected((current) => current.filter((item) => item !== id));
             posthog.capture('donation_reviewed', { decision: 'accepted', donation_id: id });
-        } else if (value === 'rejected' && !rejected.includes(id)) {
-            setRejected([...rejected, id]);
-            setAccepted(accepted.filter((item) => item !== id));
+        } else if (value === 'rejected') {
+            setRejected((current) => (current.includes(id) ? current : [...current, id]));
+            setAccepted((current) => current.filter((item) => item !== id));
             posthog.capture('donation_reviewed', { decision: 'rejected', donation_id: id });
         } else if (!value) {
             //if deselected remove from both
-            setAccepted(accepted.filter((item) => item !== id));
-            setRejected(rejected.filter((item) => item !== id));
+            setAccepted((current) => current.filter((item) => item !== id));
+            setRejected((current) => current.filter((item) => item !== id));
         }
     };
 

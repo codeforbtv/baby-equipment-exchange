@@ -19,7 +19,7 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Donation } from '@/models/donation';
 import { Category } from '@/models/category';
 import { updateDonation } from '@/api/firebase-donations';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 
 import '@/styles/globalStyles.css';
 
@@ -50,6 +50,7 @@ const AcceptRejectCard = (props: AcceptRejectCardProps) => {
 
     const handleToggle = (_event: React.MouseEvent<HTMLElement>, value: ButtonStatus) => {
         setStatus(value);
+        handleAcceptReject(value, donation.id);
     };
 
     const handleFixCategory = async () => {
@@ -62,10 +63,6 @@ const AcceptRejectCard = (props: AcceptRejectCardProps) => {
             setIsSaving(false);
         }
     };
-
-    useEffect(() => {
-        handleAcceptReject(status, donation.id);
-    }, [donation.id, handleAcceptReject, status]);
 
     return (
         <ProtectedAdminRoute>
