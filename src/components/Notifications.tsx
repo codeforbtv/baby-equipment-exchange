@@ -143,6 +143,7 @@ const Notifications = (props: NotificationsProps) => {
     const [localSubTab, setLocalSubTab] = useState<number>(0);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const panelStartRef = useRef<HTMLDivElement>(null);
+    const requestedGroupRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const sectionScrollPositions = useRef<Record<number, number>>({});
     const pendingRestoreTab = useRef<number | null>(null);
     const wasShowingDetails = useRef(false);
@@ -160,6 +161,11 @@ const Notifications = (props: NotificationsProps) => {
         .filter((order) => order.items.length > 0)
         .sort((a, b) => compareByPersonAndDate(a.requestor, a.createdAt, b.requestor, b.createdAt));
     const requestorGroups = groupByRequestor(orders);
+    const highlightedRequestorGroupId = highlightedEntityId
+        ? requestorGroups.find((group) =>
+              group.orders.some((order) => order.id === highlightedEntityId || order.items.some((item) => item.id === highlightedEntityId))
+          )?.requestorId
+        : null;
     const usersAwaitingApproval = notifications.users
         .filter((user) => !user.isDeleted)
         .sort((a, b) => compareByPersonAndDate({ name: a.displayName, email: a.email }, a.createdAt as DateLike, { name: b.displayName, email: b.email }, b.createdAt as DateLike));
@@ -247,6 +253,20 @@ const Notifications = (props: NotificationsProps) => {
 
         wasShowingDetails.current = isShowingDetails;
     }, [currentTab, isShowingDetails, scrollToPanelStart]);
+
+    useEffect(() => {
+        if (currentTab !== 2 || !highlightedRequestorGroupId) return;
+
+        const groupElement = requestedGroupRefs.current[highlightedRequestorGroupId];
+        if (!groupElement) return;
+
+        const frameId = window.requestAnimationFrame(() => {
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            groupElement.scrollIntoView({ block: 'start', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+        });
+
+        return () => window.cancelAnimationFrame(frameId);
+    }, [currentTab, highlightedRequestorGroupId]);
 
     const donorHeader = (name: string, count: number) => (
         <Typography variant="body2" fontWeight={600}>
@@ -458,7 +478,14 @@ const Notifications = (props: NotificationsProps) => {
                             <CustomTabPanel value={currentTab} index={2}>
                                 {requestorGroups.length > 0 ? (
                                     requestorGroups.map((group) => (
-                                        <Paper key={group.requestorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                        <Paper
+                                            key={group.requestorId}
+                                            ref={(node) => {
+                                                requestedGroupRefs.current[group.requestorId] = node;
+                                            }}
+                                            variant="outlined"
+                                            sx={{ mb: 2, overflow: 'hidden', scrollMarginTop: 'calc(4.5rem + 48px + 44px + 16px)' }}
+                                        >
                                             {group.orders.length === 1 ? (
                                                 <>
                                                     <Box sx={{
@@ -482,6 +509,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             setIdToDisplay={setDonationIdToDisplayWithScroll}
                                                             onNotificationsChanged={onNotificationsChanged}
                                                             isHighlighted={highlightedEntityId === group.orders[0].id || highlightedEntityId === item.id}
+                                                            suppressAutoScroll
                                                         />
                                                     ))}
                                                 </>
@@ -525,6 +553,7 @@ const Notifications = (props: NotificationsProps) => {
                                                                     setIdToDisplay={setDonationIdToDisplayWithScroll}
                                                                     onNotificationsChanged={onNotificationsChanged}
                                                                     isHighlighted={highlightedEntityId === order.id || highlightedEntityId === item.id}
+                                                                    suppressAutoScroll
                                                                 />
                                                             ))}
                                                         </Box>

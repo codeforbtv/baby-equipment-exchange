@@ -47,6 +47,7 @@ type NotificationCardProps = {
     onNotificationsChanged?: () => void;
     calendlyStatus?: BookingMatchConfidence;
     isHighlighted?: boolean;
+    suppressAutoScroll?: boolean;
 };
 
 const CalendlyStatusChip = ({ status }: { status?: BookingMatchConfidence }) => {
@@ -91,7 +92,7 @@ function formatDisplayDate(date: DisplayDate): string {
 }
 
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, setIdToDisplay, onNotificationsChanged, calendlyStatus, isHighlighted } = props;
+    const { type, donation, user, setIdToDisplay, onNotificationsChanged, calendlyStatus, isHighlighted, suppressAutoScroll } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -102,14 +103,14 @@ const NotificationCard = (props: NotificationCardProps) => {
     const highlightedSx = isHighlighted ? { boxShadow: '0 0 0 2px #ffc107, 0 4px 16px rgba(255, 193, 7, 0.25)', transition: 'box-shadow 0.4s ease' } : undefined;
 
     useEffect(() => {
-        if (isHighlighted && cardRef.current) {
+        if (isHighlighted && !suppressAutoScroll && cardRef.current) {
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             cardRef.current.scrollIntoView({
                 block: 'start',
                 behavior: prefersReducedMotion ? 'auto' : 'smooth'
             });
         }
-    }, [isHighlighted]);
+    }, [isHighlighted, suppressAutoScroll]);
 
     const handleClose = () => {
         setIsDialogOpen(false);
