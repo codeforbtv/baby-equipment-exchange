@@ -37,19 +37,25 @@ env:
 
     - variable: CALENDLY_API_KEY
       secret: CALENDLY_API_KEY
-
+      availability:
+          - BUILD
+          - RUNTIME
+          
     - variable: GOOGLE_APP_PASSWORD
       secret: GOOGLE_APP_PASSWORD
-
-    - variable: ALGOLIA_API_KEY
-      secret: ALGOLIA_API_KEY
+      availability:
+          - BUILD
+          - RUNTIME
 
     - variable: EMAIL_SENDER
       secret: EMAIL_SENDER
       availability:
-        - RUNTIME
+          - BUILD
+          - RUNTIME
 
     - variable: EMAIL_CC
       secret: EMAIL_CC
       availability:
-        - RUNTIME
+          - BUILD
+          - RUNTIME
+
