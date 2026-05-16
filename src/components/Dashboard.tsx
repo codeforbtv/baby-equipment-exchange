@@ -52,6 +52,7 @@ export default function Dashboard() {
     const [notificationsSubTab, setNotificationsSubTab] = useState<number>(0);
     const [categories, setCategories] = useState<Category[] | null>(null);
     const pendingNotificationScrollTop = useRef<number | null>(null);
+    const highlightTimer = useRef<ReturnType<typeof setTimeout>>();
 
     const { requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
@@ -87,10 +88,11 @@ export default function Dashboard() {
     };
 
     const handleFeedNavigation = useCallback((tabIndex: number, entityId: string) => {
+        clearTimeout(highlightTimer.current);
         setCurrentTab(0);
         setNotificationsSubTab(tabIndex);
         setHighlightedEntityId(entityId);
-        window.setTimeout(() => setHighlightedEntityId(null), 5000);
+        highlightTimer.current = setTimeout(() => setHighlightedEntityId(null), 5000);
     }, []);
 
     const setNotificationsUpdatedAndPreserveScroll: React.Dispatch<React.SetStateAction<boolean>> = (value) => {
