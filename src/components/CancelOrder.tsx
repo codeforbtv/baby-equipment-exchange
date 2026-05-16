@@ -53,8 +53,8 @@ const CancelOrder = (props: CancelOrderProps) => {
 
         try {
             const idToken = await getAuthIdToken();
-            await cancelOrderAndReturnItems(order);
             await sendCancelOrderSchedulingEmail({ idToken, orderId: order.id, eventTypeUri: inviteUrl || undefined, notes });
+            await cancelOrderAndReturnItems(order);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting order cancellation email', error);

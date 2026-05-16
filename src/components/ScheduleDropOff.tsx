@@ -122,6 +122,13 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
             const idToken = await getAuthIdToken();
             const schedulingUrl = events?.find((event) => event.uri === inviteUrl)?.scheduling_url;
+            await sendDropOffSchedulingEmail({
+                idToken,
+                acceptedDonationIds: acceptedDonations?.map((donation) => donation.id) ?? [],
+                rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
+                eventTypeUri: inviteUrl || undefined,
+                notes
+            });
             await updateDropOffDonationStatuses({
                 acceptedDonations:
                     acceptedDonations?.map((donation) => ({
@@ -130,13 +137,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     })) ?? [],
                 rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
                 schedulingLink: schedulingUrl
-            });
-            await sendDropOffSchedulingEmail({
-                idToken,
-                acceptedDonationIds: acceptedDonations?.map((donation) => donation.id) ?? [],
-                rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
-                eventTypeUri: inviteUrl || undefined,
-                notes
             });
             posthog.capture('dropoff_scheduled', {
                 accepted_count: acceptedDonations?.length ?? 0,

@@ -53,8 +53,8 @@ const SchedulePickup = (props: SchedulePickupProps) => {
         try {
             const idToken = await getAuthIdToken();
             const schedulingUrl = events?.find((event) => event.uri === inviteUrl)?.scheduling_url;
-            await schedulePickupForOrder(order, schedulingUrl);
             await sendPickupSchedulingEmail({ idToken, orderId: id, eventTypeUri: inviteUrl || undefined, notes });
+            await schedulePickupForOrder(order, schedulingUrl);
             posthog.capture('pickup_scheduled', {
                 order_id: id,
                 item_count: items.length
