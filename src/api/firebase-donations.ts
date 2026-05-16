@@ -452,8 +452,9 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
         return unavailableDonations;
     } catch (error) {
         addErrorEvent('Admin are donations available', error);
+        throw error;
     }
-    return Promise.reject();
+    return [];
 }
 
 export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<Order> {

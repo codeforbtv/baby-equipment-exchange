@@ -4,7 +4,6 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 //Components
 import {
-    Alert,
     Autocomplete,
     Box,
     Button,
@@ -25,7 +24,7 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import RemoveShoppingCartIcon from '@mui/icons-material/RemoveShoppingCart';
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import BlockIcon from '@mui/icons-material/Block';
 //Api
 import { addErrorEvent } from '@/api/firebase';
 import { getAllActiveDbUsers } from '@/api/firebase-users';
@@ -48,30 +47,26 @@ type RejectionAction = OrderItemRejectionResolution['action'];
 const rejectionOptions: {
     action: RejectionAction;
     label: string;
-    helper: string;
+    description: string;
     icon: JSX.Element;
-    color: 'success' | 'primary' | 'error';
 }[] = [
     {
         action: 'available',
         label: 'Return to inventory',
-        helper: 'Status: available',
-        icon: <Inventory2Icon />,
-        color: 'success'
+        description: 'Item becomes available for other requests',
+        icon: <Inventory2Icon fontSize="small" />
     },
     {
         action: 'requested',
-        label: 'Reserve for a different user',
-        helper: 'Status: requested',
-        icon: <PersonAddAlt1Icon />,
-        color: 'primary'
+        label: 'Reserve for someone else',
+        description: 'Reassign this item to a different user',
+        icon: <PersonAddAlt1Icon fontSize="small" />
     },
     {
         action: 'unavailable',
         label: 'Mark as unavailable',
-        helper: 'Status: unavailable',
-        icon: <ReportProblemIcon />,
-        color: 'error'
+        description: 'Remove item from circulation',
+        icon: <BlockIcon fontSize="small" />
     }
 ];
 
@@ -164,71 +159,83 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                     maxWidth="sm"
                 >
                     <DialogTitle id="dialog-title">Reject Item</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="dialog-description" sx={{ mb: 2 }}>
-                            Choose what should happen to {donation.brand} - {donation.model}.
+                    <DialogContent sx={{ pb: 1, overflowX: 'hidden' }}>
+                        <DialogContentText id="dialog-description" sx={{ mb: 2.5 }}>
+                            What should happen to <strong>{donation.brand} &ndash; {donation.model}</strong>?
                         </DialogContentText>
-                        <Alert
-                            severity="info"
-                            sx={{
-                                width: '100%',
-                                border: '1px solid',
-                                borderColor: 'info.light',
-                                backgroundColor: 'rgba(2, 136, 209, 0.08)'
-                            }}
-                        >
-                            <Typography variant="body2" fontWeight="bold" gutterBottom>
-                                Rejection reason
-                            </Typography>
-                            <Box sx={{ display: 'grid', gap: 1, mt: 1 }}>
-                                {rejectionOptions.map((option) => (
-                                    <Button
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            {rejectionOptions.map((option) => {
+                                const selected = rejectionAction === option.action;
+                                return (
+                                    <Box
                                         key={option.action}
-                                        variant={rejectionAction === option.action ? 'contained' : 'outlined'}
-                                        color={option.color}
-                                        startIcon={option.icon}
                                         onClick={() => {
                                             setRejectionAction(option.action);
                                             if (option.action !== 'requested') setSelectedUser(null);
                                         }}
-                                        sx={{ justifyContent: 'flex-start', textAlign: 'left' }}
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1.5,
+                                            p: 1.5,
+                                            borderRadius: 1,
+                                            border: '2px solid',
+                                            borderColor: selected ? 'primary.main' : 'divider',
+                                            backgroundColor: selected ? 'primary.50' : 'transparent',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.15s ease',
+                                            '&:hover': {
+                                                borderColor: selected ? 'primary.main' : 'action.hover',
+                                                backgroundColor: selected ? 'primary.50' : 'action.hover'
+                                            }
+                                        }}
                                     >
-                                        <Box>
-                                            <Typography variant="body2" fontWeight="bold">
+                                        <Box sx={{ color: selected ? 'primary.main' : 'text.secondary', display: 'flex' }}>
+                                            {option.icon}
+                                        </Box>
+                                        <Box sx={{ minWidth: 0 }}>
+                                            <Typography variant="body2" fontWeight={selected ? 600 : 500}>
                                                 {option.label}
                                             </Typography>
-                                            <Typography variant="caption">{option.helper}</Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {option.description}
+                                            </Typography>
                                         </Box>
-                                    </Button>
-                                ))}
-                            </Box>
-                            {rejectionAction === 'requested' && (
-                                <Autocomplete
-                                    sx={{ mt: 2, backgroundColor: 'background.paper' }}
-                                    value={selectedUser}
-                                    loading={isLoadingUsers}
-                                    onChange={(_event: any, newValue: IUser | null) => setSelectedUser(newValue)}
-                                    id={`reassign-requestor-${donation.id}`}
-                                    options={availableUsers}
-                                    getOptionLabel={(user) => `${user.displayName} (${user.email})`}
-                                    isOptionEqualToValue={(option, value) => option.uid === value.uid}
-                                    renderInput={(params) => <TextField {...params} label="New requestor" />}
-                                />
-                            )}
-                        </Alert>
-                        <DialogActions>
-                            <Button
-                                variant="contained"
-                                onClick={() => handleRemove(orderId, donation)}
-                                disabled={isSubmitting || (rejectionAction === 'requested' && !selectedUser)}
-                            >
-                                {isSubmitting ? 'Saving...' : 'Confirm'}
-                            </Button>
-                            <Button variant="outlined" onClick={() => setShowRemoveDialog(false)}>
-                                Cancel
-                            </Button>
-                        </DialogActions>
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                        {rejectionAction === 'requested' && (
+                            <Autocomplete
+                                sx={{ mt: 2 }}
+                                value={selectedUser}
+                                loading={isLoadingUsers}
+                                onChange={(_event: any, newValue: IUser | null) => setSelectedUser(newValue)}
+                                id={`reassign-requestor-${donation.id}`}
+                                options={availableUsers}
+                                getOptionLabel={(user) => `${user.displayName} (${user.email})`}
+                                isOptionEqualToValue={(option, value) => option.uid === value.uid}
+                                renderInput={(params) => <TextField {...params} label="Select user" size="small" />}
+                            />
+                        )}
                     </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 2 }}>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setShowRemoveDialog(false)}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={() => handleRemove(orderId, donation)}
+                            disabled={isSubmitting || (rejectionAction === 'requested' && !selectedUser)}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            {isSubmitting ? 'Saving…' : 'Confirm rejection'}
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             )}
         </ProtectedAdminRoute>

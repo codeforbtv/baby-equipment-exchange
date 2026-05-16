@@ -25,7 +25,6 @@ import type { OrderItemRejectionResolution } from '@/api/firebase-donations';
 
 type ReviewOrderProps = {
     id: string;
-    order?: Order;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
@@ -73,6 +72,8 @@ const ReviewOrder = (props: ReviewOrderProps) => {
             }
         } catch (error) {
             addErrorEvent('Error removing donation from order', error);
+            setDialogContent('Something went wrong. Please try again.');
+            setIsDialogOpen(true);
         } finally {
             setIsLoading(false);
         }
@@ -85,6 +86,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
 
     useEffect(() => {
         fetchOrder(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     return (
@@ -154,12 +156,9 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                     Schedule Pickup
                                 </Button>
                             )}
-<<<<<<< HEAD
                             <Button variant="outlined" color="error" onClick={() => setShowCancelOrder(true)} sx={{ marginLeft: '1rem' }}>
                                 Cancel Order
                             </Button>
-=======
->>>>>>> 4eef46c (fix: transactional order updates.)
                         </div>
                     )}
                 </>
