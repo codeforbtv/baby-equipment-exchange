@@ -13,6 +13,7 @@ import {
     getDocs,
     query,
     or,
+    runTransaction,
     serverTimestamp,
     updateDoc,
     where,
@@ -38,6 +39,11 @@ import { ORGANIZATIONS_COLLECTION } from './firebase-organizations';
 export const DONATIONS_COLLECTION = 'Donations';
 export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
 export const ORDERS_COLLECTION = 'Orders';
+
+export type OrderItemRejectionResolution =
+    | { action: 'available' }
+    | { action: 'unavailable' }
+    | { action: 'requested'; requestor: { id: string; name: string; email: string } };
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -446,8 +452,9 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
         return unavailableDonations;
     } catch (error) {
         addErrorEvent('Admin are donations available', error);
+        throw error;
     }
-    return Promise.reject();
+    return [];
 }
 
 export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<Order> {
@@ -580,31 +587,93 @@ export async function closeOrder(id: string): Promise<void> {
     }
 }
 
-//Removes rejected donation from order, add to rejectedItems array, and changes status to 'unavailable'.
-export async function removeDonationFromOrder(orderId: string, donation: Donation): Promise<void> {
+//Removes rejected donation from order, adds it to rejectedItems, and applies the selected next step.
+export async function removeDonationFromOrder(
+    orderId: string,
+    donation: Donation,
+    resolution: OrderItemRejectionResolution = { action: 'unavailable' }
+): Promise<void> {
     try {
-        const batch = writeBatch(db);
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${orderId}`);
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
-        batch.update(orderRef, {
-            items: arrayRemove(donationRef),
-            rejectedItems: arrayUnion(donationRef),
-            modifiedAt: serverTimestamp()
-        });
-        batch.update(donationRef, {
-            status: 'unavailable',
-            requestor: null,
-            modifiedAt: serverTimestamp()
-        });
-        await batch.commit();
+        const reassignedOrderRef = resolution.action === 'requested' ? doc(collection(db, ORDERS_COLLECTION)) : null;
 
-        const updatedOrder = await getDoc(orderRef);
-        const orderData = updatedOrder.data();
-        if (orderData && orderData.items.length === 0 && orderData.rejectedItems?.length > 0) {
-            await closeOrder(orderId);
-        }
+        await runTransaction(db, async (transaction) => {
+            const orderSnapshot = await transaction.get(orderRef);
+            if (!orderSnapshot.exists()) {
+                throw new Error('Order not found');
+            }
+
+            const donationSnapshot = await transaction.get(donationRef);
+            if (!donationSnapshot.exists()) {
+                throw new Error('Donation not found');
+            }
+
+            const orderData = orderSnapshot.data();
+            if (orderData.status !== 'open') {
+                throw new Error('Order is no longer open');
+            }
+
+            const donationData = donationSnapshot.data();
+            if (donationData.status !== 'requested') {
+                throw new Error('Donation is no longer requested');
+            }
+
+            if (resolution.action === 'requested' && resolution.requestor.id === orderData.requestor?.id) {
+                throw new Error('Donation is already requested by this user');
+            }
+
+            const orderItems = (orderData.items ?? []) as { id: string; path?: string }[];
+            const matchingOrderItem = orderItems.find((itemRef) => itemRef.id === donation.id || itemRef.path === donationRef.path);
+            if (!matchingOrderItem) {
+                throw new Error('Donation is no longer in this order');
+            }
+
+            const remainingItemCount = orderItems.filter((itemRef) => itemRef.id !== donation.id && itemRef.path !== donationRef.path).length;
+            transaction.update(orderRef, {
+                items: arrayRemove(donationRef),
+                rejectedItems: arrayUnion(donationRef),
+                status: remainingItemCount === 0 ? 'closed' : orderData.status,
+                modifiedAt: serverTimestamp()
+            });
+
+            if (resolution.action === 'available') {
+                transaction.update(donationRef, {
+                    status: 'available',
+                    requestor: null,
+                    dateRequested: null,
+                    modifiedAt: serverTimestamp()
+                });
+            } else if (resolution.action === 'requested') {
+                if (!reassignedOrderRef) {
+                    throw new Error('Unable to create reassigned order');
+                }
+
+                transaction.set(reassignedOrderRef, {
+                    status: 'open',
+                    requestor: resolution.requestor,
+                    items: [donationRef],
+                    rejectedItems: [],
+                    createdAt: serverTimestamp(),
+                    modifiedAt: serverTimestamp()
+                });
+                transaction.update(donationRef, {
+                    status: 'requested',
+                    requestor: resolution.requestor,
+                    dateRequested: serverTimestamp(),
+                    modifiedAt: serverTimestamp()
+                });
+            } else {
+                transaction.update(donationRef, {
+                    status: 'unavailable',
+                    requestor: null,
+                    modifiedAt: serverTimestamp()
+                });
+            }
+        });
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);
+        throw error;
     }
 }
 
