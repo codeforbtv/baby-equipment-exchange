@@ -54,7 +54,6 @@ export default function Donate() {
     const isDisabled = emailsDoNotMatch || donorName.length === 0;
 
     const handleClose = () => {
-        signOutUser();
         router.push('/');
         setIsDialogOpen(false);
     };
@@ -164,6 +163,7 @@ export default function Donate() {
         try {
             const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
             await addDonation(donationsToUpload, donationDisclaimer);
+            signOutUser();
             posthog.capture('donation_submitted', {
                 item_count: donationsToUpload.length,
                 categories: donationsToUpload.map((d) => d.category)
