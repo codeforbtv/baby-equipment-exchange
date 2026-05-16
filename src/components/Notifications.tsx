@@ -1,6 +1,6 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, ReactNode, SetStateAction, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -8,7 +8,7 @@ import UserDetails from '@/components/UserDetails';
 import DonationDetails from '@/components/DonationDetails';
 import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
-import { Button, Paper, Typography } from '@mui/material';
+import { Box, Button, Paper, Typography } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
@@ -33,13 +33,17 @@ const sortArrayByBulkId = (array: Donation[]): Donation[][] => {
         },
         {} as Record<string, Donation[]>
     );
-    return Object.values(groupedByField);
+    return Object.values(groupedByField).sort((a, b) => {
+        const nameA = a[0]?.donorName || '';
+        const nameB = b[0]?.donorName || '';
+        return nameA.localeCompare(nameB);
+    });
 };
 
-const sortArrayByRequestor = (array: Donation[]): Donation[][] => {
+const sortArrayByDonorName = (array: Donation[]): Donation[][] => {
     const groupedByField = array.reduce(
         (acc, item) => {
-            const sortByField = item.requestor ? item.requestor.id : '';
+            const sortByField = item.donorName;
             if (!acc[sortByField]) {
                 acc[sortByField] = [];
             }
@@ -48,7 +52,58 @@ const sortArrayByRequestor = (array: Donation[]): Donation[][] => {
         },
         {} as Record<string, Donation[]>
     );
-    return Object.values(groupedByField);
+    return Object.values(groupedByField).sort((a, b) => {
+        const nameA = a[0]?.donorName || '';
+        const nameB = b[0]?.donorName || '';
+        return nameA.localeCompare(nameB);
+    });
+};
+
+const sortOrdersByRequestorName = (array: Notification['orders']): Notification['orders'][] => {
+    const groupedByField = array.reduce(
+        (acc, item) => {
+            const sortByField = item.requestor ? item.requestor.name : '';
+            if (!acc[sortByField]) {
+                acc[sortByField] = [];
+            }
+            acc[sortByField].push(item);
+            return acc;
+        },
+        {} as Record<string, Notification['orders']>
+    );
+    return Object.values(groupedByField).sort((a, b) => {
+        const nameA = a[0]?.requestor?.name || '';
+        const nameB = b[0]?.requestor?.name || '';
+        return nameA.localeCompare(nameB);
+    });
+};
+
+const itemCountLabel = (count: number) => `${count} item${count === 1 ? '' : 's'}`;
+
+const donorGroupHeader = (donations: Donation[], action?: ReactNode) => {
+    const donorName = donations[0]?.donorName || 'Unknown donor';
+
+    return (
+        <Box
+            sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                backgroundColor: '#f5f5f5',
+                borderBottom: '1px solid #e0e0e0',
+                padding: '0.5rem 1rem'
+            }}
+        >
+            <Typography variant="body2" fontWeight={600}>
+                {donorName}
+                <Typography component="span" variant="body2" color="text.secondary">
+                    {` — ${itemCountLabel(donations.length)}`}
+                </Typography>
+            </Typography>
+            {action}
+        </Box>
+    );
 };
 
 const Notifications = (props: NotificationsProps) => {
@@ -61,9 +116,9 @@ const Notifications = (props: NotificationsProps) => {
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
     const sortedDonationsWaitingApproval = sortArrayByBulkId(donationsAwaitingApproval);
     const donationsAwaitingDropoff = notifications.donations.filter((donation) => donation.status === 'pending delivery');
-    const sortedDonationsAwaitingDropoff = sortArrayByBulkId(donationsAwaitingDropoff);
+    const sortedDonationsAwaitingDropoff = sortArrayByDonorName(donationsAwaitingDropoff);
     const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
-    const sortedDonationsAwaitingPickup = sortArrayByRequestor(donationsAwaitingPickup);
+    const sortedDonationsAwaitingPickup = sortArrayByDonorName(donationsAwaitingPickup);
     const orders = notifications.orders;
     const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted); //Filters out recently deleted users
 
@@ -94,7 +149,17 @@ const Notifications = (props: NotificationsProps) => {
                                 Donations requiring approval
                             </Typography>
                             {sortedDonationsWaitingApproval.map((donationArray, i) => (
-                                <Paper className={styles['notification-card--container']} key={i} elevation={3}>
+                                <Paper className={styles['notification-card--container']} key={i} variant="outlined">
+                                    {donorGroupHeader(
+                                        donationArray,
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            onClick={() => router.push(`/accept/${donationArray[0].bulkCollection}`)}
+                                        >
+                                            Review
+                                        </Button>
+                                    )}
                                     {donationArray.map((donation) => (
                                         <NotificationCard
                                             key={donation.id}
@@ -104,13 +169,6 @@ const Notifications = (props: NotificationsProps) => {
                                             setNotificationsUpdated={setNotificationsUpdated}
                                         />
                                     ))}
-                                    <Button
-                                        className={styles['notification-card--container--btn']}
-                                        variant="contained"
-                                        onClick={() => router.push(`/accept/${donationArray[0].bulkCollection}`)}
-                                    >
-                                        Review
-                                    </Button>
                                 </Paper>
                             ))}
                         </>
@@ -121,7 +179,8 @@ const Notifications = (props: NotificationsProps) => {
                                 Donations waiting to be received
                             </Typography>
                             {sortedDonationsAwaitingDropoff.map((donationArray, i) => (
-                                <Paper className={styles['notification-card--container']} key={i} elevation={3}>
+                                <Paper className={styles['notification-card--container']} key={i} variant="outlined">
+                                    {donorGroupHeader(donationArray)}
                                     {donationArray.map((donation) => (
                                         <NotificationCard
                                             key={donation.id}
@@ -141,7 +200,8 @@ const Notifications = (props: NotificationsProps) => {
                                 Donations waiting for pickup
                             </Typography>
                             {sortedDonationsAwaitingPickup.map((donationArray, i) => (
-                                <Paper className={styles['notification-card--container']} key={i} elevation={3}>
+                                <Paper className={styles['notification-card--container']} key={i} variant="outlined">
+                                    {donorGroupHeader(donationArray)}
                                     {donationArray.map((donation) => (
                                         <NotificationCard
                                             key={donation.id}
@@ -160,25 +220,30 @@ const Notifications = (props: NotificationsProps) => {
                             <Typography sx={{ marginTop: '1rem' }} variant="h6">
                                 Requested Equipment
                             </Typography>
-                            {orders.map((order) => (
-                                <Paper className={styles['notification-card--container']} key={order.id} elevation={3}>
-                                    <Typography variant="h6">{`${order.requestor.name} has requested the following items:`}</Typography>
-                                    {order.items.map((item) => (
-                                        <NotificationCard
-                                            key={item.id}
-                                            type="order"
-                                            donation={item}
-                                            setIdToDisplay={setDonationIdToDisplay}
-                                            setNotificationsUpdated={setNotificationsUpdated}
-                                        />
+                            {sortOrdersByRequestorName(orders).map((orderArray, i) => (
+                                <Paper className={styles['notification-card--container']} key={i} variant="outlined">
+                                    <Typography variant="h6">{`${orderArray[0].requestor.name} has requested the following items:`}</Typography>
+                                    {orderArray.map((order) => (
+                                        <div key={order.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                            {order.items.map((item) => (
+                                                <NotificationCard
+                                                    key={item.id}
+                                                    type="order"
+                                                    donation={item}
+                                                    setIdToDisplay={setDonationIdToDisplay}
+                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                />
+                                            ))}
+                                            <Button
+                                                className={styles['notification-card--container--btn']}
+                                                variant="contained"
+                                                onClick={() => setOrderIdToDisplay(order.id)}
+                                                sx={{ mb: orderArray.length > 1 ? 2 : 0 }}
+                                            >
+                                                Review
+                                            </Button>
+                                        </div>
                                     ))}
-                                    <Button
-                                        className={styles['notification-card--container--btn']}
-                                        variant="contained"
-                                        onClick={() => setOrderIdToDisplay(order.id)}
-                                    >
-                                        Review
-                                    </Button>
                                 </Paper>
                             ))}
                         </>

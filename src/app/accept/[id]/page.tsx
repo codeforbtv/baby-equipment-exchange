@@ -1,14 +1,17 @@
 'use client';
 
 //Hoooks
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
-import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, IconButton } from '@mui/material';
 import AcceptRejectCard from '@/components/AcceptRejectCard';
 import DonationDetails from '@/components/DonationDetails';
 import ScheduleDropOff from '@/components/ScheduleDropOff';
+//Icons
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //API
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationsByBulkId } from '@/api/firebase-donations';
@@ -18,6 +21,7 @@ import '@/styles/globalStyles.css';
 import { Donation } from '@/models/donation';
 
 const AcceptDonation = ({ params }: { params: { id: string } }) => {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donations, setDonations] = useState<Donation[] | null>(null);
     const [accepted, setAccepted] = useState<string[]>([]);
@@ -28,17 +32,24 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     //disable btton unless all donations are accepted or rejected
     const isDisabled = donations ? accepted.length + rejected.length !== donations.length : false;
 
-    const fetchDonationsByBulkId = async (id: string): Promise<void> => {
+    const fetchDonationsByBulkId = useCallback(async (id: string): Promise<void> => {
         setIsLoading(true);
         try {
             const donationsResult = await getDonationsByBulkId(id);
-            setDonations(donationsResult);
+            const pendingDonations = donationsResult.filter((donation) => donation.status === 'in processing');
+
+            if (pendingDonations.length === 0) {
+                alert('All items in this donation have already been processed.');
+                router.push('/');
+                return;
+            }
+            setDonations(pendingDonations);
         } catch (error) {
             addErrorEvent('Fetch donations by bulk id', error);
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [router]);
     type ButtonStatus = 'accepted' | 'rejected' | null;
 
     const handleAcceptReject = (value: ButtonStatus, id: string): void => {
@@ -57,7 +68,7 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
 
     useEffect(() => {
         fetchDonationsByBulkId(params.id);
-    }, []);
+    }, [fetchDonationsByBulkId, params.id]);
 
     return (
         <ProtectedAdminRoute>
@@ -72,6 +83,9 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                     <>
                         <div className="page--header">
                             <h3>Review donation</h3>
+                            <IconButton onClick={() => router.back()}>
+                                <ArrowBackIcon />
+                            </IconButton>
                         </div>
                         {isLoading && !idToDisplay && <Loader />}
                         {!isLoading && !idToDisplay && !donations && <p>Donation collection not found.</p>}

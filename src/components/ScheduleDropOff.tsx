@@ -6,7 +6,7 @@ import { renderToString } from 'react-dom/server';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Box, Button, FormControl, NativeSelect, TextField, InputLabel } from '@mui/material';
+import { Alert, Box, Button, FormControl, InputLabel, MenuItem, NativeSelect, Select, TextField, Typography } from '@mui/material';
 import DonationCardSmall from './DonationCardSmall';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
@@ -17,18 +17,26 @@ import sendMail from '@/api/nodemailer';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';
 import { updateDonation, updateDonationStatus } from '@/api/firebase-donations';
-import { getTagNumber } from '@/api/firebase-categories';
+import { getAllCategories, getTagNumber } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
 //types
 import { EventType } from '@/types/CalendlyTypes';
 import { Donation } from '@/models/donation';
+import { Category } from '@/models/category';
 import { serverTimestamp } from 'firebase/firestore';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
     rejectedDonations?: Donation[];
     setOpenScheduler: Dispatch<SetStateAction<boolean>>;
+};
+
+type CategoryError = {
+    id: string;
+    brand: string;
+    model: string;
+    invalidCategory: string;
 };
 
 const ScheduleDropOff = (props: ScheduleDropOffProps) => {
@@ -38,10 +46,12 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [categoryErrors, setCategoryErrors] = useState<CategoryError[]>([]);
+    const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string>>({});
 
     const router = useRouter();
-
-    const isDisabled = acceptedDonations && acceptedDonations.length > 0 ? !inviteUrl : false;
 
     let donorEmail = '';
     let donorName = '';
@@ -75,23 +85,44 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const acceptPromise = async (donations: Donation[]): Promise<string[]> => {
         const tagNumbers: string[] = [];
-        await Promise.all(
-            donations.map(async (donation) => {
-                try {
-                    const newTagNumber = await getTagNumber(donation.category);
-                    tagNumbers.push(newTagNumber);
-                    await updateDonation(donation.id, {
-                        status: 'pending delivery',
-                        dateAccepted: serverTimestamp(),
-                        tagNumber: newTagNumber
-                    });
-                } catch (error) {
-                    addErrorEvent('Error accepting donation', error);
-                    throw error;
+        const writtenDonations: Donation[] = [];
+
+        try {
+            for (const donation of donations) {
+                const effectiveCategory = categoryOverrides[donation.id] || donation.category;
+                const newTagNumber = await getTagNumber(effectiveCategory);
+                tagNumbers.push(newTagNumber);
+
+                const updates: Record<string, any> = {
+                    status: 'pending delivery',
+                    dateAccepted: serverTimestamp(),
+                    tagNumber: newTagNumber
+                };
+                if (categoryOverrides[donation.id]) {
+                    updates.category = effectiveCategory;
                 }
-            })
-        );
-        return tagNumbers;
+
+                await updateDonation(donation.id, updates);
+                writtenDonations.push(donation);
+            }
+
+            return tagNumbers;
+        } catch (error) {
+            for (const donation of writtenDonations) {
+                try {
+                    await updateDonation(donation.id, {
+                        status: 'in processing',
+                        dateAccepted: null,
+                        tagNumber: null,
+                        category: donation.category
+                    });
+                } catch (rollbackError) {
+                    addErrorEvent('Rollback failed for donation', rollbackError);
+                }
+            }
+            addErrorEvent('Error accepting donation', error);
+            throw error;
+        }
     };
     const rejectPromise = async (donations: Donation[]) => {
         await Promise.all(
@@ -129,11 +160,33 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     );
 
     const handleSubmit = async () => {
-        //send email with renderToString(message) and update donation statuses. If donation is accepted, assign a tagNumber
         setIsLoading(true);
+        setErrorMessage('');
+        setCategoryErrors([]);
+
         try {
             let tagNumbers: string[] = [];
-            if (acceptedDonations) tagNumbers = await acceptPromise(acceptedDonations);
+            if (acceptedDonations && acceptedDonations.length > 0) {
+                if (categories.length > 0) {
+                    const validNames = new Set(categories.map((category) => category.getName()));
+                    const errors: CategoryError[] = acceptedDonations
+                        .filter((donation) => !validNames.has(categoryOverrides[donation.id] || donation.category))
+                        .map((donation) => ({
+                            id: donation.id,
+                            brand: donation.brand,
+                            model: donation.model,
+                            invalidCategory: donation.category
+                        }));
+
+                    if (errors.length > 0) {
+                        setCategoryErrors(errors);
+                        setIsLoading(false);
+                        return;
+                    }
+                }
+
+                tagNumbers = await acceptPromise(acceptedDonations);
+            }
             if (rejectedDonations) await rejectPromise(rejectedDonations);
             const emailMsg =
                 acceptedDonations && acceptedDonations.length > 0
@@ -143,15 +196,24 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
-            throw error;
+            setErrorMessage('An unexpected error occurred while processing donations. Please try again.');
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleCategoryOverride = (donationId: string, newCategory: string) => {
+        setCategoryOverrides((prev) => ({ ...prev, [donationId]: newCategory }));
+    };
+
     useEffect(() => {
         fetchEvents();
+        getAllCategories()
+            .then(setCategories)
+            .catch((error) => addErrorEvent('Fetch categories', error));
     }, []);
+
+    const allErrorsCorrected = categoryErrors.length > 0 && categoryErrors.every((error) => categoryOverrides[error.id]);
 
     return (
         <ProtectedAdminRoute>
@@ -166,6 +228,46 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     <div className="content--container">
                         <Box display={'flex'} flexDirection={'column'}>
                             {message}
+                            {categoryErrors.length > 0 && (
+                                <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
+                                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                                        {categoryErrors.length === 1
+                                            ? '1 item has an unrecognized category'
+                                            : `${categoryErrors.length} items have unrecognized categories`}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        Select a valid category for each item, then click &ldquo;Send Email&rdquo; again.
+                                    </Typography>
+                                    {categoryErrors.map((error) => (
+                                        <Box key={error.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
+                                            <Box sx={{ minWidth: 160 }}>
+                                                <Typography variant="body2" fontWeight="bold">
+                                                    {error.brand} {error.model}
+                                                </Typography>
+                                                <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'var(--error)' }}>
+                                                    {error.invalidCategory}
+                                                </Typography>
+                                            </Box>
+                                            <FormControl size="small" sx={{ minWidth: 200 }}>
+                                                <Select
+                                                    value={categoryOverrides[error.id] || ''}
+                                                    onChange={(event) => handleCategoryOverride(error.id, event.target.value as string)}
+                                                    displayEmpty
+                                                >
+                                                    <MenuItem value="" disabled>
+                                                        Select category
+                                                    </MenuItem>
+                                                    {categories.map((category) => (
+                                                        <MenuItem key={category.getId()} value={category.getName()}>
+                                                            {category.getName()}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Box>
+                                    ))}
+                                </Alert>
+                            )}
                             <TextField
                                 type="text"
                                 label="Additional notes"
@@ -185,7 +287,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                     </InputLabel>
                                     <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
                                         <option value="" disabled>
-                                            Select Calendar
+                                            Select Calendar (Optional)
                                         </option>
                                         {events &&
                                             events.map((event, index) => {
@@ -201,8 +303,8 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                 </FormControl>
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button onClick={handleSubmit} disabled={isDisabled} variant="contained">
-                                    Send Email
+                                <Button onClick={handleSubmit} variant="contained" disabled={categoryErrors.length > 0 && !allErrorsCorrected}>
+                                    {allErrorsCorrected ? 'Retry & Send Email' : 'Send Email'}
                                 </Button>
                                 <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
                                     Cancel
@@ -213,6 +315,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 </>
             )}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${donorEmail}`} />
+            <CustomDialog isOpen={errorMessage !== ''} onClose={() => setErrorMessage('')} title="Error Processing Donations" content={errorMessage} />
         </ProtectedAdminRoute>
     );
 };
