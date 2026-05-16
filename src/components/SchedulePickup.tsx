@@ -40,6 +40,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -66,7 +67,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                 })
             );
             await closeOrder(id);
-            sendMail(emailMsg);
+            await sendMail(emailMsg);
             posthog.capture('pickup_scheduled', {
                 order_id: id,
                 item_count: items.length
@@ -75,6 +76,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
         } catch (error) {
             addErrorEvent('Error submitting schedule pickup email', error);
             posthog.captureException(error);
+            setErrorMessage('Something went wrong while scheduling the pickup. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -169,6 +171,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                 </>
             )}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${requestor.email}`} />
+            <CustomDialog isOpen={!!errorMessage} onClose={() => setErrorMessage('')} title="Error" content={errorMessage} />
         </ProtectedAdminRoute>
     );
 };

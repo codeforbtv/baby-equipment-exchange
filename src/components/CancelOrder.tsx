@@ -38,6 +38,7 @@ const CancelOrder = (props: CancelOrderProps) => {
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -71,6 +72,7 @@ const CancelOrder = (props: CancelOrderProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting order cancellation email', error);
+            setErrorMessage('Something went wrong while cancelling the order. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -168,6 +170,7 @@ const CancelOrder = (props: CancelOrderProps) => {
                 </>
             )}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${requestor.email}`} />
+            <CustomDialog isOpen={!!errorMessage} onClose={() => setErrorMessage('')} title="Error" content={errorMessage} />
         </ProtectedAdminRoute>
     );
 };
