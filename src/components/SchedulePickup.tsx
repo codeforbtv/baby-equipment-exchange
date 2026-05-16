@@ -13,7 +13,7 @@ import CustomDialog from './CustomDialog';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
-import { closeOrder, updateDonationStatus } from '@/api/firebase-donations';
+import { schedulePickupForOrder } from '@/api/firebase-donations';
 import posthog from 'posthog-js';
 //styles
 import '@/styles/globalStyles.css';
@@ -55,18 +55,10 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        const tagNumbers: string[] = [];
-        items.map((item) => {
-            if (item.tagNumber) tagNumbers.push(item.tagNumber);
-        });
+        const tagNumbers = items.flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
         const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), tagNumbers, notes);
         try {
-            await Promise.all(
-                items.map(async (item) => {
-                    await updateDonationStatus(item.id, 'reserved');
-                })
-            );
-            await closeOrder(id);
+            await schedulePickupForOrder(order, inviteUrl || undefined);
             await sendMail(emailMsg);
             posthog.capture('pickup_scheduled', {
                 order_id: id,
@@ -79,15 +71,6 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             setErrorMessage('Something went wrong while scheduling the pickup. Please try again.');
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const fetchEvents = async () => {
-        try {
-            const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
-        } catch (error) {
-            addErrorEvent('Fetch Calendly Scheduling Links', error);
         }
     };
 
@@ -110,6 +93,15 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     );
 
     useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const eventResult = await getSchedulingPageLink();
+                setEvents(eventResult);
+            } catch (error) {
+                addErrorEvent('Fetch Calendly Scheduling Links', error);
+            }
+        };
+
         fetchEvents();
     }, []);
 

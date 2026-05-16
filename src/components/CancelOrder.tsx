@@ -12,7 +12,7 @@ import Loader from './Loader';
 //Api
 import { getSchedulingPageLink } from '@/api/calendly';
 import { addErrorEvent } from '@/api/firebase';
-import { closeOrder, updateDonation } from '@/api/firebase-donations';
+import { cancelOrderAndReturnItems } from '@/api/firebase-donations';
 import sendMail from '@/api/nodemailer';
 //styles
 import '@/styles/globalStyles.css';
@@ -31,7 +31,7 @@ type CancelOrderProps = {
 
 const CancelOrder = (props: CancelOrderProps) => {
     const { order, shouldShow, setNotificationsUpdated, onComplete } = props;
-    const { requestor, id, items, rejectedItems } = order;
+    const { requestor, items, rejectedItems } = order;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [events, setEvents] = useState<EventType[] | null>(null);
@@ -59,15 +59,7 @@ const CancelOrder = (props: CancelOrderProps) => {
         const emailMsg = cancelOrder(requestor.email, renderToString(message), tagNumbers, notes, inviteUrl);
 
         try {
-            await Promise.all(
-                items.map((item) =>
-                    updateDonation(item.id, {
-                        status: 'available',
-                        requestor: null
-                    })
-                )
-            );
-            await closeOrder(id);
+            await cancelOrderAndReturnItems(order);
             await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
@@ -75,15 +67,6 @@ const CancelOrder = (props: CancelOrderProps) => {
             setErrorMessage('Something went wrong while cancelling the order. Please try again.');
         } finally {
             setIsLoading(false);
-        }
-    };
-
-    const fetchEvents = async () => {
-        try {
-            const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
-        } catch (error) {
-            addErrorEvent('Fetch Calendly Scheduling Links', error);
         }
     };
 
@@ -110,6 +93,15 @@ const CancelOrder = (props: CancelOrderProps) => {
     );
 
     useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const eventResult = await getSchedulingPageLink();
+                setEvents(eventResult);
+            } catch (error) {
+                addErrorEvent('Fetch Calendly Scheduling Links', error);
+            }
+        };
+
         fetchEvents();
     }, []);
 
