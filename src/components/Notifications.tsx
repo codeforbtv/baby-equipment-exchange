@@ -21,6 +21,9 @@ import { Order } from '@/types/OrdersTypes';
 type NotificationsProps = {
     notifications: Notification;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    activeSubTab?: number;
+    onSubTabChange?: Dispatch<SetStateAction<number>>;
+    highlightedEntityId?: string | null;
 };
 
 type DonorGroup = {
@@ -36,6 +39,24 @@ type RequestorGroup = {
     requestorId: string;
     orders: Order[];
     totalItems: number;
+};
+
+type DateLike = { toMillis?: () => number; toDate?: () => Date } | Date | string | null | undefined;
+
+const toDateValue = (date: DateLike): Date | null => {
+    if (!date) return null;
+    if (date instanceof Date) return date;
+    if (typeof date === 'string') {
+        const parsed = new Date(date);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    if (date.toMillis) return new Date(date.toMillis());
+    if (date.toDate) return date.toDate();
+    return null;
+};
+
+const formatShortDate = (date: DateLike): string => {
+    return toDateValue(date)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) ?? '';
 };
 
 const groupByDonor = (donations: Donation[]): DonorGroup[] => {
@@ -85,12 +106,22 @@ const groupByRequestor = (orders: Order[]): RequestorGroup[] => {
 };
 
 const Notifications = (props: NotificationsProps) => {
-    const { notifications, setNotificationsUpdated } = props;
+    const { notifications, setNotificationsUpdated, activeSubTab, onSubTabChange, highlightedEntityId } = props;
 
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
     const [orderIdToDisplay, setOrderIdToDisplay] = useState<string | null>(null);
-    const [currentTab, setCurrentTab] = useState<number>(0);
+    const [localSubTab, setLocalSubTab] = useState<number>(0);
+    const currentTab = activeSubTab ?? localSubTab;
+
+    const handleSubTabChange = (nextTab: number) => {
+        if (onSubTabChange) {
+            onSubTabChange(nextTab);
+            return;
+        }
+
+        setLocalSubTab(nextTab);
+    };
 
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
     const donorGroupsApproval = groupByDonor(donationsAwaitingApproval);
@@ -142,7 +173,7 @@ const Notifications = (props: NotificationsProps) => {
                         <>
                             <Tabs
                                 value={currentTab}
-                                onChange={(_, v) => setCurrentTab(v)}
+                                onChange={(_, v) => handleSubTabChange(v)}
                                 variant="scrollable"
                                 scrollButtons="auto"
                                 sx={{
@@ -211,6 +242,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             type="pending-donation"
                                                             setIdToDisplay={setDonationIdToDisplay}
                                                             setNotificationsUpdated={setNotificationsUpdated}
+                                                            isHighlighted={highlightedEntityId === donation.id}
                                                         />
                                                     ))}
                                                 </>
@@ -247,6 +279,7 @@ const Notifications = (props: NotificationsProps) => {
                                                                     type="pending-donation"
                                                                     setIdToDisplay={setDonationIdToDisplay}
                                                                     setNotificationsUpdated={setNotificationsUpdated}
+                                                                    isHighlighted={highlightedEntityId === donation.id}
                                                                 />
                                                             ))}
                                                         </Box>
@@ -280,6 +313,7 @@ const Notifications = (props: NotificationsProps) => {
                                                     type="pending-delivery"
                                                     setIdToDisplay={setDonationIdToDisplay}
                                                     setNotificationsUpdated={setNotificationsUpdated}
+                                                    isHighlighted={highlightedEntityId === donation.id}
                                                 />
                                             ))}
                                         </Paper>
@@ -318,6 +352,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             donation={item}
                                                             setIdToDisplay={setDonationIdToDisplay}
                                                             setNotificationsUpdated={setNotificationsUpdated}
+                                                            isHighlighted={highlightedEntityId === group.orders[0].id || highlightedEntityId === item.id}
                                                         />
                                                     ))}
                                                 </>
@@ -343,7 +378,7 @@ const Notifications = (props: NotificationsProps) => {
                                                             }}>
                                                                 <Typography variant="caption" color="text.secondary">
                                                                     {`${order.items.length} item${order.items.length !== 1 ? 's' : ''}`}
-                                                                    {order.createdAt && ` — ${order.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                                                                    {order.createdAt && ` - ${formatShortDate(order.createdAt)}`}
                                                                 </Typography>
                                                                 <Button
                                                                     size="small"
@@ -360,6 +395,7 @@ const Notifications = (props: NotificationsProps) => {
                                                                     donation={item}
                                                                     setIdToDisplay={setDonationIdToDisplay}
                                                                     setNotificationsUpdated={setNotificationsUpdated}
+                                                                    isHighlighted={highlightedEntityId === order.id || highlightedEntityId === item.id}
                                                                 />
                                                             ))}
                                                         </Box>
@@ -393,6 +429,7 @@ const Notifications = (props: NotificationsProps) => {
                                                     type="reserved"
                                                     setIdToDisplay={setDonationIdToDisplay}
                                                     setNotificationsUpdated={setNotificationsUpdated}
+                                                    isHighlighted={highlightedEntityId === donation.id}
                                                 />
                                             ))}
                                         </Paper>
@@ -414,6 +451,7 @@ const Notifications = (props: NotificationsProps) => {
                                             user={user}
                                             setIdToDisplay={setUserIdToDisplay}
                                             setNotificationsUpdated={setNotificationsUpdated}
+                                            isHighlighted={highlightedEntityId === user.uid}
                                         />
                                     ))
                                 ) : (
