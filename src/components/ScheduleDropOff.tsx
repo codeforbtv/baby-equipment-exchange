@@ -2,7 +2,6 @@
 
 //Hooks
 import { useState, ChangeEvent, useEffect, Dispatch, SetStateAction } from 'react';
-import { renderToString } from 'react-dom/server';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -11,18 +10,14 @@ import DonationCardSmall from './DonationCardSmall';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
-import { getSchedulingPageLink } from '@/app/actions/scheduling';
-import { addErrorEvent } from '@/api/firebase';
-import sendMail from '@/api/nodemailer';
+import { getAdminSchedulingPageLinks, sendDropOffSchedulingEmail, type SchedulingPageLinkOption } from '@/app/actions/scheduling-public';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
 import posthog from 'posthog-js';
-import accept from '@/email-templates/accept';
-import reject from '@/email-templates/reject';
 import { updateDropOffDonationStatuses } from '@/api/firebase-donations';
 import { getAllCategories } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
 //types
-import { EventType } from 'scheduling';
 import { Donation } from '@/models/donation';
 import { Category } from '@/models/category';
 
@@ -42,7 +37,7 @@ type CategoryError = {
 const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const { acceptedDonations, rejectedDonations, setOpenScheduler } = props;
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [events, setEvents] = useState<EventType[] | null>(null);
+    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -125,22 +120,24 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 }
             }
 
-            const acceptedDonationUpdates = await updateDropOffDonationStatuses({
+            const idToken = await getAuthIdToken();
+            const schedulingUrl = events?.find((event) => event.uri === inviteUrl)?.scheduling_url;
+            await updateDropOffDonationStatuses({
                 acceptedDonations:
                     acceptedDonations?.map((donation) => ({
                         id: donation.id,
                         category: categoryOverrides[donation.id] || donation.category
                     })) ?? [],
                 rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
-                schedulingLink: inviteUrl || undefined
+                schedulingLink: schedulingUrl
             });
-            const tagNumbers = acceptedDonationUpdates.map((d) => d.tagNumber);
-
-            const emailMsg =
-                acceptedDonations && acceptedDonations.length > 0
-                    ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
-                    : reject(donorEmail, renderToString(message), notes);
-            await sendMail(emailMsg);
+            await sendDropOffSchedulingEmail({
+                idToken,
+                acceptedDonationIds: acceptedDonations?.map((donation) => donation.id) ?? [],
+                rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
+                eventTypeUri: inviteUrl || undefined,
+                notes
+            });
             posthog.capture('dropoff_scheduled', {
                 accepted_count: acceptedDonations?.length ?? 0,
                 rejected_count: rejectedDonations?.length ?? 0
@@ -162,7 +159,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const eventResult = await getSchedulingPageLink();
+                const eventResult = await getAdminSchedulingPageLinks({ idToken: await getAuthIdToken() });
                 setEvents(eventResult);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
@@ -255,13 +252,11 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                         </option>
                                         {events &&
                                             events.map((event, index) => {
-                                                if (event.active === true) {
-                                                    return (
-                                                        <option key={index} value={event.scheduling_url}>
+                                                return (
+                                                        <option key={event.uri || index} value={event.uri}>
                                                             {event.name}
                                                         </option>
-                                                    );
-                                                }
+                                                );
                                             })}
                                     </NativeSelect>
                                 </FormControl>
