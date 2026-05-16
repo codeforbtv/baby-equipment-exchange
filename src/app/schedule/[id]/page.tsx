@@ -3,11 +3,11 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import { useContext, useEffect, useState, ChangeEvent } from 'react';
 import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
-import { getSchedulingPageLink } from '@/api/calendly';
+import { getSchedulingPageLink } from '@/app/actions/scheduling';
 import { getDonationById } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 
-import { EventType } from '@/types/CalendlyTypes';
+import { EventType } from 'scheduling';
 
 import '../../../styles/globalStyles.css';
 

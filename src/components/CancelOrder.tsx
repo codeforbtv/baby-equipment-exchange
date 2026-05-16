@@ -10,15 +10,15 @@ import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@
 import CustomDialog from './CustomDialog';
 import Loader from './Loader';
 //Api
-import { getSchedulingPageLink } from '@/api/calendly';
+import { getSchedulingPageLink } from '@/app/actions/scheduling';
 import { addErrorEvent } from '@/api/firebase';
 import { cancelOrderAndReturnItems } from '@/api/firebase-donations';
 import sendMail from '@/api/nodemailer';
 //styles
 import '@/styles/globalStyles.css';
 //types
-import { EventType } from '@/types/CalendlyTypes';
 import { Order } from '@/types/OrdersTypes';
+import { EventType } from 'scheduling';
 
 import cancelOrder from '@/email-templates/cancelOrder';
 

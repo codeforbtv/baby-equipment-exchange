@@ -11,7 +11,7 @@ import DonationCardSmall from './DonationCardSmall';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
-import { getSchedulingPageLink } from '@/api/calendly';
+import { getSchedulingPageLink } from '@/app/actions/scheduling';
 import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
 import posthog from 'posthog-js';
@@ -22,7 +22,7 @@ import { getAllCategories } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
 //types
-import { EventType } from '@/types/CalendlyTypes';
+import { EventType } from 'scheduling';
 import { Donation } from '@/models/donation';
 import { Category } from '@/models/category';
 
@@ -207,10 +207,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                                 <Typography variant="body2" fontWeight="bold">
                                                     {err.brand} {err.model}
                                                 </Typography>
-                                                <Typography
-                                                    variant="caption"
-                                                    sx={{ textDecoration: 'line-through', color: 'var(--error)' }}
-                                                >
+                                                <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'var(--error)' }}>
                                                     {err.invalidCategory}
                                                 </Typography>
                                             </Box>
@@ -270,11 +267,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                 </FormControl>
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button
-                                    onClick={handleSubmit}
-                                    variant="contained"
-                                    disabled={categoryErrors.length > 0 && !allErrorsCorrected}
-                                >
+                                <Button onClick={handleSubmit} variant="contained" disabled={categoryErrors.length > 0 && !allErrorsCorrected}>
                                     {allErrorsCorrected ? 'Retry & Send Email' : 'Send Email'}
                                 </Button>
                                 <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
@@ -286,12 +279,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 </>
             )}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${donorEmail}`} />
-            <CustomDialog
-                isOpen={errorMessage !== ''}
-                onClose={() => setErrorMessage('')}
-                title="Error Processing Donations"
-                content={errorMessage}
-            />
+            <CustomDialog isOpen={errorMessage !== ''} onClose={() => setErrorMessage('')} title="Error Processing Donations" content={errorMessage} />
         </ProtectedAdminRoute>
     );
 };

@@ -10,7 +10,7 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@mui/material';
 import CustomDialog from './CustomDialog';
 //Api
-import { getSchedulingPageLink } from '@/api/calendly';
+import { getSchedulingPageLink } from '@/app/actions/scheduling';
 import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
 import { schedulePickupForOrder } from '@/api/firebase-donations';
@@ -19,7 +19,7 @@ import posthog from 'posthog-js';
 import '@/styles/globalStyles.css';
 //types
 import { Order } from '@/types/OrdersTypes';
-import { EventType } from '@/types/CalendlyTypes';
+import { EventType } from 'scheduling';
 import Loader from './Loader';
 
 import schedulePickup from '@/email-templates/schedulePickup';
