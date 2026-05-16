@@ -576,6 +576,7 @@ export async function closeOrder(id: string): Promise<void> {
         await updateDoc(orderRef, { status: 'closed', modifiedAt: serverTimestamp() });
     } catch (error) {
         addErrorEvent('Error closing', error);
+        throw error;
     }
 }
 
