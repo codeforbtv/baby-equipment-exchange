@@ -2,7 +2,6 @@
 
 //Hooks
 import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { renderToString } from 'react-dom/server';
 import { useRouter } from 'next/navigation';
 //Components
 import DonationCardSmall from './DonationCardSmall';
@@ -10,19 +9,15 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@mui/material';
 import CustomDialog from './CustomDialog';
 //Api
-import { getSchedulingPageLink } from '@/api/calendly';
-import { addErrorEvent } from '@/api/firebase';
-import sendMail from '@/api/nodemailer';
+import { getAdminSchedulingPageLinks, sendPickupSchedulingEmail, type SchedulingPageLinkOption } from '@/app/actions/scheduling-public';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
 import { schedulePickupForOrder } from '@/api/firebase-donations';
 import posthog from 'posthog-js';
 //styles
 import '@/styles/globalStyles.css';
 //types
 import { Order } from '@/types/OrdersTypes';
-import { EventType } from '@/types/CalendlyTypes';
 import Loader from './Loader';
-
-import schedulePickup from '@/email-templates/schedulePickup';
 
 type SchedulePickupProps = {
     order: Order;
@@ -36,7 +31,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [events, setEvents] = useState<EventType[] | null>(null);
+    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -55,11 +50,11 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        const tagNumbers = items.flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
-        const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), tagNumbers, notes);
         try {
-            await schedulePickupForOrder(order, inviteUrl || undefined);
-            await sendMail(emailMsg);
+            const idToken = await getAuthIdToken();
+            const schedulingUrl = events?.find((event) => event.uri === inviteUrl)?.scheduling_url;
+            await sendPickupSchedulingEmail({ idToken, orderId: id, eventTypeUri: inviteUrl || undefined, notes });
+            await schedulePickupForOrder(order, schedulingUrl);
             posthog.capture('pickup_scheduled', {
                 order_id: id,
                 item_count: items.length
@@ -95,7 +90,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const eventResult = await getSchedulingPageLink();
+                const eventResult = await getAdminSchedulingPageLinks({ idToken: await getAuthIdToken() });
                 setEvents(eventResult);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
@@ -140,13 +135,11 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                     </option>
                                     {events &&
                                         events.map((event, index) => {
-                                            if (event.active === true) {
-                                                return (
-                                                    <option key={index} value={event.scheduling_url}>
+                                            return (
+                                                    <option key={event.uri || index} value={event.uri}>
                                                         {event.name}
                                                     </option>
-                                                );
-                                            }
+                                            );
                                         })}
                                 </NativeSelect>
                             </FormControl>

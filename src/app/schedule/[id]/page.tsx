@@ -3,11 +3,9 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import { useContext, useEffect, useState, ChangeEvent } from 'react';
 import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
-import { getSchedulingPageLink } from '@/api/calendly';
+import { getAdminSchedulingPageLinks, type SchedulingPageLinkOption } from '@/app/actions/scheduling-public';
 import { getDonationById } from '@/api/firebase-donations';
-import { addErrorEvent } from '@/api/firebase';
-
-import { EventType } from '@/types/CalendlyTypes';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
 
 import '../../../styles/globalStyles.css';
 
@@ -16,7 +14,7 @@ import { Box, Button, NativeSelect, TextField } from '@mui/material';
 export default function ScheduleDropoff({ params }: { params: { id: string } }) {
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
-    const [events, setEvents] = useState<EventType[]>([]);
+    const [events, setEvents] = useState<SchedulingPageLinkOption[]>([]);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [notes, sentNotes] = useState<string>('');
@@ -40,7 +38,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
 
         const fetchEvents = async () => {
             try {
-                const eventResult = await getSchedulingPageLink();
+                const eventResult = await getAdminSchedulingPageLinks({ idToken: await getAuthIdToken() });
                 setEvents(eventResult);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
@@ -74,15 +72,11 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                         <option value="" disabled>
                             Select an Drop Off Location
                         </option>
-                        {events.map((event, index) => {
-                            if (event.active === true) {
-                                return (
-                                    <option key={index} value={event.scheduling_url}>
-                                        {event.name}
-                                    </option>
-                                );
-                            }
-                        })}
+                        {events.map((event, index) => (
+                            <option key={event.uri || index} value={event.uri}>
+                                {event.name}
+                            </option>
+                        ))}
                     </NativeSelect>
                     <TextField
                         type="text"

@@ -2,7 +2,6 @@
 
 //Hooks
 import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { renderToString } from 'react-dom/server';
 //Components
 import DonationCardSmall from './DonationCardSmall';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -10,17 +9,13 @@ import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@
 import CustomDialog from './CustomDialog';
 import Loader from './Loader';
 //Api
-import { getSchedulingPageLink } from '@/api/calendly';
-import { addErrorEvent } from '@/api/firebase';
+import { getAdminSchedulingPageLinks, sendCancelOrderSchedulingEmail, type SchedulingPageLinkOption } from '@/app/actions/scheduling-public';
+import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
 import { cancelOrderAndReturnItems } from '@/api/firebase-donations';
-import sendMail from '@/api/nodemailer';
 //styles
 import '@/styles/globalStyles.css';
 //types
-import { EventType } from '@/types/CalendlyTypes';
 import { Order } from '@/types/OrdersTypes';
-
-import cancelOrder from '@/email-templates/cancelOrder';
 
 type CancelOrderProps = {
     order: Order;
@@ -34,7 +29,7 @@ const CancelOrder = (props: CancelOrderProps) => {
     const { requestor, items, rejectedItems } = order;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [events, setEvents] = useState<EventType[] | null>(null);
+    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -55,12 +50,11 @@ const CancelOrder = (props: CancelOrderProps) => {
 
     const handleSubmit = async () => {
         setIsLoading(true);
-        const tagNumbers = [...items, ...(rejectedItems ?? [])].flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
-        const emailMsg = cancelOrder(requestor.email, renderToString(message), tagNumbers, notes, inviteUrl);
 
         try {
+            const idToken = await getAuthIdToken();
+            await sendCancelOrderSchedulingEmail({ idToken, orderId: order.id, eventTypeUri: inviteUrl || undefined, notes });
             await cancelOrderAndReturnItems(order);
-            await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting order cancellation email', error);
@@ -95,7 +89,7 @@ const CancelOrder = (props: CancelOrderProps) => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const eventResult = await getSchedulingPageLink();
+                const eventResult = await getAdminSchedulingPageLinks({ idToken: await getAuthIdToken() });
                 setEvents(eventResult);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
@@ -137,16 +131,11 @@ const CancelOrder = (props: CancelOrderProps) => {
                                 <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
                                     <option value="">No follow-up calendar</option>
                                     {events &&
-                                        events.map((event) => {
-                                            if (event.active === true) {
-                                                return (
-                                                    <option key={event.uri} value={event.scheduling_url}>
-                                                        {event.name}
-                                                    </option>
-                                                );
-                                            }
-                                            return null;
-                                        })}
+                                        events.map((event) => (
+                                            <option key={event.uri} value={event.uri}>
+                                                {event.name}
+                                            </option>
+                                        ))}
                                 </NativeSelect>
                             </FormControl>
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
