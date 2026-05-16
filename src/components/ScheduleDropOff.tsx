@@ -17,15 +17,14 @@ import sendMail from '@/api/nodemailer';
 import posthog from 'posthog-js';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';
-import { updateDonation, updateDonationStatus } from '@/api/firebase-donations';
-import { getAllCategories, getTagNumber } from '@/api/firebase-categories';
+import { updateDropOffDonationStatuses } from '@/api/firebase-donations';
+import { getAllCategories } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
 //types
 import { EventType } from '@/types/CalendlyTypes';
 import { Donation } from '@/models/donation';
 import { Category } from '@/models/category';
-import { serverTimestamp } from 'firebase/firestore';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
@@ -75,62 +74,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
-    const fetchEvents = async () => {
-        try {
-            const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
-        } catch (error) {
-            addErrorEvent('Fetch Calendly Scheduling Links', error);
-        }
-    };
-
-    const acceptPromise = async (donations: Donation[]): Promise<string[]> => {
-        const tagNumbers: string[] = [];
-        const writtenIds: string[] = [];
-
-        try {
-            for (const donation of donations) {
-                const effectiveCategory = categoryOverrides[donation.id] || donation.category;
-                const newTagNumber = await getTagNumber(effectiveCategory);
-                tagNumbers.push(newTagNumber);
-
-                const updates: Record<string, any> = {
-                    status: 'pending delivery',
-                    dateAccepted: serverTimestamp(),
-                    tagNumber: newTagNumber
-                };
-                if (categoryOverrides[donation.id]) {
-                    updates.category = effectiveCategory;
-                }
-
-                await updateDonation(donation.id, updates);
-                writtenIds.push(donation.id);
-            }
-            return tagNumbers;
-        } catch (error) {
-            for (const id of writtenIds) {
-                try {
-                    await updateDonation(id, {
-                        status: 'in processing',
-                        dateAccepted: null,
-                        tagNumber: null
-                    });
-                } catch (rollbackError) {
-                    addErrorEvent('Rollback failed for donation', rollbackError);
-                }
-            }
-            throw error;
-        }
-    };
-
-    const rejectPromise = async (donations: Donation[]) => {
-        await Promise.all(
-            donations.map(async (donation) => {
-                await updateDonationStatus(donation.id, 'rejected');
-            })
-        );
-    };
-
     const message = (
         <>
             <p>{`Hello ${donorName},`}</p>
@@ -164,28 +107,35 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         setCategoryErrors([]);
 
         try {
-            let tagNumbers: string[] = [];
-            if (acceptedDonations && acceptedDonations.length > 0) {
-                if (categories.length > 0) {
-                    const validNames = new Set(categories.map((c) => c.getName()));
-                    const errors: CategoryError[] = acceptedDonations
-                        .filter((d) => !validNames.has(categoryOverrides[d.id] || d.category))
-                        .map((d) => ({
-                            id: d.id,
-                            brand: d.brand,
-                            model: d.model,
-                            invalidCategory: d.category
-                        }));
+            if (acceptedDonations && acceptedDonations.length > 0 && categories.length > 0) {
+                const validNames = new Set(categories.map((c) => c.getName()));
+                const errors: CategoryError[] = acceptedDonations
+                    .filter((d) => !validNames.has(categoryOverrides[d.id] || d.category))
+                    .map((d) => ({
+                        id: d.id,
+                        brand: d.brand,
+                        model: d.model,
+                        invalidCategory: d.category
+                    }));
 
-                    if (errors.length > 0) {
-                        setCategoryErrors(errors);
-                        setIsLoading(false);
-                        return;
-                    }
+                if (errors.length > 0) {
+                    setCategoryErrors(errors);
+                    setIsLoading(false);
+                    return;
                 }
-                tagNumbers = await acceptPromise(acceptedDonations);
             }
-            if (rejectedDonations) await rejectPromise(rejectedDonations);
+
+            const acceptedDonationUpdates = await updateDropOffDonationStatuses({
+                acceptedDonations:
+                    acceptedDonations?.map((donation) => ({
+                        id: donation.id,
+                        category: categoryOverrides[donation.id] || donation.category
+                    })) ?? [],
+                rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
+                schedulingLink: inviteUrl || undefined
+            });
+            const tagNumbers = acceptedDonationUpdates.map((d) => d.tagNumber);
+
             const emailMsg =
                 acceptedDonations && acceptedDonations.length > 0
                     ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
@@ -210,6 +160,15 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     };
 
     useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const eventResult = await getSchedulingPageLink();
+                setEvents(eventResult);
+            } catch (error) {
+                addErrorEvent('Fetch Calendly Scheduling Links', error);
+            }
+        };
+
         fetchEvents();
         getAllCategories()
             .then(setCategories)
