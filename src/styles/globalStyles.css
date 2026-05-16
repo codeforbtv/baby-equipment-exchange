@@ -86,7 +86,7 @@
 
 .page--wrapper {
     box-sizing: border-box;
-    padding: 1em;
+    padding: 1.5rem 1em 1em;
     display: flex;
     flex-direction: column;
 }
@@ -117,7 +117,7 @@
     width: 100%;
     background-color: var(--bg-gray);
     margin: 0px auto;
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 /* .content--container > p {
@@ -197,13 +197,13 @@
 /* Tablets */
 @media screen and (min-width: 480px) {
     .page--wrapper {
-        padding: 8px 5%;
+        padding: 1.5rem 5% 8px;
     }
 }
 
 /* Laptops and above */
 @media screen and (min-width: 800px) {
     .page--wrapper {
-        padding: 10px 5%;
+        padding: 1.5rem 5% 10px;
     }
 }
