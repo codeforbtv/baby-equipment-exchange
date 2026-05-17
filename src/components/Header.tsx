@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import NavMenu from './NavMenu';
 //Hooks
-import { useEffect, useState } from 'react';
-import { useUserContext } from '@/contexts/UserContext';
+import { useState } from 'react';
 //Icons
 import StrollerOutlinedIcon from '@mui/icons-material/StrollerOutlined';
 
