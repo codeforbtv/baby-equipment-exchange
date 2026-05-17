@@ -221,10 +221,10 @@ export class Donation implements IDonation {
     }
 
     getDaysInStorage(): number | undefined {
-        if (this.dateReceived === undefined) {
+        if (!this.dateReceived) {
             return undefined;
         }
-        const dateReceived = this.dateReceived!;
+        const dateReceived = this.dateReceived;
         const dateDistributed = this.dateDistributed;
         const currentTime = Date.now();
         //If item was distributed, get days it took to distrbute. If not, get days up until now
