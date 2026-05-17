@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
-import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, IconButton } from '@mui/material';
 import AcceptRejectCard from '@/components/AcceptRejectCard';
 import DonationDetails from '@/components/DonationDetails';
 import ScheduleDropOff from '@/components/ScheduleDropOff';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //API
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationsByBulkId } from '@/api/firebase-donations';
@@ -72,7 +73,9 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     };
 
     const handleCategoryFixed = (donationId: string, newCategory: string) => {
-        setDonations((prev) => prev && prev.map((d) => (d.id === donationId ? Object.assign(Object.create(Object.getPrototypeOf(d)), d, { category: newCategory }) : d)));
+        setDonations(
+            (prev) => prev && prev.map((d) => (d.id === donationId ? Object.assign(Object.create(Object.getPrototypeOf(d)), d, { category: newCategory }) : d))
+        );
     };
 
     useEffect(() => {
@@ -95,6 +98,9 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                     <>
                         <div className="page--header">
                             <h3>Review donation</h3>
+                            <IconButton aria-label="Go back" onClick={() => router.back()}>
+                                <ArrowBackIcon />
+                            </IconButton>
                         </div>
                         {isLoading && !idToDisplay && <Loader />}
                         {!isLoading && !idToDisplay && !donations && <p>Donation collection not found.</p>}
