@@ -35,7 +35,6 @@ import { getAllInventory, getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 import posthog from 'posthog-js';
 //Constants
-import { categories } from '@/data/html';
 //Styles
 import '../styles/globalStyles.css';
 import styles from './Inventory.module.css';
@@ -45,7 +44,6 @@ import InventoryDetails from './InventoryDetails';
 import DonationDetails from './DonationDetails';
 import { Donation, donationStatuses, DonationStatuses } from '@/models/donation';
 
-const statusSelectOptions = Object.keys(donationStatuses);
 
 const donationToInventoryItem = (donation: Donation): InventoryItem => {
     return new InventoryItem({
@@ -101,8 +99,6 @@ const Inventory = (props: InventoryProps) => {
     const { addRequestedInventoryItem, requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
 
-    const categoryOptions = useMemo(() => categories.map((category) => category.name), []);
-
     const fetchInventory = useCallback(async (): Promise<void> => {
         if (isAidWorker || isAdmin) {
             setIsLoading(true);
@@ -125,7 +121,18 @@ const Inventory = (props: InventoryProps) => {
         }
     }, [isAdmin, isAidWorker, router]);
 
-    //Filters by category/status/search input and prevents items in cart from appearing in inventory list
+    const availableCategories = useMemo(
+        () => [...new Set(currentInventory.map((item) => item.category).filter(Boolean))].sort(),
+        [currentInventory]
+    );
+
+    const availableStatuses = useMemo(() => {
+        const statusValues = new Set(currentInventory.map((item) => item.status).filter(Boolean));
+        return Object.entries(donationStatuses)
+            .filter(([, value]) => statusValues.has(value))
+            .map(([key]) => key);
+    }, [currentInventory]);
+
     const inventoryToDisplay = useMemo(() => {
         const requestedInventoryIds = new Set(requestedInventory.map((i) => i.id));
         let filteredInventory = currentInventory.filter((item) => !requestedInventoryIds.has(item.id));
@@ -262,7 +269,7 @@ const Inventory = (props: InventoryProps) => {
                                     sx={{ maxWidth: '80vw' }}
                                     multiple
                                     id="category-filter"
-                                    options={categoryOptions}
+                                    options={availableCategories}
                                     value={categoryFilter}
                                     onChange={(event, newValue) => setCategoryFilter(newValue)}
                                     renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
@@ -277,7 +284,7 @@ const Inventory = (props: InventoryProps) => {
                                     sx={{ maxWidth: '80vw' }}
                                     multiple
                                     id="status-filter"
-                                    options={statusSelectOptions}
+                                    options={availableStatuses}
                                     value={statusFilter}
                                     onChange={(_event, newValue) => setStatusFilter(newValue)}
                                     renderInput={(params) => <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" />}
