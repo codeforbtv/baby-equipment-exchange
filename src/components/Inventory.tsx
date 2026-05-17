@@ -113,13 +113,9 @@ const Inventory = (props: InventoryProps) => {
         }
     }, [isAidWorker, isAdmin]);
 
-    const handleOpenCart = useCallback(() => {
-        if (isAdmin) {
-            router.push('/admin-cart');
-        } else if (isAidWorker) {
-            router.push('/inventory-cart');
-        }
-    }, [isAdmin, isAidWorker, router]);
+    const handleOpenCart = () => {
+        router.push('/admin-cart');
+    };
 
     const availableCategories = useMemo(
         () => [...new Set(currentInventory.map((item) => item.category).filter(Boolean))].sort(),

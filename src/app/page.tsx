@@ -1,14 +1,11 @@
 'use client';
 
-//Hooks
 import { useUserContext } from '@/contexts/UserContext';
-import { redirect } from 'next/navigation';
 
-//Components
 import HomePage from '@/components/HomePage';
 import Loader from '@/components/Loader';
 import Dashboard from '@/components/Dashboard';
-import Inventory from '@/components/Inventory';
+import AidWorkerHome from '@/components/aid-worker/AidWorkerHome';
 
 export default function Home() {
     const { isAdmin, isAidWorker } = useUserContext();
@@ -18,7 +15,7 @@ export default function Home() {
     }
 
     if (isAidWorker) {
-        return <Inventory />;
+        return <AidWorkerHome />;
     }
 
     if (!isAdmin || !isAidWorker) {

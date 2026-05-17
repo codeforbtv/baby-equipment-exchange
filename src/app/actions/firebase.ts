@@ -9,7 +9,7 @@ import {
     ORDERS_COLLECTION,
     addErrorEvent
 } from '@/api/firebaseAdmin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { DocumentReference, FieldValue } from 'firebase-admin/firestore';
 import { UserRecord } from 'firebase-admin/auth';
 import { AuthUserRecord, NewUserAccountInfo } from '@/types/UserTypes';
 import sendMail from '@/api/nodemailer';
@@ -291,6 +291,59 @@ export async function setCustomClaims(request: SetCustomClaimsRequest): Promise<
         });
     } catch (error) {
         addErrorEvent('setCustomClaims', error);
+        throw error;
+    }
+}
+
+export async function getMyOrders(request: { idToken: string }): Promise<Array<{
+    id: string;
+    status: string;
+    createdAt: string | null;
+    items: Array<{ id: string; brand: string; model: string; category: string; status: string; tagNumber: string; image: string | null }>;
+    rejectedItems: Array<{ id: string; brand: string; model: string; category: string; status: string; tagNumber: string; image: string | null }>;
+}>> {
+    const decoded = await auth.verifyIdToken(request.idToken, true);
+    const userId = decoded.uid;
+
+    try {
+        const ordersSnap = await db
+            .collection(ORDERS_COLLECTION)
+            .where('requestor.id', '==', userId)
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        const orders = await Promise.all(ordersSnap.docs.map(async (orderDoc) => {
+            const data = orderDoc.data();
+            const resolveRefs = async (refs: DocumentReference[] | undefined) => {
+                if (!refs || refs.length === 0) return [];
+                const snaps = await Promise.all(refs.map((r) => r.get()));
+                return snaps.filter((s) => s.exists).map((s) => {
+                    const d = s.data()!;
+                    const images = Array.isArray(d.images) ? d.images : [];
+                    return {
+                        id: s.id,
+                        brand: d.brand ?? '',
+                        model: d.model ?? '',
+                        category: d.category ?? '',
+                        status: d.status ?? '',
+                        tagNumber: d.tagNumber ?? '',
+                        image: typeof images[0] === 'string' ? images[0] : null
+                    };
+                });
+            };
+
+            return {
+                id: orderDoc.id,
+                status: data.status,
+                createdAt: data.createdAt?.toDate().toISOString() ?? null,
+                items: await resolveRefs(data.items),
+                rejectedItems: await resolveRefs(data.rejectedItems)
+            };
+        }));
+
+        return orders;
+    } catch (error) {
+        addErrorEvent('getMyOrders', error);
         throw error;
     }
 }
