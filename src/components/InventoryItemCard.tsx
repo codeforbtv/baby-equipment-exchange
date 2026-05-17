@@ -1,59 +1,76 @@
 'use client';
 
-//Hooks
-import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
-//Components
-import { ImageListItem, ImageListItemBar, IconButton, Tooltip } from '@mui/material';
-// Icons
+import { Card, CardMedia, CardContent, CardActionArea, CardActions, Typography, Stack, Chip, IconButton, Tooltip } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-//Styles
-import styles from './Card.module.css';
-import '@/styles/globalStyles.css';
-//Types
+import { getStatusChipProps } from '@/utils/statusChipProps';
 import { InventoryItem } from '@/models/inventoryItem';
-import { Dispatch, SetStateAction } from 'react';
+
 type InventoryItemCardProps = {
     inventoryItem: InventoryItem;
-    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
+    onSelect: (item: InventoryItem) => void;
     handleRequestInventoryItem: (inventoryItem: InventoryItem) => void;
 };
 
-const InventoryItemCard = (props: InventoryItemCardProps) => {
-    const { inventoryItem, handleRequestInventoryItem, setIdToDisplay } = props;
-
-    //Images were previously document references. Ensure they are now all strings. TO-DO remove all doc refs from images
+export default function InventoryItemCard({ inventoryItem, onSelect, handleRequestInventoryItem }: InventoryItemCardProps) {
     const images = inventoryItem.images as string[];
-    const image = images ? images[0] : '';
+    const image = images?.[0] || '/placeholder.png';
     const canRequest = inventoryItem.status === 'available';
-    const tagLabel = inventoryItem.tagNumber ? `${inventoryItem.tagNumber}` : 'No tag';
+    const statusChip = getStatusChipProps(inventoryItem.status);
 
     return (
-        <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>
-            <img
-                src={image}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                alt={`${inventoryItem.brand} ${inventoryItem.model}`}
-                onClick={() => setIdToDisplay(inventoryItem.id)}
-            />
-            <ImageListItemBar
-                title={`${tagLabel} - ${inventoryItem.brand} ${inventoryItem.model}`}
-                subtitle={`${inventoryItem.category} - ${inventoryItem.status}`}
-                actionIcon={
-                    <Tooltip title={canRequest ? 'Add to order' : 'Only available items can be added to an order'}>
-                        <IconButton
-                            sx={{ color: 'rgb(255, 255, 255)' }}
-                            aria-label={`details about ${inventoryItem.brand} ${inventoryItem.model}`}
-                            size="large"
-                            disabled={!canRequest}
-                            onClick={() => handleRequestInventoryItem(inventoryItem)}
-                        >
-                            <AddShoppingCartIcon />
-                        </IconButton>
-                    </Tooltip>
+        <Card
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                borderRadius: 2,
+                transition: 'box-shadow 0.2s, transform 0.2s',
+                '&:hover': {
+                    boxShadow: 6,
+                    transform: 'translateY(-2px)'
                 }
-            ></ImageListItemBar>
-        </ImageListItem>
+            }}
+        >
+            <CardActionArea onClick={() => onSelect(inventoryItem)}>
+                <CardMedia
+                    component="img"
+                    image={image}
+                    alt={`${inventoryItem.brand} ${inventoryItem.model}`}
+                    sx={{ aspectRatio: '4/3', objectFit: 'cover' }}
+                />
+                <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                    <Typography variant="body2" fontWeight={600} noWrap>
+                        {inventoryItem.brand} {inventoryItem.model}
+                    </Typography>
+                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
+                        {inventoryItem.tagNumber && (
+                            <Chip size="small" label={inventoryItem.tagNumber} sx={{ height: 20, fontSize: '0.7rem' }} />
+                        )}
+                        <Typography variant="caption" color="text.secondary" noWrap>
+                            {inventoryItem.category}
+                        </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.75 }}>
+                        <Chip size="small" label={statusChip.label} color={statusChip.color} sx={{ height: 22, fontSize: '0.7rem' }} />
+                    </Stack>
+                </CardContent>
+            </CardActionArea>
+            <CardActions sx={{ p: 1, pt: 0, justifyContent: 'flex-end' }}>
+                <Tooltip title={canRequest ? 'Add to order' : 'Only available items can be added'}>
+                    <span>
+                        <IconButton
+                            size="small"
+                            color="primary"
+                            disabled={!canRequest}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleRequestInventoryItem(inventoryItem);
+                            }}
+                        >
+                            <AddShoppingCartIcon fontSize="small" />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            </CardActions>
+        </Card>
     );
-};
-
-export default InventoryItemCard;
+}
