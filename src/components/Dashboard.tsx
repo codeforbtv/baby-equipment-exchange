@@ -1,7 +1,7 @@
 'use client';
 
 //Components
-import { Badge, Button, IconButton, Menu, MenuItem, Tab, Tabs, Tooltip, useMediaQuery } from '@mui/material';
+import { Button, IconButton, Menu, MenuItem, Tab, Tabs, useMediaQuery } from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';
@@ -9,13 +9,11 @@ import ProtectedAdminRoute from './ProtectedAdminRoute';
 import CustomTabPanel from './CustomTabPanel';
 import Loader from './Loader';
 import Notifications from './Notifications';
-import Inventory from './Inventory';
+import AdminInventoryHome from './admin-inventory/AdminInventoryHome';
 import Categories from './Categories';
 import NotificationFeed from './NotificationFeed';
 //Hooks
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
-import { useRouter } from 'next/navigation';
 //API
 import { addErrorEvent, getNotifications } from '@/api/firebase';
 import { getOrganizationNames } from '@/app/actions/firebase';
@@ -24,7 +22,6 @@ import { getAllDbUsers } from '@/api/firebase-users';
 //Icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/Dashboard.module.css';
@@ -53,9 +50,6 @@ export default function Dashboard() {
     const [categories, setCategories] = useState<Category[] | null>(null);
     const pendingNotificationScrollTop = useRef<number | null>(null);
     const highlightTimer = useRef<ReturnType<typeof setTimeout>>();
-
-    const { requestedInventory } = useRequestedInventoryContext();
-    const router = useRouter();
 
     //Track whether updates have been made
     const [notificationsUpdated, setNotificationsUpdated] = useState<boolean>(false);
@@ -270,7 +264,7 @@ export default function Dashboard() {
                         {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={2}>
-                        {inventory ? <Inventory inventory={inventory} setInventoryUpdated={setInventoryUpdated} /> : <p>No inventory found.</p>}
+                        {inventory ? <AdminInventoryHome inventory={inventory} setInventoryUpdated={setInventoryUpdated} /> : <p>No inventory found.</p>}
                     </CustomTabPanel>
                     <CustomTabPanel value={currentTab} index={3}>
                         {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}

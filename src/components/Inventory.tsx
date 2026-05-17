@@ -2,16 +2,12 @@
 
 import { Dispatch, SetStateAction, useMemo, useState } from 'react';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
-import { useRouter } from 'next/navigation';
 import InventoryItemCard from './InventoryItemCard';
 import InventoryDetailsDialog from './InventoryDetailsDialog';
 import {
     IconButton,
-    Badge,
-    Tooltip,
     Snackbar,
     SnackbarCloseReason,
-    Button,
     Typography,
     Autocomplete,
     TextField,
@@ -20,7 +16,6 @@ import {
     InputAdornment,
     Box
 } from '@mui/material';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import posthog from 'posthog-js';
@@ -53,11 +48,6 @@ const Inventory = (props: InventoryProps) => {
     );
 
     const { addRequestedInventoryItem, requestedInventory } = useRequestedInventoryContext();
-    const router = useRouter();
-
-    const handleOpenCart = () => {
-        router.push('/admin-cart');
-    };
 
     const availableCategories = useMemo(
         () => [...new Set(inventory.map((item) => item.category).filter(Boolean))].sort(),
@@ -106,17 +96,6 @@ const Inventory = (props: InventoryProps) => {
         <>
             <div className="page--header" style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}>
                 <Typography variant="h5">Inventory</Typography>
-                <div>
-                    {requestedInventory.length > 0 && (
-                        <Badge badgeContent={requestedInventory.length} color="primary">
-                            <Tooltip title="View order">
-                                <IconButton color="inherit" onClick={handleOpenCart}>
-                                    <ShoppingCartIcon />
-                                </IconButton>
-                            </Tooltip>
-                        </Badge>
-                    )}
-                </div>
             </div>
             <Stack spacing={2} sx={{ mb: 3 }}>
                 <TextField
@@ -186,11 +165,6 @@ const Inventory = (props: InventoryProps) => {
                         />
                     ))}
                 </Box>
-            )}
-            {requestedInventory.length > 0 && (
-                <Button variant="contained" onClick={handleOpenCart} sx={{ mt: 2 }}>
-                    Checkout
-                </Button>
             )}
             <InventoryDetailsDialog
                 open={selectedItem !== null}

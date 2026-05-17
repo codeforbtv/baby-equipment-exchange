@@ -348,6 +348,60 @@ export async function getMyOrders(request: { idToken: string }): Promise<Array<{
     }
 }
 
+export async function getAllOrders(request: { idToken: string }): Promise<Array<{
+    id: string;
+    status: string;
+    createdAt: string | null;
+    requestor: { id: string; name: string; email: string };
+    items: Array<{ id: string; brand: string; model: string; category: string; status: string; tagNumber: string; image: string | null }>;
+    rejectedItems: Array<{ id: string; brand: string; model: string; category: string; status: string; tagNumber: string; image: string | null }>;
+}>> {
+    const decoded = await auth.verifyIdToken(request.idToken, true);
+    if (!decoded.admin) throw new Error('Admin only');
+
+    try {
+        const ordersSnap = await db
+            .collection(ORDERS_COLLECTION)
+            .orderBy('createdAt', 'desc')
+            .get();
+
+        const orders = await Promise.all(ordersSnap.docs.map(async (orderDoc) => {
+            const data = orderDoc.data();
+            const resolveRefs = async (refs: DocumentReference[] | undefined) => {
+                if (!refs || refs.length === 0) return [];
+                const snaps = await Promise.all(refs.map((r) => r.get()));
+                return snaps.filter((s) => s.exists).map((s) => {
+                    const d = s.data()!;
+                    const images = Array.isArray(d.images) ? d.images : [];
+                    return {
+                        id: s.id,
+                        brand: d.brand ?? '',
+                        model: d.model ?? '',
+                        category: d.category ?? '',
+                        status: d.status ?? '',
+                        tagNumber: d.tagNumber ?? '',
+                        image: typeof images[0] === 'string' ? images[0] : null
+                    };
+                });
+            };
+
+            return {
+                id: orderDoc.id,
+                status: data.status,
+                createdAt: data.createdAt?.toDate().toISOString() ?? null,
+                requestor: data.requestor ?? { id: '', name: '', email: '' },
+                items: await resolveRefs(data.items),
+                rejectedItems: await resolveRefs(data.rejectedItems)
+            };
+        }));
+
+        return orders;
+    } catch (error) {
+        addErrorEvent('getAllOrders', error);
+        throw error;
+    }
+}
+
 export async function requestInventory(request: {
     idToken: string;
     donationIds: string[];
