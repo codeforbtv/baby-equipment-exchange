@@ -45,6 +45,7 @@ export default function Donate() {
     const [showForm, setShowForm] = useState<boolean>(false);
     const [hasAgreed, setHasAgreed] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [shouldSignOutAnonymousUser, setShouldSignOutAnonymousUser] = useState<boolean>(false);
 
     const { currentUser, isAdmin, isLoading: isUserLoading } = useUserContext();
     const { pendingDonations, clearPendingDonations, pendingDonorEmail, setPendingDonorEmail, pendingDonorName, setPendingDonorName } =
@@ -53,8 +54,11 @@ export default function Donate() {
 
     const isDisabled = emailsDoNotMatch || donorName.length === 0;
 
-    const handleClose = () => {
-        signOutUser();
+    const handleClose = async () => {
+        if (shouldSignOutAnonymousUser) {
+            await signOutUser();
+            setShouldSignOutAnonymousUser(false);
+        }
         router.push('/');
         setIsDialogOpen(false);
     };
@@ -125,13 +129,15 @@ export default function Donate() {
         }
     }
 
-    async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
+    async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<{ donations: DonationBody[]; shouldSignOutAnonymousUser: boolean }> {
         const bulkDonations: DonationBody[] = [];
         let anonymousUser;
+        let shouldSignOutAnonymousUser = false;
         try {
             //create anonymous user if not loged in
             if (!currentUser) {
                 anonymousUser = await loginAnonymousUser();
+                shouldSignOutAnonymousUser = true;
             }
             for (const donation of pendingDonations) {
                 let imageURLs: string[] = [];
@@ -150,7 +156,7 @@ export default function Donate() {
                 };
                 bulkDonations.push(newDonation);
             }
-            return bulkDonations;
+            return { donations: bulkDonations, shouldSignOutAnonymousUser };
         } catch (error) {
             addErrorEvent('convertPendingDonations', error);
         }
@@ -162,7 +168,7 @@ export default function Donate() {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const donationsToUpload: DonationBody[] = await convertPendingDonations(pendingDonations);
+            const { donations: donationsToUpload, shouldSignOutAnonymousUser } = await convertPendingDonations(pendingDonations);
             await addDonation(donationsToUpload, donationDisclaimer);
             posthog.capture('donation_submitted', {
                 item_count: donationsToUpload.length,
@@ -174,6 +180,7 @@ export default function Donate() {
             localStorage.clear();
             const emailMsg = donationsSubmitted(donorEmail, donorName, donationsToUpload);
             await sendMail(emailMsg);
+            setShouldSignOutAnonymousUser(shouldSignOutAnonymousUser);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting donation', error);
@@ -254,7 +261,7 @@ export default function Donate() {
                                     helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
                                     required
                                     onChange={handleConfirmEmail}
-                                    onBlur={(e:any) => handleConfirmEmail(e )}
+                                    onBlur={(e: any) => handleConfirmEmail(e)}
                                 />
                                 <Button type="button" variant="contained" onClick={handleSave} disabled={isDisabled} sx={{ marginTop: '1em' }}>
                                     Save

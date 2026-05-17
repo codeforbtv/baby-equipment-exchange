@@ -1,16 +1,6 @@
 // Libs
 import { addErrorEvent, db, auth } from './firebase';
-import {
-    doc,
-    DocumentData,
-    getDoc,
-    QueryDocumentSnapshot,
-    SnapshotOptions,
-    where,
-    collection,
-    query,
-    getDocs
-} from 'firebase/firestore';
+import { doc, DocumentData, getDoc, QueryDocumentSnapshot, SnapshotOptions, where, collection, query, getDocs } from 'firebase/firestore';
 import {
     NextOrObserver,
     onAuthStateChanged,
@@ -117,7 +107,6 @@ export async function getDbUser(uid: string): Promise<UserCollection> {
     return Promise.reject();
 }
 
-
 export async function getUsersNotifications(): Promise<IUser[]> {
     const users: IUser[] = [];
     try {
@@ -144,7 +133,6 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject();
 }
 
-
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
     if (!email || !password) {
         return null;
@@ -153,8 +141,8 @@ export async function signInAuthUserWithEmailAndPassword(email: string, password
     return userCredential.user;
 }
 
-export function signOutUser(): void {
-    signOut(auth);
+export async function signOutUser(): Promise<void> {
+    await signOut(auth);
 }
 
 export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
