@@ -49,7 +49,7 @@ export type OrderItemRejectionResolution =
 
 type InventoryDonationStatus = 'available' | 'unavailable';
 
-export type DonationUpdate = Partial<Pick<Donation, 'category' | 'tagNumber' | 'brand' | 'model' | 'description' | 'status' | 'images'>>;
+export type DonationUpdate = Partial<Pick<Donation, 'category' | 'tagNumber' | 'brand' | 'model' | 'description' | 'status' | 'images' | 'dateAccepted'>>;
 
 type StatusUpdateFields = Record<string, unknown>;
 
