@@ -1,4 +1,19 @@
 {
-    "indexes": [],
+    "indexes": [
+        {
+            "collectionGroup": "Orders",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "requestor.id",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        }
+    ],
     "fieldOverrides": []
 }
