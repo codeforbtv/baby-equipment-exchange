@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
@@ -31,7 +31,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 //Api
-import { getInventory } from '@/api/firebase-donations';
+import { getAllInventory, getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 import posthog from 'posthog-js';
 //Constants
@@ -42,9 +42,23 @@ import styles from './Inventory.module.css';
 //Types
 import { InventoryItem } from '@/models/inventoryItem';
 import InventoryDetails from './InventoryDetails';
-import { donationStatuses, DonationStatuses } from '@/models/donation';
+import DonationDetails from './DonationDetails';
+import { Donation, donationStatuses, DonationStatuses } from '@/models/donation';
 
 const statusSelectOptions = Object.keys(donationStatuses);
+
+const donationToInventoryItem = (donation: Donation): InventoryItem => {
+    return new InventoryItem({
+        id: donation.id,
+        category: donation.category,
+        brand: donation.brand,
+        model: donation.model,
+        description: donation.description,
+        tagNumber: donation.tagNumber,
+        status: donation.status,
+        images: donation.images
+    });
+};
 
 type InventoryProps = {
     inventory?: InventoryItem[];
@@ -61,20 +75,23 @@ const Inventory = (props: InventoryProps) => {
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
 
-    const handleCloseSnackBar = (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
+    const handleCloseSnackBar = useCallback((_event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
         if (reason === 'clickaway') {
             return;
         }
         setIsSnackBarOpen(false);
-    };
+    }, []);
 
     //for snackbar notification
-    const action = (
-        <>
-            <IconButton size="small" aria-label="close" color="inherit" onClick={handleCloseSnackBar}>
-                <CloseIcon fontSize="small" />
-            </IconButton>
-        </>
+    const action = useMemo(
+        () => (
+            <>
+                <IconButton size="small" aria-label="close" color="inherit" onClick={handleCloseSnackBar}>
+                    <CloseIcon fontSize="small" />
+                </IconButton>
+            </>
+        ),
+        [handleCloseSnackBar]
     );
 
     //Media query for imagelist grid
@@ -84,11 +101,13 @@ const Inventory = (props: InventoryProps) => {
     const { addRequestedInventoryItem, requestedInventory } = useRequestedInventoryContext();
     const router = useRouter();
 
-    async function fetchInventory(): Promise<void> {
-        if (isAidWorker) {
+    const categoryOptions = useMemo(() => categories.map((category) => category.name), []);
+
+    const fetchInventory = useCallback(async (): Promise<void> => {
+        if (isAidWorker || isAdmin) {
             setIsLoading(true);
             try {
-                const inventoryResult = await getInventory();
+                const inventoryResult = isAdmin ? await getAllInventory() : await getInventory();
                 setCurrentInventory(inventoryResult);
             } catch (error) {
                 addErrorEvent('Fetch inventory', error);
@@ -96,26 +115,30 @@ const Inventory = (props: InventoryProps) => {
                 setIsLoading(false);
             }
         }
-    }
+    }, [isAidWorker, isAdmin]);
 
-    const handleOpenCart = () => {
+    const handleOpenCart = useCallback(() => {
         if (isAdmin) {
             router.push('/admin-cart');
         } else if (isAidWorker) {
             router.push('/inventory-cart');
         }
-    };
+    }, [isAdmin, isAidWorker, router]);
 
     //Filters by category/status/search input and prevents items in cart from appearing in inventory list
     const inventoryToDisplay = useMemo(() => {
-        const requestedInventoryIds = requestedInventory.map((i) => i.id);
-        let filteredInventory = currentInventory.filter((item) => !requestedInventoryIds.includes(item.id));
+        const requestedInventoryIds = new Set(requestedInventory.map((i) => i.id));
+        let filteredInventory = currentInventory.filter((item) => !requestedInventoryIds.has(item.id));
 
         if (searchInput.length > 0) {
             const search = searchInput.toLowerCase();
             filteredInventory = filteredInventory.filter((item) => {
                 const searchableValues = [item.tagNumber, item.status, item.category, item.brand, item.model, item.description, item.id];
-                return searchableValues.some((value) => String(value ?? '').toLowerCase().includes(search));
+                return searchableValues.some((value) =>
+                    String(value ?? '')
+                        .toLowerCase()
+                        .includes(search)
+                );
             });
         }
         if (categoryFilter && categoryFilter.length > 0) {
@@ -130,23 +153,60 @@ const Inventory = (props: InventoryProps) => {
     }, [requestedInventory, currentInventory, categoryFilter, statusFilter, searchInput]);
 
     useEffect(() => {
-        if (!inventory) fetchInventory();
-    }, []);
+        if (!inventory && (isAidWorker || isAdmin)) fetchInventory();
+    }, [inventory, isAidWorker, isAdmin, fetchInventory]);
+
+    const handleRequestInventoryItem = useCallback(
+        (inventoryItem: InventoryItem) => {
+            addRequestedInventoryItem(inventoryItem);
+            posthog.capture('inventory_item_added_to_cart', {
+                item_id: inventoryItem.id,
+                category: inventoryItem.category
+            });
+            setIsSnackBarOpen(true);
+        },
+        [addRequestedInventoryItem]
+    );
+
+    const handleDonationChanged = useCallback(
+        (donation: Donation) => {
+            const updatedItem = donationToInventoryItem(donation);
+            setCurrentInventory((items) => {
+                const itemExists = items.some((item) => item.id === donation.id);
+                if (!itemExists) return [updatedItem, ...items];
+                return items.map((item) => (item.id === donation.id ? updatedItem : item));
+            });
+            setInventoryUpdated?.(true);
+        },
+        [setInventoryUpdated]
+    );
+
+    const handleDonationDeleted = useCallback(
+        (id: string) => {
+            setCurrentInventory((items) => items.filter((item) => item.id !== id));
+            setInventoryUpdated?.(true);
+        },
+        [setInventoryUpdated]
+    );
+
+    useEffect(() => {
+        if (inventory) setCurrentInventory(inventory);
+    }, [inventory]);
 
     if (isLoading) return <Loader />;
 
-    const handleRequestInventoryItem = (inventoryItem: InventoryItem) => {
-        addRequestedInventoryItem(inventoryItem);
-        posthog.capture('inventory_item_added_to_cart', {
-            item_id: inventoryItem.id,
-            category: inventoryItem.category
-        });
-        setIsSnackBarOpen(true);
-    };
-
     return (
         <ProtectedAidWorkerRoute>
-            {idToDisplay && (
+            {idToDisplay && isAdmin && (
+                <DonationDetails
+                    id={idToDisplay}
+                    setIdToDisplay={setIdToDisplay}
+                    setDonationsUpdated={setInventoryUpdated}
+                    onDonationChanged={handleDonationChanged}
+                    onDonationDeleted={handleDonationDeleted}
+                />
+            )}
+            {idToDisplay && !isAdmin && (
                 <InventoryDetails
                     id={idToDisplay}
                     inventoryItem={currentInventory.find((i) => i.id === idToDisplay)}
@@ -202,7 +262,7 @@ const Inventory = (props: InventoryProps) => {
                                     sx={{ maxWidth: '80vw' }}
                                     multiple
                                     id="category-filter"
-                                    options={categories.map((category) => category.name)}
+                                    options={categoryOptions}
                                     value={categoryFilter}
                                     onChange={(event, newValue) => setCategoryFilter(newValue)}
                                     renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}

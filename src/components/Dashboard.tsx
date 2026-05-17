@@ -136,14 +136,16 @@ export default function Dashboard() {
     }
 
     async function fetchInventory(showLoader = false): Promise<void> {
-        if (showLoader || !inventory) setIsLoading(true);
+        const shouldBlockContent = showLoader || !inventory;
+        if (shouldBlockContent) setIsLoading(true);
         try {
             const inventoryResult = await getAllInventory();
             setInventory(inventoryResult);
+            setInventoryUpdated(false);
         } catch (error) {
             addErrorEvent('Could not fetch inventory', error);
         } finally {
-            setIsLoading(false);
+            if (shouldBlockContent) setIsLoading(false);
         }
     }
 
@@ -251,7 +253,6 @@ export default function Dashboard() {
                 <Loader />
             ) : (
                 <>
-
                     <CustomTabPanel value={currentTab} index={0}>
                         {notifications ? (
                             <Notifications

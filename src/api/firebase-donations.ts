@@ -47,6 +47,12 @@ export type OrderItemRejectionResolution =
     | { action: 'unavailable' }
     | { action: 'requested'; requestor: { id: string; name: string; email: string } };
 
+type InventoryDonationStatus = 'available' | 'unavailable';
+
+export type DonationUpdate = Partial<Pick<Donation, 'category' | 'tagNumber' | 'brand' | 'model' | 'description' | 'status' | 'images'>>;
+
+type StatusUpdateFields = Record<string, unknown>;
+
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
         const donationData: IDonation = {
@@ -374,46 +380,141 @@ export async function addAdminDonation(newDonations: AdminDonationBody[]): Promi
     }
 }
 
-export async function updateDonation(id: string, donationDetails: any): Promise<void> {
+function getClearedInventoryRequestFields(): StatusUpdateFields {
+    return {
+        requestor: null,
+        dateRequested: null,
+        dateDistributed: null,
+        distributor: null
+    };
+}
+
+function getAvailableInventoryFields(donation: Donation): StatusUpdateFields {
+    return {
+        ...getClearedInventoryRequestFields(),
+        ...(!donation.dateReceived ? { dateReceived: serverTimestamp() } : {})
+    };
+}
+
+function getUnavailableInventoryFields(): StatusUpdateFields {
+    return getClearedInventoryRequestFields();
+}
+
+function getInventoryStatusUpdateFields(status: InventoryDonationStatus, donation: Donation): StatusUpdateFields {
+    switch (status) {
+        case 'available':
+            return getAvailableInventoryFields(donation);
+        case 'unavailable':
+            return getUnavailableInventoryFields();
+    }
+}
+
+function getStatusUpdateFields(status: DonationStatusValues | undefined, donation: Donation): StatusUpdateFields {
+    if (!status) return {};
+
+    switch (status) {
+        case 'available':
+            return getAvailableInventoryFields(donation);
+        case 'unavailable':
+            return getUnavailableInventoryFields();
+        case 'not-received':
+        case 'rejected':
+            return getClearedInventoryRequestFields();
+        case 'in processing':
+            return {
+                dateAccepted: null,
+                dateReceived: null,
+                dateRequested: null,
+                dateDistributed: null,
+                requestor: null,
+                distributor: null,
+                tagNumber: null
+            };
+        case 'distributed':
+            return {
+                ...(!donation.dateDistributed ? { dateDistributed: serverTimestamp() } : {})
+            };
+        default:
+            return {};
+    }
+}
+
+export async function updateDonation(id: string, donationDetails: DonationUpdate): Promise<void> {
     try {
         const donationRef = doc(db, DONATIONS_COLLECTION, id).withConverter(donationConverter);
-        await updateDoc(donationRef, {
-            ...donationDetails,
-            modifiedAt: serverTimestamp()
+        await runTransaction(db, async (transaction) => {
+            const donationSnapshot = await transaction.get(donationRef);
+            if (!donationSnapshot.exists()) {
+                throw new Error('Donation not found.');
+            }
+            const donation = donationSnapshot.data();
+            const updateFields: Record<string, unknown> = {
+                ...donationDetails,
+                ...getStatusUpdateFields(donationDetails.status, donation),
+                modifiedAt: serverTimestamp()
+            };
+            transaction.update(donationRef, updateFields);
         });
     } catch (error) {
         addErrorEvent('Error updating donation', error);
+        throw error;
     }
 }
 
 export async function updateDonationStatus(id: string, status: DonationStatusValues): Promise<DonationStatusValues> {
     try {
-        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
+        const donationRef = doc(db, DONATIONS_COLLECTION, id).withConverter(donationConverter);
 
-        let statusUpdate;
+        await runTransaction(db, async (transaction) => {
+            const donationSnapshot = await transaction.get(donationRef);
+            if (!donationSnapshot.exists()) {
+                throw new Error('Donation not found.');
+            }
 
-        if (status === 'available') {
-            statusUpdate = {
-                status: status,
-                modifiedAt: serverTimestamp(),
-                dateReceived: serverTimestamp()
-            };
-        } else if (status === 'distributed') {
-            statusUpdate = {
-                status: status,
-                modifiedAt: serverTimestamp(),
-                dateDistributed: serverTimestamp()
-            };
-        } else {
-            statusUpdate = {
-                status: status,
+            const donation = donationSnapshot.data();
+            transaction.update(donationRef, {
+                status,
+                ...getStatusUpdateFields(status, donation),
                 modifiedAt: serverTimestamp()
-            };
-        }
-        await updateDoc(donationRef, statusUpdate);
+            });
+        });
         return status;
     } catch (error) {
         addErrorEvent('updateDonationStatus', error);
+        throw error;
+    }
+}
+
+export async function updateInventoryDonationStatus(params: {
+    id: string;
+    expectedStatus: InventoryDonationStatus;
+    nextStatus: InventoryDonationStatus;
+}): Promise<DonationStatusValues> {
+    try {
+        const donationRef = doc(db, DONATIONS_COLLECTION, params.id).withConverter(donationConverter);
+
+        return await runTransaction(db, async (transaction) => {
+            const donationSnapshot = await transaction.get(donationRef);
+            if (!donationSnapshot.exists()) {
+                throw new Error('Donation not found.');
+            }
+
+            const donation = donationSnapshot.data();
+            if (donation.status !== params.expectedStatus) {
+                throw new Error(`Donation is ${donation.status}; expected ${params.expectedStatus} before changing to ${params.nextStatus}.`);
+            }
+
+            const statusUpdate: StatusUpdateFields = {
+                status: params.nextStatus,
+                modifiedAt: serverTimestamp(),
+                ...getInventoryStatusUpdateFields(params.nextStatus, donation)
+            };
+
+            transaction.update(donationRef, statusUpdate);
+            return params.nextStatus;
+        });
+    } catch (error) {
+        addErrorEvent('updateInventoryDonationStatus', error);
         throw error;
     }
 }
@@ -595,6 +696,45 @@ export async function deleteDonationById(id: string): Promise<void> {
         await deleteDoc(donationRef);
     } catch (error) {
         addErrorEvent('Delete donation by id', error);
+    }
+}
+
+export async function deleteInventoryDonationById(id: string): Promise<void> {
+    try {
+        const donationRef = doc(db, DONATIONS_COLLECTION, id).withConverter(donationConverter);
+        const imageUrls = await runTransaction(db, async (transaction) => {
+            const donationSnapshot = await transaction.get(donationRef);
+            if (!donationSnapshot.exists()) {
+                throw new Error('Donation not found.');
+            }
+
+            const donation = donationSnapshot.data();
+            if (donation.status !== 'available' && donation.status !== 'unavailable') {
+                throw new Error(`Only available or unavailable inventory items can be deleted. Current status: ${donation.status}.`);
+            }
+
+            transaction.delete(donationRef);
+            if (donation.bulkCollection) {
+                const bulkDonationRef = doc(db, BULK_DONATIONS_COLLECTION, donation.bulkCollection);
+                transaction.update(bulkDonationRef, {
+                    donations: arrayRemove(donationRef)
+                });
+            }
+            return donation.images ?? [];
+        });
+
+        await Promise.all(
+            imageUrls.map(async (image) => {
+                try {
+                    await deleteObject(ref(storage, image as string));
+                } catch (error) {
+                    addErrorEvent('Delete images in deleteInventoryDonationById', error);
+                }
+            })
+        );
+    } catch (error) {
+        addErrorEvent('deleteInventoryDonationById', error);
+        throw error;
     }
 }
 

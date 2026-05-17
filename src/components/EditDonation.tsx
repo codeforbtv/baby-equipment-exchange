@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 //API
 import { updateDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
@@ -11,7 +11,7 @@ import { uploadImages } from '@/api/firebase-images';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
-import { Paper, Box, TextField, Button, Stack, Typography, Autocomplete } from '@mui/material';
+import { Paper, Box, TextField, Button, Stack, Typography, Autocomplete, MenuItem } from '@mui/material';
 import CustomDialog from './CustomDialog';
 import InputContainer from './InputContainer';
 import ImageThumbnail from './ImageThumbnail';
@@ -21,8 +21,10 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import '@/styles/globalStyles.css';
 import styles from '@/components/DonationForm.module.css';
 //Types
-import { Donation } from '@/models/donation';
+import { Donation, DonationStatusKeys, DonationStatusValues, donationStatuses } from '@/models/donation';
 import { Category } from '@/models/category';
+
+const editableStatusLabels = ['In Processing', 'Available', 'Unavailable', 'Rejected', 'Not Received'];
 
 type EditDonationProps = {
     donationDetails: Donation;
@@ -32,8 +34,8 @@ type EditDonationProps = {
 };
 
 const EditDonation = (props: EditDonationProps) => {
-    const { id, category, brand, model, description, status, tagNumber, images, requestor } = props.donationDetails;
-    const { setIsEditMode, setDonationDetailsUpdated } = props;
+    const { id, category, brand, model, description, status, tagNumber, images } = props.donationDetails;
+    const { setIsEditMode, setDonationDetailsUpdated, setDonationsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[] | null>(null);
@@ -42,12 +44,32 @@ const EditDonation = (props: EditDonationProps) => {
     const [newBrand, setNewBrand] = useState<string>(brand);
     const [newModel, setNewModel] = useState<string>(model);
     const [newDescription, setNewDescription] = useState<string>(description ?? '');
+    const [newStatus, setNewStatus] = useState<DonationStatusValues>(status);
     const [newImages, setNewImages] = useState<string[]>(images);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const [addedImages, setAddedImages] = useState<File[] | null>();
 
-    const fetchCategories = async (): Promise<void> => {
+    const categoryOptions = useMemo(() => categories?.map((option) => option.name) ?? [], [categories]);
+
+    const statusOptions = useMemo(() => {
+        const options = editableStatusLabels.map((label) => ({
+            label,
+            value: donationStatuses[label as DonationStatusKeys],
+            disabled: false
+        }));
+        const currentStatusOption = Object.entries(donationStatuses).find(([, value]) => value === status);
+        if (currentStatusOption && !options.some((option) => option.value === status)) {
+            options.unshift({
+                label: `${currentStatusOption[0]} (current)`,
+                value: status,
+                disabled: true
+            });
+        }
+        return options;
+    }, [status]);
+
+    const fetchCategories = useCallback(async (): Promise<void> => {
         try {
             setIsLoading(true);
             const categoriesResult = await getAllCategories();
@@ -58,21 +80,22 @@ const EditDonation = (props: EditDonationProps) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const handleClose = () => {
         setIsDialogOpen(false);
         setIsEditMode(false);
         setDonationDetailsUpdated(true);
+        setDonationsUpdated?.(true);
     };
 
-    const handleCategoryChange = (event: any, newValue: string | null) => {
+    const handleCategoryChange = (_event: React.SyntheticEvent, newValue: string | null) => {
         setNewCategory(newValue);
     };
 
-    const handleRemoveExistingImage = (url: string) => {
-        setNewImages(newImages.filter((image) => image !== url));
-    };
+    const handleRemoveExistingImage = useCallback((url: string) => {
+        setNewImages((currentImages) => currentImages.filter((image) => image !== url));
+    }, []);
 
     const handleSubmitUpdatedDonation = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
@@ -84,11 +107,12 @@ const EditDonation = (props: EditDonationProps) => {
                 addedImageUrls = await uploadImages(addedImages);
             }
             const updatedDonation = {
-                category: newCategory,
+                category: newCategory ?? category,
                 tagNumber: newTagNumber ?? '',
                 brand: newBrand,
                 model: newModel,
                 description: newDescription,
+                status: newStatus,
                 images: [...addedImageUrls, ...newImages]
             };
             await updateDonation(id, updatedDonation);
@@ -110,7 +134,7 @@ const EditDonation = (props: EditDonationProps) => {
 
     useEffect(() => {
         if (!categories) fetchCategories();
-    }, []);
+    }, [categories, fetchCategories]);
 
     return (
         <ProtectedAdminRoute>
@@ -123,12 +147,26 @@ const EditDonation = (props: EditDonationProps) => {
                             <Autocomplete
                                 sx={{ maxWidth: { sm: '88%', xs: '80%' } }}
                                 disablePortal
-                                options={categories.map((option) => option.name)}
+                                options={categoryOptions}
                                 renderInput={(params) => <TextField {...params} label="Category" />}
                                 value={newCategory}
                                 onChange={handleCategoryChange}
                                 aria-label="Category"
                             />
+                            <TextField
+                                select
+                                label="Status"
+                                name="status"
+                                id="status"
+                                value={newStatus}
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewStatus(event.target.value as DonationStatusValues)}
+                            >
+                                {statusOptions.map((statusOption) => (
+                                    <MenuItem key={statusOption.value} value={statusOption.value} disabled={statusOption.disabled}>
+                                        {statusOption.label}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
                             {status !== 'rejected' && (
                                 <Stack direction="row" spacing={2}>
                                     <TextField
