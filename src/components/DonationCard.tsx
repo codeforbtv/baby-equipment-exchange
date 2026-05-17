@@ -47,7 +47,7 @@ export default function DonationCard({ donation, onSelect }: DonationCardProps) 
                         </Typography>
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.75 }}>
-                        <Chip size="small" label={statusChip.label} color={statusChip.color} sx={{ height: 22, fontSize: '0.7rem' }} />
+                        <Chip size="small" label={statusChip.label} sx={{ ...statusChip.sx, height: 22, fontSize: '0.7rem', fontWeight: 600 }} />
                     </Stack>
                     {(daysInStorage !== undefined || donation.donorName) && (
                         <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }} noWrap>

@@ -50,7 +50,7 @@ export default function InventoryItemCard({ inventoryItem, onSelect, handleReque
                         </Typography>
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.75 }}>
-                        <Chip size="small" label={statusChip.label} color={statusChip.color} sx={{ height: 22, fontSize: '0.7rem' }} />
+                        <Chip size="small" label={statusChip.label} sx={{ ...statusChip.sx, height: 22, fontSize: '0.7rem', fontWeight: 600 }} />
                     </Stack>
                 </CardContent>
             </CardActionArea>

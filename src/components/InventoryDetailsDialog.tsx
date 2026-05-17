@@ -114,7 +114,7 @@ export default function InventoryDetailsDialog({ open, item, onClose, handleRequ
                                     <b>Tag number:</b> {details.tagNumber ?? 'No tag'}
                                 </Typography>
                                 <Box>
-                                    <Chip size="small" label={statusChip.label} color={statusChip.color} />
+                                    <Chip size="small" label={statusChip.label} sx={{ ...statusChip.sx, fontWeight: 600 }} />
                                 </Box>
                                 <Typography variant="body2" color="text.secondary">
                                     <b>Category:</b> {details.category}

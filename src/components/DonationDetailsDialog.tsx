@@ -187,7 +187,7 @@ export default function DonationDetailsDialog({ open, donation, onClose, setDona
                             )}
 
                             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                                {statusChip && <Chip label={statusChip.label} color={statusChip.color} size="small" />}
+                                {statusChip && <Chip label={statusChip.label} size="small" sx={{ ...statusChip.sx, fontWeight: 600 }} />}
                                 {(donationDetails.status === 'available' || donationDetails.status === 'unavailable') &&
                                     donationDetails.getDaysInStorage() !== undefined && (
                                         <Typography variant="body2" color="text.secondary">
