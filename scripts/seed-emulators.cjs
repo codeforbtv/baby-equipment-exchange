@@ -398,6 +398,113 @@ const RESERVED_DONATIONS_DONOR2 = [
     }
 ];
 
+const AVAILABLE_INVENTORY = [
+    {
+        id: 'donation-inv-001',
+        category: 'Car Seats',
+        brand: 'Britax',
+        model: 'Boulevard ClickTight',
+        description: 'Convertible car seat, rear and forward facing. Expires 2029. No accidents.',
+        status: 'available',
+        tagNumber: 'CAR 13',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Car+Seat']
+    },
+    {
+        id: 'donation-inv-002',
+        category: 'Cribs',
+        brand: 'Graco',
+        model: 'Benton 4-in-1',
+        description: 'Convertible crib, pebble gray. Converts to toddler bed, daybed, full-size bed.',
+        status: 'available',
+        tagNumber: 'CRB 5',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
+    },
+    {
+        id: 'donation-inv-003',
+        category: 'High Chairs',
+        brand: 'Graco',
+        model: 'Blossom 6-in-1',
+        description: 'Converts from highchair to booster. Dishwasher-safe tray. Studio colorway.',
+        status: 'available',
+        tagNumber: 'HCH 3',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=High+Chair']
+    },
+    {
+        id: 'donation-inv-004',
+        category: 'Monitors',
+        brand: 'VTech',
+        model: 'DM221',
+        description: 'Audio-only monitor with DECT 6.0 digital technology. Two parent units included.',
+        status: 'available',
+        tagNumber: 'MON 3',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Monitor']
+    },
+    {
+        id: 'donation-inv-005',
+        category: 'Toys',
+        brand: 'Fisher-Price',
+        model: 'Kick & Play Piano Gym',
+        description: 'Activity mat with detachable piano. Five repositionable toys. Machine-washable mat.',
+        status: 'available',
+        tagNumber: 'TOY 10',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Toy']
+    },
+    {
+        id: 'donation-inv-006',
+        category: 'Clothing',
+        brand: 'Mixed',
+        model: '18-24 months bundle',
+        description: '12-piece lot: jeans, hoodies, t-shirts. Good condition, some light stains.',
+        status: 'available',
+        tagNumber: 'CLT 19',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
+    },
+    {
+        id: 'donation-inv-007',
+        category: 'Breast Pumps',
+        brand: 'Medela',
+        model: 'Pump In Style MaxFlow',
+        description: 'Double electric pump with carry bag. All personal accessories new/sealed.',
+        status: 'available',
+        tagNumber: 'BPM 6',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Breast+Pump']
+    },
+    {
+        id: 'donation-inv-008',
+        category: 'Changing Tables',
+        brand: 'Delta Children',
+        model: 'Infant Changing Table with Pad',
+        description: 'White changing table with storage shelf and safety strap. Includes contoured pad.',
+        status: 'available',
+        tagNumber: 'CHG 1',
+        donorEmail: 'anonymous@babyproductexchange.org',
+        donorName: 'Anonymous Drop-Off',
+        donorId: 'admin1',
+        images: ['https://placehold.co/400x300/e8e8e8/666?text=Changing+Table']
+    }
+];
+
 const HISTORY_DONATIONS = [
     {
         id: 'donation-hist-001',
@@ -599,6 +706,13 @@ async function seed() {
         await db.collection('Donations').doc(d.id).set(donDoc);
         console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}] — reserved for ${USERS.aidWorker2.displayName}`);
     }
+
+    for (const d of AVAILABLE_INVENTORY) {
+        const donDoc = makeDonationDoc(d, USERS.admin);
+        await db.collection('Donations').doc(d.id).set(donDoc);
+        console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}]`);
+    }
+    console.log(`  Available inventory: ${AVAILABLE_INVENTORY.length} items across ${new Set(AVAILABLE_INVENTORY.map(d => d.category)).size} categories`);
 
     for (const d of HISTORY_DONATIONS) {
         d.requestor = {
