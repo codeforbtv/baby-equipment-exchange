@@ -12,7 +12,6 @@ import CustomTabPanel from './CustomTabPanel';
 import { Box, Button, Chip, Divider, Paper, Tab, Tabs, Typography } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
-import styles from '@/components/NotificationCard.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
@@ -37,7 +36,28 @@ type DonorGroup = {
 type RequestorGroup = {
     requestorName: string;
     requestorId: string;
+    orderGroups: RequestorOrderGroup[];
+    totalItems: number;
+};
+
+type PickupRequestorGroup = {
+    requestorName: string;
+    requestorId: string;
+    pickupGroups: PickupOrderGroup[];
+    totalItems: number;
+};
+
+type RequestorOrderGroup = {
+    dateKey: string;
+    date: Date | null;
     orders: Order[];
+    totalItems: number;
+};
+
+type PickupOrderGroup = {
+    dateKey: string;
+    date: Date | null;
+    donations: Donation[];
     totalItems: number;
 };
 
@@ -59,6 +79,36 @@ const formatShortDate = (date: DateLike): string => {
     return toDateValue(date)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) ?? '';
 };
 
+const formatGroupDate = (date: DateLike): string => formatShortDate(date) || 'Unknown date';
+
+const getDateTime = (date: DateLike): number => toDateValue(date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+
+const getDateKey = (date: DateLike): string => toDateValue(date)?.toISOString().slice(0, 10) ?? 'unknown-date';
+
+const compareNames = (a: string, b: string): number => a.localeCompare(b, undefined, { sensitivity: 'base' });
+
+const compareDates = (a: DateLike, b: DateLike): number => getDateTime(a) - getDateTime(b);
+
+const compareDonationName = (a: Donation, b: Donation): number => {
+    const aName = `${a.brand ?? ''} ${a.model ?? ''}`.trim();
+    const bName = `${b.brand ?? ''} ${b.model ?? ''}`.trim();
+    return compareNames(aName, bName) || compareNames(a.tagNumber ?? '', b.tagNumber ?? '') || compareNames(a.id, b.id);
+};
+
+const getEarliestDate = (datesToCompare: DateLike[]): Date | null => {
+    const dates = datesToCompare.map((date) => toDateValue(date)).filter((date): date is Date => Boolean(date));
+    if (dates.length === 0) return null;
+    return new Date(Math.min(...dates.map((date) => date.getTime())));
+};
+
+const getSubmissionDate = (submission: Donation[]): Date | null => getEarliestDate(submission.map((donation) => donation.createdAt));
+
+const getSubmissionKey = (submission: Donation[]): string => submission[0]?.bulkCollection || `standalone-${submission[0]?.id ?? 'unknown'}`;
+
+const getOrderRequestedDate = (order: Order): Date | null => getEarliestDate(order.items.map((item) => item.dateRequested)) ?? toDateValue(order.createdAt);
+
+const sortDonationsByName = (donations: Donation[]): Donation[] => [...donations].sort(compareDonationName);
+
 const groupByDonor = (donations: Donation[]): DonorGroup[] => {
     const bulkMap = new Map<string, Donation[]>();
     for (const d of donations) {
@@ -73,18 +123,23 @@ const groupByDonor = (donations: Donation[]): DonorGroup[] => {
         if (!donorMap.has(donorId)) {
             donorMap.set(donorId, { donorName, donorEmail, submissions: [] });
         }
-        donorMap.get(donorId)!.submissions.push(bulk);
+        donorMap.get(donorId)!.submissions.push(sortDonationsByName(bulk));
     }
 
     return Array.from(donorMap.entries())
-        .map(([donorId, data]) => ({
-            donorId,
-            donorName: data.donorName,
-            donorEmail: data.donorEmail,
-            submissions: data.submissions,
-            totalItems: data.submissions.reduce((sum, s) => sum + s.length, 0),
-        }))
-        .sort((a, b) => a.donorName.localeCompare(b.donorName));
+        .map(([donorId, data]) => {
+            const submissions = [...data.submissions].sort(
+                (a, b) => compareDates(getSubmissionDate(a), getSubmissionDate(b)) || compareNames(a[0]?.bulkCollection ?? '', b[0]?.bulkCollection ?? '')
+            );
+            return {
+                donorId,
+                donorName: data.donorName,
+                donorEmail: data.donorEmail,
+                submissions,
+                totalItems: submissions.reduce((sum, s) => sum + s.length, 0),
+            };
+        })
+        .sort((a, b) => compareNames(a.donorName, b.donorName) || compareDates(getSubmissionDate(a.submissions[0]), getSubmissionDate(b.submissions[0])));
 };
 
 const groupByRequestor = (orders: Order[]): RequestorGroup[] => {
@@ -96,13 +151,74 @@ const groupByRequestor = (orders: Order[]): RequestorGroup[] => {
     }
 
     return Array.from(map.entries())
-        .map(([requestorId, data]) => ({
-            requestorId,
-            requestorName: data.name,
-            orders: data.orders,
-            totalItems: data.orders.reduce((sum, o) => sum + o.items.length, 0),
-        }))
-        .sort((a, b) => a.requestorName.localeCompare(b.requestorName));
+        .map(([requestorId, data]) => {
+            const orderDateMap = new Map<string, { date: Date | null; orders: Order[] }>();
+            for (const order of data.orders) {
+                const date = getOrderRequestedDate(order);
+                const dateKey = getDateKey(date);
+                if (!orderDateMap.has(dateKey)) orderDateMap.set(dateKey, { date, orders: [] });
+                orderDateMap.get(dateKey)!.orders.push({
+                    ...order,
+                    items: sortDonationsByName(order.items)
+                });
+            }
+
+            const orderGroups = Array.from(orderDateMap.entries())
+                .map(([dateKey, group]) => ({
+                    dateKey,
+                    date: group.date,
+                    orders: [...group.orders].sort((a, b) => compareDates(getOrderRequestedDate(a), getOrderRequestedDate(b)) || compareNames(a.id, b.id)),
+                    totalItems: group.orders.reduce((sum, order) => sum + order.items.length, 0)
+                }))
+                .sort((a, b) => compareDates(a.date, b.date));
+
+            return {
+                requestorId,
+                requestorName: data.name,
+                orderGroups,
+                totalItems: orderGroups.reduce((sum, group) => sum + group.totalItems, 0),
+            };
+        })
+        .sort((a, b) => compareNames(a.requestorName, b.requestorName) || compareDates(a.orderGroups[0]?.date, b.orderGroups[0]?.date));
+};
+
+const groupReservedByRequestor = (donations: Donation[]): PickupRequestorGroup[] => {
+    const map = new Map<string, { name: string; donations: Donation[] }>();
+
+    for (const donation of donations) {
+        const requestorId = donation.requestor?.id || `missing-requestor-${donation.id}`;
+        const requestorName = donation.requestor?.name || 'Missing requestor';
+        if (!map.has(requestorId)) map.set(requestorId, { name: requestorName, donations: [] });
+        map.get(requestorId)!.donations.push(donation);
+    }
+
+    return Array.from(map.entries())
+        .map(([requestorId, data]) => {
+            const pickupDateMap = new Map<string, { date: Date | null; donations: Donation[] }>();
+            for (const donation of data.donations) {
+                const date = toDateValue(donation.dateRequested);
+                const dateKey = getDateKey(donation.dateRequested);
+                if (!pickupDateMap.has(dateKey)) pickupDateMap.set(dateKey, { date, donations: [] });
+                pickupDateMap.get(dateKey)!.donations.push(donation);
+            }
+
+            const pickupGroups = Array.from(pickupDateMap.entries())
+                .map(([dateKey, group]) => ({
+                    dateKey,
+                    date: group.date,
+                    donations: sortDonationsByName(group.donations),
+                    totalItems: group.donations.length
+                }))
+                .sort((a, b) => compareDates(a.date, b.date));
+
+            return {
+                requestorId,
+                requestorName: data.name,
+                pickupGroups,
+                totalItems: pickupGroups.reduce((sum, group) => sum + group.totalItems, 0),
+            };
+        })
+        .sort((a, b) => compareNames(a.requestorName, b.requestorName) || compareDates(a.pickupGroups[0]?.date, b.pickupGroups[0]?.date));
 };
 
 const Notifications = (props: NotificationsProps) => {
@@ -128,7 +244,7 @@ const Notifications = (props: NotificationsProps) => {
     const donationsAwaitingDropoff = notifications.donations.filter((donation) => donation.status === 'pending delivery');
     const donorGroupsDelivery = groupByDonor(donationsAwaitingDropoff);
     const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
-    const donorGroupsPickup = groupByDonor(donationsAwaitingPickup);
+    const pickupGroups = groupReservedByRequestor(donationsAwaitingPickup);
     const orders = notifications.orders.filter((order) => order.items.length > 0);
     const requestorGroups = groupByRequestor(orders);
     const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted);
@@ -255,14 +371,14 @@ const Notifications = (props: NotificationsProps) => {
                                                         {donorHeader(group.donorName, group.totalItems)}
                                                     </Box>
                                                     {group.submissions.map((submission, si) => (
-                                                        <Box key={submission[0].bulkCollection}>
+                                                        <Box key={getSubmissionKey(submission)}>
                                                             {si > 0 && <Divider />}
                                                             <Box sx={{
                                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                                                 bgcolor: '#fafafa', px: 2, py: 0.75, borderBottom: '1px solid #f0f0f0',
                                                             }}>
                                                                 <Typography variant="caption" color="text.secondary">
-                                                                    {`${submission.length} item${submission.length !== 1 ? 's' : ''}`}
+                                                                    {`${formatGroupDate(getSubmissionDate(submission))} — ${submission.length} item${submission.length !== 1 ? 's' : ''}`}
                                                                 </Typography>
                                                                 <Button
                                                                     size="small"
@@ -295,7 +411,7 @@ const Notifications = (props: NotificationsProps) => {
                                 )}
                             </CustomTabPanel>
 
-                            {/* Tab 1: Pending Delivery — grouped by donor, flat card list */}
+                            {/* Tab 1: Pending Delivery — grouped by donor and bulk submission */}
                             <CustomTabPanel value={currentTab} index={1}>
                                 {donorGroupsDelivery.length > 0 ? (
                                     donorGroupsDelivery.map((group) => (
@@ -306,15 +422,30 @@ const Notifications = (props: NotificationsProps) => {
                                             }}>
                                                 {donorHeader(group.donorName, group.totalItems)}
                                             </Box>
-                                            {group.submissions.flat().map((donation) => (
-                                                <NotificationCard
-                                                    key={donation.id}
-                                                    donation={donation}
-                                                    type="pending-delivery"
-                                                    setIdToDisplay={setDonationIdToDisplay}
-                                                    setNotificationsUpdated={setNotificationsUpdated}
-                                                    isHighlighted={highlightedEntityId === donation.id}
-                                                />
+                                            {group.submissions.map((submission, submissionIndex) => (
+                                                <Box key={getSubmissionKey(submission)}>
+                                                    {submissionIndex > 0 && <Divider />}
+                                                    <Box sx={{
+                                                        bgcolor: '#fafafa',
+                                                        px: 2,
+                                                        py: 0.75,
+                                                        borderBottom: '1px solid #f0f0f0',
+                                                    }}>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {`${formatGroupDate(getSubmissionDate(submission))} — ${submission.length} item${submission.length !== 1 ? 's' : ''}`}
+                                                        </Typography>
+                                                    </Box>
+                                                    {submission.map((donation) => (
+                                                        <NotificationCard
+                                                            key={donation.id}
+                                                            donation={donation}
+                                                            type="pending-delivery"
+                                                            setIdToDisplay={setDonationIdToDisplay}
+                                                            setNotificationsUpdated={setNotificationsUpdated}
+                                                            isHighlighted={highlightedEntityId === donation.id}
+                                                        />
+                                                    ))}
+                                                </Box>
                                             ))}
                                         </Paper>
                                     ))
@@ -325,60 +456,45 @@ const Notifications = (props: NotificationsProps) => {
                                 )}
                             </CustomTabPanel>
 
-                            {/* Tab 2: Requested — grouped by requestor, sub-grouped by order */}
+                            {/* Tab 2: Requested — grouped by requestor, sub-grouped by request date and order */}
                             <CustomTabPanel value={currentTab} index={2}>
                                 {requestorGroups.length > 0 ? (
                                     requestorGroups.map((group) => (
                                         <Paper key={group.requestorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
-                                            {group.orders.length === 1 ? (
-                                                <>
+                                            <Box sx={{
+                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
+                                            }}>
+                                                <Typography variant="body2" fontWeight={600}>
+                                                    {group.requestorName}
+                                                    <Typography component="span" variant="body2" color="text.secondary">
+                                                        {` — ${group.orderGroups.reduce((sum, orderGroup) => sum + orderGroup.orders.length, 0)} orders, ${group.totalItems} item${group.totalItems !== 1 ? 's' : ''}`}
+                                                    </Typography>
+                                                </Typography>
+                                            </Box>
+                                            {group.orderGroups.map((orderGroup, orderGroupIndex) => (
+                                                <Box key={orderGroup.dateKey}>
+                                                    {orderGroupIndex > 0 && <Divider />}
                                                     <Box sx={{
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                        bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
+                                                        bgcolor: '#fafafa',
+                                                        px: 2,
+                                                        py: 0.75,
+                                                        borderBottom: '1px solid #f0f0f0',
                                                     }}>
-                                                        {donorHeader(group.requestorName, group.totalItems)}
-                                                        <Button
-                                                            size="small"
-                                                            variant="contained"
-                                                            onClick={() => setOrderIdToDisplay(group.orders[0].id)}
-                                                        >
-                                                            Review
-                                                        </Button>
-                                                    </Box>
-                                                    {group.orders[0].items.map((item) => (
-                                                        <NotificationCard
-                                                            key={item.id}
-                                                            type="order"
-                                                            donation={item}
-                                                            setIdToDisplay={setDonationIdToDisplay}
-                                                            setNotificationsUpdated={setNotificationsUpdated}
-                                                            isHighlighted={highlightedEntityId === group.orders[0].id || highlightedEntityId === item.id}
-                                                        />
-                                                    ))}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Box sx={{
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                        bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
-                                                    }}>
-                                                        <Typography variant="body2" fontWeight={600}>
-                                                            {group.requestorName}
-                                                            <Typography component="span" variant="body2" color="text.secondary">
-                                                                {` — ${group.orders.length} orders, ${group.totalItems} item${group.totalItems !== 1 ? 's' : ''}`}
-                                                            </Typography>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {`${formatGroupDate(orderGroup.date)} — ${orderGroup.orders.length} order${orderGroup.orders.length !== 1 ? 's' : ''}, ${orderGroup.totalItems} item${orderGroup.totalItems !== 1 ? 's' : ''}`}
                                                         </Typography>
                                                     </Box>
-                                                    {group.orders.map((order, oi) => (
+                                                    {orderGroup.orders.map((order, orderIndex) => (
                                                         <Box key={order.id}>
-                                                            {oi > 0 && <Divider />}
+                                                            {orderIndex > 0 && <Divider />}
                                                             <Box sx={{
                                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                                bgcolor: '#fafafa', px: 2, py: 0.75, borderBottom: '1px solid #f0f0f0',
+                                                                bgcolor: '#fff', px: 2, py: 0.75, borderBottom: '1px solid #f0f0f0',
                                                             }}>
                                                                 <Typography variant="caption" color="text.secondary">
                                                                     {`${order.items.length} item${order.items.length !== 1 ? 's' : ''}`}
-                                                                    {order.createdAt && ` - ${formatShortDate(order.createdAt)}`}
+                                                                    {getOrderRequestedDate(order) && ` - ${formatShortDate(getOrderRequestedDate(order))}`}
                                                                 </Typography>
                                                                 <Button
                                                                     size="small"
@@ -400,8 +516,8 @@ const Notifications = (props: NotificationsProps) => {
                                                             ))}
                                                         </Box>
                                                     ))}
-                                                </>
-                                            )}
+                                                </Box>
+                                            ))}
                                         </Paper>
                                     ))
                                 ) : (
@@ -411,26 +527,41 @@ const Notifications = (props: NotificationsProps) => {
                                 )}
                             </CustomTabPanel>
 
-                            {/* Tab 3: Pending Pickup — grouped by donor, flat card list */}
+                            {/* Tab 3: Pending Pickup — grouped by requestor and request date so scheduled inventory selections stay together */}
                             <CustomTabPanel value={currentTab} index={3}>
-                                {donorGroupsPickup.length > 0 ? (
-                                    donorGroupsPickup.map((group) => (
-                                        <Paper key={group.donorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                {pickupGroups.length > 0 ? (
+                                    pickupGroups.map((group) => (
+                                        <Paper key={group.requestorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
                                             <Box sx={{
                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                                 bgcolor: '#f5f5f5', px: 2, py: 1, borderBottom: '1px solid #e0e0e0',
                                             }}>
-                                                {donorHeader(group.donorName, group.totalItems)}
+                                                {donorHeader(group.requestorName, group.totalItems)}
                                             </Box>
-                                            {group.submissions.flat().map((donation) => (
-                                                <NotificationCard
-                                                    key={donation.id}
-                                                    donation={donation}
-                                                    type="reserved"
-                                                    setIdToDisplay={setDonationIdToDisplay}
-                                                    setNotificationsUpdated={setNotificationsUpdated}
-                                                    isHighlighted={highlightedEntityId === donation.id}
-                                                />
+                                            {group.pickupGroups.map((pickupGroup, pickupGroupIndex) => (
+                                                <Box key={pickupGroup.dateKey}>
+                                                    {pickupGroupIndex > 0 && <Divider />}
+                                                    <Box sx={{
+                                                        bgcolor: '#fafafa',
+                                                        px: 2,
+                                                        py: 0.75,
+                                                        borderBottom: '1px solid #f0f0f0',
+                                                    }}>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {`${formatGroupDate(pickupGroup.date)} — ${pickupGroup.totalItems} item${pickupGroup.totalItems !== 1 ? 's' : ''}`}
+                                                        </Typography>
+                                                    </Box>
+                                                    {pickupGroup.donations.map((donation) => (
+                                                        <NotificationCard
+                                                            key={donation.id}
+                                                            donation={donation}
+                                                            type="reserved"
+                                                            setIdToDisplay={setDonationIdToDisplay}
+                                                            setNotificationsUpdated={setNotificationsUpdated}
+                                                            isHighlighted={highlightedEntityId === donation.id}
+                                                        />
+                                                    ))}
+                                                </Box>
                                             ))}
                                         </Paper>
                                     ))
