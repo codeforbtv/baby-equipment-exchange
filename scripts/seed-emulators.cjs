@@ -151,7 +151,11 @@ const DONOR1_DONATIONS = [
         model: 'SnugRide SnugLock 35',
         description: 'Rear-facing infant seat, base included. Used for 14 months, no accidents.',
         status: 'in processing',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Car+Seat']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Car+Seat+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Car+Seat+Side',
+            'https://placehold.co/400x300/d4d4e8/444?text=Car+Seat+Base'
+        ]
     },
     {
         id: 'donation-mj-002',
@@ -160,7 +164,12 @@ const DONOR1_DONATIONS = [
         model: 'Vista V2',
         description: 'Full-size stroller with bassinet attachment. Rain cover included. Minor scuff on front wheel.',
         status: 'in processing',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Stroller']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Stroller+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Stroller+Folded',
+            'https://placehold.co/400x300/d4d4e8/444?text=Stroller+Bassinet',
+            'https://placehold.co/400x300/e8d4d4/444?text=Wheel+Scuff'
+        ]
     },
     {
         id: 'donation-mj-003',
@@ -169,7 +178,10 @@ const DONOR1_DONATIONS = [
         model: '?',
         description: 'Colorful activity gym with hanging toys. Batteries not included.',
         status: 'in processing',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Play+Mat']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Play+Mat',
+            'https://placehold.co/400x300/d4e8d4/444?text=Play+Mat+Toys'
+        ]
     }
 ];
 
@@ -181,7 +193,11 @@ const DONOR1_DONATIONS_BATCH2 = [
         model: 'ANTILOP',
         description: 'White high chair with tray and inflatable cushion. Legs detach for transport.',
         status: 'in processing',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=High+Chair']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=High+Chair',
+            'https://placehold.co/400x300/d4e8d4/444?text=High+Chair+Tray',
+            'https://placehold.co/400x300/d4d4e8/444?text=High+Chair+Legs'
+        ]
     },
     {
         id: 'donation-mj-005',
@@ -190,7 +206,11 @@ const DONOR1_DONATIONS_BATCH2 = [
         model: '12-18 months bundle',
         description: '15-piece lot: pants, long-sleeve tops, fleece jacket. Gender neutral colors.',
         status: 'in processing',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Clothing+Lot',
+            'https://placehold.co/400x300/d4e8d4/444?text=Fleece+Jacket',
+            'https://placehold.co/400x300/d4d4e8/444?text=Pants+Detail'
+        ]
     }
 ];
 
@@ -202,7 +222,11 @@ const DONOR2_DONATIONS = [
         model: 'SNIGLAR',
         description: 'Beech wood crib with mattress. Disassembled, all hardware in labeled bags.',
         status: 'in processing',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Crib+Parts',
+            'https://placehold.co/400x300/d4e8d4/444?text=Crib+Mattress',
+            'https://placehold.co/400x300/d4d4e8/444?text=Hardware+Bags'
+        ]
     },
     {
         id: 'donation-sam-002',
@@ -211,7 +235,11 @@ const DONOR2_DONATIONS = [
         model: 'Tripp Trapp',
         description: 'Walnut brown, includes baby set and tray. Some tooth marks on the front rail.',
         status: 'in processing',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=High+Chair']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Tripp+Trapp+Front',
+            'https://placehold.co/400x300/e8d4d4/444?text=Tooth+Marks+Detail',
+            'https://placehold.co/400x300/d4d4e8/444?text=Baby+Set+%26+Tray'
+        ]
     },
     {
         id: 'donation-sam-003',
@@ -220,7 +248,11 @@ const DONOR2_DONATIONS = [
         model: 'DXR-8 PRO',
         description: 'Video monitor with wide-angle lens. Camera, monitor unit, and USB charger.',
         status: 'in processing',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Monitor']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Monitor+Unit',
+            'https://placehold.co/400x300/d4e8d4/444?text=Camera+Unit',
+            'https://placehold.co/400x300/d4d4e8/444?text=USB+Charger'
+        ]
     }
 ];
 
@@ -236,7 +268,12 @@ const ADMIN_DONATIONS = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Car+Seat']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Car+Seat+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Car+Seat+Side',
+            'https://placehold.co/400x300/d4d4e8/444?text=Base+1',
+            'https://placehold.co/400x300/e8d4e8/444?text=Base+2'
+        ]
     },
     {
         id: 'donation-admin-002',
@@ -249,7 +286,11 @@ const ADMIN_DONATIONS = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Stroller']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Stroller+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Stroller+Folded',
+            'https://placehold.co/400x300/d4d4e8/444?text=Hand+Brake'
+        ]
     },
     {
         id: 'donation-admin-003',
@@ -262,7 +303,11 @@ const ADMIN_DONATIONS = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Breast+Pump']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Pump+Unit',
+            'https://placehold.co/400x300/d4e8d4/444?text=Carrying+Case',
+            'https://placehold.co/400x300/d4d4e8/444?text=Extra+Flanges'
+        ]
     },
     {
         id: 'donation-admin-004',
@@ -275,7 +320,11 @@ const ADMIN_DONATIONS = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Baby+Carrier']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Carrier+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Carrier+Back',
+            'https://placehold.co/400x300/d4d4e8/444?text=Lumbar+Pad'
+        ]
     },
     {
         id: 'donation-admin-005',
@@ -288,7 +337,12 @@ const ADMIN_DONATIONS = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Clothing+Lot',
+            'https://placehold.co/400x300/d4e8d4/444?text=Onesies',
+            'https://placehold.co/400x300/d4d4e8/444?text=Sleepers',
+            'https://placehold.co/400x300/e8d4e8/444?text=Socks'
+        ]
     },
     {
         id: 'donation-admin-006',
@@ -301,7 +355,11 @@ const ADMIN_DONATIONS = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Toy']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Walker+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Panel+Detail',
+            'https://placehold.co/400x300/d4d4e8/444?text=Walker+Side'
+        ]
     }
 ];
 
@@ -313,7 +371,11 @@ const DONOR1_PENDING_DELIVERY = [
         model: 'Pack \'n Play',
         description: 'Portable playard with bassinet attachment. Includes carry bag.',
         status: 'pending delivery',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Pack-n-Play']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Pack-n-Play',
+            'https://placehold.co/400x300/d4e8d4/444?text=Bassinet+Insert',
+            'https://placehold.co/400x300/d4d4e8/444?text=Carry+Bag'
+        ]
     },
     {
         id: 'donation-pd-002',
@@ -322,7 +384,10 @@ const DONOR1_PENDING_DELIVERY = [
         model: 'Free-to-Grow',
         description: 'Mesh carrier, newborn to toddler. Coast line pattern.',
         status: 'pending delivery',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Baby+Carrier']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Carrier+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Carrier+Pattern'
+        ]
     }
 ];
 
@@ -334,7 +399,12 @@ const DONOR2_PENDING_DELIVERY = [
         model: 'Wooden Activity Cube',
         description: 'Five-sided play cube with bead maze, shape sorter, spinning gears.',
         status: 'pending delivery',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Activity+Cube']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Cube+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Bead+Maze+Side',
+            'https://placehold.co/400x300/d4d4e8/444?text=Shape+Sorter',
+            'https://placehold.co/400x300/e8d4e8/444?text=Spinning+Gears'
+        ]
     },
     {
         id: 'donation-pd-004',
@@ -343,7 +413,10 @@ const DONOR2_PENDING_DELIVERY = [
         model: 'Peanut Changer',
         description: 'Contoured changing pad, vanilla color. Wipeable surface, no cover needed.',
         status: 'pending delivery',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Changing+Pad']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Changing+Pad+Top',
+            'https://placehold.co/400x300/d4e8d4/444?text=Changing+Pad+Side'
+        ]
     },
     {
         id: 'donation-pd-005',
@@ -352,7 +425,11 @@ const DONOR2_PENDING_DELIVERY = [
         model: 'Pro Camera',
         description: 'Wall-mount smart camera with breathing band. Factory reset complete.',
         status: 'pending delivery',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Monitor']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Camera+Unit',
+            'https://placehold.co/400x300/d4e8d4/444?text=Breathing+Band',
+            'https://placehold.co/400x300/d4d4e8/444?text=Wall+Mount'
+        ]
     }
 ];
 
@@ -368,7 +445,10 @@ const RESERVED_DONATIONS_ANON = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Stroller']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Stroller+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Stroller+Folded'
+        ]
     },
     {
         id: 'donation-res-002',
@@ -381,7 +461,11 @@ const RESERVED_DONATIONS_ANON = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Clothing+Lot',
+            'https://placehold.co/400x300/d4e8d4/444?text=Onesies',
+            'https://placehold.co/400x300/d4d4e8/444?text=Bibs'
+        ]
     }
 ];
 
@@ -394,7 +478,11 @@ const RESERVED_DONATIONS_DONOR2 = [
         description: 'White and natural finish. Toddler bed conversion kit included.',
         status: 'reserved',
         tagNumber: 'CRB 4',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Crib+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Crib+Side',
+            'https://placehold.co/400x300/d4d4e8/444?text=Conversion+Kit'
+        ]
     }
 ];
 
@@ -410,7 +498,12 @@ const AVAILABLE_INVENTORY = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Car+Seat']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Car+Seat+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Car+Seat+Rear',
+            'https://placehold.co/400x300/d4d4e8/444?text=ClickTight+Install',
+            'https://placehold.co/400x300/e8d4e8/444?text=Expiry+Label'
+        ]
     },
     {
         id: 'donation-inv-002',
@@ -423,7 +516,11 @@ const AVAILABLE_INVENTORY = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Crib+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Crib+Side',
+            'https://placehold.co/400x300/d4d4e8/444?text=Mattress+Height'
+        ]
     },
     {
         id: 'donation-inv-003',
@@ -436,7 +533,11 @@ const AVAILABLE_INVENTORY = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=High+Chair']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=High+Chair+Full',
+            'https://placehold.co/400x300/d4e8d4/444?text=Booster+Mode',
+            'https://placehold.co/400x300/d4d4e8/444?text=Tray+Removed'
+        ]
     },
     {
         id: 'donation-inv-004',
@@ -449,7 +550,11 @@ const AVAILABLE_INVENTORY = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Monitor']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Baby+Unit',
+            'https://placehold.co/400x300/d4e8d4/444?text=Parent+Unit+1',
+            'https://placehold.co/400x300/d4d4e8/444?text=Parent+Unit+2'
+        ]
     },
     {
         id: 'donation-inv-005',
@@ -462,7 +567,11 @@ const AVAILABLE_INVENTORY = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Toy']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Gym+Full',
+            'https://placehold.co/400x300/d4e8d4/444?text=Piano+Detail',
+            'https://placehold.co/400x300/d4d4e8/444?text=Hanging+Toys'
+        ]
     },
     {
         id: 'donation-inv-006',
@@ -475,7 +584,11 @@ const AVAILABLE_INVENTORY = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Clothing+Lot',
+            'https://placehold.co/400x300/d4e8d4/444?text=Jeans+%26+Hoodies',
+            'https://placehold.co/400x300/e8d4d4/444?text=Stain+Detail'
+        ]
     },
     {
         id: 'donation-inv-007',
@@ -488,7 +601,11 @@ const AVAILABLE_INVENTORY = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Breast+Pump']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Pump+Unit',
+            'https://placehold.co/400x300/d4e8d4/444?text=Carry+Bag',
+            'https://placehold.co/400x300/d4d4e8/444?text=Sealed+Accessories'
+        ]
     },
     {
         id: 'donation-inv-008',
@@ -501,7 +618,12 @@ const AVAILABLE_INVENTORY = [
         donorEmail: 'anonymous@babyproductexchange.org',
         donorName: 'Anonymous Drop-Off',
         donorId: 'admin1',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Changing+Table']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Table+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Storage+Shelf',
+            'https://placehold.co/400x300/d4d4e8/444?text=Safety+Strap',
+            'https://placehold.co/400x300/e8d4e8/444?text=Contoured+Pad'
+        ]
     }
 ];
 
@@ -517,7 +639,10 @@ const HISTORY_DONATIONS = [
         donorEmail: 'donor2@email.com',
         donorName: 'Eli Sato',
         donorId: 'donor2',
-        images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
+        images: [
+            'https://placehold.co/400x300/e8e8e8/666?text=Crib+Front',
+            'https://placehold.co/400x300/d4e8d4/444?text=Toddler+Rail'
+        ]
     }
 ];
 
