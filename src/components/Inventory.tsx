@@ -46,6 +46,7 @@ import DonationDetails from './DonationDetails';
 import { Donation, donationStatuses, DonationStatuses } from '@/models/donation';
 
 const statusSelectOptions = Object.keys(donationStatuses);
+const defaultActiveStatusFilters: string[] = ['Available'];
 
 const donationToInventoryItem = (donation: Donation): InventoryItem => {
     return new InventoryItem({
@@ -72,6 +73,7 @@ const Inventory = (props: InventoryProps) => {
     const [searchInput, setSearchInput] = useState<string>('');
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
     const [statusFilter, setStatusFilter] = useState<string[] | undefined>([]);
+    const [hasAppliedDefaultStatusFilter, setHasAppliedDefaultStatusFilter] = useState(false);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
 
@@ -155,6 +157,12 @@ const Inventory = (props: InventoryProps) => {
     useEffect(() => {
         if (!inventory && (isAidWorker || isAdmin)) fetchInventory();
     }, [inventory, isAidWorker, isAdmin, fetchInventory]);
+
+    useEffect(() => {
+        if (!isAdmin || hasAppliedDefaultStatusFilter) return;
+        setStatusFilter(defaultActiveStatusFilters);
+        setHasAppliedDefaultStatusFilter(true);
+    }, [hasAppliedDefaultStatusFilter, isAdmin]);
 
     const handleRequestInventoryItem = useCallback(
         (inventoryItem: InventoryItem) => {
