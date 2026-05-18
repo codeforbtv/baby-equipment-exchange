@@ -21,6 +21,8 @@
         ],
         "baseUrl": "src",
         "paths": {
+            "posthog-js": ["./lib/posthog-disabled"],
+            "posthog-js/react": ["./lib/posthog-disabled-react"],
             "@/*": ["./*"]
         },
         "types": ["node", "babel__generator", "react"]

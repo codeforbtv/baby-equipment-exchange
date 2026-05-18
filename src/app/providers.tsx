@@ -27,33 +27,6 @@ function PostHogPageView() {
 }
 
 function PHProvider({ children }: { children: React.ReactNode }) {
-    // posthog fetches client level apis, useEffects makes it load in only when browser client does, would otherwise crash if it was done on the server
-    useEffect(() => {
-        const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-        if (!key) return;
-
-        posthog.init(key, {
-            api_host: 'https://us.i.posthog.com',
-            capture_pageview: false,
-            capture_pageleave: false,
-            person_profiles: 'always',
-            enable_recording_console_log: false,
-            capture_exceptions: false,
-            ip: false,
-
-            session_recording: {
-                maskAllInputs: true,
-                maskTextSelector: '*',
-                maskTextFn: (text, element) => {
-                    if (element?.closest('[data-unmask="true"]')) {
-                        return text;
-                    }
-                    return '*'.repeat(text.trim().length);
-                },
-            }
-        });
-    }, []);
-
     return (
         <PostHogProvider client={posthog}>
             {/* suspense needed because useSearchParams requires it in the app router */}

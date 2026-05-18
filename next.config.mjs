@@ -28,6 +28,14 @@ const nextConfig = {
     env: {
         ...emulatorEnv
     },
+    webpack: (config) => {
+        config.resolve.alias = {
+            ...(config.resolve.alias ?? {}),
+            'posthog-js$': resolve(import.meta.dirname, 'src/lib/posthog-disabled.ts'),
+            'posthog-js/react$': resolve(import.meta.dirname, 'src/lib/posthog-disabled-react.tsx')
+        };
+        return config;
+    },
     images: {
         remotePatterns: [
             {
