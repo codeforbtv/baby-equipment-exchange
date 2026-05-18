@@ -36,7 +36,6 @@ import { Order } from '@/types/OrdersTypes';
 import { IUser } from '@/models/user';
 
 import rejectUser from '@/email-templates/rejectUser';
-import userEnabled from '@/email-templates/userEnabled';
 
 type NotificationCardProps = {
     type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
@@ -132,12 +131,10 @@ const NotificationCard = (props: NotificationCardProps) => {
         }
     };
 
-    const handleEnableUser = async (uid: string, userName: string, userEmail: string): Promise<void> => {
+    const handleEnableUser = async (uid: string, userName: string): Promise<void> => {
         setIsLoading(true);
         try {
             await enableUser({ idToken: await getAuthIdToken(), userId: uid });
-            const msg = userEnabled(userEmail, userName);
-            await sendMail(msg);
             setDialogTitle('User enabled');
             setDialogContent(`The user ${userName} has been enabled.`);
             setIsDialogOpen(true);
@@ -311,8 +308,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                                 <CardActions className={styles['notification-card--container--btn']}>
                                     <Button
                                         variant="contained"
-                                        onClick={() => handleEnableUser(user.uid, user.displayName, user.email)}
-                                        disabled={!user.organization}
+                                        onClick={() => handleEnableUser(user.uid, user.displayName)}
                                     >
                                         Approve
                                     </Button>

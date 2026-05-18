@@ -840,49 +840,61 @@ export async function removeDonationFromOrder(
 //Marks donation as distributed and adds it to user's and organization's distributed items list
 export async function markDonationAsDistributed(donation: Donation): Promise<void> {
     try {
-        const batch = writeBatch(db);
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
-        const requestorRef = doc(db, `${USERS_COLLECTION}/${donation.requestor?.id}`);
-        const requestorSnapshot = await getDoc(requestorRef);
-        let orgId = '';
-        if (requestorSnapshot.exists()) {
-            const requestor = requestorSnapshot.data();
-            orgId = requestor.organization.id;
-        }
-        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, orgId);
-        const organizationSnapshot = await getDoc(organizationRef);
-        let orgName;
-        if (organizationSnapshot.exists()) {
-            orgName = organizationSnapshot.data().name;
+        if (!donation.requestor?.id) {
+            throw new Error('Donation has no requestor.');
         }
 
-        batch.update(donationRef, {
-            status: 'distributed',
-            distributor: {
-                id: donation.requestor?.id,
-                name: donation.requestor?.name,
-                email: donation.requestor?.email,
-                organization: orgName
-            },
-            modifiedAt: serverTimestamp(),
-            dateDistributed: serverTimestamp()
+        const requestorRef = doc(db, USERS_COLLECTION, donation.requestor.id);
+
+        await runTransaction(db, async (transaction) => {
+            const requestorSnapshot = await transaction.get(requestorRef);
+            if (!requestorSnapshot.exists()) {
+                throw new Error('Requestor not found.');
+            }
+
+            const requestor = requestorSnapshot.data();
+            const orgId = requestor.organization?.id;
+            let orgName: string | undefined = requestor.organization?.name;
+            const organizationRef = orgId ? doc(db, ORGANIZATIONS_COLLECTION, orgId) : null;
+
+            if (organizationRef) {
+                const organizationSnapshot = await transaction.get(organizationRef);
+                if (organizationSnapshot.exists()) {
+                    orgName = organizationSnapshot.data().name;
+                }
+            }
+
+            transaction.update(donationRef, {
+                status: 'distributed',
+                distributor: {
+                    id: donation.requestor?.id,
+                    name: donation.requestor?.name,
+                    email: donation.requestor?.email,
+                    organization: orgName ?? 'Unassigned'
+                },
+                modifiedAt: serverTimestamp(),
+                dateDistributed: serverTimestamp()
+            });
+            transaction.update(requestorRef, {
+                distributedItems: arrayUnion({
+                    id: donation.id,
+                    tagNumber: donation.tagNumber
+                }),
+                modifiedAt: serverTimestamp()
+            });
+            if (organizationRef) {
+                transaction.update(organizationRef, {
+                    distributedItems: arrayUnion({
+                        id: donation.id,
+                        tagNumber: donation.tagNumber
+                    }),
+                    modifiedAt: serverTimestamp()
+                });
+            }
         });
-        batch.update(requestorRef, {
-            distributedItems: arrayUnion({
-                id: donation.id,
-                tagNumber: donation.tagNumber
-            }),
-            modifiedAt: serverTimestamp()
-        });
-        batch.update(organizationRef, {
-            distributedItems: arrayUnion({
-                id: donation.id,
-                tagNumber: donation.tagNumber
-            }),
-            modifiedAt: serverTimestamp()
-        });
-        await batch.commit();
     } catch (error) {
         addErrorEvent('Error marking donation as distributed', error);
+        throw error;
     }
 }
