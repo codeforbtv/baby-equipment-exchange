@@ -3,7 +3,12 @@
 //Hooks
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 //Components
-import { ImageListItem, ImageListItemBar, IconButton, Tooltip } from '@mui/material';
+import {
+    ImageListItem,
+    ImageListItemBar,
+    IconButton,
+    Tooltip
+} from '@mui/material';
 // Icons
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 //Styles
@@ -25,10 +30,15 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
     const images = inventoryItem.images as string[];
     const image = images ? images[0] : '';
     const canRequest = inventoryItem.status === 'available';
-    const tagLabel = inventoryItem.tagNumber ? `${inventoryItem.tagNumber}` : 'No tag';
+    const tagLabel = inventoryItem.tagNumber
+        ? `${inventoryItem.tagNumber}`
+        : 'No tag';
 
     return (
-        <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>
+        <ImageListItem
+            key={inventoryItem.id}
+            className={styles['grid__item']}
+        >
             <img
                 src={image}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -39,13 +49,21 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
                 title={`${tagLabel} - ${inventoryItem.brand} ${inventoryItem.model}`}
                 subtitle={`${inventoryItem.category} - ${inventoryItem.status}`}
                 actionIcon={
-                    <Tooltip title={canRequest ? 'Add to order' : 'Only available items can be added to an order'}>
+                    <Tooltip
+                        title={
+                            canRequest
+                                ? 'Add to order'
+                                : 'Only available items can be added to an order'
+                        }
+                    >
                         <IconButton
                             sx={{ color: 'rgb(255, 255, 255)' }}
                             aria-label={`details about ${inventoryItem.brand} ${inventoryItem.model}`}
                             size="large"
                             disabled={!canRequest}
-                            onClick={() => handleRequestInventoryItem(inventoryItem)}
+                            onClick={() =>
+                                handleRequestInventoryItem(inventoryItem)
+                            }
                         >
                             <AddShoppingCartIcon />
                         </IconButton>

@@ -29,12 +29,26 @@ export default function Users(props: UserListProps) {
     const [filteredUsers, setFilteredUsers] = useState<IUser[]>(users);
 
     useEffect(() => {
-        setFilteredUsers(users.filter((user) => Object.values(user).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))));
+        setFilteredUsers(
+            users.filter((user) =>
+                Object.values(user).some((value) =>
+                    String(value)
+                        .toLowerCase()
+                        .includes(searchInput.toLowerCase())
+                )
+            )
+        );
     }, [searchInput]);
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && <UserDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setUsersUpdated={setUsersUpdated} />}
+            {idToDisplay && (
+                <UserDetails
+                    id={idToDisplay}
+                    setIdToDisplay={setIdToDisplay}
+                    setUsersUpdated={setUsersUpdated}
+                />
+            )}
 
             {!idToDisplay && (
                 <>
@@ -45,7 +59,9 @@ export default function Users(props: UserListProps) {
                         label="Search"
                         id="search-field"
                         value={searchInput}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
+                        onChange={(
+                            event: React.ChangeEvent<HTMLInputElement>
+                        ): void => setSearchInput(event.target.value)}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -57,7 +73,13 @@ export default function Users(props: UserListProps) {
                     <div className="content--container">
                         <List className={styles['browse__grid']}>
                             {filteredUsers.map((userRecord: IUser) => {
-                                return <UserCard key={userRecord.uid} user={userRecord} setIdToDisplay={setIdToDisplay} />;
+                                return (
+                                    <UserCard
+                                        key={userRecord.uid}
+                                        user={userRecord}
+                                        setIdToDisplay={setIdToDisplay}
+                                    />
+                                );
                             })}
                         </List>
                     </div>

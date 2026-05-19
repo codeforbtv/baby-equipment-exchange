@@ -7,7 +7,10 @@ import Link from 'next/link';
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 //Libs
-import { onAuthStateChangedListener, signInAuthUserWithEmailAndPassword } from '@/api/firebase-users';
+import {
+    onAuthStateChangedListener,
+    signInAuthUserWithEmailAndPassword
+} from '@/api/firebase-users';
 import posthog from 'posthog-js';
 //Icons
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
@@ -16,7 +19,9 @@ import '../../styles/globalStyles.css';
 import styles from './Login.module.css';
 
 export default function Login() {
-    const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('pending');
+    const [loginState, setLoginState] = useState<
+        'pending' | 'loggedIn' | 'loggedOut'
+    >('pending');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const router = useRouter();
@@ -38,7 +43,15 @@ export default function Login() {
     );
 }
 
-function LoginForm({ loginState, setLoginState, email, setEmail, password, setPassword, router }: any) {
+function LoginForm({
+    loginState,
+    setLoginState,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    router
+}: any) {
     const [isInvalidLogin, setIsInvalidLogin] = useState<boolean>(false);
 
     useEffect(() => {
@@ -48,10 +61,15 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
         });
     }, [router]);
 
-    const handleLogin = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    const handleLogin = async (
+        event: React.FormEvent<HTMLFormElement>
+    ): Promise<void> => {
         event.preventDefault();
         try {
-            const user = await signInAuthUserWithEmailAndPassword(email, password);
+            const user = await signInAuthUserWithEmailAndPassword(
+                email,
+                password
+            );
             posthog.capture('user_logged_in');
             router.push('/');
         } catch (error) {
@@ -71,7 +89,13 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
                 {loginState === 'pending' && <Loader />}
                 {loginState === 'loggedOut' && (
                     <>
-                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleLogin}>
+                        <Box
+                            component="form"
+                            gap={3}
+                            display={'flex'}
+                            flexDirection={'column'}
+                            onSubmit={handleLogin}
+                        >
                             <TextField
                                 type="text"
                                 name="email"
@@ -82,7 +106,9 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
                                 value={email}
                                 error={isInvalidLogin}
                                 required
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>
+                                ): void => {
                                     setEmail(event.target.value);
                                 }}
                             />
@@ -95,18 +121,30 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
                                 autoComplete="current-password"
                                 value={password}
                                 error={isInvalidLogin}
-                                helperText={isInvalidLogin && 'The credentials provided were invalid, please try again'}
+                                helperText={
+                                    isInvalidLogin &&
+                                    'The credentials provided were invalid, please try again'
+                                }
                                 required
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>
+                                ): void => {
                                     setPassword(event.target.value);
                                 }}
                             />
-                            <Button variant="contained" type="submit" endIcon={<VpnKeyOutlinedIcon />}>
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                endIcon={<VpnKeyOutlinedIcon />}
+                            >
                                 Login
                             </Button>
                         </Box>
                         <hr />
-                        <Link id="reset-password" href="./reset-password">
+                        <Link
+                            id="reset-password"
+                            href="./reset-password"
+                        >
                             Forgot password?
                         </Link>
                     </>
@@ -115,7 +153,10 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
             <hr />
             <h4>
                 Don&apos;t have an account?{' '}
-                <Link id="join" href="./join">
+                <Link
+                    id="join"
+                    href="./join"
+                >
                     Join here
                 </Link>
             </h4>

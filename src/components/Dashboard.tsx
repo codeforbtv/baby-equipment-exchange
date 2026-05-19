@@ -1,7 +1,17 @@
 'use client';
 
 //Components
-import { Badge, Button, IconButton, Menu, MenuItem, Tab, Tabs, Tooltip, useMediaQuery } from '@mui/material';
+import {
+    Badge,
+    Button,
+    IconButton,
+    Menu,
+    MenuItem,
+    Tab,
+    Tabs,
+    Tooltip,
+    useMediaQuery
+} from '@mui/material';
 import Organizations from './Organizations';
 import Donations from './Donations';
 import Users from './Users';
@@ -36,7 +46,14 @@ import { InventoryItem } from '@/models/inventoryItem';
 import { Category } from '@/models/category';
 import { getAllCategories } from '@/api/firebase-categories';
 
-const tabOptions = ['Notifications', 'Donations', 'Inventory', 'Users', 'Organizations', 'Categories'];
+const tabOptions = [
+    'Notifications',
+    'Donations',
+    'Inventory',
+    'Users',
+    'Organizations',
+    'Categories'
+];
 
 export default function Dashboard() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -47,8 +64,12 @@ export default function Dashboard() {
     const [orgNamesAndIds, setOrgNamesAndIds] = useState<{
         [key: string]: string;
     } | null>(null);
-    const [notifications, setNotifications] = useState<Notification | null>(null);
-    const [highlightedEntityId, setHighlightedEntityId] = useState<string | null>(null);
+    const [notifications, setNotifications] = useState<Notification | null>(
+        null
+    );
+    const [highlightedEntityId, setHighlightedEntityId] = useState<
+        string | null
+    >(null);
     const [notificationsSubTab, setNotificationsSubTab] = useState<number>(0);
     const [categories, setCategories] = useState<Category[] | null>(null);
     const pendingNotificationScrollTop = useRef<number | null>(null);
@@ -58,7 +79,8 @@ export default function Dashboard() {
     const router = useRouter();
 
     //Track whether updates have been made
-    const [notificationsUpdated, setNotificationsUpdated] = useState<boolean>(false);
+    const [notificationsUpdated, setNotificationsUpdated] =
+        useState<boolean>(false);
     const [donationsUpdated, setDonationsUpdated] = useState<boolean>(false);
     const [inventoryUpdated, setInventoryUpdated] = useState<boolean>(false);
     const [usersUpdated, setUsersUpdated] = useState<boolean>(false);
@@ -74,7 +96,10 @@ export default function Dashboard() {
         setAnchorEl(event.currentTarget);
     };
 
-    const handleMenuItemClick = (event: React.MouseEvent<HTMLElement>, index: number) => {
+    const handleMenuItemClick = (
+        event: React.MouseEvent<HTMLElement>,
+        index: number
+    ) => {
         setCurrentTab(index);
         setAnchorEl(null);
     };
@@ -87,16 +112,25 @@ export default function Dashboard() {
         setCurrentTab(target);
     };
 
-    const handleFeedNavigation = useCallback((tabIndex: number, entityId: string) => {
-        clearTimeout(highlightTimer.current);
-        setCurrentTab(0);
-        setNotificationsSubTab(tabIndex);
-        setHighlightedEntityId(entityId);
-        highlightTimer.current = setTimeout(() => setHighlightedEntityId(null), 5000);
-    }, []);
+    const handleFeedNavigation = useCallback(
+        (tabIndex: number, entityId: string) => {
+            clearTimeout(highlightTimer.current);
+            setCurrentTab(0);
+            setNotificationsSubTab(tabIndex);
+            setHighlightedEntityId(entityId);
+            highlightTimer.current = setTimeout(
+                () => setHighlightedEntityId(null),
+                5000
+            );
+        },
+        []
+    );
 
-    const setNotificationsUpdatedAndPreserveScroll: React.Dispatch<React.SetStateAction<boolean>> = (value) => {
-        const updated = typeof value === 'function' ? value(notificationsUpdated) : value;
+    const setNotificationsUpdatedAndPreserveScroll: React.Dispatch<
+        React.SetStateAction<boolean>
+    > = (value) => {
+        const updated =
+            typeof value === 'function' ? value(notificationsUpdated) : value;
         if (updated && typeof window !== 'undefined') {
             pendingNotificationScrollTop.current = window.scrollY;
         }
@@ -113,7 +147,9 @@ export default function Dashboard() {
             if (pendingNotificationScrollTop.current !== null) {
                 const scrollTop = pendingNotificationScrollTop.current;
                 pendingNotificationScrollTop.current = null;
-                requestAnimationFrame(() => window.scrollTo({ top: scrollTop }));
+                requestAnimationFrame(() =>
+                    window.scrollTo({ top: scrollTop })
+                );
             }
         } catch (error) {
             addErrorEvent('Fetch notifications', error);
@@ -206,7 +242,12 @@ export default function Dashboard() {
 
     // Only fetch collections once when selected unless there's been an update
     useEffect(() => {
-        if ((currentTab === 0 && !notifications) || notificationsUpdated || donationsUpdated || usersUpdated) {
+        if (
+            (currentTab === 0 && !notifications) ||
+            notificationsUpdated ||
+            donationsUpdated ||
+            usersUpdated
+        ) {
             fetchNotifications();
         } else if ((currentTab === 1 && !donations) || donationsUpdated) {
             fetchDonations();
@@ -219,33 +260,77 @@ export default function Dashboard() {
         } else if ((currentTab === 5 && !categories) || categoriesUpdated) {
             fetchCategories();
         }
-    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated, categoriesUpdated]);
+    }, [
+        currentTab,
+        donationsUpdated,
+        inventoryUpdated,
+        usersUpdated,
+        orgsUpdated,
+        notificationsUpdated,
+        categoriesUpdated
+    ]);
 
     return (
         <ProtectedAdminRoute>
-            <div className={styles['navbar']} data-unmask="true" style={{ alignItems: 'center' }}>
+            <div
+                className={styles['navbar']}
+                data-unmask="true"
+                style={{ alignItems: 'center' }}
+            >
                 {matches ? (
-                    <Tabs value={currentTab} onChange={handleCurrentTab} aria-label="dashboard" variant="scrollable" scrollButtons="auto" sx={{ flex: 1 }}>
+                    <Tabs
+                        value={currentTab}
+                        onChange={handleCurrentTab}
+                        aria-label="dashboard"
+                        variant="scrollable"
+                        scrollButtons="auto"
+                        sx={{ flex: 1 }}
+                    >
                         {tabOptions.map((tab) => (
-                            <Tab key={tab} label={tab} sx={{ color: 'black' }} />
+                            <Tab
+                                key={tab}
+                                label={tab}
+                                sx={{ color: 'black' }}
+                            />
                         ))}
                     </Tabs>
                 ) : (
                     <>
-                        <Button endIcon={<ArrowDropDownIcon />} onClick={handleClickListItem}>
+                        <Button
+                            endIcon={<ArrowDropDownIcon />}
+                            onClick={handleClickListItem}
+                        >
                             {tabOptions[currentTab]}
                         </Button>
-                        <Menu id="selected-tab" anchorEl={anchorEl} open={open} onClose={handleClose}>
+                        <Menu
+                            id="selected-tab"
+                            anchorEl={anchorEl}
+                            open={open}
+                            onClose={handleClose}
+                        >
                             {tabOptions.map((tab, i) => (
-                                <MenuItem key={tab} selected={i === currentTab} onClick={(event) => handleMenuItemClick(event, i)}>
+                                <MenuItem
+                                    key={tab}
+                                    selected={i === currentTab}
+                                    onClick={(event) =>
+                                        handleMenuItemClick(event, i)
+                                    }
+                                >
                                     <p>{tab}</p>
                                 </MenuItem>
                             ))}
                         </Menu>
                     </>
                 )}
-                <NotificationFeed notifications={notifications} onNavigate={handleFeedNavigation} />
-                <IconButton onClick={handleRefresh} size="small" sx={{ ml: 0.5 }}>
+                <NotificationFeed
+                    notifications={notifications}
+                    onNavigate={handleFeedNavigation}
+                />
+                <IconButton
+                    onClick={handleRefresh}
+                    size="small"
+                    sx={{ ml: 0.5 }}
+                >
                     <RefreshIcon fontSize="small" />
                 </IconButton>
             </div>
@@ -253,11 +338,16 @@ export default function Dashboard() {
                 <Loader />
             ) : (
                 <>
-                    <CustomTabPanel value={currentTab} index={0}>
+                    <CustomTabPanel
+                        value={currentTab}
+                        index={0}
+                    >
                         {notifications ? (
                             <Notifications
                                 notifications={notifications}
-                                setNotificationsUpdated={setNotificationsUpdatedAndPreserveScroll}
+                                setNotificationsUpdated={
+                                    setNotificationsUpdatedAndPreserveScroll
+                                }
                                 activeSubTab={notificationsSubTab}
                                 onSubTabChange={setNotificationsSubTab}
                                 highlightedEntityId={highlightedEntityId}
@@ -266,20 +356,70 @@ export default function Dashboard() {
                             <p>No notifications at this time.</p>
                         )}
                     </CustomTabPanel>
-                    <CustomTabPanel value={currentTab} index={1}>
-                        {donations ? <Donations donations={donations} setDonationsUpdated={setDonationsUpdated} /> : <p>No donations found.</p>}
+                    <CustomTabPanel
+                        value={currentTab}
+                        index={1}
+                    >
+                        {donations ? (
+                            <Donations
+                                donations={donations}
+                                setDonationsUpdated={setDonationsUpdated}
+                            />
+                        ) : (
+                            <p>No donations found.</p>
+                        )}
                     </CustomTabPanel>
-                    <CustomTabPanel value={currentTab} index={2}>
-                        {inventory ? <Inventory inventory={inventory} setInventoryUpdated={setInventoryUpdated} /> : <p>No inventory found.</p>}
+                    <CustomTabPanel
+                        value={currentTab}
+                        index={2}
+                    >
+                        {inventory ? (
+                            <Inventory
+                                inventory={inventory}
+                                setInventoryUpdated={setInventoryUpdated}
+                            />
+                        ) : (
+                            <p>No inventory found.</p>
+                        )}
                     </CustomTabPanel>
-                    <CustomTabPanel value={currentTab} index={3}>
-                        {users ? <Users users={users} setUsersUpdated={setUsersUpdated} /> : <p>No users found.</p>}
+                    <CustomTabPanel
+                        value={currentTab}
+                        index={3}
+                    >
+                        {users ? (
+                            <Users
+                                users={users}
+                                setUsersUpdated={setUsersUpdated}
+                            />
+                        ) : (
+                            <p>No users found.</p>
+                        )}
                     </CustomTabPanel>
-                    <CustomTabPanel value={currentTab} index={4}>
-                        {orgNamesAndIds ? <Organizations orgNamesAndIds={orgNamesAndIds} setOrgsUpdated={setOrgsUpdated} /> : <p>No organizations found.</p>}
+                    <CustomTabPanel
+                        value={currentTab}
+                        index={4}
+                    >
+                        {orgNamesAndIds ? (
+                            <Organizations
+                                orgNamesAndIds={orgNamesAndIds}
+                                setOrgsUpdated={setOrgsUpdated}
+                            />
+                        ) : (
+                            <p>No organizations found.</p>
+                        )}
                     </CustomTabPanel>
-                    <CustomTabPanel value={currentTab} index={5}>
-                        {categories ? <Categories categories={categories} setCategoriesUpdated={setCategoriesUpdated} /> : <p>No categories found.</p>}
+                    <CustomTabPanel
+                        value={currentTab}
+                        index={5}
+                    >
+                        {categories ? (
+                            <Categories
+                                categories={categories}
+                                setCategoriesUpdated={setCategoriesUpdated}
+                            />
+                        ) : (
+                            <p>No categories found.</p>
+                        )}
                     </CustomTabPanel>
                 </>
             )}

@@ -1,5 +1,9 @@
 // Modules
-import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
+import {
+    DocumentData,
+    QueryDocumentSnapshot,
+    SnapshotOptions
+} from 'firebase/firestore';
 
 // Models
 import { IEvent, Event } from '@/models/event';
@@ -17,7 +21,10 @@ const eventConverter = {
         };
         return eventData;
     },
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Event {
+    fromFirestore(
+        snapshot: QueryDocumentSnapshot,
+        options: SnapshotOptions
+    ): Event {
         const data = snapshot.data(options);
         const eventData: IEvent = {
             type: data.type,

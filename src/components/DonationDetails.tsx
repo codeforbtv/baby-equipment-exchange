@@ -1,10 +1,23 @@
 'use client';
 
 //Hooks
-import { MouseEventHandler, useCallback, useEffect, useMemo, useState, Dispatch, SetStateAction } from 'react';
+import {
+    MouseEventHandler,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+    Dispatch,
+    SetStateAction
+} from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
-import { deleteInventoryDonationById, getDonationById, updateDonation, updateInventoryDonationStatus } from '@/api/firebase-donations';
+import {
+    deleteInventoryDonationById,
+    getDonationById,
+    updateDonation,
+    updateInventoryDonationStatus
+} from '@/api/firebase-donations';
 import { productLifeCycleReport } from '@/api/firebase-reports';
 //Components
 import {
@@ -47,25 +60,44 @@ type DonationDetailsProps = {
 };
 
 const DonationDetails = (props: DonationDetailsProps) => {
-    const { id, setIdToDisplay, donation, setDonationsUpdated, onDonationChanged, onDonationDeleted } = props;
+    const {
+        id,
+        setIdToDisplay,
+        donation,
+        setDonationsUpdated,
+        onDonationChanged,
+        onDonationDeleted
+    } = props;
     const intialDonation = donation ? donation : null;
-    const [donationDetails, setDonationDetails] = useState<Donation | null>(intialDonation);
-    const [donationDetailsUpdated, setDonationDetailsUpdated] = useState<boolean>(false);
+    const [donationDetails, setDonationDetails] = useState<Donation | null>(
+        intialDonation
+    );
+    const [donationDetailsUpdated, setDonationDetailsUpdated] =
+        useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [actionInProgress, setActionInProgress] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
     const [openImageURL, setOpenImageURL] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] =
+        useState<boolean>(false);
     const [dialogContent, setDialogContent] = useState<string>('');
 
     const statusLabelByValue = useMemo(() => {
-        return Object.fromEntries(Object.entries(donationStatuses).map(([label, value]) => [value, label]));
+        return Object.fromEntries(
+            Object.entries(donationStatuses).map(([label, value]) => [
+                value,
+                label
+            ])
+        );
     }, []);
 
     const fetchDonation = useCallback(
-        async (donationId: string, options: { showLoader?: boolean; notifyParent?: boolean } = {}) => {
+        async (
+            donationId: string,
+            options: { showLoader?: boolean; notifyParent?: boolean } = {}
+        ) => {
             const showLoader = options.showLoader ?? true;
             if (showLoader) setIsLoading(true);
             try {
@@ -95,8 +127,13 @@ const DonationDetails = (props: DonationDetailsProps) => {
                     expectedStatus: 'available',
                     nextStatus: 'unavailable'
                 });
-                await fetchDonation(donationDetails.id, { showLoader: false, notifyParent: true });
-                setDialogContent(`'${donationDetails.brand} - ${donationDetails.model}' has been removed from inventory.`);
+                await fetchDonation(donationDetails.id, {
+                    showLoader: false,
+                    notifyParent: true
+                });
+                setDialogContent(
+                    `'${donationDetails.brand} - ${donationDetails.model}' has been removed from inventory.`
+                );
                 setIsDialogOpen(true);
             }
         } catch (error) {
@@ -124,8 +161,13 @@ const DonationDetails = (props: DonationDetailsProps) => {
                 await updateDonation(donationDetails.id, {
                     status: 'in processing'
                 });
-                await fetchDonation(donationDetails.id, { showLoader: false, notifyParent: true });
-                setDialogContent(`'${donationDetails.brand} - ${donationDetails.model}' has been returned to the approval queue.`);
+                await fetchDonation(donationDetails.id, {
+                    showLoader: false,
+                    notifyParent: true
+                });
+                setDialogContent(
+                    `'${donationDetails.brand} - ${donationDetails.model}' has been returned to the approval queue.`
+                );
                 setIsDialogOpen(true);
             }
         } catch (error) {
@@ -169,12 +211,18 @@ const DonationDetails = (props: DonationDetailsProps) => {
         }
     }, [id, donation, donationDetailsUpdated, fetchDonation]);
 
-    const isInventoryItem = donationDetails?.status === 'available' || donationDetails?.status === 'unavailable';
+    const isInventoryItem =
+        donationDetails?.status === 'available' ||
+        donationDetails?.status === 'unavailable';
 
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                {!isEditMode ? <h3>Donation Details</h3> : <h3>Edit Donation</h3>}
+                {!isEditMode ? (
+                    <h3>Donation Details</h3>
+                ) : (
+                    <h3>Edit Donation</h3>
+                )}
                 {setIdToDisplay && (
                     <IconButton onClick={() => setIdToDisplay(null)}>
                         <ArrowBackIcon />
@@ -182,25 +230,46 @@ const DonationDetails = (props: DonationDetailsProps) => {
                 )}
 
                 {isLoading && <Loader />}
-                {!isLoading && donationDetails === null && <p>Donation not found</p>}
+                {!isLoading && donationDetails === null && (
+                    <p>Donation not found</p>
+                )}
                 {!isLoading && donationDetails !== null && !isEditMode && (
                     <div className="content--container">
                         <ImageList>
                             {donationDetails.images.map((image) => (
                                 <ImageListItem key={image as string}>
-                                    <img src={`${image}`} alt={donationDetails.model} loading="lazy" onClick={handleImageClick} />
+                                    <img
+                                        src={`${image}`}
+                                        alt={donationDetails.model}
+                                        loading="lazy"
+                                        onClick={handleImageClick}
+                                    />
                                 </ImageListItem>
                             ))}
                         </ImageList>
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ marginBottom: '1em' }}>
-                            <Button variant="contained" type="button" startIcon={<EditIcon />} disabled={actionInProgress} onClick={() => setIsEditMode(true)}>
+                        <Stack
+                            direction={{ xs: 'column', sm: 'row' }}
+                            spacing={2}
+                            sx={{ marginBottom: '1em' }}
+                        >
+                            <Button
+                                variant="contained"
+                                type="button"
+                                startIcon={<EditIcon />}
+                                disabled={actionInProgress}
+                                onClick={() => setIsEditMode(true)}
+                            >
                                 Edit Donation
                             </Button>
                             <Button
                                 variant="contained"
                                 startIcon={<DownloadIcon />}
                                 disabled={actionInProgress}
-                                onClick={() => generateProductLifeCycleReport(donationDetails)}
+                                onClick={() =>
+                                    generateProductLifeCycleReport(
+                                        donationDetails
+                                    )
+                                }
                             >
                                 Lifecycle Report
                             </Button>
@@ -246,19 +315,28 @@ const DonationDetails = (props: DonationDetailsProps) => {
                         <Typography variant="h5">
                             {donationDetails.brand} - {donationDetails.model}
                         </Typography>
-                        {donationDetails.status !== 'rejected' && <Typography variant="h6">{donationDetails.tagNumber ?? 'No tag number'}</Typography>}
+                        {donationDetails.status !== 'rejected' && (
+                            <Typography variant="h6">
+                                {donationDetails.tagNumber ?? 'No tag number'}
+                            </Typography>
+                        )}
                         <Typography variant="body1">
                             <b>Status: </b>
-                            {statusLabelByValue[donationDetails.status] ?? donationDetails.status}
+                            {statusLabelByValue[donationDetails.status] ??
+                                donationDetails.status}
                         </Typography>
-                        {(donationDetails.status === 'available' || donationDetails.status === 'unavailable') && (
+                        {(donationDetails.status === 'available' ||
+                            donationDetails.status === 'unavailable') && (
                             <Typography variant="body1">
                                 <b>Days in storage: </b>
                                 {donationDetails.getDaysInStorage()}
                             </Typography>
                         )}
 
-                        <Typography variant="body1" sx={{ marginTop: '1em' }}>
+                        <Typography
+                            variant="body1"
+                            sx={{ marginTop: '1em' }}
+                        >
                             <b>Category: </b> {donationDetails.category}
                         </Typography>
 
@@ -269,20 +347,26 @@ const DonationDetails = (props: DonationDetailsProps) => {
                         {donationDetails.dateAccepted && (
                             <Typography variant="body1">
                                 <b>Accepted on: </b>
-                                {donationDetails.dateAccepted.toDate().toDateString()}
+                                {donationDetails.dateAccepted
+                                    .toDate()
+                                    .toDateString()}
                             </Typography>
                         )}
-                        {(donationDetails.donorEmail.length > 0 || donationDetails.donorName.length > 0) && (
+                        {(donationDetails.donorEmail.length > 0 ||
+                            donationDetails.donorName.length > 0) && (
                             <Typography variant="body1">
                                 <b>Donated by: </b>
-                                {donationDetails.donorName} ({donationDetails.donorEmail})
+                                {donationDetails.donorName} (
+                                {donationDetails.donorEmail})
                             </Typography>
                         )}
 
                         {donationDetails.dateReceived && (
                             <Typography variant="body1">
                                 <b>Received on: </b>
-                                {donationDetails.dateReceived.toDate().toDateString()}
+                                {donationDetails.dateReceived
+                                    .toDate()
+                                    .toDateString()}
                             </Typography>
                         )}
                         {donationDetails.requestor && (
@@ -294,43 +378,79 @@ const DonationDetails = (props: DonationDetailsProps) => {
                         {donationDetails.dateRequested && (
                             <Typography variant="body1">
                                 <b>Requested on: </b>
-                                {donationDetails.dateRequested.toDate().toDateString()}
+                                {donationDetails.dateRequested
+                                    .toDate()
+                                    .toDateString()}
                             </Typography>
                         )}
                         {donationDetails.distributor && (
                             <Typography variant="body1">
                                 <b>Distributed by: </b>
-                                {donationDetails.distributor.name} ({donationDetails.distributor.email})
+                                {donationDetails.distributor.name} (
+                                {donationDetails.distributor.email})
                             </Typography>
                         )}
                         {donationDetails.dateDistributed && (
                             <Typography variant="body1">
                                 <b>Date distributed: </b>
-                                {donationDetails.dateDistributed.toDate().toDateString()}
+                                {donationDetails.dateDistributed
+                                    .toDate()
+                                    .toDateString()}
                             </Typography>
                         )}
-                        <Dialog open={isImageOpen} onClose={handleImageClose} sx={{ width: '100%' }}>
-                            <img src={openImageURL} alt={openImageURL} style={{ maxWidth: '100%' }} />
+                        <Dialog
+                            open={isImageOpen}
+                            onClose={handleImageClose}
+                            sx={{ width: '100%' }}
+                        >
+                            <img
+                                src={openImageURL}
+                                alt={openImageURL}
+                                style={{ maxWidth: '100%' }}
+                            />
                             <DialogActions>
-                                <Button type="button" onClick={handleImageClose}>
+                                <Button
+                                    type="button"
+                                    onClick={handleImageClose}
+                                >
                                     Close
                                 </Button>
                             </DialogActions>
                         </Dialog>
-                        <CustomDialog isOpen={isDialogOpen} title="Donation updated" content={dialogContent} onClose={handleClose} />
-                        <Dialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)}>
+                        <CustomDialog
+                            isOpen={isDialogOpen}
+                            title="Donation updated"
+                            content={dialogContent}
+                            onClose={handleClose}
+                        />
+                        <Dialog
+                            open={isDeleteDialogOpen}
+                            onClose={() => setIsDeleteDialogOpen(false)}
+                        >
                             <DialogTitle>Delete inventory item?</DialogTitle>
                             <DialogContent>
                                 <DialogContentText>
-                                    This permanently deletes {donationDetails.brand} - {donationDetails.model}. Only available or unavailable inventory items
-                                    can be deleted.
+                                    This permanently deletes{' '}
+                                    {donationDetails.brand} -{' '}
+                                    {donationDetails.model}. Only available or
+                                    unavailable inventory items can be deleted.
                                 </DialogContentText>
                             </DialogContent>
                             <DialogActions>
-                                <Button type="button" onClick={() => setIsDeleteDialogOpen(false)} disabled={actionInProgress}>
+                                <Button
+                                    type="button"
+                                    onClick={() => setIsDeleteDialogOpen(false)}
+                                    disabled={actionInProgress}
+                                >
                                     Cancel
                                 </Button>
-                                <Button type="button" color="error" variant="contained" onClick={deleteInventoryDonation} disabled={actionInProgress}>
+                                <Button
+                                    type="button"
+                                    color="error"
+                                    variant="contained"
+                                    onClick={deleteInventoryDonation}
+                                    disabled={actionInProgress}
+                                >
                                     Delete
                                 </Button>
                             </DialogActions>

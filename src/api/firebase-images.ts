@@ -15,7 +15,12 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 // Libs
 import { db, storage, addErrorEvent } from './firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+    ref,
+    uploadBytes,
+    getDownloadURL,
+    deleteObject
+} from 'firebase/storage';
 
 // Models
 import { IImage, Image } from '@/models/image';
@@ -41,7 +46,10 @@ const imageConverter = {
 
         return imageData;
     },
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Image {
+    fromFirestore(
+        snapshot: QueryDocumentSnapshot,
+        options: SnapshotOptions
+    ): Image {
         const data = snapshot.data(options)!;
         const imageData: IImage = {
             uploadedBy: data.uploadedBy,
@@ -95,14 +103,21 @@ export async function getImage(id: string): Promise<Image> {
     return snapshot.data() as Image;
 }
 
-export async function deleteImagesByRef(...documentReferences: DocumentReference<Image>[]): Promise<void> {
+export async function deleteImagesByRef(
+    ...documentReferences: DocumentReference<Image>[]
+): Promise<void> {
     for (const imageReference of documentReferences) {
         try {
-            const imageSnapshot = await getDoc(imageReference.withConverter(imageConverter));
+            const imageSnapshot = await getDoc(
+                imageReference.withConverter(imageConverter)
+            );
             if (imageSnapshot.exists()) {
                 const imageDocument = imageSnapshot.data();
 
-                const imageDetailsCollectionRef = collection(db, IMAGE_DETAILS_COLLECTION);
+                const imageDetailsCollectionRef = collection(
+                    db,
+                    IMAGE_DETAILS_COLLECTION
+                );
                 const conjunctions = [where('image', '==', imageReference)];
                 const q = query(imageDetailsCollectionRef, ...conjunctions);
                 const imageDetailsSnapshot = await getDocs(q);
@@ -110,7 +125,9 @@ export async function deleteImagesByRef(...documentReferences: DocumentReference
                     throw new Error('No associated image details.');
                 }
 
-                await deleteObject(ref(storage, imageDocument.getDownloadURL()));
+                await deleteObject(
+                    ref(storage, imageDocument.getDownloadURL())
+                );
                 await deleteDoc(imageDetailsSnapshot.docs[0].ref);
                 await deleteDoc(imageReference);
             }
@@ -123,11 +140,15 @@ export async function deleteImagesByRef(...documentReferences: DocumentReference
 /** Retrieve a file from storage enforcing Firebase Storage security rules.
  *
  */
-export async function imageReferenceConverter(...documentReferences: DocumentReference<Image>[]): Promise<string[]> {
+export async function imageReferenceConverter(
+    ...documentReferences: DocumentReference<Image>[]
+): Promise<string[]> {
     const images: string[] = [];
     for (const documentReference of documentReferences) {
         try {
-            const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter));
+            const imageSnapshot = await getDoc(
+                documentReference.withConverter(imageConverter)
+            );
             if (imageSnapshot.exists()) {
                 const imageDocument = imageSnapshot.data();
                 const url = imageDocument?.getDownloadURL();

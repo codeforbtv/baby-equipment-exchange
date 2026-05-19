@@ -41,13 +41,19 @@ export const organizationConverter = {
             modifiedAt: organization.getModifiedAt()
         };
         for (const key in organizationData) {
-            if (organizationData[key] === undefined || organizationData[key] === null) {
+            if (
+                organizationData[key] === undefined ||
+                organizationData[key] === null
+            ) {
                 delete organizationData[key];
             }
         }
         return organizationData;
     },
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Organization {
+    fromFirestore(
+        snapshot: QueryDocumentSnapshot,
+        options: SnapshotOptions
+    ): Organization {
         const data = snapshot.data(options);
         const organizationData: IOrganization = {
             id: data.id,
@@ -66,7 +72,9 @@ export const organizationConverter = {
     }
 };
 
-export async function addOrganization(newOrganization: OrganizationBody): Promise<void> {
+export async function addOrganization(
+    newOrganization: OrganizationBody
+): Promise<void> {
     const organizationRef = doc(collection(db, ORGANIZATIONS_COLLECTION));
     const organizationParams: IOrganization = {
         id: organizationRef.id,
@@ -83,15 +91,25 @@ export async function addOrganization(newOrganization: OrganizationBody): Promis
     };
     const organization = new Organization(organizationParams);
     try {
-        await setDoc(organizationRef, organizationConverter.toFirestore(organization));
+        await setDoc(
+            organizationRef,
+            organizationConverter.toFirestore(organization)
+        );
     } catch (error) {
         addErrorEvent('Add organization', error);
     }
 }
 
-export async function updateOrganization(id: string, organizationDetails: any): Promise<void> {
+export async function updateOrganization(
+    id: string,
+    organizationDetails: any
+): Promise<void> {
     try {
-        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, id).withConverter(organizationConverter);
+        const organizationRef = doc(
+            db,
+            ORGANIZATIONS_COLLECTION,
+            id
+        ).withConverter(organizationConverter);
         await updateDoc(organizationRef, {
             ...organizationDetails,
             modifiedAt: serverTimestamp()
@@ -111,12 +129,16 @@ export async function deleteOrganization(id: string): Promise<void> {
 }
 
 export async function getOrganizations(): Promise<Organization[]> {
-    const q = query(collection(db, ORGANIZATIONS_COLLECTION)).withConverter(organizationConverter);
+    const q = query(collection(db, ORGANIZATIONS_COLLECTION)).withConverter(
+        organizationConverter
+    );
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => doc.data());
 }
 
-export async function checkIfOrganizationExists(name: string): Promise<boolean> {
+export async function checkIfOrganizationExists(
+    name: string
+): Promise<boolean> {
     try {
         const orgRef = doc(db, ORGANIZATIONS_COLLECTION, name);
         const orgSnapshot = await getDoc(orgRef);
@@ -129,7 +151,11 @@ export async function checkIfOrganizationExists(name: string): Promise<boolean> 
 
 export async function getOrganizationById(id: string): Promise<IOrganization> {
     try {
-        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, id).withConverter(organizationConverter);
+        const organizationRef = doc(
+            db,
+            ORGANIZATIONS_COLLECTION,
+            id
+        ).withConverter(organizationConverter);
         const organizationSnapshot = await getDoc(organizationRef);
         if (organizationSnapshot.exists()) {
             return organizationSnapshot.data();
@@ -144,7 +170,9 @@ export async function getOrganizationById(id: string): Promise<IOrganization> {
 
 export async function setOrgIds(): Promise<void> {
     try {
-        const orgsSnapShot = await getDocs(collection(db, ORGANIZATIONS_COLLECTION));
+        const orgsSnapShot = await getDocs(
+            collection(db, ORGANIZATIONS_COLLECTION)
+        );
         const batch = writeBatch(db);
         orgsSnapShot.forEach((doc) => {
             batch.update(doc.ref, {
@@ -159,7 +187,9 @@ export async function setOrgIds(): Promise<void> {
 
 export async function removeUnusedOrgFields(): Promise<void> {
     try {
-        const orgsSnapShot = await getDocs(collection(db, ORGANIZATIONS_COLLECTION));
+        const orgsSnapShot = await getDocs(
+            collection(db, ORGANIZATIONS_COLLECTION)
+        );
         const batch = writeBatch(db);
         orgsSnapShot.forEach((doc) => {
             if (doc.data()['County'] !== undefined) {
@@ -179,7 +209,10 @@ export async function removeUnusedOrgFields(): Promise<void> {
             }
             if (doc.data()['Town'] !== undefined) {
                 batch.update(doc.ref, {
-                    address: { ...doc.data()['address'], town: doc.data()['Town'] }
+                    address: {
+                        ...doc.data()['address'],
+                        town: doc.data()['Town']
+                    }
                 });
                 batch.update(doc.ref, {
                     ['Town']: deleteField()

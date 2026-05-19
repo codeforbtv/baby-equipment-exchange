@@ -29,7 +29,11 @@ export default function DonationCardSmall(props: DonationCardSmallProps) {
                 border: '0.5px solid black'
             }}
         >
-            <img src={image} alt={donation.model} style={thumbnailStyles} />
+            <img
+                src={image}
+                alt={donation.model}
+                style={thumbnailStyles}
+            />
             <div>
                 <p>
                     <b>{donation.brand}</b>

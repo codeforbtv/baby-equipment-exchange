@@ -4,8 +4,16 @@ import { adminNotificationEmail } from '@/data/adminNotificationEmail';
 import { sanitize } from '@/utils/utils';
 import { NewUserAccountInfo } from '@/types/UserTypes';
 
-export default function adminUserCreated(userId: string, accountInfo: NewUserAccountInfo) {
-    const organization = accountInfo.organization?.name ?? accountInfo.notes.find((note) => note.startsWith('User provided organization:')) ?? 'Not provided';
+export default function adminUserCreated(
+    userId: string,
+    accountInfo: NewUserAccountInfo
+) {
+    const organization =
+        accountInfo.organization?.name ??
+        accountInfo.notes.find((note) =>
+            note.startsWith('User provided organization:')
+        ) ??
+        'Not provided';
     const title = accountInfo.title || 'Not provided';
 
     return {

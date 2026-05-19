@@ -1,7 +1,15 @@
 'use client';
 
 //Hooks
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from 'react';
+import {
+    createContext,
+    Dispatch,
+    ReactNode,
+    SetStateAction,
+    useContext,
+    useEffect,
+    useState
+} from 'react';
 import { addErrorEvent } from '@/api/firebase';
 
 //Utils
@@ -28,20 +36,23 @@ type Props = {
 
 const defaultPendingDonations: DonationFormData[] = [];
 
-export const PendingDonationsContext = createContext<PendingDonationsContextType>({
-    pendingDonations: [],
-    addPendingDonation: (pendingDonation: DonationFormData) => {},
-    removePendingDonation: (index: number) => {},
-    clearPendingDonations: () => {},
-    getPendingDonationsFromLocalStorage: () => {},
-    pendingDonorName: '',
-    pendingDonorEmail: '',
-    setPendingDonorName: () => {},
-    setPendingDonorEmail: () => {}
-});
+export const PendingDonationsContext =
+    createContext<PendingDonationsContextType>({
+        pendingDonations: [],
+        addPendingDonation: (pendingDonation: DonationFormData) => {},
+        removePendingDonation: (index: number) => {},
+        clearPendingDonations: () => {},
+        getPendingDonationsFromLocalStorage: () => {},
+        pendingDonorName: '',
+        pendingDonorEmail: '',
+        setPendingDonorName: () => {},
+        setPendingDonorEmail: () => {}
+    });
 
 export const PendingDonationsProvider = ({ children }: Props) => {
-    const [pendingDonations, setPendingDonations] = useState<DonationFormData[]>(defaultPendingDonations);
+    const [pendingDonations, setPendingDonations] = useState<
+        DonationFormData[]
+    >(defaultPendingDonations);
     const [pendingDonorName, setPendingDonorName] = useState<string>('');
     const [pendingDonorEmail, setPendingDonorEmail] = useState<string>('');
 
@@ -56,7 +67,9 @@ export const PendingDonationsProvider = ({ children }: Props) => {
         setPendingDonations([]);
     };
 
-    const addPendingDonationsToLocalStorage = async (pendingDonations: DonationFormData[]): Promise<void> => {
+    const addPendingDonationsToLocalStorage = async (
+        pendingDonations: DonationFormData[]
+    ): Promise<void> => {
         try {
             const toLocalStorageArray: DonationFormData[] = [];
             for (const pendingDonation of pendingDonations) {
@@ -83,7 +96,10 @@ export const PendingDonationsProvider = ({ children }: Props) => {
 
                 toLocalStorageArray.push(toLocalStorageItem);
             }
-            localStorage.setItem('pendingDonations', JSON.stringify(toLocalStorageArray));
+            localStorage.setItem(
+                'pendingDonations',
+                JSON.stringify(toLocalStorageArray)
+            );
         } catch (error) {
             addErrorEvent('Error adding pending donations to storage', error);
         }
@@ -91,10 +107,13 @@ export const PendingDonationsProvider = ({ children }: Props) => {
 
     const getPendingDonationsFromLocalStorage = async (): Promise<void> => {
         try {
-            const existingPendingDonations = localStorage.getItem('pendingDonations');
+            const existingPendingDonations =
+                localStorage.getItem('pendingDonations');
             if (existingPendingDonations) {
                 const fromLocalStorageArray: DonationFormData[] = [];
-                const existingDonations = JSON.parse(existingPendingDonations) as DonationFormData[];
+                const existingDonations = JSON.parse(
+                    existingPendingDonations
+                ) as DonationFormData[];
                 for (const existingDonation of existingDonations) {
                     const fromLocalStorageItem: DonationFormData = {
                         category: existingDonation.category,
@@ -140,7 +159,12 @@ export const PendingDonationsProvider = ({ children }: Props) => {
         }
     }, [pendingDonations]);
 
-    return <PendingDonationsContext.Provider value={value}>{children}</PendingDonationsContext.Provider>;
+    return (
+        <PendingDonationsContext.Provider value={value}>
+            {children}
+        </PendingDonationsContext.Provider>
+    );
 };
 
-export const usePendingDonationsContext = () => useContext(PendingDonationsContext);
+export const usePendingDonationsContext = () =>
+    useContext(PendingDonationsContext);

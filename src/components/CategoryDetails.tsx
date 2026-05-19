@@ -30,11 +30,14 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
-    const [categoryDetailsUpdated, setCategoryDetailsUpdated] = useState<boolean>(false);
+    const [categoryDetailsUpdated, setCategoryDetailsUpdated] =
+        useState<boolean>(false);
 
     //If category has been updated, fetch latest changes from db
 
-    const [categoryDetails, setCategoryDetails] = useState<Category | undefined>(category);
+    const [categoryDetails, setCategoryDetails] = useState<
+        Category | undefined
+    >(category);
 
     const fetchCategory = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -78,7 +81,11 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                {!isEditMode ? <Typography variant="h5">Category Details</Typography> : <Typography variant="h5">Edit Category</Typography>}
+                {!isEditMode ? (
+                    <Typography variant="h5">Category Details</Typography>
+                ) : (
+                    <Typography variant="h5">Edit Category</Typography>
+                )}
                 {setIdToDisplay && (
                     <IconButton onClick={() => setIdToDisplay(null)}>
                         <ArrowBackIcon />
@@ -87,32 +94,44 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
             </div>
 
             {isLoading && <Loader />}
-            {!isLoading && !categoryDetails && !isEditMode && <Typography variant="body1">Category not found</Typography>}
+            {!isLoading && !categoryDetails && !isEditMode && (
+                <Typography variant="body1">Category not found</Typography>
+            )}
             {!isLoading && categoryDetails && !isEditMode && (
                 <div className="content--container">
                     <Typography variant="h5">{categoryDetails.name}</Typography>
                     <Typography variant="caption">Status</Typography>
                     {categoryDetails.active ? (
-                        <Stack direction="row" spacing={2}>
+                        <Stack
+                            direction="row"
+                            spacing={2}
+                        >
                             <Typography variant="h6">Active</Typography>
-                            <Button variant="text" onClick={handleToggleActive}>
+                            <Button
+                                variant="text"
+                                onClick={handleToggleActive}
+                            >
                                 Make inactive
                             </Button>
                         </Stack>
                     ) : (
                         <Stack direction="row">
                             <Typography variant="h6">Inactive</Typography>
-                            <Button variant="text" onClick={handleToggleActive}>
+                            <Button
+                                variant="text"
+                                onClick={handleToggleActive}
+                            >
                                 Make Active
                             </Button>
                         </Stack>
                     )}
-                    {categoryDetails.description && categoryDetails.description.length > 0 && (
-                        <Typography variant="body1">
-                            <b>Description: </b>
-                            {categoryDetails.description}
-                        </Typography>
-                    )}
+                    {categoryDetails.description &&
+                        categoryDetails.description.length > 0 && (
+                            <Typography variant="body1">
+                                <b>Description: </b>
+                                {categoryDetails.description}
+                            </Typography>
+                        )}
                     <Typography variant="body1">
                         <b>Tag Prefix: </b>
                         {categoryDetails.tagPrefix}
@@ -122,14 +141,23 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
                         {categoryDetails.tagCount}
                     </Typography>
                     <Stack sx={{ marginTop: '2em' }}>
-                        <Button variant="contained" type="button" startIcon={<EditIcon />} onClick={() => setIsEditMode(true)}>
+                        <Button
+                            variant="contained"
+                            type="button"
+                            startIcon={<EditIcon />}
+                            onClick={() => setIsEditMode(true)}
+                        >
                             Edit Category
                         </Button>
                     </Stack>
                 </div>
             )}
             {!isLoading && categoryDetails && isEditMode && (
-                <EditCategory category={categoryDetails} setIsEditMode={setIsEditMode} setCategoryDetailsUpdated={setCategoryDetailsUpdated} />
+                <EditCategory
+                    category={categoryDetails}
+                    setIsEditMode={setIsEditMode}
+                    setCategoryDetailsUpdated={setCategoryDetailsUpdated}
+                />
             )}
         </ProtectedAdminRoute>
     );

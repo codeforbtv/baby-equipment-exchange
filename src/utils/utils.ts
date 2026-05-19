@@ -1,7 +1,9 @@
 import { addErrorEvent } from '@/api/firebase';
 import { base64ImageObj } from '@/types/DonationTypes';
 
-export async function blobToArrayBuffer(blob: Blob): Promise<{ arrayBuffer: ArrayBuffer; type: string }> {
+export async function blobToArrayBuffer(
+    blob: Blob
+): Promise<{ arrayBuffer: ArrayBuffer; type: string }> {
     try {
         const arrayBuffer: ArrayBuffer = await blob.arrayBuffer();
         const type: string = blob.type;
@@ -59,7 +61,11 @@ export function stripNullUndefined(object: any) {
         if (object[key] instanceof Object) {
             stripNullUndefined(object[key]);
         }
-        if (object[key] === undefined || object[key] === null || object[key] === '') {
+        if (
+            object[key] === undefined ||
+            object[key] === null ||
+            object[key] === ''
+        ) {
             delete object[key];
         }
     }

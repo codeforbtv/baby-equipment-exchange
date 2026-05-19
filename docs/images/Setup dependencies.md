@@ -4,7 +4,8 @@
 
 #### Java dependency
 
-The emulator suite requires Java JDK version 11 or higher and the [Firebase CLI](https://github.com/firebase/firebase-tools) must be installed.
+The emulator suite requires Java JDK version 11 or higher and
+the [Firebase CLI](https://github.com/firebase/firebase-tools) must be installed.
 
 [https://docs.oracle.com/en/java/javase/21/install/installation-jdk-macos.html#GUID-2FE451B0-9572-4E38-A1A5-568B77B146DE](https://docs.oracle.com/en/java/javase/21/install/installation-jdk-macos.html#GUID-2FE451B0-9572-4E38-A1A5-568B77B146DE)
 
@@ -12,7 +13,9 @@ The emulator suite requires Java JDK version 11 or higher and the [Firebase CLI
 
 This project uses Google Cloud Functions.
 
-Google Cloud Functions only support the Long Term Support (LTS) versions of the Node.js runtime. LTS version of Node.js are denoted by even numbers (16.0., 18.0, 20.0). Cloud Function’s support for Node.js 20 is still in preview.
+Google Cloud Functions only support the Long Term Support (LTS) versions of the Node.js runtime. LTS
+version of Node.js are denoted by even numbers (16.0., 18.0, 20.0). Cloud Function’s support for
+Node.js 20 is still in preview.
 
 This is why `./functions/src/package.json` targets Node v18:
 
@@ -37,7 +40,8 @@ node -v # -> v.18.19.0
 
 #### **The Firebase Emulator Suite**
 
-Globally install the Firebase CLI [firebase-tools - npm (npmjs.com)](https://www.npmjs.com/package/firebase-tools):
+Globally install the Firebase CLI
+[firebase-tools - npm (npmjs.com)](https://www.npmjs.com/package/firebase-tools):
 
 ```
 npm install -g firebase-tools
@@ -45,7 +49,9 @@ npm install -g firebase-tools
 
 #### Having Account Access to the Google Cloud Project or Application Default Credentials Dependency
 
-Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable with the path to the Service Account Credentials (see the next section, Configuration File Dependencies serviceAccount.json) [How Application Default Credentials works  |  Authentication  |  Google Cloud](https://cloud.google.com/docs/authentication/application-default-credentials):
+Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable with the path to the Service Account
+Credentials (see the next section, Configuration File Dependencies serviceAccount.json)
+[How Application Default Credentials works  |  Authentication  |  Google Cloud](https://cloud.google.com/docs/authentication/application-default-credentials):
 
 ```
 export GOOGLE_APPLICATION_CREDENTIALS="/home/user/projects/baby-equipment-exchange/serviceAccount.json"
@@ -57,8 +63,9 @@ If you have performed the above step, the following step should not be necessary
 firebase login
 ```
 
-Set the `FIREBASE_CONFIG` environment variable. For more details about what is in a Firebase config, visit [Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects):
-
+Set the `FIREBASE_CONFIG` environment variable. For more details about what is in a Firebase config,
+visit
+[Understand Firebase projects  |  Firebase Documentation (google.com)](https://firebase.google.com/docs/projects/learn-more#config-files-objects):
 
 ```
 export FIREBASE_CONFIG="{ \
@@ -75,25 +82,38 @@ or, `export FIREBASE_CONFIG="$(cat <path_to_Firebace_JSON_configuration_file)"`.
 
 #### Configuration File Dependencies
 
-This is a list of all configuration files required for the Emulator Suite to run. All of these files go in the project root directory (e.g. `/home/user/projects/baby-equipment-exchange`), where `dotenv-config.js` and `package.json` and `next.config.js` are all found
+This is a list of all configuration files required for the Emulator Suite to run. All of these files
+go in the project root directory (e.g. `/home/user/projects/baby-equipment-exchange`), where
+`dotenv-config.js` and `package.json` and `next.config.js` are all found
 
--   `.env.local` See [This Page](https://firebase.google.com/docs/functions/config-env?gen=2nd#emulator_support) for more details
--   `.firebaserc`
--   `firebase.json` [for deployment configuration](https://firebase.google.com/docs/cli#the_firebasejson_file) and [when configuring the emulator suite](https://firebase.google.com/docs/emulator-suite/install_and_configure#configure_emulator_suite)
--   `firestore.rules`
--   `firestore.indexes.json`
--   `storage.rules`
--   `serviceAccount.json`
+- `.env.local` See
+  [This Page](https://firebase.google.com/docs/functions/config-env?gen=2nd#emulator_support) for
+  more details
+- `.firebaserc`
+- `firebase.json`
+  [for deployment configuration](https://firebase.google.com/docs/cli#the_firebasejson_file) and
+  [when configuring the emulator suite](https://firebase.google.com/docs/emulator-suite/install_and_configure#configure_emulator_suite)
+- `firestore.rules`
+- `firestore.indexes.json`
+- `storage.rules`
+- `serviceAccount.json`
 
-The environment variable, `FIREBASE_EMULATORS_IMPORT_DIRECTORY` must be set. The directory should be a path exclusively for Firebase emulator data. If the directory exists, the emulator will attempt to import the data. If the directory does not exist, the emulator will export data to the directory on exit.
+The environment variable, `FIREBASE_EMULATORS_IMPORT_DIRECTORY` must be set. The directory should be
+a path exclusively for Firebase emulator data. If the directory exists, the emulator will attempt to
+import the data. If the directory does not exist, the emulator will export data to the directory on
+exit.
 
-**.env.local** — (Same directory as `dotenv-config.js` and `package.json` and `next.config.js`) Stores all environment variables that are picked-up by an environment variable loader. This projects uses [dot-env - npm (npmjs.com)](https://www.npmjs.com/package/dot-env). Add the following line to this .env.local file:
+**.env.local** — (Same directory as `dotenv-config.js` and `package.json` and `next.config.js`)
+Stores all environment variables that are picked-up by an environment variable loader. This projects
+uses [dot-env - npm (npmjs.com)](https://www.npmjs.com/package/dot-env). Add the following line to
+this .env.local file:
 
 ```
 FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 ```
 
-******\*\*\*\*******\*\*\*\*******\*\*\*\*******firebase.json******\*\*\*\*******\*\*\*\*******\*\*\*\******* — (Same directory as above) Contains configurations for deploying the app and the emulator suite:
+**\*\***\*\*\*\***\*\***\*\*\*\***\*\***\*\*\*\***\*\***firebase.json**\*\***\*\*\*\***\*\***\*\*\*\***\*\***\*\*\*\***\*\***
+— (Same directory as above) Contains configurations for deploying the app and the emulator suite:
 
 ```
 {
@@ -148,7 +168,8 @@ FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 }
 ```
 
-**.firebaserc** — (Same directory as above) Google Firebase site/project information is described in this file:
+**.firebaserc** — (Same directory as above) Google Firebase site/project information is described in
+this file:
 
 ```
 {
@@ -158,7 +179,9 @@ FIREBASE_EMULATORS_IMPORT_DIRECTORY="./data_directory"
 }
 ```
 
-******\*\*******\*\*******\*\*******firestore.rules******\*\*******\*\*******\*\******* — (Same directory as above) The Firestore Security Rules the emulator should enforce [Get started with Cloud Firestore Security Rules  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/security/get-started)
+**\*\***\*\***\*\***\*\***\*\***\*\***\*\***firestore.rules**\*\***\*\***\*\***\*\***\*\***\*\***\*\***
+— (Same directory as above) The Firestore Security Rules the emulator should enforce
+[Get started with Cloud Firestore Security Rules  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/security/get-started)
 
 ```
 rules_version = '2';
@@ -216,7 +239,9 @@ service cloud.firestore {
 }
 ```
 
-**********\*\*\*\***********\*\***********\*\*\*\***********firestore.indexes.json**********\*\*\*\***********\*\***********\*\*\*\*********** — (Same directory as above) Database index definitions the emulator should have set [Manage indexes in Cloud Firestore  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/query-data/indexing)
+****\*\*****\*\*\*\*****\*\*****\*\*****\*\*****\*\*\*\*****\*\*****firestore.indexes.json****\*\*****\*\*\*\*****\*\*****\*\*****\*\*****\*\*\*\*****\*\*****
+— (Same directory as above) Database index definitions the emulator should have set
+[Manage indexes in Cloud Firestore  |  Firebase (google.com)](https://firebase.google.com/docs/firestore/query-data/indexing)
 
 ```
 {
@@ -225,7 +250,10 @@ service cloud.firestore {
 }
 ```
 
-********\*\*\*\*********\*\*********\*\*\*\*********serviceAccount.json********\*\*\*\*********\*\*********\*\*\*\********* — (Same directory as above) The credentials for a Service Account that is authorized to carry-out work in Google Cloud on behalf of the Firebase project [Service accounts overview  |  IAM Documentation  |  Google Cloud](https://cloud.google.com/iam/docs/service-account-overview)
+**\*\*\*\***\*\*\*\***\*\*\*\***\*\***\*\*\*\***\*\*\*\***\*\*\*\***serviceAccount.json**\*\*\*\***\*\*\*\***\*\*\*\***\*\***\*\*\*\***\*\*\*\***\*\*\*\***
+— (Same directory as above) The credentials for a Service Account that is authorized to carry-out
+work in Google Cloud on behalf of the Firebase project
+[Service accounts overview  |  IAM Documentation  |  Google Cloud](https://cloud.google.com/iam/docs/service-account-overview)
 
 ```
 {
@@ -244,7 +272,9 @@ service cloud.firestore {
   }
 ```
 
-****\*\*\*\*****\*\*****\*\*\*\*****storage.rules****\*\*\*\*****\*\*****\*\*\*\***** — (Same directory as above) The Storage Security Rules the emulator should enforce [Understand Firebase Security Rules for Cloud Storage  |  Cloud Storage for Firebase (google.com)](https://firebase.google.com/docs/storage/security/)
+\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***storage.rules\***\*\*\*\*\*\*\***\*\*\***\*\*\*\*\*\*\***
+— (Same directory as above) The Storage Security Rules the emulator should enforce
+[Understand Firebase Security Rules for Cloud Storage  |  Cloud Storage for Firebase (google.com)](https://firebase.google.com/docs/storage/security/)
 
 ```
 rules_version = '2';

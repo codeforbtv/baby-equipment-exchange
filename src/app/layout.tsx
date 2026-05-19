@@ -4,11 +4,20 @@ import { montserrat, garamond } from '../styles/fonts';
 import Providers from './providers';
 import '../styles/globalStyles.css';
 
-const fontClassNames = [montserrat, garamond].map((font) => font.variable).join(' ');
+const fontClassNames = [montserrat, garamond]
+    .map((font) => font.variable)
+    .join(' ');
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+    children
+}: {
+    children: React.ReactNode;
+}) {
     return (
-        <html lang="en" className={fontClassNames}>
+        <html
+            lang="en"
+            className={fontClassNames}
+        >
             <body className="body--wrapper">
                 <Providers>
                     <Header />

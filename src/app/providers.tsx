@@ -49,7 +49,7 @@ function PHProvider({ children }: { children: React.ReactNode }) {
                         return text;
                     }
                     return '*'.repeat(text.trim().length);
-                },
+                }
             }
         });
     }, []);
@@ -71,7 +71,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <ThemeProviderWrapper>
                 <UserProvider>
                     <PendingDonationsProvider>
-                        <RequestedInventoryProvider>{children}</RequestedInventoryProvider>
+                        <RequestedInventoryProvider>
+                            {children}
+                        </RequestedInventoryProvider>
                     </PendingDonationsProvider>
                 </UserProvider>
             </ThemeProviderWrapper>

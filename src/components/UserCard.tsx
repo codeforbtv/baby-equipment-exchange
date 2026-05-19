@@ -2,7 +2,12 @@
 //Hooks
 import React, { Dispatch, SetStateAction } from 'react';
 //Components
-import { ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
+import {
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    Typography
+} from '@mui/material';
 
 //Styles
 import '@/styles/globalStyles.css';
@@ -15,12 +20,31 @@ type UserCardProps = {
 };
 
 export default function UserCard(props: UserCardProps) {
-    const { uid, email, displayName, customClaims, isDisabled, phoneNumber, organization } = props.user;
+    const {
+        uid,
+        email,
+        displayName,
+        customClaims,
+        isDisabled,
+        phoneNumber,
+        organization
+    } = props.user;
     const setIdToDisplay = props.setIdToDisplay;
 
     return (
-        <ListItem key={uid!} sx={!isDisabled ? { background: 'white', border: '1px solid black' } : { background: 'white', border: '1px solid red' }}>
-            <ListItemButton component="a" onClick={() => setIdToDisplay(uid)} sx={{}}>
+        <ListItem
+            key={uid!}
+            sx={
+                !isDisabled
+                    ? { background: 'white', border: '1px solid black' }
+                    : { background: 'white', border: '1px solid red' }
+            }
+        >
+            <ListItemButton
+                component="a"
+                onClick={() => setIdToDisplay(uid)}
+                sx={{}}
+            >
                 <ListItemText
                     primary={
                         <p>
@@ -34,7 +58,12 @@ export default function UserCard(props: UserCardProps) {
                     }
                     sx={{ color: 'black' }}
                 />
-                {isDisabled && <ListItemText primary={<p>This user requires approval</p>} sx={{ color: 'red' }}></ListItemText>}
+                {isDisabled && (
+                    <ListItemText
+                        primary={<p>This user requires approval</p>}
+                        sx={{ color: 'red' }}
+                    ></ListItemText>
+                )}
             </ListItemButton>
         </ListItem>
     );

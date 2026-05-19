@@ -2,7 +2,13 @@
 
 import type { EventType } from 'scheduling';
 import type { DocumentData, DocumentReference } from 'firebase-admin/firestore';
-import { auth, addErrorEvent, db, DONATIONS_COLLECTION, ORDERS_COLLECTION } from '@/api/firebaseAdmin';
+import {
+    auth,
+    addErrorEvent,
+    db,
+    DONATIONS_COLLECTION,
+    ORDERS_COLLECTION
+} from '@/api/firebaseAdmin';
 import { getSchedulingPageLink } from './scheduling';
 import sendMail from '@/api/nodemailer';
 import accept from '@/email-templates/accept';
@@ -10,7 +16,10 @@ import reject from '@/email-templates/reject';
 import schedulePickup from '@/email-templates/schedulePickup';
 import cancelOrder from '@/email-templates/cancelOrder';
 
-export type SchedulingPageLinkOption = Pick<EventType, 'uri' | 'name' | 'scheduling_url'>;
+export type SchedulingPageLinkOption = Pick<
+    EventType,
+    'uri' | 'name' | 'scheduling_url'
+>;
 
 type AdminSchedulingRequest = {
     idToken: string;
@@ -54,7 +63,11 @@ const GENERIC_SCHEDULING_EMAIL_ERROR = 'Unable to send scheduling email.';
 const MAX_NOTES_LENGTH = 2000;
 
 function assertAdminSchedulingRequest(request: AdminSchedulingRequest): void {
-    if (!request || typeof request.idToken !== 'string' || request.idToken.trim().length === 0) {
+    if (
+        !request ||
+        typeof request.idToken !== 'string' ||
+        request.idToken.trim().length === 0
+    ) {
         throw new Error('Invalid scheduling request.');
     }
 }
@@ -66,7 +79,10 @@ function assertSafeId(value: string, fieldName: string): void {
 }
 
 function assertSafeNotes(notes: string | undefined): void {
-    if (notes !== undefined && (typeof notes !== 'string' || notes.length > MAX_NOTES_LENGTH)) {
+    if (
+        notes !== undefined &&
+        (typeof notes !== 'string' || notes.length > MAX_NOTES_LENGTH)
+    ) {
         throw new Error('Invalid scheduling notes.');
     }
 }
@@ -78,8 +94,15 @@ async function verifyAdminToken(idToken: string): Promise<void> {
     }
 }
 
-function toSchedulingPageLinkOption(eventType: EventType): SchedulingPageLinkOption | null {
-    if (eventType.active !== true || !eventType.uri || !eventType.name || !eventType.scheduling_url) {
+function toSchedulingPageLinkOption(
+    eventType: EventType
+): SchedulingPageLinkOption | null {
+    if (
+        eventType.active !== true ||
+        !eventType.uri ||
+        !eventType.name ||
+        !eventType.scheduling_url
+    ) {
         return null;
     }
 
@@ -101,10 +124,14 @@ function escapeHtml(value: string | null | undefined): string {
 
 function donationListHtml(donations: DonationEmailSummary[]): string {
     if (donations.length === 0) return '';
-    return `<ul>${donations.map((donation) => {
-        const tag = donation.tagNumber ? ` (${escapeHtml(donation.tagNumber)})` : '';
-        return `<li>${escapeHtml(donation.brand)} ${escapeHtml(donation.model)}${tag}</li>`;
-    }).join('')}</ul>`;
+    return `<ul>${donations
+        .map((donation) => {
+            const tag = donation.tagNumber
+                ? ` (${escapeHtml(donation.tagNumber)})`
+                : '';
+            return `<li>${escapeHtml(donation.brand)} ${escapeHtml(donation.model)}${tag}</li>`;
+        })
+        .join('')}</ul>`;
 }
 
 function donationSummary(id: string, data: DocumentData): DonationEmailSummary {
@@ -127,7 +154,9 @@ async function getDonationSummary(id: string): Promise<DonationEmailSummary> {
     return donationSummary(snapshot.id, snapshot.data() ?? {});
 }
 
-async function getDonationSummaries(ids: string[]): Promise<DonationEmailSummary[]> {
+async function getDonationSummaries(
+    ids: string[]
+): Promise<DonationEmailSummary[]> {
     if (!Array.isArray(ids)) {
         throw new Error('Invalid donation ids.');
     }
@@ -143,23 +172,40 @@ async function getOrderSummary(orderId: string): Promise<OrderEmailSummary> {
 
     const data = snapshot.data() ?? {};
     const requestor = data.requestor;
-    if (!requestor || typeof requestor.email !== 'string' || typeof requestor.name !== 'string') {
+    if (
+        !requestor ||
+        typeof requestor.email !== 'string' ||
+        typeof requestor.name !== 'string'
+    ) {
         throw new Error('Invalid order requestor.');
     }
 
-    const getReferencedDonation = async (reference: DocumentReference): Promise<DonationEmailSummary> => {
+    const getReferencedDonation = async (
+        reference: DocumentReference
+    ): Promise<DonationEmailSummary> => {
         const donationSnapshot = await reference.get();
         if (!donationSnapshot.exists) {
             throw new Error('Referenced donation not found.');
         }
-        return donationSummary(donationSnapshot.id, donationSnapshot.data() ?? {});
+        return donationSummary(
+            donationSnapshot.id,
+            donationSnapshot.data() ?? {}
+        );
     };
 
     const itemRefs = Array.isArray(data.items) ? data.items : [];
-    const rejectedItemRefs = Array.isArray(data.rejectedItems) ? data.rejectedItems : [];
+    const rejectedItemRefs = Array.isArray(data.rejectedItems)
+        ? data.rejectedItems
+        : [];
     const [items, rejectedItems] = await Promise.all([
-        Promise.all(itemRefs.map((reference) => getReferencedDonation(reference))),
-        Promise.all(rejectedItemRefs.map((reference) => getReferencedDonation(reference)))
+        Promise.all(
+            itemRefs.map((reference) => getReferencedDonation(reference))
+        ),
+        Promise.all(
+            rejectedItemRefs.map((reference) =>
+                getReferencedDonation(reference)
+            )
+        )
     ]);
 
     return {
@@ -175,14 +221,19 @@ async function getOrderSummary(orderId: string): Promise<OrderEmailSummary> {
 async function getSchedulingUrl(eventTypeUri?: string): Promise<string> {
     if (!eventTypeUri) return '';
     const eventTypes = await getSchedulingPageLink();
-    const eventType = eventTypes.find((candidate) => candidate.active === true && candidate.uri === eventTypeUri);
+    const eventType = eventTypes.find(
+        (candidate) =>
+            candidate.active === true && candidate.uri === eventTypeUri
+    );
     if (!eventType?.scheduling_url) {
         throw new Error('Invalid scheduling link.');
     }
     return eventType.scheduling_url;
 }
 
-async function verifyAdminSchedulingEmailRequest(request: AdminSchedulingEmailRequest): Promise<string> {
+async function verifyAdminSchedulingEmailRequest(
+    request: AdminSchedulingEmailRequest
+): Promise<string> {
     assertAdminSchedulingRequest(request);
     assertSafeNotes(request.notes);
     await verifyAdminToken(request.idToken);
@@ -198,7 +249,9 @@ function assertSameDonor(donations: DonationEmailSummary[]): void {
     }
 }
 
-export async function getAdminSchedulingPageLinks(request: AdminSchedulingRequest): Promise<SchedulingPageLinkOption[]> {
+export async function getAdminSchedulingPageLinks(
+    request: AdminSchedulingRequest
+): Promise<SchedulingPageLinkOption[]> {
     try {
         assertAdminSchedulingRequest(request);
         await verifyAdminToken(request.idToken);
@@ -214,29 +267,45 @@ export async function getAdminSchedulingPageLinks(request: AdminSchedulingReques
     }
 }
 
-export async function sendPickupSchedulingEmail(request: PickupSchedulingEmailRequest): Promise<void> {
+export async function sendPickupSchedulingEmail(
+    request: PickupSchedulingEmailRequest
+): Promise<void> {
     try {
         const schedulingUrl = await verifyAdminSchedulingEmailRequest(request);
         assertSafeId(request.orderId, 'order id');
 
         const order = await getOrderSummary(request.orderId);
-        const tagNumbers = order.items.flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
+        const tagNumbers = order.items.flatMap((item) =>
+            item.tagNumber ? [item.tagNumber] : []
+        );
         const message = [
             `<p>Hello ${escapeHtml(order.requestor.name)}</p>`,
             '<p>Your request for the following items has been fulfilled:</p>',
             donationListHtml(order.items),
-            order.rejectedItems.length > 0 ? '<p>Unfortunately, the following items you requested are no longer available:</p>' : '',
+            order.rejectedItems.length > 0
+                ? '<p>Unfortunately, the following items you requested are no longer available:</p>'
+                : '',
             donationListHtml(order.rejectedItems)
         ].join('');
 
-        await sendMail(schedulePickup(order.requestor.email, schedulingUrl, message, tagNumbers, request.notes));
+        await sendMail(
+            schedulePickup(
+                order.requestor.email,
+                schedulingUrl,
+                message,
+                tagNumbers,
+                request.notes
+            )
+        );
     } catch (error) {
         addErrorEvent('sendPickupSchedulingEmail', error);
         throw new Error(GENERIC_SCHEDULING_EMAIL_ERROR);
     }
 }
 
-export async function sendDropOffSchedulingEmail(request: DropOffSchedulingEmailRequest): Promise<void> {
+export async function sendDropOffSchedulingEmail(
+    request: DropOffSchedulingEmailRequest
+): Promise<void> {
     try {
         const schedulingUrl = await verifyAdminSchedulingEmailRequest(request);
         const [acceptedDonations, rejectedDonations] = await Promise.all([
@@ -255,15 +324,29 @@ export async function sendDropOffSchedulingEmail(request: DropOffSchedulingEmail
         const message = [
             `<p>Hello ${escapeHtml(donorName)},</p>`,
             '<p>Thank you for submitting your donation to the Baby Product Exchange.</p>',
-            acceptedDonations.length > 0 ? '<p>The following items have been accepted:</p>' : '',
+            acceptedDonations.length > 0
+                ? '<p>The following items have been accepted:</p>'
+                : '',
             donationListHtml(acceptedDonations),
-            rejectedDonations.length > 0 ? '<p>Unfortunately, the following items could not be accepted:</p>' : '',
+            rejectedDonations.length > 0
+                ? '<p>Unfortunately, the following items could not be accepted:</p>'
+                : '',
             donationListHtml(rejectedDonations)
         ].join('');
 
         if (acceptedDonations.length > 0) {
-            const tagNumbers = acceptedDonations.flatMap((donation) => (donation.tagNumber ? [donation.tagNumber] : []));
-            await sendMail(accept(donorEmail, schedulingUrl, message, tagNumbers, request.notes));
+            const tagNumbers = acceptedDonations.flatMap((donation) =>
+                donation.tagNumber ? [donation.tagNumber] : []
+            );
+            await sendMail(
+                accept(
+                    donorEmail,
+                    schedulingUrl,
+                    message,
+                    tagNumbers,
+                    request.notes
+                )
+            );
             return;
         }
 
@@ -274,25 +357,39 @@ export async function sendDropOffSchedulingEmail(request: DropOffSchedulingEmail
     }
 }
 
-export async function sendCancelOrderSchedulingEmail(request: CancelOrderSchedulingEmailRequest): Promise<void> {
+export async function sendCancelOrderSchedulingEmail(
+    request: CancelOrderSchedulingEmailRequest
+): Promise<void> {
     try {
         const schedulingUrl = await verifyAdminSchedulingEmailRequest(request);
         assertSafeId(request.orderId, 'order id');
 
         const order = await getOrderSummary(request.orderId);
         const allItems = [...order.items, ...order.rejectedItems];
-        const tagNumbers = allItems.flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
+        const tagNumbers = allItems.flatMap((item) =>
+            item.tagNumber ? [item.tagNumber] : []
+        );
         const message = [
             `<p>Hello ${escapeHtml(order.requestor.name)},</p>`,
             order.items.length > 0
                 ? '<p>Your request for the following items has been cancelled. These items will be returned to available inventory.</p>'
                 : '',
             donationListHtml(order.items),
-            order.rejectedItems.length > 0 ? '<p>Unfortunately, the following requested items are no longer available:</p>' : '',
+            order.rejectedItems.length > 0
+                ? '<p>Unfortunately, the following requested items are no longer available:</p>'
+                : '',
             donationListHtml(order.rejectedItems)
         ].join('');
 
-        await sendMail(cancelOrder(order.requestor.email, message, tagNumbers, request.notes, schedulingUrl || undefined));
+        await sendMail(
+            cancelOrder(
+                order.requestor.email,
+                message,
+                tagNumbers,
+                request.notes,
+                schedulingUrl || undefined
+            )
+        );
     } catch (error) {
         addErrorEvent('sendCancelOrderSchedulingEmail', error);
         throw new Error(GENERIC_SCHEDULING_EMAIL_ERROR);

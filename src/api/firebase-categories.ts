@@ -38,7 +38,10 @@ const categoryConverter = {
         };
         return categoryData;
     },
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Category {
+    fromFirestore(
+        snapshot: QueryDocumentSnapshot,
+        options: SnapshotOptions
+    ): Category {
         const data = snapshot.data(options);
         const categoryData: ICategory = {
             id: snapshot.id,
@@ -56,7 +59,10 @@ const categoryConverter = {
 export async function getAllCategories(): Promise<Category[]> {
     try {
         const categories: Category[] = [];
-        const q = query(collection(db, CATEGORIES_COLLECTION), orderBy('name')).withConverter(categoryConverter);
+        const q = query(
+            collection(db, CATEGORIES_COLLECTION),
+            orderBy('name')
+        ).withConverter(categoryConverter);
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((snapshot) => {
             categories.push(snapshot.data());
@@ -70,7 +76,9 @@ export async function getAllCategories(): Promise<Category[]> {
 
 export async function getCategoryById(id: string): Promise<Category> {
     try {
-        const categoryRef = doc(db, CATEGORIES_COLLECTION, id).withConverter(categoryConverter);
+        const categoryRef = doc(db, CATEGORIES_COLLECTION, id).withConverter(
+            categoryConverter
+        );
         const categorySnapshot = await getDoc(categoryRef);
         if (categorySnapshot.exists()) {
             return categorySnapshot.data();
@@ -85,7 +93,10 @@ export async function getCategoryById(id: string): Promise<Category> {
 
 export async function addCategory(newCategory: categoryBody): Promise<void> {
     try {
-        const categoryRef = doc(collection(db, CATEGORIES_COLLECTION), newCategory.name);
+        const categoryRef = doc(
+            collection(db, CATEGORIES_COLLECTION),
+            newCategory.name
+        );
         const categoryParams: ICategory = {
             id: categoryRef.id,
             active: true,
@@ -102,9 +113,14 @@ export async function addCategory(newCategory: categoryBody): Promise<void> {
     }
 }
 
-export async function updateCategory(id: string, categoryDetails: any): Promise<void> {
+export async function updateCategory(
+    id: string,
+    categoryDetails: any
+): Promise<void> {
     try {
-        const categoryRef = doc(db, CATEGORIES_COLLECTION, id).withConverter(categoryConverter);
+        const categoryRef = doc(db, CATEGORIES_COLLECTION, id).withConverter(
+            categoryConverter
+        );
         await updateDoc(categoryRef, {
             ...categoryDetails,
             modifiedAt: serverTimestamp()
@@ -126,7 +142,10 @@ export async function deleteCategory(id: string): Promise<void> {
 // Increments category's tagCount by 1 and combines it with the category's tagPrefix to create a Tag number
 export async function getTagNumber(category: string): Promise<string> {
     //query by category name in case doc ID !== category name
-    const q = query(collection(db, CATEGORIES_COLLECTION), where('name', '==', category));
+    const q = query(
+        collection(db, CATEGORIES_COLLECTION),
+        where('name', '==', category)
+    );
     const querySnapshot = await getDocs(q);
     //query should only return 1 result, but still must be interated through
     const docRefs: DocumentReference[] = [];
@@ -135,7 +154,9 @@ export async function getTagNumber(category: string): Promise<string> {
         docRefs.push(docRef);
     });
     if (docRefs.length === 0) {
-        throw new Error(`Category not found: "${category}". No matching category exists.`);
+        throw new Error(
+            `Category not found: "${category}". No matching category exists.`
+        );
     }
 
     const categoryRef = docRefs[0];
@@ -149,7 +170,10 @@ export async function getTagNumber(category: string): Promise<string> {
             const categoryData = categoryDoc.data();
             const newTagCount = categoryData.tagCount + 1;
             tagNumber = `${categoryData.tagPrefix} ${newTagCount}`;
-            transaction.update(categoryRef, { tagCount: newTagCount, modifiedAt: serverTimestamp() });
+            transaction.update(categoryRef, {
+                tagCount: newTagCount,
+                modifiedAt: serverTimestamp()
+            });
         });
         return tagNumber;
     } catch (error) {
@@ -159,7 +183,9 @@ export async function getTagNumber(category: string): Promise<string> {
 }
 
 //Script tha was used to upload categories to DB.
-export async function uploadCategories(categories: CategoryType[]): Promise<void> {
+export async function uploadCategories(
+    categories: CategoryType[]
+): Promise<void> {
     try {
         const batch = writeBatch(db);
         for (const category of categories) {

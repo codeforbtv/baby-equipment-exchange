@@ -107,7 +107,9 @@ export class DonationDetail implements IDonationDetail {
         }
         const dateReceived = this.dateReceived!;
         const currentTime = Date.now();
-        const daysInStorage = Math.floor((currentTime - dateReceived) / 86400000);
+        const daysInStorage = Math.floor(
+            (currentTime - dateReceived) / 86400000
+        );
         return daysInStorage;
     }
 

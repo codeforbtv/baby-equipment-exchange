@@ -1,15 +1,32 @@
 'use client';
 
 //Hooks
-import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from 'react';
+import {
+    ChangeEvent,
+    Dispatch,
+    SetStateAction,
+    useEffect,
+    useState
+} from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import DonationCardSmall from './DonationCardSmall';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Box, Button, FormControl, InputLabel, NativeSelect, TextField } from '@mui/material';
+import {
+    Box,
+    Button,
+    FormControl,
+    InputLabel,
+    NativeSelect,
+    TextField
+} from '@mui/material';
 import CustomDialog from './CustomDialog';
 //Api
-import { getAdminSchedulingPageLinks, sendPickupSchedulingEmail, type SchedulingPageLinkOption } from '@/app/actions/scheduling-public';
+import {
+    getAdminSchedulingPageLinks,
+    sendPickupSchedulingEmail,
+    type SchedulingPageLinkOption
+} from '@/app/actions/scheduling-public';
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
 import { schedulePickupForOrder } from '@/api/firebase-donations';
 import posthog from 'posthog-js';
@@ -31,7 +48,9 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(null);
+    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(
+        null
+    );
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -46,14 +65,22 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
         setInviteUrl(event.target.value);
     };
-    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
+    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) =>
+        setNotes(event.target.value);
 
     const handleSubmit = async () => {
         setIsLoading(true);
         try {
             const idToken = await getAuthIdToken();
-            const schedulingUrl = events?.find((event) => event.uri === inviteUrl)?.scheduling_url;
-            await sendPickupSchedulingEmail({ idToken, orderId: id, eventTypeUri: inviteUrl || undefined, notes });
+            const schedulingUrl = events?.find(
+                (event) => event.uri === inviteUrl
+            )?.scheduling_url;
+            await sendPickupSchedulingEmail({
+                idToken,
+                orderId: id,
+                eventTypeUri: inviteUrl || undefined,
+                notes
+            });
             await schedulePickupForOrder(order, schedulingUrl);
             posthog.capture('pickup_scheduled', {
                 order_id: id,
@@ -63,7 +90,9 @@ const SchedulePickup = (props: SchedulePickupProps) => {
         } catch (error) {
             addErrorEvent('Error submitting schedule pickup email', error);
             posthog.captureException(error);
-            setErrorMessage('Something went wrong while scheduling the pickup. Please try again.');
+            setErrorMessage(
+                'Something went wrong while scheduling the pickup. Please try again.'
+            );
         } finally {
             setIsLoading(false);
         }
@@ -74,13 +103,22 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             <p>{`Hello ${requestor.name}`}</p>
             <p>Your request for the following items has been fulfilled:</p>
             {items.map((item) => (
-                <DonationCardSmall key={item.id} donation={item} />
+                <DonationCardSmall
+                    key={item.id}
+                    donation={item}
+                />
             ))}
             {rejectedItems && rejectedItems.length > 0 && (
                 <>
-                    <p>Unfortunately, the following items you requested are no longer available:</p>
+                    <p>
+                        Unfortunately, the following items you requested are no
+                        longer available:
+                    </p>
                     {rejectedItems?.map((item) => (
-                        <DonationCardSmall key={item.id} donation={item} />
+                        <DonationCardSmall
+                            key={item.id}
+                            donation={item}
+                        />
                     ))}
                 </>
             )}
@@ -90,7 +128,9 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const eventResult = await getAdminSchedulingPageLinks({ idToken: await getAuthIdToken() });
+                const eventResult = await getAdminSchedulingPageLinks({
+                    idToken: await getAuthIdToken()
+                });
                 setEvents(eventResult);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
@@ -111,7 +151,10 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                 <>
                     <p>{`The following email will be sent to ${requestor.email}`}</p>
                     <div className="content--container">
-                        <Box display={'flex'} flexDirection={'column'}>
+                        <Box
+                            display={'flex'}
+                            flexDirection={'column'}
+                        >
                             {message}
                             <TextField
                                 type="text"
@@ -125,29 +168,58 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                 placeholder="Add any additional notes here"
                                 onChange={handleInputChange}
                             />
-                            <FormControl fullWidth sx={{ marginTop: '2em' }}>
-                                <InputLabel variant="standard" htmlFor="location" shrink={true}>
+                            <FormControl
+                                fullWidth
+                                sx={{ marginTop: '2em' }}
+                            >
+                                <InputLabel
+                                    variant="standard"
+                                    htmlFor="location"
+                                    shrink={true}
+                                >
                                     Select calendar for accepted donations
                                 </InputLabel>
-                                <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                    <option value="" disabled>
+                                <NativeSelect
+                                    variant="outlined"
+                                    name="location"
+                                    id="location"
+                                    onChange={handleSelect}
+                                    value={inviteUrl}
+                                >
+                                    <option
+                                        value=""
+                                        disabled
+                                    >
                                         Select Calendar (Optional)
                                     </option>
                                     {events &&
                                         events.map((event, index) => {
                                             return (
-                                                    <option key={event.uri || index} value={event.uri}>
-                                                        {event.name}
-                                                    </option>
+                                                <option
+                                                    key={event.uri || index}
+                                                    value={event.uri}
+                                                >
+                                                    {event.name}
+                                                </option>
                                             );
                                         })}
                                 </NativeSelect>
                             </FormControl>
-                            <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button variant="contained" onClick={handleSubmit}>
+                            <Box
+                                sx={{ marginTop: '2em' }}
+                                display={'flex'}
+                                gap={2}
+                            >
+                                <Button
+                                    variant="contained"
+                                    onClick={handleSubmit}
+                                >
                                     Send Email
                                 </Button>
-                                <Button variant="outlined" onClick={() => setShowScheduler(false)}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => setShowScheduler(false)}
+                                >
                                     Cancel
                                 </Button>
                             </Box>
@@ -155,8 +227,18 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                     </div>
                 </>
             )}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${requestor.email}`} />
-            <CustomDialog isOpen={!!errorMessage} onClose={() => setErrorMessage('')} title="Error" content={errorMessage} />
+            <CustomDialog
+                isOpen={isDialogOpen}
+                onClose={handleClose}
+                title="Email sent"
+                content={`Email successfully sent to ${requestor.email}`}
+            />
+            <CustomDialog
+                isOpen={!!errorMessage}
+                onClose={() => setErrorMessage('')}
+                title="Error"
+                content={errorMessage}
+            />
         </ProtectedAdminRoute>
     );
 };

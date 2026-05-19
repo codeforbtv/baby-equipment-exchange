@@ -23,7 +23,11 @@ import {
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
-import { markDonationAsDistributed, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
+import {
+    markDonationAsDistributed,
+    updateDonation,
+    updateDonationStatus
+} from '@/api/firebase-donations';
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
 import { enableUser, deleteUser } from '@/app/actions/firebase';
 import sendMail from '@/api/nodemailer';
@@ -39,7 +43,12 @@ import rejectUser from '@/email-templates/rejectUser';
 import userEnabled from '@/email-templates/userEnabled';
 
 type NotificationCardProps = {
-    type: 'pending-donation' | 'pending-delivery' | 'reserved' | 'order' | 'pending-user';
+    type:
+        | 'pending-donation'
+        | 'pending-delivery'
+        | 'reserved'
+        | 'order'
+        | 'pending-user';
     donation?: Donation;
     user?: IUser;
     order?: Order;
@@ -50,23 +59,39 @@ type NotificationCardProps = {
 
 //TO-DO: Set up buttons
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated, isHighlighted } = props;
+    const {
+        type,
+        donation,
+        user,
+        order,
+        setIdToDisplay,
+        setNotificationsUpdated,
+        isHighlighted
+    } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogTitle, setDialogTitle] = useState<string>('');
     const [dialogContent, setDialogContent] = useState<string>('');
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] =
+        useState<boolean>(false);
     const cardRef = useRef<HTMLDivElement>(null);
     const highlightedSx = isHighlighted
-        ? { boxShadow: '0 0 0 2px #ffc107, 0 4px 16px rgba(255, 193, 7, 0.25)', transition: 'box-shadow 0.4s ease' }
+        ? {
+              boxShadow:
+                  '0 0 0 2px #ffc107, 0 4px 16px rgba(255, 193, 7, 0.25)',
+              transition: 'box-shadow 0.4s ease'
+          }
         : undefined;
 
     const router = useRouter();
 
     useEffect(() => {
         if (isHighlighted) {
-            cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            cardRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
         }
     }, [isHighlighted]);
 
@@ -132,7 +157,11 @@ const NotificationCard = (props: NotificationCardProps) => {
         }
     };
 
-    const handleEnableUser = async (uid: string, userName: string, userEmail: string): Promise<void> => {
+    const handleEnableUser = async (
+        uid: string,
+        userName: string,
+        userEmail: string
+    ): Promise<void> => {
         setIsLoading(true);
         try {
             await enableUser({ idToken: await getAuthIdToken(), userId: uid });
@@ -148,7 +177,11 @@ const NotificationCard = (props: NotificationCardProps) => {
         }
     };
 
-    const handleDeleteUser = async (uid: string, userName: string, userEmail: string): Promise<void> => {
+    const handleDeleteUser = async (
+        uid: string,
+        userName: string,
+        userEmail: string
+    ): Promise<void> => {
         setIsLoading(true);
         try {
             await deleteUser({ idToken: await getAuthIdToken(), userId: uid });
@@ -169,17 +202,35 @@ const NotificationCard = (props: NotificationCardProps) => {
     return (
         <ProtectedAdminRoute>
             {type === 'pending-donation' && donation && (
-                <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
+                <Card
+                    ref={cardRef}
+                    className={styles['notification-card']}
+                    variant="outlined"
+                    sx={highlightedSx}
+                >
                     <div className={styles['notification-card--group']}>
-                        <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                            <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
+                        <CardActions
+                            className={styles['notification-card--image']}
+                            onClick={() => setIdToDisplay(donation.id)}
+                        >
+                            <CardMedia
+                                component="img"
+                                alt={donation.model}
+                                image={donation.images[0]}
+                            />
                         </CardActions>
-                        <CardContent className={styles['notification-card--info']}>
+                        <CardContent
+                            className={styles['notification-card--info']}
+                        >
                             <Typography variant="h5">
                                 {donation.brand} - {donation.model}
                             </Typography>
-                            <Typography variant="h6">{donation.tagNumber}</Typography>
-                            <Typography variant="caption">Donated by:</Typography>
+                            <Typography variant="h6">
+                                {donation.tagNumber}
+                            </Typography>
+                            <Typography variant="caption">
+                                Donated by:
+                            </Typography>
                             <Typography variant="subtitle1">
                                 {donation.donorName} ({donation.donorEmail})
                             </Typography>
@@ -192,33 +243,76 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
+                        <Card
+                            ref={cardRef}
+                            className={styles['notification-card']}
+                            variant="outlined"
+                            sx={highlightedSx}
+                        >
                             <div className={styles['notification-card--group']}>
-                                <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
+                                <CardActions
+                                    className={
+                                        styles['notification-card--image']
+                                    }
+                                    onClick={() => setIdToDisplay(donation.id)}
+                                >
+                                    <CardMedia
+                                        component="img"
+                                        alt={donation.model}
+                                        image={donation.images[0]}
+                                    />
                                 </CardActions>
-                                <CardContent className={styles['notification-card--info']}>
+                                <CardContent
+                                    className={
+                                        styles['notification-card--info']
+                                    }
+                                >
                                     <Typography variant="h5">
                                         {donation.brand} - {donation.model}
                                     </Typography>
-                                    <Typography variant="h6">{donation.tagNumber}</Typography>
+                                    <Typography variant="h6">
+                                        {donation.tagNumber}
+                                    </Typography>
                                     {donation.dateAccepted && (
                                         <>
-                                            <Typography variant="caption">Accepted on:</Typography>
-                                            <Typography variant="body1"> {donation.dateAccepted.toDate().toDateString()}</Typography>
+                                            <Typography variant="caption">
+                                                Accepted on:
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {' '}
+                                                {donation.dateAccepted
+                                                    .toDate()
+                                                    .toDateString()}
+                                            </Typography>
                                         </>
                                     )}
-                                    <Typography variant="caption">Donated by:</Typography>
+                                    <Typography variant="caption">
+                                        Donated by:
+                                    </Typography>
                                     <Typography variant="subtitle1">
-                                        {donation.donorName} ({donation.donorEmail})
+                                        {donation.donorName} (
+                                        {donation.donorEmail})
                                     </Typography>
                                 </CardContent>
                             </div>
-                            <CardActions className={styles['notification-card--container--btn']}>
-                                <Button variant="contained" onClick={() => markAsReceived(donation.id)}>
+                            <CardActions
+                                className={
+                                    styles['notification-card--container--btn']
+                                }
+                            >
+                                <Button
+                                    variant="contained"
+                                    onClick={() => markAsReceived(donation.id)}
+                                >
                                     Add to inventory
                                 </Button>
-                                <Button variant="contained" color="error" onClick={() => markAsNotReceived(donation.id)}>
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={() =>
+                                        markAsNotReceived(donation.id)
+                                    }
+                                >
                                     Not Received
                                 </Button>
                             </CardActions>
@@ -231,35 +325,79 @@ const NotificationCard = (props: NotificationCardProps) => {
                     {isLoading ? (
                         <Loader />
                     ) : (
-                        <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
+                        <Card
+                            ref={cardRef}
+                            className={styles['notification-card']}
+                            variant="outlined"
+                            sx={highlightedSx}
+                        >
                             <div className={styles['notification-card--group']}>
-                                <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
+                                <CardActions
+                                    className={
+                                        styles['notification-card--image']
+                                    }
+                                    onClick={() => setIdToDisplay(donation.id)}
+                                >
+                                    <CardMedia
+                                        component="img"
+                                        alt={donation.model}
+                                        image={donation.images[0]}
+                                    />
                                 </CardActions>
-                                <CardContent className={styles['notification-card--info']}>
+                                <CardContent
+                                    className={
+                                        styles['notification-card--info']
+                                    }
+                                >
                                     <Typography variant="h5">
                                         {donation.brand} - {donation.model}
                                     </Typography>
-                                    <Typography variant="h6">{donation.tagNumber}</Typography>
+                                    <Typography variant="h6">
+                                        {donation.tagNumber}
+                                    </Typography>
                                     {donation.dateRequested && (
                                         <>
-                                            <Typography variant="caption">Requested on:</Typography>
-                                            <Typography variant="body1">{donation.dateRequested.toDate().toDateString()}</Typography>
+                                            <Typography variant="caption">
+                                                Requested on:
+                                            </Typography>
+                                            <Typography variant="body1">
+                                                {donation.dateRequested
+                                                    .toDate()
+                                                    .toDateString()}
+                                            </Typography>
                                         </>
                                     )}
-                                    <Typography variant="caption">Requested by:</Typography>
+                                    <Typography variant="caption">
+                                        Requested by:
+                                    </Typography>
                                     <Typography variant="subtitle1">
-                                        <Link href={`/users/${donation.requestor?.id}`}>
-                                            {donation.requestor?.name} ({donation.requestor?.email})
+                                        <Link
+                                            href={`/users/${donation.requestor?.id}`}
+                                        >
+                                            {donation.requestor?.name} (
+                                            {donation.requestor?.email})
                                         </Link>
                                     </Typography>
                                 </CardContent>
                             </div>
-                            <CardActions className={styles['notification-card--container--btn']}>
-                                <Button variant="contained" onClick={() => markAsDistributed(donation)}>
+                            <CardActions
+                                className={
+                                    styles['notification-card--container--btn']
+                                }
+                            >
+                                <Button
+                                    variant="contained"
+                                    onClick={() => markAsDistributed(donation)}
+                                >
                                     Mark as distributed
                                 </Button>
-                                <Button variant="contained" color="error" onClick={() => returnToInventory(donation.id)}>
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    onClick={() =>
+                                        returnToInventory(donation.id)
+                                    }
+                                >
                                     Return to Inventory
                                 </Button>
                             </CardActions>
@@ -268,17 +406,35 @@ const NotificationCard = (props: NotificationCardProps) => {
                 </>
             )}
             {type === 'order' && donation && (
-                <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
+                <Card
+                    ref={cardRef}
+                    className={styles['notification-card']}
+                    variant="outlined"
+                    sx={highlightedSx}
+                >
                     <div className={styles['notification-card--group']}>
-                        <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                            <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
+                        <CardActions
+                            className={styles['notification-card--image']}
+                            onClick={() => setIdToDisplay(donation.id)}
+                        >
+                            <CardMedia
+                                component="img"
+                                alt={donation.model}
+                                image={donation.images[0]}
+                            />
                         </CardActions>
-                        <CardContent className={styles['notification-card--info']}>
+                        <CardContent
+                            className={styles['notification-card--info']}
+                        >
                             <Typography variant="h5">
                                 {donation.brand} - {donation.model}
                             </Typography>
-                            <Typography variant="h6">{donation.tagNumber}</Typography>
-                            <Typography variant="caption">Donated by:</Typography>
+                            <Typography variant="h6">
+                                {donation.tagNumber}
+                            </Typography>
+                            <Typography variant="caption">
+                                Donated by:
+                            </Typography>
                             <Typography variant="subtitle1">
                                 {donation.donorName} ({donation.donorEmail})
                             </Typography>
@@ -292,45 +448,107 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <Loader />
                     ) : (
                         <>
-                            <Card ref={cardRef} className={styles['notification-card']} variant="outlined" sx={highlightedSx}>
-                                <CardActions onClick={() => setIdToDisplay(user.uid)} sx={{ width: '100%' }}>
-                                    <CardContent className={styles['notification-card--info']}>
-                                        <Typography variant="h5">{user.displayName}</Typography>
-                                        <Typography variant="body1">({user.email})</Typography>
+                            <Card
+                                ref={cardRef}
+                                className={styles['notification-card']}
+                                variant="outlined"
+                                sx={highlightedSx}
+                            >
+                                <CardActions
+                                    onClick={() => setIdToDisplay(user.uid)}
+                                    sx={{ width: '100%' }}
+                                >
+                                    <CardContent
+                                        className={
+                                            styles['notification-card--info']
+                                        }
+                                    >
+                                        <Typography variant="h5">
+                                            {user.displayName}
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            ({user.email})
+                                        </Typography>
                                         {user.organization ? (
                                             <Typography variant="body1">
-                                                <em>{user.organization.name}</em>
+                                                <em>
+                                                    {user.organization.name}
+                                                </em>
                                             </Typography>
                                         ) : (
-                                            <Typography variant="body1" sx={{ color: 'red' }}>
-                                                <em>No organization assigned.</em>
+                                            <Typography
+                                                variant="body1"
+                                                sx={{ color: 'red' }}
+                                            >
+                                                <em>
+                                                    No organization assigned.
+                                                </em>
                                             </Typography>
                                         )}
                                     </CardContent>
                                 </CardActions>
-                                <CardActions className={styles['notification-card--container--btn']}>
+                                <CardActions
+                                    className={
+                                        styles[
+                                            'notification-card--container--btn'
+                                        ]
+                                    }
+                                >
                                     <Button
                                         variant="contained"
-                                        onClick={() => handleEnableUser(user.uid, user.displayName, user.email)}
+                                        onClick={() =>
+                                            handleEnableUser(
+                                                user.uid,
+                                                user.displayName,
+                                                user.email
+                                            )
+                                        }
                                         disabled={!user.organization}
                                     >
                                         Approve
                                     </Button>
-                                    <Button variant="contained" color="error" onClick={() => setIsDeleteDialogOpen(true)}>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        onClick={() =>
+                                            setIsDeleteDialogOpen(true)
+                                        }
+                                    >
                                         Reject
                                     </Button>
                                 </CardActions>
                             </Card>
                             {/* Dialog for rejecting user */}
-                            <Dialog open={isDeleteDialogOpen} aria-labelledby="dialog-title" aria-describedby="dialog-description">
-                                <DialogTitle id="dialog-title">Reject pending user?</DialogTitle>
+                            <Dialog
+                                open={isDeleteDialogOpen}
+                                aria-labelledby="dialog-title"
+                                aria-describedby="dialog-description"
+                            >
+                                <DialogTitle id="dialog-title">
+                                    Reject pending user?
+                                </DialogTitle>
                                 <DialogContent>
-                                    <DialogContentText id="dialog-description">This will delete the user &quot;{user.displayName}.&quot; Are you sure?</DialogContentText>
+                                    <DialogContentText id="dialog-description">
+                                        This will delete the user &quot;
+                                        {user.displayName}.&quot; Are you sure?
+                                    </DialogContentText>
                                     <DialogActions>
-                                        <Button variant="contained" onClick={() => handleDeleteUser(user.uid, user.displayName, user.email)}>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() =>
+                                                handleDeleteUser(
+                                                    user.uid,
+                                                    user.displayName,
+                                                    user.email
+                                                )
+                                            }
+                                        >
                                             Confirm
                                         </Button>
-                                        <Button variant="outlined" onClick={handleDeleteDialogClose}>
+                                        <Button
+                                            variant="outlined"
+                                            onClick={handleDeleteDialogClose}
+                                        >
                                             Cancel
                                         </Button>
                                     </DialogActions>
@@ -341,7 +559,12 @@ const NotificationCard = (props: NotificationCardProps) => {
                 </>
             )}
             {/* Confirmation dialog */}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title={dialogTitle} content={dialogContent} />
+            <CustomDialog
+                isOpen={isDialogOpen}
+                onClose={handleClose}
+                title={dialogTitle}
+                content={dialogContent}
+            />
         </ProtectedAdminRoute>
     );
 };

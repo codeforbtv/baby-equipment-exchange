@@ -40,7 +40,9 @@ const OrganizationsPage = () => {
             <>
                 {isLoading && <Loader />}
                 {!isLoading && !orgNamesAndIds && <p>No organizations found</p>}
-                {!isLoading && orgNamesAndIds && <Organizations orgNamesAndIds={orgNamesAndIds} />}
+                {!isLoading && orgNamesAndIds && (
+                    <Organizations orgNamesAndIds={orgNamesAndIds} />
+                )}
             </>
         </ProtectedAdminRoute>
     );

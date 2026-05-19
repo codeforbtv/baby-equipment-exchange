@@ -10,7 +10,15 @@ import OrganizationForm from '@/components/OrganizationForm';
 //Styles
 import '@/styles/globalStyles.css';
 import Loader from '@/components/Loader';
-import { Button, IconButton, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
+import {
+    Button,
+    IconButton,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    Typography
+} from '@mui/material';
 //Icons
 import RefreshIcon from '@mui/icons-material/Refresh';
 //Types
@@ -36,14 +44,29 @@ const Organizations = (props: OrganizationsProps) => {
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && <OrganizationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setOrgsUpdated={setOrgsUpdated} />}
-            {showForm && <OrganizationForm setShowForm={setShowForm} setOrgsUpdated={setOrgsUpdated} />}
+            {idToDisplay && (
+                <OrganizationDetails
+                    id={idToDisplay}
+                    setIdToDisplay={setIdToDisplay}
+                    setOrgsUpdated={setOrgsUpdated}
+                />
+            )}
+            {showForm && (
+                <OrganizationForm
+                    setShowForm={setShowForm}
+                    setOrgsUpdated={setOrgsUpdated}
+                />
+            )}
             {!idToDisplay && !showForm && (
                 <>
                     <div className="page--header">
                         <Typography variant="h5">Organizations</Typography>
                     </div>
-                    <Button variant="contained" type="button" onClick={handleShowForm}>
+                    <Button
+                        variant="contained"
+                        type="button"
+                        onClick={handleShowForm}
+                    >
                         Create new
                     </Button>
 
@@ -53,8 +76,18 @@ const Organizations = (props: OrganizationsProps) => {
                             <List>
                                 {orgNames.map((org) => (
                                     <ListItem key={org}>
-                                        <ListItemButton component="a" onClick={() => setIdToDisplay(orgNamesAndIds[org])}>
-                                            <ListItemText primary={org} sx={{ color: 'black' }} />
+                                        <ListItemButton
+                                            component="a"
+                                            onClick={() =>
+                                                setIdToDisplay(
+                                                    orgNamesAndIds[org]
+                                                )
+                                            }
+                                        >
+                                            <ListItemText
+                                                primary={org}
+                                                sx={{ color: 'black' }}
+                                            />
                                         </ListItemButton>
                                     </ListItem>
                                 ))}

@@ -9,7 +9,16 @@ import SearchIcon from '@mui/icons-material/Search';
 import '@/styles/globalStyles.css';
 //Types
 import { Category } from '@/models/category';
-import { Button, InputAdornment, List, ListItem, ListItemButton, ListItemText, TextField, Typography } from '@mui/material';
+import {
+    Button,
+    InputAdornment,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    TextField,
+    Typography
+} from '@mui/material';
 import Loader from './Loader';
 import CategoryDetails from './CategoryDetails';
 import CategoryForm from './CategoryForm';
@@ -25,7 +34,9 @@ const Categories = (props: CategoryProps) => {
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [searchInput, setSearchInput] = useState<string>('');
-    const [filteredCategories, setFilteredCategories] = useState<Category[] | null>(categories);
+    const [filteredCategories, setFilteredCategories] = useState<
+        Category[] | null
+    >(categories);
 
     const handleShowForm = () => {
         //Close details if open
@@ -35,7 +46,13 @@ const Categories = (props: CategoryProps) => {
 
     useEffect(() => {
         setFilteredCategories(
-            categories.filter((category) => Object.values(category).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase())))
+            categories.filter((category) =>
+                Object.values(category).some((value) =>
+                    String(value)
+                        .toLowerCase()
+                        .includes(searchInput.toLowerCase())
+                )
+            )
         );
     }, [searchInput]);
 
@@ -49,20 +66,31 @@ const Categories = (props: CategoryProps) => {
                     setCategoriesUpdated={setCategoriesUpdated}
                 />
             )}
-            {showForm && <CategoryForm setShowForm={setShowForm} setCategoriesUpdated={setCategoriesUpdated} />}
+            {showForm && (
+                <CategoryForm
+                    setShowForm={setShowForm}
+                    setCategoriesUpdated={setCategoriesUpdated}
+                />
+            )}
             {!idToDisplay && !showForm && (
                 <>
                     <div className="page--header">
                         <Typography variant="h5">Categories</Typography>
                     </div>
-                    <Button variant="contained" type="button" onClick={handleShowForm}>
+                    <Button
+                        variant="contained"
+                        type="button"
+                        onClick={handleShowForm}
+                    >
                         Add New
                     </Button>
                     <TextField
                         label="Search"
                         id="search-field"
                         value={searchInput}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
+                        onChange={(
+                            event: React.ChangeEvent<HTMLInputElement>
+                        ): void => setSearchInput(event.target.value)}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -78,11 +106,23 @@ const Categories = (props: CategoryProps) => {
                                 {filteredCategories.map((category) => (
                                     <ListItem key={category.name}>
                                         <ListItemButton
-                                            sx={{ backgroundColor: 'white', border: '1px solid black' }}
+                                            sx={{
+                                                backgroundColor: 'white',
+                                                border: '1px solid black'
+                                            }}
                                             component="a"
-                                            onClick={() => setIdToDisplay(category.id)}
+                                            onClick={() =>
+                                                setIdToDisplay(category.id)
+                                            }
                                         >
-                                            <ListItemText primary={category.name} sx={{ color: category.active ? 'black' : 'gray' }} />
+                                            <ListItemText
+                                                primary={category.name}
+                                                sx={{
+                                                    color: category.active
+                                                        ? 'black'
+                                                        : 'gray'
+                                                }}
+                                            />
                                         </ListItemButton>
                                     </ListItem>
                                 ))}

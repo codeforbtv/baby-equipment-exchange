@@ -15,7 +15,7 @@ import type { Donation } from '@/models/donation';
 import { matchDonationBookings } from './scheduling-core';
 
 const API_KEY = process.env.CALENDLY_API_KEY;
-const CALENDLY_ORG_ID = process.env.CALENDLY_ORGANIZATION ?? '48b74e58-cecf-4fd6-9594-63401556c5c9';
+const CALENDLY_ORG_ID = process.env.CALENDLY_ORGANIZATION;
 const organizationUri = `https://api.calendly.com/organizations/${CALENDLY_ORG_ID}`;
 
 const headers = {
@@ -60,7 +60,9 @@ function getMaxStartTime(timeRange: TimeRange): string {
  * Fetch scheduled events from Calendly within a time range.
  * Handles pagination automatically.
  */
-export async function getScheduledEvents(timeRange: TimeRange): Promise<ScheduledEvent[]> {
+export async function getScheduledEvents(
+    timeRange: TimeRange
+): Promise<ScheduledEvent[]> {
     const allEvents: ScheduledEvent[] = [];
     const minStartTime = getStartOfDay();
     const maxStartTime = getMaxStartTime(timeRange);
@@ -86,7 +88,9 @@ export async function getScheduledEvents(timeRange: TimeRange): Promise<Schedule
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Calendly API error ${response.status}: ${errorText}`);
+            throw new Error(
+                `Calendly API error ${response.status}: ${errorText}`
+            );
         }
 
         const data: ScheduledEventsResponse = await response.json();
@@ -121,7 +125,9 @@ export async function getEventInvitees(eventUri: string): Promise<Invitee[]> {
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Calendly invitees API error ${response.status}: ${errorText}`);
+            throw new Error(
+                `Calendly invitees API error ${response.status}: ${errorText}`
+            );
         }
 
         const data: InviteesResponse = await response.json();
@@ -137,7 +143,9 @@ export async function getEventInvitees(eventUri: string): Promise<Invitee[]> {
 /**
  * Fetch all scheduled events within a time range and enrich each with its invitees.
  */
-export async function getAllScheduledEventsWithInvitees(timeRange: TimeRange): Promise<ScheduledEventWithInvitees[]> {
+export async function getAllScheduledEventsWithInvitees(
+    timeRange: TimeRange
+): Promise<ScheduledEventWithInvitees[]> {
     const events = await getScheduledEvents(timeRange);
     const enrichedEvents: ScheduledEventWithInvitees[] = await Promise.all(
         events.map(async (event) => {
@@ -172,7 +180,9 @@ export async function getSchedulingPageLink(): Promise<EventType[]> {
         const response = await fetch(url, { method: 'GET', headers });
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Calendly API error ${response.status}: ${errorText}`);
+            throw new Error(
+                `Calendly API error ${response.status}: ${errorText}`
+            );
         }
         const data = await response.json();
         collection.push(...data.collection);
@@ -200,18 +210,31 @@ async function getEventTypesCache(): Promise<EventType[]> {
  * 1. Match event_type URI against known event types and check their names
  * 2. Fall back to event name heuristics
  */
-export async function classifyEventType(event: ScheduledEvent): Promise<EventCategory> {
+export async function classifyEventType(
+    event: ScheduledEvent
+): Promise<EventCategory> {
     // Try URI-based matching first
     try {
         const eventTypes = await getEventTypesCache();
-        const matchingType = eventTypes.find((et) => event.event_type === et.uri);
+        const matchingType = eventTypes.find(
+            (et) => event.event_type === et.uri
+        );
 
         if (matchingType) {
             const typeName = matchingType.name.toLowerCase();
-            if (typeName.includes('pick up') || typeName.includes('pickup') || typeName.includes('pick-up')) {
+            if (
+                typeName.includes('pick up') ||
+                typeName.includes('pickup') ||
+                typeName.includes('pick-up')
+            ) {
                 return 'pickup';
             }
-            if (typeName.includes('drop off') || typeName.includes('dropoff') || typeName.includes('drop-off') || typeName.includes('delivery')) {
+            if (
+                typeName.includes('drop off') ||
+                typeName.includes('dropoff') ||
+                typeName.includes('drop-off') ||
+                typeName.includes('delivery')
+            ) {
                 return 'dropoff';
             }
         }
@@ -221,10 +244,19 @@ export async function classifyEventType(event: ScheduledEvent): Promise<EventCat
 
     // Heuristic: match on the event name itself
     const eventName = event.name.toLowerCase();
-    if (eventName.includes('pick up') || eventName.includes('pickup') || eventName.includes('pick-up')) {
+    if (
+        eventName.includes('pick up') ||
+        eventName.includes('pickup') ||
+        eventName.includes('pick-up')
+    ) {
         return 'pickup';
     }
-    if (eventName.includes('drop off') || eventName.includes('dropoff') || eventName.includes('drop-off') || eventName.includes('delivery')) {
+    if (
+        eventName.includes('drop off') ||
+        eventName.includes('dropoff') ||
+        eventName.includes('drop-off') ||
+        eventName.includes('delivery')
+    ) {
         return 'dropoff';
     }
 
@@ -250,9 +282,15 @@ export async function matchDonationsToBookings(
 ): Promise<BookingStatusResult> {
     const byId: Record<string, BookingMatchResult> = {};
     const results = matchDonationBookings(donations, events, mode);
-    const confirmed = results.filter((result) => result.confidence === 'confirmed');
-    const possibleMatches = results.filter((result) => result.confidence === 'possible-match');
-    const unconfirmed = results.filter((result) => result.confidence === 'unconfirmed');
+    const confirmed = results.filter(
+        (result) => result.confidence === 'confirmed'
+    );
+    const possibleMatches = results.filter(
+        (result) => result.confidence === 'possible-match'
+    );
+    const unconfirmed = results.filter(
+        (result) => result.confidence === 'unconfirmed'
+    );
 
     for (const result of results) {
         byId[result.id] = result;
@@ -267,7 +305,10 @@ export async function matchDonationsToBookings(
  * Get booking status for donations awaiting pickup (status: 'reserved').
  * Matches requestor emails/names against invitees.
  */
-export async function getPickupBookingStatus(donations: Donation[], timeRange: TimeRange): Promise<BookingStatusResult> {
+export async function getPickupBookingStatus(
+    donations: Donation[],
+    timeRange: TimeRange
+): Promise<BookingStatusResult> {
     return (await getBookingStatuses(donations, timeRange)).pickupBookingStatus;
 }
 
@@ -275,15 +316,27 @@ export async function getPickupBookingStatus(donations: Donation[], timeRange: T
  * Get booking status for donations awaiting drop-off (status: 'pending delivery').
  * Matches donor emails/names against invitees.
  */
-export async function getDropOffBookingStatus(donations: Donation[], timeRange: TimeRange): Promise<BookingStatusResult> {
-    return (await getBookingStatuses(donations, timeRange)).dropOffBookingStatus;
+export async function getDropOffBookingStatus(
+    donations: Donation[],
+    timeRange: TimeRange
+): Promise<BookingStatusResult> {
+    return (await getBookingStatuses(donations, timeRange))
+        .dropOffBookingStatus;
 }
 
 export async function getBookingStatuses(
     donations: Donation[],
     timeRange: TimeRange
-): Promise<{ pickupBookingStatus: BookingStatusResult; dropOffBookingStatus: BookingStatusResult }> {
-    const emptyStatus: BookingStatusResult = { confirmed: [], possibleMatches: [], unconfirmed: [], byId: {} };
+): Promise<{
+    pickupBookingStatus: BookingStatusResult;
+    dropOffBookingStatus: BookingStatusResult;
+}> {
+    const emptyStatus: BookingStatusResult = {
+        confirmed: [],
+        possibleMatches: [],
+        unconfirmed: [],
+        byId: {}
+    };
 
     try {
         const allEvents = await getAllScheduledEventsWithInvitees(timeRange);
@@ -300,11 +353,19 @@ export async function getBookingStatuses(
             }
         }
 
-        const reservedDonations = donations.filter((donation) => donation.status === 'reserved');
-        const pendingDeliveryDonations = donations.filter((donation) => donation.status === 'pending delivery');
+        const reservedDonations = donations.filter(
+            (donation) => donation.status === 'reserved'
+        );
+        const pendingDeliveryDonations = donations.filter(
+            (donation) => donation.status === 'pending delivery'
+        );
         const [pickupBookingStatus, dropOffBookingStatus] = await Promise.all([
             matchDonationsToBookings(reservedDonations, pickupEvents, 'pickup'),
-            matchDonationsToBookings(pendingDeliveryDonations, dropOffEvents, 'dropoff')
+            matchDonationsToBookings(
+                pendingDeliveryDonations,
+                dropOffEvents,
+                'dropoff'
+            )
         ]);
 
         return { pickupBookingStatus, dropOffBookingStatus };

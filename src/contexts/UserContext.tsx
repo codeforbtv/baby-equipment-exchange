@@ -1,6 +1,12 @@
 'use client';
 //Hooks
-import { createContext, useState, useEffect, ReactNode, useContext } from 'react';
+import {
+    createContext,
+    useState,
+    useEffect,
+    ReactNode,
+    useContext
+} from 'react';
 //Libs
 import posthog from 'posthog-js';
 import { addErrorEvent, checkIsAdmin, checkIsAidWorker } from '@/api/firebase';
@@ -64,7 +70,9 @@ export const UserProvider = ({ children }: Props) => {
         return unsubscribe;
     }, []);
 
-    return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+    return (
+        <UserContext.Provider value={value}>{children}</UserContext.Provider>
+    );
 };
 
 export const useUserContext = () => useContext(UserContext);

@@ -32,8 +32,11 @@ export default function ExistingDonationDialog({
     onClose: () => void;
     onDelete: () => void;
 }) {
-    const donation: DonationCardProps = initialParameters.data as DonationCardProps;
-    const [donationStatus, setDonationStatus] = useState<DonationStatusValues>(donation.status ?? 'in processing');
+    const donation: DonationCardProps =
+        initialParameters.data as DonationCardProps;
+    const [donationStatus, setDonationStatus] = useState<DonationStatusValues>(
+        donation.status ?? 'in processing'
+    );
 
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
@@ -57,14 +60,23 @@ export default function ExistingDonationDialog({
         router.push(`/reject/${donation.id}`);
     };
 
-    if (!(donation instanceof Object) || !(typeof initialParameters.initAsOpen === 'boolean')) {
+    if (
+        !(donation instanceof Object) ||
+        !(typeof initialParameters.initAsOpen === 'boolean')
+    ) {
         return <></>;
     }
     return (
-        <Dialog open={initialParameters.initAsOpen} onClose={onClose}>
+        <Dialog
+            open={initialParameters.initAsOpen}
+            onClose={onClose}
+        >
             <DialogContent>
                 <h3>{`${donation.model} (${donation.brand})`}</h3>
-                <FormControl sx={{ display: 'flex', gap: 1 }} component="fieldset">
+                <FormControl
+                    sx={{ display: 'flex', gap: 1 }}
+                    component="fieldset"
+                >
                     <FormLabel component="legend">Details</FormLabel>
                     <NativeSelect
                         variant="outlined"
@@ -115,20 +127,34 @@ export default function ExistingDonationDialog({
                         value={donationStatus}
                         SelectProps={{
                             readOnly: !isAdmin,
-                            onChange: async (event: SelectChangeEvent<unknown>) => {
+                            onChange: async (
+                                event: SelectChangeEvent<unknown>
+                            ) => {
                                 if (!isAdmin) {
                                     return;
                                 }
-                                const newStatus = event.target.value as DonationStatusValues;
-                                const resultStatus: DonationStatusValues = await updateDonationStatus(donation.id, newStatus);
+                                const newStatus = event.target
+                                    .value as DonationStatusValues;
+                                const resultStatus: DonationStatusValues =
+                                    await updateDonationStatus(
+                                        donation.id,
+                                        newStatus
+                                    );
                                 setDonationStatus(resultStatus);
                             }
                         }}
                     >
                         {Object.keys(donationStatusToName).map((status) => (
-                            <MenuItem key={status} value={status}>
+                            <MenuItem
+                                key={status}
+                                value={status}
+                            >
                                 {' '}
-                                {donationStatusToName[status as DonationStatusValues]}{' '}
+                                {
+                                    donationStatusToName[
+                                        status as DonationStatusValues
+                                    ]
+                                }{' '}
                             </MenuItem>
                         ))}
                     </TextField>
@@ -140,7 +166,11 @@ export default function ExistingDonationDialog({
                                 <img
                                     key={image}
                                     src={image}
-                                    style={{ width: '100%', height: '100%', objectFit: 'fill' }}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'fill'
+                                    }}
                                     alt={`${donation.description ?? 'No description'}`}
                                 />
                             );
@@ -150,16 +180,25 @@ export default function ExistingDonationDialog({
             <DialogActions>
                 {isAdmin && (
                     <>
-                        <Button variant="contained" onClick={handleAccept}>
+                        <Button
+                            variant="contained"
+                            onClick={handleAccept}
+                        >
                             Accept
                         </Button>
                         {/* //TO-DO: Reject should send an automated email with sugestions for other ways to donate uneeded gear. */}
-                        <Button variant="outlined" onClick={handleReject}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleReject}
+                        >
                             Reject
                         </Button>
                     </>
                 )}
-                <Button onClick={onDelete} color="error">
+                <Button
+                    onClick={onDelete}
+                    color="error"
+                >
                     delete
                 </Button>
                 <Button onClick={onClose}>close</Button>

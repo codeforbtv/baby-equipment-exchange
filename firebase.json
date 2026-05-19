@@ -1,44 +1,50 @@
 {
-    "firestore": {
-        "rules": "firestore.rules",
-        "indexes": "firestore.indexes.json"
-    },
-    "apphosting": [
-        {
-            "backendId": "baby-equipment-exchange",
-            "rootDir": ".",
-            "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "functions"]
-        }
-    ],
-    "storage": {
-        "rules": "storage.rules"
-    },
-    "emulators": {
-        "auth": {
-            "enabled": true,
-            "host": "0.0.0.0",
-            "port": 9099
-        },
-        "firestore": {
-            "enabled": true,
-            "host": "0.0.0.0",
-            "port": 8080
-        },
-        "hosting": {
-            "enabled": false,
-            "host": "0.0.0.0",
-            "port": 5090
-        },
-        "storage": {
-            "enabled": true,
-            "host": "0.0.0.0",
-            "port": 9199
-        },
-        "ui": {
-            "enabled": true,
-            "host": "0.0.0.0",
-            "port": 4080
-        },
-        "singleProjectMode": true
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "apphosting": [
+    {
+      "backendId": "baby-equipment-exchange",
+      "rootDir": ".",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions"
+      ]
     }
+  ],
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "auth": {
+      "enabled": true,
+      "host": "0.0.0.0",
+      "port": 9099
+    },
+    "firestore": {
+      "enabled": true,
+      "host": "0.0.0.0",
+      "port": 8080
+    },
+    "hosting": {
+      "enabled": false,
+      "host": "0.0.0.0",
+      "port": 5090
+    },
+    "storage": {
+      "enabled": true,
+      "host": "0.0.0.0",
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true,
+      "host": "0.0.0.0",
+      "port": 4080
+    },
+    "singleProjectMode": true
+  }
 }

@@ -39,7 +39,11 @@ type DonationCardMedProps = {
     orderId?: string;
     donation: Donation;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
-    handleRemoveFromOrder?: (orderId: string, donation: Donation, resolution: OrderItemRejectionResolution) => Promise<void>;
+    handleRemoveFromOrder?: (
+        orderId: string,
+        donation: Donation,
+        resolution: OrderItemRejectionResolution
+    ) => Promise<void>;
 };
 
 type RejectionAction = OrderItemRejectionResolution['action'];
@@ -73,14 +77,18 @@ const rejectionOptions: {
 const DonationCardMed = (props: DonationCardMedProps) => {
     const { orderId, donation, setIdToDisplay, handleRemoveFromOrder } = props;
     const [showRemoveDialog, setShowRemoveDialog] = useState<boolean>(false);
-    const [rejectionAction, setRejectionAction] = useState<RejectionAction>('available');
+    const [rejectionAction, setRejectionAction] =
+        useState<RejectionAction>('available');
     const [activeUsers, setActiveUsers] = useState<IUser[]>([]);
     const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [isLoadingUsers, setIsLoadingUsers] = useState<boolean>(false);
     const [hasLoadedUsers, setHasLoadedUsers] = useState<boolean>(false);
 
-    const availableUsers = useMemo(() => activeUsers.filter((user) => user.uid !== donation.requestor?.id), [activeUsers, donation.requestor?.id]);
+    const availableUsers = useMemo(
+        () => activeUsers.filter((user) => user.uid !== donation.requestor?.id),
+        [activeUsers, donation.requestor?.id]
+    );
 
     const handleRemove = async (id: string, donation: Donation) => {
         if (!handleRemoveFromOrder) return;
@@ -118,7 +126,10 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                 const users = await getAllActiveDbUsers();
                 setActiveUsers(users);
             } catch (error) {
-                addErrorEvent('Fetch users for rejected item reassignment', error);
+                addErrorEvent(
+                    'Fetch users for rejected item reassignment',
+                    error
+                );
             } finally {
                 setHasLoadedUsers(true);
                 setIsLoadingUsers(false);
@@ -130,9 +141,21 @@ const DonationCardMed = (props: DonationCardMedProps) => {
 
     return (
         <ProtectedAdminRoute>
-            <Card className="card--container" raised>
-                <CardActions className="card--container-image" onClick={() => setIdToDisplay(donation.id)}>
-                    {donation.images && donation.images.length > 0 && <CardMedia component="img" alt={donation.model} image={donation.images[0]} />}
+            <Card
+                className="card--container"
+                raised
+            >
+                <CardActions
+                    className="card--container-image"
+                    onClick={() => setIdToDisplay(donation.id)}
+                >
+                    {donation.images && donation.images.length > 0 && (
+                        <CardMedia
+                            component="img"
+                            alt={donation.model}
+                            image={donation.images[0]}
+                        />
+                    )}
                 </CardActions>
                 <CardContent>
                     <Typography variant="h5">
@@ -143,7 +166,12 @@ const DonationCardMed = (props: DonationCardMedProps) => {
 
                 {handleRemoveFromOrder && orderId && (
                     <CardActions>
-                        <Button variant="contained" startIcon={<RemoveShoppingCartIcon />} color="error" onClick={() => setShowRemoveDialog(true)}>
+                        <Button
+                            variant="contained"
+                            startIcon={<RemoveShoppingCartIcon />}
+                            color="error"
+                            onClick={() => setShowRemoveDialog(true)}
+                        >
                             Reject
                         </Button>
                     </CardActions>
@@ -160,18 +188,33 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                 >
                     <DialogTitle id="dialog-title">Reject Item</DialogTitle>
                     <DialogContent sx={{ pb: 1, overflowX: 'hidden' }}>
-                        <DialogContentText id="dialog-description" sx={{ mb: 2.5 }}>
-                            What should happen to <strong>{donation.brand} &ndash; {donation.model}</strong>?
+                        <DialogContentText
+                            id="dialog-description"
+                            sx={{ mb: 2.5 }}
+                        >
+                            What should happen to{' '}
+                            <strong>
+                                {donation.brand} &ndash; {donation.model}
+                            </strong>
+                            ?
                         </DialogContentText>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 1
+                            }}
+                        >
                             {rejectionOptions.map((option) => {
-                                const selected = rejectionAction === option.action;
+                                const selected =
+                                    rejectionAction === option.action;
                                 return (
                                     <Box
                                         key={option.action}
                                         onClick={() => {
                                             setRejectionAction(option.action);
-                                            if (option.action !== 'requested') setSelectedUser(null);
+                                            if (option.action !== 'requested')
+                                                setSelectedUser(null);
                                         }}
                                         sx={{
                                             display: 'flex',
@@ -180,24 +223,47 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                                             p: 1.5,
                                             borderRadius: 1,
                                             border: '2px solid',
-                                            borderColor: selected ? 'primary.main' : 'divider',
-                                            backgroundColor: selected ? 'primary.50' : 'transparent',
+                                            borderColor: selected
+                                                ? 'primary.main'
+                                                : 'divider',
+                                            backgroundColor: selected
+                                                ? 'primary.50'
+                                                : 'transparent',
                                             cursor: 'pointer',
                                             transition: 'all 0.15s ease',
                                             '&:hover': {
-                                                borderColor: selected ? 'primary.main' : 'action.hover',
-                                                backgroundColor: selected ? 'primary.50' : 'action.hover'
+                                                borderColor: selected
+                                                    ? 'primary.main'
+                                                    : 'action.hover',
+                                                backgroundColor: selected
+                                                    ? 'primary.50'
+                                                    : 'action.hover'
                                             }
                                         }}
                                     >
-                                        <Box sx={{ color: selected ? 'primary.main' : 'text.secondary', display: 'flex' }}>
+                                        <Box
+                                            sx={{
+                                                color: selected
+                                                    ? 'primary.main'
+                                                    : 'text.secondary',
+                                                display: 'flex'
+                                            }}
+                                        >
                                             {option.icon}
                                         </Box>
                                         <Box sx={{ minWidth: 0 }}>
-                                            <Typography variant="body2" fontWeight={selected ? 600 : 500}>
+                                            <Typography
+                                                variant="body2"
+                                                fontWeight={
+                                                    selected ? 600 : 500
+                                                }
+                                            >
                                                 {option.label}
                                             </Typography>
-                                            <Typography variant="caption" color="text.secondary">
+                                            <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                            >
                                                 {option.description}
                                             </Typography>
                                         </Box>
@@ -210,12 +276,25 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                                 sx={{ mt: 2 }}
                                 value={selectedUser}
                                 loading={isLoadingUsers}
-                                onChange={(_event: any, newValue: IUser | null) => setSelectedUser(newValue)}
+                                onChange={(
+                                    _event: any,
+                                    newValue: IUser | null
+                                ) => setSelectedUser(newValue)}
                                 id={`reassign-requestor-${donation.id}`}
                                 options={availableUsers}
-                                getOptionLabel={(user) => `${user.displayName} (${user.email})`}
-                                isOptionEqualToValue={(option, value) => option.uid === value.uid}
-                                renderInput={(params) => <TextField {...params} label="Select user" size="small" />}
+                                getOptionLabel={(user) =>
+                                    `${user.displayName} (${user.email})`
+                                }
+                                isOptionEqualToValue={(option, value) =>
+                                    option.uid === value.uid
+                                }
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Select user"
+                                        size="small"
+                                    />
+                                )}
                             />
                         )}
                     </DialogContent>
@@ -230,7 +309,11 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                         <Button
                             variant="contained"
                             onClick={() => handleRemove(orderId, donation)}
-                            disabled={isSubmitting || (rejectionAction === 'requested' && !selectedUser)}
+                            disabled={
+                                isSubmitting ||
+                                (rejectionAction === 'requested' &&
+                                    !selectedUser)
+                            }
                             sx={{ textTransform: 'none' }}
                         >
                             {isSubmitting ? 'Saving…' : 'Confirm rejection'}

@@ -9,8 +9,13 @@ export default function AlgoliaHitCard({ hit }: BaseHit) {
     const customHit = hit as CustomHit;
 
     return (
-        <div onClick={() => router.push(`/donations/${customHit.objectID}`)} className={styles['hit__container']}>
-            <span style={{ fontWeight: 'bold' }}>{customHit.model}</span> {customHit.brand} {customHit.category} <i>{customHit.description}</i>
+        <div
+            onClick={() => router.push(`/donations/${customHit.objectID}`)}
+            className={styles['hit__container']}
+        >
+            <span style={{ fontWeight: 'bold' }}>{customHit.model}</span>{' '}
+            {customHit.brand} {customHit.category}{' '}
+            <i>{customHit.description}</i>
         </div>
     );
 }

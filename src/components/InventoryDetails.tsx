@@ -1,10 +1,23 @@
 'use client';
 
 //Hooks
-import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useState } from 'react';
+import {
+    Dispatch,
+    MouseEventHandler,
+    SetStateAction,
+    useEffect,
+    useState
+} from 'react';
 //Components
 import ProtectedAidWorkerRoute from './ProtectedAidWorkerRoute';
-import { Button, Dialog, DialogActions, IconButton, ImageList, ImageListItem } from '@mui/material';
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    IconButton,
+    ImageList,
+    ImageListItem
+} from '@mui/material';
 //Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
@@ -26,10 +39,13 @@ type InventoryDetailsProps = {
 };
 
 const InventoryDetails = (props: InventoryDetailsProps) => {
-    const { id, inventoryItem, setIdToDisplay, handleRequestInventoryItem } = props;
+    const { id, inventoryItem, setIdToDisplay, handleRequestInventoryItem } =
+        props;
     const initialItem = inventoryItem ? inventoryItem : null;
 
-    const [itemDetails, setItemDetails] = useState<InventoryItem | null>(initialItem);
+    const [itemDetails, setItemDetails] = useState<InventoryItem | null>(
+        initialItem
+    );
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
     const [openImageURL, setOpenImageURL] = useState<string>('');
@@ -80,7 +96,12 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
                     <ImageList>
                         {itemDetails.images.map((image) => (
                             <ImageListItem key={image as string}>
-                                <img src={`${image}`} alt={itemDetails.model} loading="lazy" onClick={handleImageClick} />
+                                <img
+                                    src={`${image}`}
+                                    alt={itemDetails.model}
+                                    loading="lazy"
+                                    onClick={handleImageClick}
+                                />
                             </ImageListItem>
                         ))}
                     </ImageList>
@@ -113,10 +134,21 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
                         Add to order
                     </Button>
 
-                    <Dialog open={isImageOpen} onClose={handleImageClose} sx={{ width: '100%' }}>
-                        <img src={openImageURL} alt={openImageURL} style={{ maxWidth: '100%' }} />
+                    <Dialog
+                        open={isImageOpen}
+                        onClose={handleImageClose}
+                        sx={{ width: '100%' }}
+                    >
+                        <img
+                            src={openImageURL}
+                            alt={openImageURL}
+                            style={{ maxWidth: '100%' }}
+                        />
                         <DialogActions>
-                            <Button type="button" onClick={handleImageClose}>
+                            <Button
+                                type="button"
+                                onClick={handleImageClose}
+                            >
                                 Close
                             </Button>
                         </DialogActions>

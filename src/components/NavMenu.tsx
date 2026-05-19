@@ -32,28 +32,68 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
 
     return (
         <>
-            <button className={styles['menu__bars']} aria-label="open nav menu" onClick={handleIsOpen}>
+            <button
+                className={styles['menu__bars']}
+                aria-label="open nav menu"
+                onClick={handleIsOpen}
+            >
                 <MenuIcon />
             </button>
-            <Drawer anchor="right" variant="temporary" open={isOpen} onClose={closeMenu}>
-                <button className={styles['close__btn']} aria-label="close nav menu" onClick={closeMenu}>
+            <Drawer
+                anchor="right"
+                variant="temporary"
+                open={isOpen}
+                onClose={closeMenu}
+            >
+                <button
+                    className={styles['close__btn']}
+                    aria-label="close nav menu"
+                    onClick={closeMenu}
+                >
                     <CloseIcon />
                 </button>
-                <div className={styles['nav__menu']} data-unmask="true">
-                    <Link className={styles['menu__link']} id="home" href="/" onClick={closeMenu}>
+                <div
+                    className={styles['nav__menu']}
+                    data-unmask="true"
+                >
+                    <Link
+                        className={styles['menu__link']}
+                        id="home"
+                        href="/"
+                        onClick={closeMenu}
+                    >
                         <span>Home</span>
                     </Link>
-                    <Link className={styles['menu__link']} id="donate" href="/donate" onClick={closeMenu}>
+                    <Link
+                        className={styles['menu__link']}
+                        id="donate"
+                        href="/donate"
+                        onClick={closeMenu}
+                    >
                         <span>Donate</span>
                     </Link>
-                    <Link className={styles['menu__link']} id="about" href="/about" onClick={closeMenu}>
+                    <Link
+                        className={styles['menu__link']}
+                        id="about"
+                        href="/about"
+                        onClick={closeMenu}
+                    >
                         <span>About</span>
                     </Link>
-                    <Link className={styles['menu__link']} id="contact" href="https://www.vermontconnector.org/contact" target="_blank">
+                    <Link
+                        className={styles['menu__link']}
+                        id="contact"
+                        href="https://www.vermontconnector.org/contact"
+                        target="_blank"
+                    >
                         <span>Contact</span>
                     </Link>
                     {!currentUser && (
-                        <Link className={styles['menu__link']} id="join" href="/join">
+                        <Link
+                            className={styles['menu__link']}
+                            id="join"
+                            href="/join"
+                        >
                             Join
                         </Link>
                     )}
@@ -66,7 +106,11 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                             if (currentUser) handleSignOut();
                         }}
                     >
-                        {currentUser ? <span>Log Out</span> : <span>Login</span>}
+                        {currentUser ? (
+                            <span>Log Out</span>
+                        ) : (
+                            <span>Login</span>
+                        )}
                     </Link>
                 </div>
             </Drawer>

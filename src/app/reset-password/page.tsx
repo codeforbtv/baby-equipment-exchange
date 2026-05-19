@@ -34,12 +34,16 @@ export default function ResetPassword() {
         }
     };
 
-    const handleEmailInput = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const handleEmailInput = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ): void => {
         setEmail(event.target.value);
         validateEmail(email);
     };
 
-    const handlePasswordReset = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    const handlePasswordReset = async (
+        event: React.FormEvent<HTMLFormElement>
+    ): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
         try {
@@ -65,10 +69,19 @@ export default function ResetPassword() {
                 <>
                     <div className="page--header">
                         <h1>Reset Password</h1>
-                        <h4>Enter an email and instructions for resetting your password will be sent to you.</h4>
+                        <h4>
+                            Enter an email and instructions for resetting your
+                            password will be sent to you.
+                        </h4>
                     </div>
                     <div className="content--container">
-                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handlePasswordReset}>
+                        <Box
+                            component="form"
+                            gap={3}
+                            display={'flex'}
+                            flexDirection={'column'}
+                            onSubmit={handlePasswordReset}
+                        >
                             <TextField
                                 type="email"
                                 label="Email"
@@ -78,16 +91,27 @@ export default function ResetPassword() {
                                 autoComplete="email"
                                 value={email}
                                 error={isInvalidEmail}
-                                helperText={isInvalidEmail ? 'Please enter a valid email address' : undefined}
+                                helperText={
+                                    isInvalidEmail
+                                        ? 'Please enter a valid email address'
+                                        : undefined
+                                }
                                 required
                                 onChange={handleEmailInput}
                                 onBlur={handleBlur}
                             />
 
-                            <Button variant="contained" type="submit">
+                            <Button
+                                variant="contained"
+                                type="submit"
+                            >
                                 Continue
                             </Button>
-                            <Button variant="outlined" type="button" onClick={() => router.push('./login')}>
+                            <Button
+                                variant="outlined"
+                                type="button"
+                                onClick={() => router.push('./login')}
+                            >
                                 Cancel
                             </Button>
                         </Box>

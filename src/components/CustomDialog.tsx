@@ -1,6 +1,13 @@
 'use client';
 
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle
+} from '@mui/material';
 
 type CustomDialogProps = {
     isOpen: boolean;
@@ -13,10 +20,17 @@ const CustomDialog = (props: CustomDialogProps) => {
     const { isOpen, onClose, title, content } = props;
 
     return (
-        <Dialog open={isOpen} aria-labelledby="dialog-title" aria-describedby="dialog-description">
+        <Dialog
+            open={isOpen}
+            aria-labelledby="dialog-title"
+            aria-describedby="dialog-description"
+        >
             <DialogTitle id="dialog-title">{title}</DialogTitle>
             <DialogContent>
-                <DialogContentText id="dialog-description" variant="body1">
+                <DialogContentText
+                    id="dialog-description"
+                    variant="body1"
+                >
                     {content}
                 </DialogContentText>
                 <DialogActions>

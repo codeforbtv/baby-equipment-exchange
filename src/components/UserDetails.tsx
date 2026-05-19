@@ -35,7 +35,8 @@ export default function UserDetails(props: UserDetailsProps) {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogTitle, setDialogTitle] = useState<string>('User updated');
     const [dialogContent, setDialogContent] = useState<string>('');
-    const [userDetailsUpdated, setUserDetailsUpdated] = useState<boolean>(false);
+    const [userDetailsUpdated, setUserDetailsUpdated] =
+        useState<boolean>(false);
 
     const handleClose = () => {
         if (onUsersChanged) onUsersChanged();
@@ -50,7 +51,10 @@ export default function UserDetails(props: UserDetailsProps) {
     async function fetchUserDetails(id: string): Promise<void> {
         setIsLoading(true);
         try {
-            const userDetailsResult = await getUserDetails({ idToken: await getAuthIdToken(), userId: id });
+            const userDetailsResult = await getUserDetails({
+                idToken: await getAuthIdToken(),
+                userId: id
+            });
             setUserDetails(userDetailsResult);
         } catch (error) {
             addErrorEvent('Fetch user details', error);
@@ -64,15 +68,22 @@ export default function UserDetails(props: UserDetailsProps) {
 
         setIsLoading(true);
         try {
-            await enableUser({ idToken: await getAuthIdToken(), userId: userDetails.uid });
+            await enableUser({
+                idToken: await getAuthIdToken(),
+                userId: userDetails.uid
+            });
             setDialogTitle('User enabled');
-            setDialogContent(`User ${userDetails.displayName} has been enabled.`);
+            setDialogContent(
+                `User ${userDetails.displayName} has been enabled.`
+            );
             setUserDetailsUpdated(true);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Enable user from user details', error);
             setDialogTitle('Unable to enable user');
-            setDialogContent(`User ${userDetails.displayName} could not be enabled. Please try again.`);
+            setDialogContent(
+                `User ${userDetails.displayName} could not be enabled. Please try again.`
+            );
             setIsDialogOpen(true);
         } finally {
             setIsLoading(false);
@@ -101,14 +112,27 @@ export default function UserDetails(props: UserDetailsProps) {
                 {!isLoading && !userDetails && <p>User not found</p>}
                 {!isLoading && userDetails && !isEditMode && (
                     <div className="content--container">
-                        <Typography variant="h5">{userDetails.displayName}</Typography>
-                        <Typography variant="h6">{userDetails.email}</Typography>
-                        <Typography variant="body1">{userDetails.phoneNumber}</Typography>
+                        <Typography variant="h5">
+                            {userDetails.displayName}
+                        </Typography>
+                        <Typography variant="h6">
+                            {userDetails.email}
+                        </Typography>
+                        <Typography variant="body1">
+                            {userDetails.phoneNumber}
+                        </Typography>
                         {userDetails.organization === null ? (
-                            <p style={{ color: 'red' }}>This user is missing an organization. Click edit user to assign one.</p>
+                            <p style={{ color: 'red' }}>
+                                This user is missing an organization. Click edit
+                                user to assign one.
+                            </p>
                         ) : (
-                            <Typography variant="body1" sx={{ marginTop: '1em' }}>
-                                <b>Organization: </b> {userDetails.organization.name}
+                            <Typography
+                                variant="body1"
+                                sx={{ marginTop: '1em' }}
+                            >
+                                <b>Organization: </b>{' '}
+                                {userDetails.organization.name}
                             </Typography>
                         )}
                         {userDetails.title && (
@@ -119,13 +143,20 @@ export default function UserDetails(props: UserDetailsProps) {
                         )}
                         {userDetails.distributedItems && (
                             <>
-                                <Typography variant="body1" sx={{ marginTop: '1em' }}>
+                                <Typography
+                                    variant="body1"
+                                    sx={{ marginTop: '1em' }}
+                                >
                                     <b>Distributed Items:</b>
                                 </Typography>
                                 <ul>
-                                    {userDetails.distributedItems.map((item) => (
-                                        <li key={item.tagNumber}>{item.tagNumber}</li>
-                                    ))}
+                                    {userDetails.distributedItems.map(
+                                        (item) => (
+                                            <li key={item.tagNumber}>
+                                                {item.tagNumber}
+                                            </li>
+                                        )
+                                    )}
                                 </ul>
                             </>
                         )}
@@ -141,12 +172,26 @@ export default function UserDetails(props: UserDetailsProps) {
                                 </ul>
                             </>
                         )}
-                        <Box display="flex" gap={2} flexWrap="wrap" sx={{ marginTop: '2em' }}>
-                            <Button variant="contained" type="button" onClick={() => setIsEditMode(true)} startIcon={<EditIcon />}>
+                        <Box
+                            display="flex"
+                            gap={2}
+                            flexWrap="wrap"
+                            sx={{ marginTop: '2em' }}
+                        >
+                            <Button
+                                variant="contained"
+                                type="button"
+                                onClick={() => setIsEditMode(true)}
+                                startIcon={<EditIcon />}
+                            >
                                 Edit User
                             </Button>
                             {userDetails.isDisabled && (
-                                <Button variant="outlined" type="button" onClick={handleEnableUser}>
+                                <Button
+                                    variant="outlined"
+                                    type="button"
+                                    onClick={handleEnableUser}
+                                >
                                     Enable User
                                 </Button>
                             )}
@@ -154,9 +199,18 @@ export default function UserDetails(props: UserDetailsProps) {
                     </div>
                 )}
                 {!isLoading && userDetails && isEditMode && (
-                    <EditUser userDetails={userDetails} setIsEditMode={setIsEditMode} setUserDetailsUpdated={setUserDetailsUpdated} />
+                    <EditUser
+                        userDetails={userDetails}
+                        setIsEditMode={setIsEditMode}
+                        setUserDetailsUpdated={setUserDetailsUpdated}
+                    />
                 )}
-                <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title={dialogTitle} content={dialogContent} />
+                <CustomDialog
+                    isOpen={isDialogOpen}
+                    onClose={handleClose}
+                    title={dialogTitle}
+                    content={dialogContent}
+                />
             </div>
         </ProtectedAdminRoute>
     );

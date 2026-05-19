@@ -27,7 +27,18 @@ interface MatchScore {
     reason: string;
 }
 
-const NAME_STOP_WORDS = new Set(['mr', 'mrs', 'ms', 'miss', 'dr', 'jr', 'sr', 'ii', 'iii', 'iv']);
+const NAME_STOP_WORDS = new Set([
+    'mr',
+    'mrs',
+    'ms',
+    'miss',
+    'dr',
+    'jr',
+    'sr',
+    'ii',
+    'iii',
+    'iv'
+]);
 
 export function normalizeText(value: string): string {
     return value
@@ -46,9 +57,10 @@ export function normalizeEmail(value: string): string {
 
     const plusIndex = local.indexOf('+');
     const withoutPlus = plusIndex >= 0 ? local.slice(0, plusIndex) : local;
-    const canonicalLocal = domain === 'gmail.com' || domain === 'googlemail.com'
-        ? withoutPlus.replace(/\./g, '')
-        : withoutPlus;
+    const canonicalLocal =
+        domain === 'gmail.com' || domain === 'googlemail.com'
+            ? withoutPlus.replace(/\./g, '')
+            : withoutPlus;
 
     return `${canonicalLocal}@${domain}`;
 }
@@ -97,20 +109,26 @@ export function nameSimilarity(left: string, right: string): number {
 
     const leftSet = new Set(leftTokens);
     const rightSet = new Set(rightTokens);
-    const intersection = [...leftSet].filter((token) => rightSet.has(token)).length;
+    const intersection = [...leftSet].filter((token) =>
+        rightSet.has(token)
+    ).length;
     const union = new Set([...leftSet, ...rightSet]).size;
     const tokenScore = union === 0 ? 0 : intersection / union;
 
     const distance = levenshtein(leftName, rightName);
-    const editScore = 1 - distance / Math.max(leftName.length, rightName.length);
+    const editScore =
+        1 - distance / Math.max(leftName.length, rightName.length);
 
-    const firstLastMatch = leftTokens[0] === rightTokens[0]
-        && leftTokens[leftTokens.length - 1] === rightTokens[rightTokens.length - 1];
-    const reversedMatch = leftTokens[0] === rightTokens[rightTokens.length - 1]
-        && leftTokens[leftTokens.length - 1] === rightTokens[0];
+    const firstLastMatch =
+        leftTokens[0] === rightTokens[0] &&
+        leftTokens[leftTokens.length - 1] ===
+            rightTokens[rightTokens.length - 1];
+    const reversedMatch =
+        leftTokens[0] === rightTokens[rightTokens.length - 1] &&
+        leftTokens[leftTokens.length - 1] === rightTokens[0];
 
     const structuralBoost = firstLastMatch || reversedMatch ? 0.2 : 0;
-    return Math.min(1, (tokenScore * 0.65) + (editScore * 0.35) + structuralBoost);
+    return Math.min(1, tokenScore * 0.65 + editScore * 0.35 + structuralBoost);
 }
 
 function inviteeAnswers(invitee: Invitee): string {
@@ -121,7 +139,9 @@ function inviteeAnswers(invitee: Invitee): string {
 
 function hasTagMatch(invitee: Invitee, tagNumber?: string | null): boolean {
     if (!tagNumber) return false;
-    return normalizeText(inviteeAnswers(invitee)).includes(normalizeText(tagNumber));
+    return normalizeText(inviteeAnswers(invitee)).includes(
+        normalizeText(tagNumber)
+    );
 }
 
 function scoreInvitee(
@@ -132,7 +152,10 @@ function scoreInvitee(
 ): MatchScore {
     const normalizedLookupEmail = normalizeEmail(lookupEmail);
     const normalizedInviteeEmail = normalizeEmail(invitee.email);
-    if (normalizedLookupEmail && normalizedLookupEmail === normalizedInviteeEmail) {
+    if (
+        normalizedLookupEmail &&
+        normalizedLookupEmail === normalizedInviteeEmail
+    ) {
         return {
             confidence: 'confirmed',
             score: 1,
@@ -175,7 +198,10 @@ function scoreInvitee(
     };
 }
 
-function lookupFields(donation: SchedulableDonation, mode: SchedulingMatchMode): { email: string; name: string } {
+function lookupFields(
+    donation: SchedulableDonation,
+    mode: SchedulingMatchMode
+): { email: string; name: string } {
     if (mode === 'dropoff') {
         return {
             email: donation.donorEmail,
@@ -203,7 +229,12 @@ export function matchDonationBookings(
         const ranked = inviteeIndex
             .map((entry) => ({
                 ...entry,
-                match: scoreInvitee(lookup.email, lookup.name, donation.tagNumber, entry.invitee)
+                match: scoreInvitee(
+                    lookup.email,
+                    lookup.name,
+                    donation.tagNumber,
+                    entry.invitee
+                )
             }))
             .sort((left, right) => right.match.score - left.match.score);
 
@@ -218,7 +249,11 @@ export function matchDonationBookings(
         };
 
         if (!best || confidence === 'unconfirmed') {
-            return { ...baseResult, confidence: 'unconfirmed', matchReason: 'No matching booking found' };
+            return {
+                ...baseResult,
+                confidence: 'unconfirmed',
+                matchReason: 'No matching booking found'
+            };
         }
 
         return {

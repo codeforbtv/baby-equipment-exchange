@@ -15,9 +15,20 @@ import { Donation } from '@/models/donation';
 import { Notification } from '@/types/NotificationTypes';
 import styles from './NotificationFeed.module.css';
 
-type NotificationFilterType = 'all' | 'pending-donations' | 'pending-deliveries' | 'pending-users' | 'requested-equipment' | 'reserved';
+type NotificationFilterType =
+    | 'all'
+    | 'pending-donations'
+    | 'pending-deliveries'
+    | 'pending-users'
+    | 'requested-equipment'
+    | 'reserved';
 type EntityType = 'donation' | 'user' | 'order';
-type DateLike = string | Date | { toDate?: () => Date; toMillis?: () => number } | null | undefined;
+type DateLike =
+    | string
+    | Date
+    | { toDate?: () => Date; toMillis?: () => number }
+    | null
+    | undefined;
 
 type NotificationFeedItem = {
     id: string;
@@ -47,7 +58,9 @@ const filters: { key: NotificationFilterType; label: string }[] = [
 ];
 
 function normalize(value: unknown): string {
-    return String(value ?? '').toLowerCase().trim();
+    return String(value ?? '')
+        .toLowerCase()
+        .trim();
 }
 
 function toDate(timestamp: DateLike): Date {
@@ -82,7 +95,9 @@ function createSearchText(fields: unknown[]): string {
     return fields.map(normalize).join(' ');
 }
 
-function buildFeedItems(notifications: Notification | null): NotificationFeedItem[] {
+function buildFeedItems(
+    notifications: Notification | null
+): NotificationFeedItem[] {
     if (!notifications) return [];
 
     const items: NotificationFeedItem[] = [];
@@ -124,7 +139,9 @@ function buildFeedItems(notifications: Notification | null): NotificationFeedIte
     notifications.orders
         .filter((order) => order.items.length > 0)
         .forEach((order) => {
-            const tagNumbers = order.items.flatMap((donation) => (donation.tagNumber ? [donation.tagNumber] : []));
+            const tagNumbers = order.items.flatMap((donation) =>
+                donation.tagNumber ? [donation.tagNumber] : []
+            );
             items.push({
                 id: `order-${order.id}`,
                 type: 'requested-equipment',
@@ -134,7 +151,12 @@ function buildFeedItems(notifications: Notification | null): NotificationFeedIte
                 entityId: order.id,
                 entityType: 'order',
                 tabIndex: 2,
-                searchText: createSearchText([order.id, order.requestor.name, order.requestor.email, ...order.items.flatMap(donationFields)]),
+                searchText: createSearchText([
+                    order.id,
+                    order.requestor.name,
+                    order.requestor.email,
+                    ...order.items.flatMap(donationFields)
+                ]),
                 tagNumbers: [...new Set(tagNumbers)]
             });
         });
@@ -168,7 +190,13 @@ function buildFeedItems(notifications: Notification | null): NotificationFeedIte
                 entityId: user.uid,
                 entityType: 'user',
                 tabIndex: 4,
-                searchText: createSearchText([user.uid, user.displayName, user.email, user.organization?.name, user.phoneNumber]),
+                searchText: createSearchText([
+                    user.uid,
+                    user.displayName,
+                    user.email,
+                    user.organization?.name,
+                    user.phoneNumber
+                ]),
                 tagNumbers: []
             });
         });
@@ -204,26 +232,45 @@ function getItemIcon(type: NotificationFeedItem['type']) {
     }
 }
 
-export default function NotificationFeed({ notifications, onNavigate }: NotificationFeedProps) {
+export default function NotificationFeed({
+    notifications,
+    onNavigate
+}: NotificationFeedProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [activeFilter, setActiveFilter] = useState<NotificationFilterType>('all');
+    const [activeFilter, setActiveFilter] =
+        useState<NotificationFilterType>('all');
     const [searchInput, setSearchInput] = useState('');
 
     const items = useMemo(() => buildFeedItems(notifications), [notifications]);
     const normalizedSearchInput = normalize(searchInput);
     const filteredItems = useMemo(() => {
-        const filteredByType = activeFilter === 'all' ? items : items.filter((item) => item.type === activeFilter);
+        const filteredByType =
+            activeFilter === 'all'
+                ? items
+                : items.filter((item) => item.type === activeFilter);
         if (!normalizedSearchInput) return filteredByType;
-        return filteredByType.filter((item) => item.searchText.includes(normalizedSearchInput) || item.title.toLowerCase().includes(normalizedSearchInput));
+        return filteredByType.filter(
+            (item) =>
+                item.searchText.includes(normalizedSearchInput) ||
+                item.title.toLowerCase().includes(normalizedSearchInput)
+        );
     }, [activeFilter, items, normalizedSearchInput]);
 
     const filterCounts = useMemo<Record<NotificationFilterType, number>>(
         () => ({
             all: items.length,
-            'pending-deliveries': items.filter((item) => item.type === 'pending-deliveries').length,
-            'pending-donations': items.filter((item) => item.type === 'pending-donations').length,
-            'pending-users': items.filter((item) => item.type === 'pending-users').length,
-            'requested-equipment': items.filter((item) => item.type === 'requested-equipment').length,
+            'pending-deliveries': items.filter(
+                (item) => item.type === 'pending-deliveries'
+            ).length,
+            'pending-donations': items.filter(
+                (item) => item.type === 'pending-donations'
+            ).length,
+            'pending-users': items.filter(
+                (item) => item.type === 'pending-users'
+            ).length,
+            'requested-equipment': items.filter(
+                (item) => item.type === 'requested-equipment'
+            ).length,
             reserved: items.filter((item) => item.type === 'reserved').length
         }),
         [items]
@@ -257,7 +304,9 @@ export default function NotificationFeed({ notifications, onNavigate }: Notifica
                     aria-label={`Open notifications feed, ${items.length} notifications`}
                 >
                     <NotificationsIcon fontSize="small" />
-                    <span className={styles['feed-trigger-count']}>{items.length}</span>
+                    <span className={styles['feed-trigger-count']}>
+                        {items.length}
+                    </span>
                 </IconButton>
             </Tooltip>
 
@@ -265,26 +314,42 @@ export default function NotificationFeed({ notifications, onNavigate }: Notifica
                 typeof document !== 'undefined' &&
                 createPortal(
                     <>
-                        <div className={styles['feed-backdrop']} onClick={handleClose} />
-                        <div className={styles['feed-panel']} role="dialog" aria-modal="true" aria-label="Notifications">
+                        <div
+                            className={styles['feed-backdrop']}
+                            onClick={handleClose}
+                        />
+                        <div
+                            className={styles['feed-panel']}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Notifications"
+                        >
                             <div className={styles['feed-header']}>
                                 <h3>Notifications</h3>
                                 <Tooltip title="Close">
-                                    <IconButton size="small" onClick={handleClose}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleClose}
+                                    >
                                         <CloseIcon fontSize="small" />
                                     </IconButton>
                                 </Tooltip>
                             </div>
 
                             <div className={styles['feed-search']}>
-                                <SearchIcon className={styles['feed-search-icon']} fontSize="small" />
+                                <SearchIcon
+                                    className={styles['feed-search-icon']}
+                                    fontSize="small"
+                                />
                                 <input
                                     aria-label="Search notifications"
                                     className={styles['feed-search-input']}
                                     type="search"
                                     placeholder="Search TAG, model, brand, or person"
                                     value={searchInput}
-                                    onChange={(event) => setSearchInput(event.target.value)}
+                                    onChange={(event) =>
+                                        setSearchInput(event.target.value)
+                                    }
                                 />
                                 {searchInput && (
                                     <button
@@ -303,10 +368,18 @@ export default function NotificationFeed({ notifications, onNavigate }: Notifica
                                     <button
                                         key={filter.key}
                                         className={`${styles['feed-chip']} ${activeFilter === filter.key ? styles['feed-chip--active'] : ''}`}
-                                        onClick={() => setActiveFilter(filter.key)}
+                                        onClick={() =>
+                                            setActiveFilter(filter.key)
+                                        }
                                     >
                                         <span>{filter.label}</span>
-                                        <span className={styles['feed-chip-count']}>{filterCounts[filter.key]}</span>
+                                        <span
+                                            className={
+                                                styles['feed-chip-count']
+                                            }
+                                        >
+                                            {filterCounts[filter.key]}
+                                        </span>
                                     </button>
                                 ))}
                             </div>
@@ -314,24 +387,70 @@ export default function NotificationFeed({ notifications, onNavigate }: Notifica
                             <div className={styles['feed-list']}>
                                 {filteredItems.length === 0 ? (
                                     <div className={styles['feed-empty']}>
-                                        {normalizedSearchInput ? 'No notifications match this search.' : 'No notifications matching this filter.'}
+                                        {normalizedSearchInput
+                                            ? 'No notifications match this search.'
+                                            : 'No notifications matching this filter.'}
                                     </div>
                                 ) : (
                                     filteredItems.map((item) => (
-                                        <button key={item.id} className={styles['feed-item']} type="button" onClick={() => handleItemClick(item)}>
-                                            <span className={`${styles['feed-item-icon']} ${styles[`feed-item-icon--${item.entityType}`]}`}>
+                                        <button
+                                            key={item.id}
+                                            className={styles['feed-item']}
+                                            type="button"
+                                            onClick={() =>
+                                                handleItemClick(item)
+                                            }
+                                        >
+                                            <span
+                                                className={`${styles['feed-item-icon']} ${styles[`feed-item-icon--${item.entityType}`]}`}
+                                            >
                                                 {getItemIcon(item.type)}
                                             </span>
-                                            <span className={styles['feed-item-content']}>
-                                                <span className={styles['feed-item-title']}>{item.title}</span>
-                                                <span className={styles['feed-item-subtitle']}>{item.subtitle}</span>
+                                            <span
+                                                className={
+                                                    styles['feed-item-content']
+                                                }
+                                            >
+                                                <span
+                                                    className={
+                                                        styles[
+                                                            'feed-item-title'
+                                                        ]
+                                                    }
+                                                >
+                                                    {item.title}
+                                                </span>
+                                                <span
+                                                    className={
+                                                        styles[
+                                                            'feed-item-subtitle'
+                                                        ]
+                                                    }
+                                                >
+                                                    {item.subtitle}
+                                                </span>
                                                 {item.tagNumbers.length > 0 && (
-                                                    <span className={styles['feed-item-tags']}>
-                                                        <span>TAG</span> {item.tagNumbers.join(', ')}
+                                                    <span
+                                                        className={
+                                                            styles[
+                                                                'feed-item-tags'
+                                                            ]
+                                                        }
+                                                    >
+                                                        <span>TAG</span>{' '}
+                                                        {item.tagNumbers.join(
+                                                            ', '
+                                                        )}
                                                     </span>
                                                 )}
                                             </span>
-                                            <span className={styles['feed-item-time']}>{timeAgo(item.timestamp)}</span>
+                                            <span
+                                                className={
+                                                    styles['feed-item-time']
+                                                }
+                                            >
+                                                {timeAgo(item.timestamp)}
+                                            </span>
                                         </button>
                                     ))
                                 )}

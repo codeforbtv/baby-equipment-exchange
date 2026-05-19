@@ -7,7 +7,14 @@ import NumberField from './NumberField';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
 import { Box } from '@mui/system';
-import { Button, Checkbox, FormControlLabel, FormGroup, Stack, TextField } from '@mui/material';
+import {
+    Button,
+    Checkbox,
+    FormControlLabel,
+    FormGroup,
+    Stack,
+    TextField
+} from '@mui/material';
 import CustomDialog from './CustomDialog';
 //Api
 import { addErrorEvent } from '@/api/firebase';
@@ -27,9 +34,13 @@ const EditCategory = (props: EditCategoryProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [newName, setNewName] = useState<string>(category.name);
     const [newActive, setNewActive] = useState<boolean>(category.active);
-    const [newTagPrefix, setNewTagPrefix] = useState<string>(category.tagPrefix);
+    const [newTagPrefix, setNewTagPrefix] = useState<string>(
+        category.tagPrefix
+    );
     const [newTagCount, setNewtagCount] = useState<number>(category.tagCount);
-    const [newDescription, setNewDescription] = useState<string>(category.description ?? '');
+    const [newDescription, setNewDescription] = useState<string>(
+        category.description ?? ''
+    );
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,7 +79,14 @@ const EditCategory = (props: EditCategoryProps) => {
             {isLoading && <Loader />}
             {!isLoading && (
                 <div className="content--container">
-                    <Box component="form" display={'flex'} flexDirection={'column'} gap={4} className="form--container" onSubmit={handleSubmit}>
+                    <Box
+                        component="form"
+                        display={'flex'}
+                        flexDirection={'column'}
+                        gap={4}
+                        className="form--container"
+                        onSubmit={handleSubmit}
+                    >
                         <TextField
                             type="text"
                             label="Name"
@@ -80,7 +98,15 @@ const EditCategory = (props: EditCategoryProps) => {
                             required
                         />
                         <FormGroup>
-                            <FormControlLabel control={<Checkbox checked={newActive} onChange={handleCheck} />} label="Active" />
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={newActive}
+                                        onChange={handleCheck}
+                                    />
+                                }
+                                label="Active"
+                            />
                         </FormGroup>
                         <TextField
                             type="text"
@@ -99,12 +125,26 @@ const EditCategory = (props: EditCategoryProps) => {
                             placeholder="Description"
                             onChange={(e) => setNewDescription(e.target.value)}
                         />
-                        <NumberField label="Last tag number used" value={newTagCount} onValueChange={(e) => setNewtagCount(e ?? 0)} />
-                        <Stack direction="column" spacing={2}>
-                            <Button variant="contained" type="submit">
+                        <NumberField
+                            label="Last tag number used"
+                            value={newTagCount}
+                            onValueChange={(e) => setNewtagCount(e ?? 0)}
+                        />
+                        <Stack
+                            direction="column"
+                            spacing={2}
+                        >
+                            <Button
+                                variant="contained"
+                                type="submit"
+                            >
                                 Save
                             </Button>
-                            <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
+                            <Button
+                                variant="outlined"
+                                type="button"
+                                onClick={() => setIsEditMode(false)}
+                            >
                                 Cancel
                             </Button>
                         </Stack>

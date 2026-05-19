@@ -17,7 +17,13 @@ const CustomTabPanel = (props: TabPanelProps) => {
     const { children, index, value, ...other } = props;
 
     return (
-        <div style={styles} role="tabpanel" hidden={value !== index} id={`tab-panel-${index}`} aria-labelledby={`tab-index-${index}`}>
+        <div
+            style={styles}
+            role="tabpanel"
+            hidden={value !== index}
+            id={`tab-panel-${index}`}
+            aria-labelledby={`tab-index-${index}`}
+        >
             {value === index && <>{children}</>}
         </div>
     );

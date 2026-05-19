@@ -14,7 +14,10 @@ import CancelOrder from './CancelOrder';
 //Icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
-import { getOrderById, removeDonationFromOrder } from '@/api/firebase-donations';
+import {
+    getOrderById,
+    removeDonationFromOrder
+} from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 //Styles
 import '@/styles/globalStyles.css';
@@ -33,11 +36,15 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const { setIdToDisplay, id, setNotificationsUpdated } = props;
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
+    const [donationIdToDisplay, setDonationIdToDisplay] = useState<
+        string | null
+    >(null);
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
     const [showCancelOrder, setShowCancelOrder] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [dialogContent, setDialogContent] = useState<string>('Donation successfully removed from order');
+    const [dialogContent, setDialogContent] = useState<string>(
+        'Donation successfully removed from order'
+    );
 
     const fetchOrder = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -51,7 +58,11 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         }
     };
 
-    const handleRemoveFromOrder = async (orderId: string, donation: Donation, resolution: OrderItemRejectionResolution): Promise<void> => {
+    const handleRemoveFromOrder = async (
+        orderId: string,
+        donation: Donation,
+        resolution: OrderItemRejectionResolution
+    ): Promise<void> => {
         setIsLoading(true);
         try {
             await removeDonationFromOrder(orderId, donation, resolution);
@@ -86,7 +97,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
 
     useEffect(() => {
         fetchOrder(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     return (
@@ -94,12 +105,19 @@ const ReviewOrder = (props: ReviewOrderProps) => {
             {donationIdToDisplay && currentOrder && (
                 <DonationDetails
                     id={donationIdToDisplay}
-                    donation={[...currentOrder.items, ...(currentOrder.rejectedItems ?? [])].find((i) => i.id === donationIdToDisplay)}
+                    donation={[
+                        ...currentOrder.items,
+                        ...(currentOrder.rejectedItems ?? [])
+                    ].find((i) => i.id === donationIdToDisplay)}
                     setIdToDisplay={setDonationIdToDisplay}
                 />
             )}
             {showScheduler && currentOrder && (
-                <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
+                <SchedulePickup
+                    order={currentOrder}
+                    setShowScheduler={setShowScheduler}
+                    setNotificationsUpdated={setNotificationsUpdated}
+                />
             )}
             {showCancelOrder && currentOrder && (
                 <CancelOrder
@@ -127,43 +145,73 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     {!isLoading && currentOrder && (
                         <div className="content--container">
                             <h3>
-                                <b>Requested by:</b> {currentOrder.requestor.name} ({currentOrder.requestor.email})
+                                <b>Requested by:</b>{' '}
+                                {currentOrder.requestor.name} (
+                                {currentOrder.requestor.email})
                             </h3>
-                            {currentOrder.items && currentOrder.items.length > 0 && (
-                                <>
-                                    <h4>Items ready for pickup</h4>
-                                    {currentOrder.items.map((item) => (
-                                        <DonationCardMed
-                                            key={item.id}
-                                            orderId={id}
-                                            donation={item}
-                                            setIdToDisplay={setDonationIdToDisplay}
-                                            handleRemoveFromOrder={handleRemoveFromOrder}
-                                        />
-                                    ))}
-                                </>
-                            )}
-                            {currentOrder.rejectedItems && currentOrder.rejectedItems.length > 0 && (
-                                <>
-                                    <h4>Rejected items</h4>
-                                    {currentOrder.rejectedItems.map((item) => (
-                                        <DonationCardMed key={item.id} orderId={id} donation={item} setIdToDisplay={setDonationIdToDisplay} />
-                                    ))}
-                                </>
-                            )}
+                            {currentOrder.items &&
+                                currentOrder.items.length > 0 && (
+                                    <>
+                                        <h4>Items ready for pickup</h4>
+                                        {currentOrder.items.map((item) => (
+                                            <DonationCardMed
+                                                key={item.id}
+                                                orderId={id}
+                                                donation={item}
+                                                setIdToDisplay={
+                                                    setDonationIdToDisplay
+                                                }
+                                                handleRemoveFromOrder={
+                                                    handleRemoveFromOrder
+                                                }
+                                            />
+                                        ))}
+                                    </>
+                                )}
+                            {currentOrder.rejectedItems &&
+                                currentOrder.rejectedItems.length > 0 && (
+                                    <>
+                                        <h4>Rejected items</h4>
+                                        {currentOrder.rejectedItems.map(
+                                            (item) => (
+                                                <DonationCardMed
+                                                    key={item.id}
+                                                    orderId={id}
+                                                    donation={item}
+                                                    setIdToDisplay={
+                                                        setDonationIdToDisplay
+                                                    }
+                                                />
+                                            )
+                                        )}
+                                    </>
+                                )}
                             {currentOrder.items.length > 0 && (
-                                <Button variant="contained" onClick={() => setShowScheduler(true)}>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => setShowScheduler(true)}
+                                >
                                     Schedule Pickup
                                 </Button>
                             )}
-                            <Button variant="outlined" color="error" onClick={() => setShowCancelOrder(true)} sx={{ marginLeft: '1rem' }}>
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={() => setShowCancelOrder(true)}
+                                sx={{ marginLeft: '1rem' }}
+                            >
                                 Cancel Order
                             </Button>
                         </div>
                     )}
                 </>
             )}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content={dialogContent} />
+            <CustomDialog
+                isOpen={isDialogOpen}
+                onClose={handleClose}
+                title="Order Updated"
+                content={dialogContent}
+            />
         </ProtectedAdminRoute>
     );
 };

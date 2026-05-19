@@ -14,7 +14,9 @@ import { Notification } from '@/types/NotificationTypes';
 
 const NotificationsPage = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [notifications, setNotifications] = useState<Notification | null>(null);
+    const [notifications, setNotifications] = useState<Notification | null>(
+        null
+    );
 
     async function fetchNotifications(): Promise<void> {
         setIsLoading(true);
@@ -37,7 +39,9 @@ const NotificationsPage = () => {
             <>
                 {isLoading && <Loader />}
                 {!isLoading && !notifications && <p>No new notifications</p>}
-                {!isLoading && notifications && <Notifications notifications={notifications} />}
+                {!isLoading && notifications && (
+                    <Notifications notifications={notifications} />
+                )}
             </>
         </ProtectedAdminRoute>
     );

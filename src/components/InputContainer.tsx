@@ -14,7 +14,9 @@ export default function InputContainer(props: InputProps) {
         <div className={styles['input__container']}>
             <label htmlFor={props.for}>{props.label}</label>
             {props.children}
-            {props.footnote && <p className={styles['footnote']}>{props.footnote}</p>}
+            {props.footnote && (
+                <p className={styles['footnote']}>{props.footnote}</p>
+            )}
         </div>
     );
 }

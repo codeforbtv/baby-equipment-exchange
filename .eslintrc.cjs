@@ -4,21 +4,21 @@ module.exports = {
         'eslint:recommended',
         'plugin:react/recommended',
         'plugin:@typescript-eslint/recommended',
-        'next/core-web-vitals',
+        'next/core-web-vitals'
     ],
     plugins: ['@typescript-eslint', 'prettier'],
     parserOptions: {
         ecmaVersion: 2022,
         sourceType: 'module',
         ecmaFeatures: {
-            jsx: true,
-        },
+            jsx: true
+        }
     },
     env: {
         browser: true,
         node: true,
         es6: true,
-        jest: true,
+        jest: true
     },
     rules: {
         'no-control-regex': 0,
@@ -38,11 +38,11 @@ module.exports = {
         'react/react-in-jsx-scope': 'off',
         'react-hooks/rules-of-hooks': 'error',
         'react-hooks/exhaustive-deps': 'warn',
-        'object-curly-newline': 'off',
+        'object-curly-newline': 'off'
     },
     settings: {
         react: {
-            version: 'detect',
-        },
-    },
+            version: 'detect'
+        }
+    }
 };

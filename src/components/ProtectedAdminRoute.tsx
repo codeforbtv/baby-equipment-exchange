@@ -8,7 +8,11 @@ import { useUserContext } from '@/contexts/UserContext';
 //Styling
 import '../styles/globalStyles.css';
 
-export default function ProtectedAdminRoute({ children }: { children: React.ReactNode }) {
+export default function ProtectedAdminRoute({
+    children
+}: {
+    children: React.ReactNode;
+}) {
     const { currentUser, isLoading, isAdmin } = useUserContext();
     const router = useRouter();
 
@@ -26,7 +30,8 @@ export default function ProtectedAdminRoute({ children }: { children: React.Reac
         );
     }
 
-    if (currentUser && isAdmin) return <Suspense fallback={<Loader />}>{children}</Suspense>;
+    if (currentUser && isAdmin)
+        return <Suspense fallback={<Loader />}>{children}</Suspense>;
 
     return null;
 }

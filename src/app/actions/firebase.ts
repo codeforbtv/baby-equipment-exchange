@@ -43,7 +43,12 @@ async function _verifyAdminToken(idToken: string): Promise<void> {
     }
 }
 
-async function sendAdminNotificationEmail(message: ReturnType<typeof adminUserCreated> | ReturnType<typeof adminUserEnabled>, location: string): Promise<void> {
+async function sendAdminNotificationEmail(
+    message:
+        | ReturnType<typeof adminUserCreated>
+        | ReturnType<typeof adminUserEnabled>,
+    location: string
+): Promise<void> {
     try {
         await sendMail(message);
     } catch (emailError) {
@@ -53,14 +58,23 @@ async function sendAdminNotificationEmail(message: ReturnType<typeof adminUserCr
 
 function serializeFirestoreData<T>(value: T): T {
     if (value == null) return value;
-    if (typeof value === 'object' && 'toDate' in value && typeof value.toDate === 'function') {
+    if (
+        typeof value === 'object' &&
+        'toDate' in value &&
+        typeof value.toDate === 'function'
+    ) {
         return value.toDate().toISOString() as T;
     }
     if (Array.isArray(value)) {
         return value.map((item) => serializeFirestoreData(item)) as T;
     }
     if (typeof value === 'object') {
-        return Object.fromEntries(Object.entries(value).map(([key, nestedValue]) => [key, serializeFirestoreData(nestedValue)])) as T;
+        return Object.fromEntries(
+            Object.entries(value).map(([key, nestedValue]) => [
+                key,
+                serializeFirestoreData(nestedValue)
+            ])
+        ) as T;
     }
     return value;
 }
@@ -80,10 +94,15 @@ export async function addEvent(request: EventRequest): Promise<void> {
     }
 }
 
-export async function getOrganizationNames(): Promise<{ [key: string]: string }> {
+export async function getOrganizationNames(): Promise<{
+    [key: string]: string;
+}> {
     try {
         const orgNames: { [key: string]: string } = {};
-        const snapshot = await db.collection(ORGANIZATIONS_COLLECTION).orderBy('name', 'asc').get();
+        const snapshot = await db
+            .collection(ORGANIZATIONS_COLLECTION)
+            .orderBy('name', 'asc')
+            .get();
         snapshot.forEach((snap) => {
             const { name } = snap.data();
             orgNames[name] = snap.id;
@@ -95,38 +114,65 @@ export async function getOrganizationNames(): Promise<{ [key: string]: string }>
     }
 }
 
-export async function getUserDetails(request: { idToken: string; userId: string }): Promise<IUser> {
+export async function getUserDetails(request: {
+    idToken: string;
+    userId: string;
+}): Promise<IUser> {
     try {
         await _verifyAdminToken(request.idToken);
-        const userSnapshot = await db.collection(USERS_COLLECTION).doc(request.userId).get();
+        const userSnapshot = await db
+            .collection(USERS_COLLECTION)
+            .doc(request.userId)
+            .get();
         if (!userSnapshot.exists) {
             throw new Error('User not found');
         }
-        return serializeFirestoreData({ uid: userSnapshot.id, ...userSnapshot.data() } as IUser);
+        return serializeFirestoreData({
+            uid: userSnapshot.id,
+            ...userSnapshot.data()
+        } as IUser);
     } catch (error) {
         addErrorEvent('getUserDetails', error);
         throw error;
     }
 }
 
-export async function isEmailInUse(request: { email: string }): Promise<boolean> {
+export async function isEmailInUse(request: {
+    email: string;
+}): Promise<boolean> {
     try {
         const existingUser = await auth.getUserByEmail(request.email);
         return existingUser !== undefined;
     } catch (error: any) {
         if (error.code === 'auth/user-not-found') return false;
-        if (error.code !== 'auth/invalid-email') addErrorEvent('isEmailInUse', error);
+        if (error.code !== 'auth/invalid-email')
+            addErrorEvent('isEmailInUse', error);
     }
     return true;
 }
 
-export async function createUser(request: NewUserAccountInfo): Promise<UserRecord> {
-    const { email, password, displayName, phoneNumber, organization, notes, title, termsAccepted } = request;
+export async function createUser(
+    request: NewUserAccountInfo
+): Promise<UserRecord> {
+    const {
+        email,
+        password,
+        displayName,
+        phoneNumber,
+        organization,
+        notes,
+        title,
+        termsAccepted
+    } = request;
 
-    if (!email || email.length === 0) throw new Error('A valid email address is required.');
-    if (!password || password.length === 0) throw new Error('Password is required.');
-    if (!displayName || displayName.length === 0) throw new Error('Display name is required.');
-    if (!phoneNumber || phoneNumber.length === 0) throw new Error('Phone number is required.');
+    if (!email || email.length === 0)
+        throw new Error('A valid email address is required.');
+    if (!password || password.length === 0)
+        throw new Error('Password is required.');
+    if (!displayName || displayName.length === 0)
+        throw new Error('Display name is required.');
+    if (!phoneNumber || phoneNumber.length === 0)
+        throw new Error('Phone number is required.');
 
     let userRecord: UserRecord;
     try {
@@ -157,7 +203,10 @@ export async function createUser(request: NewUserAccountInfo): Promise<UserRecor
     };
 
     try {
-        await db.collection(USERS_COLLECTION).doc(userRecord.uid).set(userParams);
+        await db
+            .collection(USERS_COLLECTION)
+            .doc(userRecord.uid)
+            .set(userParams);
     } catch (firestoreError) {
         try {
             await auth.deleteUser(userRecord.uid);
@@ -168,13 +217,17 @@ export async function createUser(request: NewUserAccountInfo): Promise<UserRecor
         throw new Error('An error occurred while trying to create a new user.');
     }
 
-    await sendAdminNotificationEmail(adminUserCreated(userRecord.uid, request), 'createUser admin notification email');
+    await sendAdminNotificationEmail(
+        adminUserCreated(userRecord.uid, request),
+        'createUser admin notification email'
+    );
 
     return JSON.parse(JSON.stringify(userRecord));
 }
 
-
-export async function checkClaims(request: CheckClaimsRequest): Promise<Record<string, boolean>> {
+export async function checkClaims(
+    request: CheckClaimsRequest
+): Promise<Record<string, boolean>> {
     try {
         const claims = await auth.verifyIdToken(request.idToken, true);
         if (!claims) throw new Error('Invalid token');
@@ -189,20 +242,33 @@ export async function checkClaims(request: CheckClaimsRequest): Promise<Record<s
     throw new Error('Internal error');
 }
 
-
-export async function enableUser(request: { idToken: string; userId: string }): Promise<void> {
+export async function enableUser(request: {
+    idToken: string;
+    userId: string;
+}): Promise<void> {
     try {
         await _verifyAdminToken(request.idToken);
         const userId = request.userId;
-        if (!userId) throw new Error('Must provide a user Id to enable a user account.');
+        if (!userId)
+            throw new Error('Must provide a user Id to enable a user account.');
         const user = await auth.updateUser(userId, { disabled: false });
         await auth.setCustomUserClaims(user.uid, { 'aid-worker': true });
-        await db.collection(USERS_COLLECTION).doc(userId).update({
-            isDisabled: false,
-            customClaims: { 'aid-worker': true },
-            modifiedAt: FieldValue.serverTimestamp()
-        });
-        await sendAdminNotificationEmail(adminUserEnabled({ uid: user.uid, email: user.email, displayName: user.displayName }), 'enableUser admin notification email');
+        await db
+            .collection(USERS_COLLECTION)
+            .doc(userId)
+            .update({
+                isDisabled: false,
+                customClaims: { 'aid-worker': true },
+                modifiedAt: FieldValue.serverTimestamp()
+            });
+        await sendAdminNotificationEmail(
+            adminUserEnabled({
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName
+            }),
+            'enableUser admin notification email'
+        );
         await sendMail(userEnabled(user.email ?? '', user.displayName ?? ''));
     } catch (error) {
         addErrorEvent('enableUser', error);
@@ -210,11 +276,15 @@ export async function enableUser(request: { idToken: string; userId: string }): 
     }
 }
 
-export async function deleteUser(request: { idToken: string; userId: string }): Promise<void> {
+export async function deleteUser(request: {
+    idToken: string;
+    userId: string;
+}): Promise<void> {
     try {
         await _verifyAdminToken(request.idToken);
         const userId = request.userId;
-        if (!userId) throw new Error('Must provide a user Id to delete a user account.');
+        if (!userId)
+            throw new Error('Must provide a user Id to delete a user account.');
         await auth.deleteUser(userId);
         await db.collection(USERS_COLLECTION).doc(userId).delete();
     } catch (error) {
@@ -236,22 +306,30 @@ export async function updateAuthUser(request: {
 }): Promise<UserRecord> {
     try {
         await _verifyAdminToken(request.idToken);
-        const { displayName, email, ...firestoreOnlyFields } = request.accountInformation;
+        const { displayName, email, ...firestoreOnlyFields } =
+            request.accountInformation;
 
         const authUpdate: { displayName?: string; email?: string } = {};
         if (displayName !== undefined) authUpdate.displayName = displayName;
         if (email !== undefined) authUpdate.email = email;
-        const updatedUser = Object.keys(authUpdate).length > 0
-            ? await auth.updateUser(request.uid, authUpdate)
-            : await auth.getUser(request.uid);
+        const updatedUser =
+            Object.keys(authUpdate).length > 0
+                ? await auth.updateUser(request.uid, authUpdate)
+                : await auth.getUser(request.uid);
 
-        const firestoreUpdate: Record<string, any> = { modifiedAt: FieldValue.serverTimestamp() };
-        if (displayName !== undefined) firestoreUpdate.displayName = displayName;
+        const firestoreUpdate: Record<string, any> = {
+            modifiedAt: FieldValue.serverTimestamp()
+        };
+        if (displayName !== undefined)
+            firestoreUpdate.displayName = displayName;
         if (email !== undefined) firestoreUpdate.email = email;
         for (const [key, value] of Object.entries(firestoreOnlyFields)) {
             if (value !== undefined) firestoreUpdate[key] = value;
         }
-        await db.collection(USERS_COLLECTION).doc(request.uid).update(firestoreUpdate);
+        await db
+            .collection(USERS_COLLECTION)
+            .doc(request.uid)
+            .update(firestoreUpdate);
 
         return JSON.parse(JSON.stringify(updatedUser));
     } catch (error) {
@@ -260,7 +338,9 @@ export async function updateAuthUser(request: {
     throw new Error('Error updating user account.');
 }
 
-export async function listAllUsers(request: { idToken: string }): Promise<AuthUserRecord[]> {
+export async function listAllUsers(request: {
+    idToken: string;
+}): Promise<AuthUserRecord[]> {
     try {
         await _verifyAdminToken(request.idToken);
         const usersListResult = await auth.listUsers(1000);
@@ -281,7 +361,9 @@ export async function listAllUsers(request: { idToken: string }): Promise<AuthUs
     return Promise.reject();
 }
 
-export async function setCustomClaims(request: SetCustomClaimsRequest): Promise<void> {
+export async function setCustomClaims(
+    request: SetCustomClaimsRequest
+): Promise<void> {
     try {
         await _verifyAdminToken(request.idToken);
         await auth.setCustomUserClaims(request.userId, request.claims);
@@ -305,11 +387,11 @@ export async function requestInventory(request: {
 
     try {
         const orderId = await db.runTransaction(async (transaction) => {
-            const donationRefs = request.donationIds.map(id =>
+            const donationRefs = request.donationIds.map((id) =>
                 db.collection(DONATIONS_COLLECTION).doc(id)
             );
             const donationSnaps = await Promise.all(
-                donationRefs.map(ref => transaction.get(ref))
+                donationRefs.map((ref) => transaction.get(ref))
             );
 
             const unavailableIds: string[] = [];
@@ -324,7 +406,11 @@ export async function requestInventory(request: {
             }
 
             const orderRef = db.collection(ORDERS_COLLECTION).doc();
-            const user = { id: userId, name: request.user.name, email: request.user.email };
+            const user = {
+                id: userId,
+                name: request.user.name,
+                email: request.user.email
+            };
 
             transaction.set(orderRef, {
                 status: 'open',

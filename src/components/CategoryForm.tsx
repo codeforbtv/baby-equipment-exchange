@@ -75,7 +75,14 @@ const CategoryForm = (props: CategoryFormProps) => {
             {isLoading && <Loader />}
             {!isLoading && (
                 <div className="content--container">
-                    <Box component="form" display={'flex'} flexDirection={'column'} gap={4} className="form--container" onSubmit={handleSubmit}>
+                    <Box
+                        component="form"
+                        display={'flex'}
+                        flexDirection={'column'}
+                        gap={4}
+                        className="form--container"
+                        onSubmit={handleSubmit}
+                    >
                         <TextField
                             type="text"
                             label="Name"
@@ -105,11 +112,21 @@ const CategoryForm = (props: CategoryFormProps) => {
                             onChange={(e) => setDescription(e.target.value)}
                             value={description}
                         />
-                        <Button variant="contained" type="submit" disabled={name.length === 0 || tagPrefix.length === 0}>
+                        <Button
+                            variant="contained"
+                            type="submit"
+                            disabled={
+                                name.length === 0 || tagPrefix.length === 0
+                            }
+                        >
                             Create Category
                         </Button>
                         {setShowForm && (
-                            <Button variant="outlined" type="button" onClick={() => setShowForm(false)}>
+                            <Button
+                                variant="outlined"
+                                type="button"
+                                onClick={() => setShowForm(false)}
+                            >
                                 Cancel
                             </Button>
                         )}

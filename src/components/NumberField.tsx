@@ -39,7 +39,14 @@ export default function NumberField({
             allowWheelScrub
             {...other}
             render={(props, state) => (
-                <FormControl size={size} ref={props.ref} disabled={state.disabled} required={state.required} error={error} variant="outlined">
+                <FormControl
+                    size={size}
+                    ref={props.ref}
+                    disabled={state.disabled}
+                    required={state.required}
+                    error={error}
+                    variant="outlined"
+                >
                     {props.children}
                 </FormControl>
             )}
@@ -78,12 +85,32 @@ export default function NumberField({
                                     }
                                 }}
                             >
-                                <BaseNumberField.Increment render={<IconButton size={size} aria-label="Increase" />}>
-                                    <KeyboardArrowUpIcon fontSize={size} sx={{ transform: 'translateY(2px)' }} />
+                                <BaseNumberField.Increment
+                                    render={
+                                        <IconButton
+                                            size={size}
+                                            aria-label="Increase"
+                                        />
+                                    }
+                                >
+                                    <KeyboardArrowUpIcon
+                                        fontSize={size}
+                                        sx={{ transform: 'translateY(2px)' }}
+                                    />
                                 </BaseNumberField.Increment>
 
-                                <BaseNumberField.Decrement render={<IconButton size={size} aria-label="Decrease" />}>
-                                    <KeyboardArrowDownIcon fontSize={size} sx={{ transform: 'translateY(-2px)' }} />
+                                <BaseNumberField.Decrement
+                                    render={
+                                        <IconButton
+                                            size={size}
+                                            aria-label="Decrease"
+                                        />
+                                    }
+                                >
+                                    <KeyboardArrowDownIcon
+                                        fontSize={size}
+                                        sx={{ transform: 'translateY(-2px)' }}
+                                    />
                                 </BaseNumberField.Decrement>
                             </InputAdornment>
                         }

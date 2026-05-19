@@ -6,7 +6,13 @@ import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
-import { Button, Dialog, DialogActions, DialogContent, IconButton } from '@mui/material';
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    IconButton
+} from '@mui/material';
 import AcceptRejectCard from '@/components/AcceptRejectCard';
 import DonationDetails from '@/components/DonationDetails';
 import ScheduleDropOff from '@/components/ScheduleDropOff';
@@ -34,16 +40,22 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const router = useRouter();
 
     //disable btton unless all donations are accepted or rejected
-    const isDisabled = donations ? accepted.length + rejected.length !== donations.length : false;
+    const isDisabled = donations
+        ? accepted.length + rejected.length !== donations.length
+        : false;
 
     const fetchDonationsByBulkId = async (id: string): Promise<void> => {
         setIsLoading(true);
         try {
             const donationsResult = await getDonationsByBulkId(id);
-            const pendingDonations = donationsResult.filter((d) => d.status === 'in processing');
+            const pendingDonations = donationsResult.filter(
+                (d) => d.status === 'in processing'
+            );
 
             if (pendingDonations.length === 0) {
-                alert('All items in this donation have already been processed.');
+                alert(
+                    'All items in this donation have already been processed.'
+                );
                 router.push('/');
                 return;
             }
@@ -60,11 +72,17 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
         if (value === 'accepted' && !accepted.includes(id)) {
             setAccepted([...accepted, id]);
             setRejected(rejected.filter((item) => item !== id));
-            posthog.capture('donation_reviewed', { decision: 'accepted', donation_id: id });
+            posthog.capture('donation_reviewed', {
+                decision: 'accepted',
+                donation_id: id
+            });
         } else if (value === 'rejected' && !rejected.includes(id)) {
             setRejected([...rejected, id]);
             setAccepted(accepted.filter((item) => item !== id));
-            posthog.capture('donation_reviewed', { decision: 'rejected', donation_id: id });
+            posthog.capture('donation_reviewed', {
+                decision: 'rejected',
+                donation_id: id
+            });
         } else if (!value) {
             //if deselected remove from both
             setAccepted(accepted.filter((item) => item !== id));
@@ -74,7 +92,17 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
 
     const handleCategoryFixed = (donationId: string, newCategory: string) => {
         setDonations(
-            (prev) => prev && prev.map((d) => (d.id === donationId ? Object.assign(Object.create(Object.getPrototypeOf(d)), d, { category: newCategory }) : d))
+            (prev) =>
+                prev &&
+                prev.map((d) =>
+                    d.id === donationId
+                        ? Object.assign(
+                              Object.create(Object.getPrototypeOf(d)),
+                              d,
+                              { category: newCategory }
+                          )
+                        : d
+                )
         );
     };
 
@@ -90,37 +118,62 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
             <div style={{ marginTop: '4em' }}>
                 {openSecheduler ? (
                     <ScheduleDropOff
-                        acceptedDonations={donations?.filter((d) => accepted.includes(d.id))}
-                        rejectedDonations={donations?.filter((d) => rejected.includes(d.id))}
+                        acceptedDonations={donations?.filter((d) =>
+                            accepted.includes(d.id)
+                        )}
+                        rejectedDonations={donations?.filter((d) =>
+                            rejected.includes(d.id)
+                        )}
                         setOpenScheduler={setOpenScheduler}
                     />
                 ) : (
                     <>
                         <div className="page--header">
                             <h3>Review donation</h3>
-                            <IconButton aria-label="Go back" onClick={() => router.back()}>
+                            <IconButton
+                                aria-label="Go back"
+                                onClick={() => router.back()}
+                            >
                                 <ArrowBackIcon />
                             </IconButton>
                         </div>
                         {isLoading && !idToDisplay && <Loader />}
-                        {!isLoading && !idToDisplay && !donations && <p>Donation collection not found.</p>}
+                        {!isLoading && !idToDisplay && !donations && (
+                            <p>Donation collection not found.</p>
+                        )}
                         {!isLoading && donations && (
                             <div>
-                                <Dialog open={idToDisplay !== null} onClose={() => setIdToDisplay(null)} fullWidth maxWidth="xl">
+                                <Dialog
+                                    open={idToDisplay !== null}
+                                    onClose={() => setIdToDisplay(null)}
+                                    fullWidth
+                                    maxWidth="xl"
+                                >
                                     <DialogContent>
                                         <DonationDetails
                                             id={idToDisplay}
-                                            donation={donations.find((donation) => donation.id === idToDisplay)}
+                                            donation={donations.find(
+                                                (donation) =>
+                                                    donation.id === idToDisplay
+                                            )}
                                             setIdToDisplay={setIdToDisplay}
                                         />
                                     </DialogContent>
                                     <DialogActions>
-                                        <Button variant="contained" onClick={() => setIdToDisplay(null)}>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => setIdToDisplay(null)}
+                                        >
                                             Close
                                         </Button>
                                     </DialogActions>
                                 </Dialog>
-                                {donations.length > 1 && <p>Several items are included in this donation.</p>}
+                                {donations.length > 1 && (
+                                    <p>
+                                        Several items are included in this
+                                        donation.
+                                    </p>
+                                )}
                                 {donations.map((donation) => (
                                     <AcceptRejectCard
                                         key={donation.id}
@@ -131,8 +184,15 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                                         onCategoryFixed={handleCategoryFixed}
                                     />
                                 ))}
-                                <Button type="button" variant="contained" disabled={isDisabled} onClick={() => setOpenScheduler(true)}>
-                                    {accepted.length === 0 ? 'Send Rejection Email' : ' Send Scheduling Link'}
+                                <Button
+                                    type="button"
+                                    variant="contained"
+                                    disabled={isDisabled}
+                                    onClick={() => setOpenScheduler(true)}
+                                >
+                                    {accepted.length === 0
+                                        ? 'Send Rejection Email'
+                                        : ' Send Scheduling Link'}
                                 </Button>
                             </div>
                         )}

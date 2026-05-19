@@ -36,12 +36,16 @@ export default function ButtonContainer(props: ButtonProps) {
                         type={props.type}
                         disabled={props.disabled ?? false}
                     >
-                        <span className={styles['button__text']}>{props.text}</span>
+                        <span className={styles['button__text']}>
+                            {props.text}
+                        </span>
                         {props.hasIcon && (
                             <FontAwesomeIcon
                                 className={styles['button__icon']}
                                 icon={faCircleRight}
-                                style={{ color: `${props.theme === Theme.dark ? '#ffffff' : '#00000'}` }}
+                                style={{
+                                    color: `${props.theme === Theme.dark ? '#ffffff' : '#00000'}`
+                                }}
                             />
                         )}
                     </button>
@@ -59,7 +63,9 @@ export default function ButtonContainer(props: ButtonProps) {
                         <FontAwesomeIcon
                             className={styles['button__icon']}
                             icon={faCircleRight}
-                            style={{ color: `${props.theme === Theme.dark ? '#ffffff' : '#00000'}` }}
+                            style={{
+                                color: `${props.theme === Theme.dark ? '#ffffff' : '#00000'}`
+                            }}
                         />
                     )}
                 </button>

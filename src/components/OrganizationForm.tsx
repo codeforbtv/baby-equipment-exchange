@@ -5,7 +5,19 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 //Components
-import { Box, FormControl, FormControlLabel, FormGroup, FormLabel, TextField, Checkbox, Button, FormHelperText, IconButton, Typography } from '@mui/material';
+import {
+    Box,
+    FormControl,
+    FormControlLabel,
+    FormGroup,
+    FormLabel,
+    TextField,
+    Checkbox,
+    Button,
+    FormHelperText,
+    IconButton,
+    Typography
+} from '@mui/material';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from '@/components/CustomDialog';
@@ -17,7 +29,12 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { addErrorEvent } from '@/api/firebase';
 import { addOrganization } from '@/api/firebase-organizations';
 //Types
-import { orgTags, OrganizationTagKeys, OrganizationTagValues, organizationTags } from '@/models/organization';
+import {
+    orgTags,
+    OrganizationTagKeys,
+    OrganizationTagValues,
+    organizationTags
+} from '@/models/organization';
 import { IAddress } from '@/models/address';
 import { OrganizationBody } from '@/types/OrganizationTypes';
 //Styles
@@ -52,7 +69,9 @@ export default function OrganizationForm(props: DonationFormProps) {
     const { isAdmin } = useUserContext();
     const router = useRouter();
 
-    const tagNames: OrganizationTagKeys[] = Object.keys(orgTags) as OrganizationTagKeys[];
+    const tagNames: OrganizationTagKeys[] = Object.keys(
+        orgTags
+    ) as OrganizationTagKeys[];
 
     const handleAdressInput = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -71,7 +90,9 @@ export default function OrganizationForm(props: DonationFormProps) {
 
     const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { checked, value } = event.target;
-        const updatedTags = checked ? [...tags, value] : tags.filter((tag) => tag !== value);
+        const updatedTags = checked
+            ? [...tags, value]
+            : tags.filter((tag) => tag !== value);
         setTags(updatedTags);
         setError(updatedTags.length === 0);
     };
@@ -81,7 +102,9 @@ export default function OrganizationForm(props: DonationFormProps) {
         setIsLoading(true);
         if (!isAdmin) {
             setDialogText('Organization creation failed');
-            setDialogContent('You must be an adminstrator to create a new organization');
+            setDialogContent(
+                'You must be an adminstrator to create a new organization'
+            );
             setIsLoading(false);
             setIsDialogOpen(true);
             return;
@@ -136,7 +159,14 @@ export default function OrganizationForm(props: DonationFormProps) {
             {isLoading && <Loader />}
             {!isLoading && (
                 <div className="content--container">
-                    <Box component="form" display={'flex'} flexDirection={'column'} gap={4} className="form--container" onSubmit={handleSubmit}>
+                    <Box
+                        component="form"
+                        display={'flex'}
+                        flexDirection={'column'}
+                        gap={4}
+                        className="form--container"
+                        onSubmit={handleSubmit}
+                    >
                         <TextField
                             type="text"
                             label="Name"
@@ -147,8 +177,13 @@ export default function OrganizationForm(props: DonationFormProps) {
                             value={name}
                             required
                         ></TextField>
-                        <FormControl component="fieldset" sx={{ display: 'flex', gap: 2 }}>
-                            <FormLabel component="legend">Adresss (Optional)</FormLabel>
+                        <FormControl
+                            component="fieldset"
+                            sx={{ display: 'flex', gap: 2 }}
+                        >
+                            <FormLabel component="legend">
+                                Adresss (Optional)
+                            </FormLabel>
                             <TextField
                                 type="text"
                                 label="Address"
@@ -217,9 +252,17 @@ export default function OrganizationForm(props: DonationFormProps) {
                             displayType="input"
                             customInput={TextField}
                         />
-                        <FormControl component="fieldset" sx={{ display: 'flex' }} error={error}>
-                            <FormLabel component="legend">Organizaton type (Select all that apply)</FormLabel>
-                            <FormGroup sx={{ display: 'flex', flexDirection: 'row' }}>
+                        <FormControl
+                            component="fieldset"
+                            sx={{ display: 'flex' }}
+                            error={error}
+                        >
+                            <FormLabel component="legend">
+                                Organizaton type (Select all that apply)
+                            </FormLabel>
+                            <FormGroup
+                                sx={{ display: 'flex', flexDirection: 'row' }}
+                            >
                                 {tagNames.map((tag: OrganizationTagKeys) => (
                                     <FormControlLabel
                                         key={tag}
@@ -227,22 +270,46 @@ export default function OrganizationForm(props: DonationFormProps) {
                                             <Checkbox
                                                 name={`${tag}`}
                                                 onChange={handleCheck}
-                                                value={orgTags[tag as keyof organizationTags]}
-                                                checked={tags.includes(orgTags[tag as keyof organizationTags])}
-                                                inputProps={{ 'aria-label': `${tag}` }}
+                                                value={
+                                                    orgTags[
+                                                        tag as keyof organizationTags
+                                                    ]
+                                                }
+                                                checked={tags.includes(
+                                                    orgTags[
+                                                        tag as keyof organizationTags
+                                                    ]
+                                                )}
+                                                inputProps={{
+                                                    'aria-label': `${tag}`
+                                                }}
                                             />
                                         }
                                         label={`${tag}`}
                                     />
                                 ))}
                             </FormGroup>
-                            {error && <FormHelperText>At least one organization type must be selected.</FormHelperText>}
+                            {error && (
+                                <FormHelperText>
+                                    At least one organization type must be
+                                    selected.
+                                </FormHelperText>
+                            )}
                         </FormControl>
-                        <Button type="submit" variant="contained" disabled={error}>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={error}
+                        >
                             Create Organization
                         </Button>
                     </Box>
-                    <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title={dialogText} content={dialogContent} />
+                    <CustomDialog
+                        isOpen={isDialogOpen}
+                        onClose={handleClose}
+                        title={dialogText}
+                        content={dialogContent}
+                    />
                 </div>
             )}
         </ProtectedAdminRoute>

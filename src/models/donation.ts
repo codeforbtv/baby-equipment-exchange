@@ -39,7 +39,12 @@ export interface IDonation {
         | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
-        | ({ id: string; name: string; email: string; organization: string } | null)
+        | ({
+              id: string;
+              name: string;
+              email: string;
+              organization: string;
+          } | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -65,7 +70,12 @@ export interface IDonation {
     dateRequested: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
     requestor: { id: string; name: string; email: string } | null;
-    distributor: { id: string; name: string; email: string; organization: string } | null;
+    distributor: {
+        id: string;
+        name: string;
+        email: string;
+        organization: string;
+    } | null;
 }
 
 export class Donation implements IDonation {
@@ -84,7 +94,12 @@ export class Donation implements IDonation {
         | (() => string[] | null | undefined)
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
-        | ({ id: string; name: string; email: string; organization: string } | null)
+        | ({
+              id: string;
+              name: string;
+              email: string;
+              organization: string;
+          } | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -110,7 +125,12 @@ export class Donation implements IDonation {
     dateRequested: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
     requestor: { id: string; name: string; email: string } | null;
-    distributor: { id: string; name: string; email: string; organization: string } | null;
+    distributor: {
+        id: string;
+        name: string;
+        email: string;
+        organization: string;
+    } | null;
 
     constructor(args: IDonation) {
         this.id = args.id;
@@ -216,7 +236,12 @@ export class Donation implements IDonation {
         return this.requestor;
     }
 
-    getDistributor(): { id: string; name: string; email: string; organization: string } | null {
+    getDistributor(): {
+        id: string;
+        name: string;
+        email: string;
+        organization: string;
+    } | null {
         return this.distributor;
     }
 
@@ -229,7 +254,10 @@ export class Donation implements IDonation {
         const currentTime = Date.now();
         //If item was distributed, get days it took to distrbute. If not, get days up until now
         const daysInStorage = dateDistributed
-            ? Math.floor((dateDistributed.toMillis() - dateReceived.toMillis()) / 86400000)
+            ? Math.floor(
+                  (dateDistributed.toMillis() - dateReceived.toMillis()) /
+                      86400000
+              )
             : Math.floor((currentTime - dateReceived.toMillis()) / 86400000);
         return daysInStorage;
     }

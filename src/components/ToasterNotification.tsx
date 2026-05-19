@@ -15,5 +15,7 @@ const statusLookup: StatusLookup = {
 };
 
 export default function ToasterNotification(props: NotificaitonProps) {
-    return <div className={styles['toaster']}>{statusLookup[props.status]}</div>;
+    return (
+        <div className={styles['toaster']}>{statusLookup[props.status]}</div>
+    );
 }

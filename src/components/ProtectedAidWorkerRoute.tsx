@@ -8,12 +8,19 @@ import { useUserContext } from '@/contexts/UserContext';
 //Styling
 import '../styles/globalStyles.css';
 
-export default function ProtectedAidWorkerRoute({ children }: { children: React.ReactNode }) {
+export default function ProtectedAidWorkerRoute({
+    children
+}: {
+    children: React.ReactNode;
+}) {
     const { currentUser, isLoading, isAidWorker, isAdmin } = useUserContext();
     const router = useRouter();
 
     useEffect(() => {
-        if ((!isLoading && !currentUser) || (currentUser && !isAidWorker && !isAdmin)) {
+        if (
+            (!isLoading && !currentUser) ||
+            (currentUser && !isAidWorker && !isAdmin)
+        ) {
             router.push('/login');
         }
     }, [currentUser, isLoading]);
@@ -26,7 +33,8 @@ export default function ProtectedAidWorkerRoute({ children }: { children: React.
         );
     }
 
-    if (currentUser) return <Suspense fallback={<Loader />}>{children}</Suspense>;
+    if (currentUser)
+        return <Suspense fallback={<Loader />}>{children}</Suspense>;
 
     return null;
 }

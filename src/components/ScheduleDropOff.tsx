@@ -1,16 +1,37 @@
 'use client';
 
 //Hooks
-import { useState, ChangeEvent, useEffect, Dispatch, SetStateAction } from 'react';
+import {
+    useState,
+    ChangeEvent,
+    useEffect,
+    Dispatch,
+    SetStateAction
+} from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import { Alert, Box, Button, FormControl, InputLabel, MenuItem, NativeSelect, Select, TextField, Typography } from '@mui/material';
+import {
+    Alert,
+    Box,
+    Button,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    NativeSelect,
+    Select,
+    TextField,
+    Typography
+} from '@mui/material';
 import DonationCardSmall from './DonationCardSmall';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
-import { getAdminSchedulingPageLinks, sendDropOffSchedulingEmail, type SchedulingPageLinkOption } from '@/app/actions/scheduling-public';
+import {
+    getAdminSchedulingPageLinks,
+    sendDropOffSchedulingEmail,
+    type SchedulingPageLinkOption
+} from '@/app/actions/scheduling-public';
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
 import posthog from 'posthog-js';
 import { updateDropOffDonationStatuses } from '@/api/firebase-donations';
@@ -37,14 +58,18 @@ type CategoryError = {
 const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const { acceptedDonations, rejectedDonations, setOpenScheduler } = props;
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(null);
+    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(
+        null
+    );
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [categories, setCategories] = useState<Category[]>([]);
     const [categoryErrors, setCategoryErrors] = useState<CategoryError[]>([]);
-    const [categoryOverrides, setCategoryOverrides] = useState<Record<string, string>>({});
+    const [categoryOverrides, setCategoryOverrides] = useState<
+        Record<string, string>
+    >({});
 
     const router = useRouter();
 
@@ -67,28 +92,41 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         setInviteUrl(event.target.value);
     };
 
-    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
+    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) =>
+        setNotes(event.target.value);
 
     const message = (
         <>
             <p>{`Hello ${donorName},`}</p>
-            <p>Thank you for submitting your donation to the Baby Product Exchange.</p>
+            <p>
+                Thank you for submitting your donation to the Baby Product
+                Exchange.
+            </p>
             {acceptedDonations && acceptedDonations.length > 0 && (
                 <>
                     <p>The following items have been accepted:</p>
                     <ul>
                         {acceptedDonations.map((donation) => (
-                            <DonationCardSmall key={donation.id} donation={donation} />
+                            <DonationCardSmall
+                                key={donation.id}
+                                donation={donation}
+                            />
                         ))}
                     </ul>
                 </>
             )}
             {rejectedDonations && rejectedDonations.length > 0 && (
                 <>
-                    <p>Unfortunately, the following items could not be accepted:</p>
+                    <p>
+                        Unfortunately, the following items could not be
+                        accepted:
+                    </p>
                     <ul>
                         {rejectedDonations.map((donation) => (
-                            <DonationCardSmall key={donation.id} donation={donation} />
+                            <DonationCardSmall
+                                key={donation.id}
+                                donation={donation}
+                            />
                         ))}
                     </ul>
                 </>
@@ -102,10 +140,19 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         setCategoryErrors([]);
 
         try {
-            if (acceptedDonations && acceptedDonations.length > 0 && categories.length > 0) {
+            if (
+                acceptedDonations &&
+                acceptedDonations.length > 0 &&
+                categories.length > 0
+            ) {
                 const validNames = new Set(categories.map((c) => c.getName()));
                 const errors: CategoryError[] = acceptedDonations
-                    .filter((d) => !validNames.has(categoryOverrides[d.id] || d.category))
+                    .filter(
+                        (d) =>
+                            !validNames.has(
+                                categoryOverrides[d.id] || d.category
+                            )
+                    )
                     .map((d) => ({
                         id: d.id,
                         brand: d.brand,
@@ -121,11 +168,15 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             }
 
             const idToken = await getAuthIdToken();
-            const schedulingUrl = events?.find((event) => event.uri === inviteUrl)?.scheduling_url;
+            const schedulingUrl = events?.find(
+                (event) => event.uri === inviteUrl
+            )?.scheduling_url;
             await sendDropOffSchedulingEmail({
                 idToken,
-                acceptedDonationIds: acceptedDonations?.map((donation) => donation.id) ?? [],
-                rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
+                acceptedDonationIds:
+                    acceptedDonations?.map((donation) => donation.id) ?? [],
+                rejectedDonationIds:
+                    rejectedDonations?.map((donation) => donation.id) ?? [],
                 eventTypeUri: inviteUrl || undefined,
                 notes
             });
@@ -133,9 +184,11 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 acceptedDonations:
                     acceptedDonations?.map((donation) => ({
                         id: donation.id,
-                        category: categoryOverrides[donation.id] || donation.category
+                        category:
+                            categoryOverrides[donation.id] || donation.category
                     })) ?? [],
-                rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
+                rejectedDonationIds:
+                    rejectedDonations?.map((donation) => donation.id) ?? [],
                 schedulingLink: schedulingUrl
             });
             posthog.capture('dropoff_scheduled', {
@@ -146,20 +199,30 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
             posthog.captureException(error);
-            setErrorMessage('An unexpected error occurred while processing donations. Please try again.');
+            setErrorMessage(
+                'An unexpected error occurred while processing donations. Please try again.'
+            );
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleCategoryOverride = (donationId: string, newCategory: string) => {
-        setCategoryOverrides((prev) => ({ ...prev, [donationId]: newCategory }));
+    const handleCategoryOverride = (
+        donationId: string,
+        newCategory: string
+    ) => {
+        setCategoryOverrides((prev) => ({
+            ...prev,
+            [donationId]: newCategory
+        }));
     };
 
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const eventResult = await getAdminSchedulingPageLinks({ idToken: await getAuthIdToken() });
+                const eventResult = await getAdminSchedulingPageLinks({
+                    idToken: await getAuthIdToken()
+                });
                 setEvents(eventResult);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
@@ -172,7 +235,9 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             .catch((err) => addErrorEvent('Fetch categories', err));
     }, []);
 
-    const allErrorsCorrected = categoryErrors.length > 0 && categoryErrors.every((err) => categoryOverrides[err.id]);
+    const allErrorsCorrected =
+        categoryErrors.length > 0 &&
+        categoryErrors.every((err) => categoryOverrides[err.id]);
 
     return (
         <ProtectedAdminRoute>
@@ -185,40 +250,92 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 <>
                     <p>{`The following email will be sent to ${donorEmail}:`}</p>
                     <div className="content--container">
-                        <Box display={'flex'} flexDirection={'column'}>
+                        <Box
+                            display={'flex'}
+                            flexDirection={'column'}
+                        >
                             {message}
 
                             {categoryErrors.length > 0 && (
-                                <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
-                                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                                <Alert
+                                    severity="warning"
+                                    sx={{ mt: 2, mb: 2 }}
+                                >
+                                    <Typography
+                                        variant="subtitle2"
+                                        fontWeight="bold"
+                                        gutterBottom
+                                    >
                                         {categoryErrors.length === 1
                                             ? '1 item has an unrecognized category'
                                             : `${categoryErrors.length} items have unrecognized categories`}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ mb: 2 }}>
-                                        Select a valid category for each item, then click &ldquo;Send Email&rdquo; again.
+                                    <Typography
+                                        variant="body2"
+                                        sx={{ mb: 2 }}
+                                    >
+                                        Select a valid category for each item,
+                                        then click &ldquo;Send Email&rdquo;
+                                        again.
                                     </Typography>
                                     {categoryErrors.map((err) => (
-                                        <Box key={err.id} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1.5 }}>
+                                        <Box
+                                            key={err.id}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                mb: 1.5
+                                            }}
+                                        >
                                             <Box sx={{ minWidth: 160 }}>
-                                                <Typography variant="body2" fontWeight="bold">
+                                                <Typography
+                                                    variant="body2"
+                                                    fontWeight="bold"
+                                                >
                                                     {err.brand} {err.model}
                                                 </Typography>
-                                                <Typography variant="caption" sx={{ textDecoration: 'line-through', color: 'var(--error)' }}>
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{
+                                                        textDecoration:
+                                                            'line-through',
+                                                        color: 'var(--error)'
+                                                    }}
+                                                >
                                                     {err.invalidCategory}
                                                 </Typography>
                                             </Box>
-                                            <FormControl size="small" sx={{ minWidth: 200 }}>
+                                            <FormControl
+                                                size="small"
+                                                sx={{ minWidth: 200 }}
+                                            >
                                                 <Select
-                                                    value={categoryOverrides[err.id] || ''}
-                                                    onChange={(e) => handleCategoryOverride(err.id, e.target.value as string)}
+                                                    value={
+                                                        categoryOverrides[
+                                                            err.id
+                                                        ] || ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleCategoryOverride(
+                                                            err.id,
+                                                            e.target
+                                                                .value as string
+                                                        )
+                                                    }
                                                     displayEmpty
                                                 >
-                                                    <MenuItem value="" disabled>
+                                                    <MenuItem
+                                                        value=""
+                                                        disabled
+                                                    >
                                                         Select category
                                                     </MenuItem>
                                                     {categories.map((cat) => (
-                                                        <MenuItem key={cat.getId()} value={cat.getName()}>
+                                                        <MenuItem
+                                                            key={cat.getId()}
+                                                            value={cat.getName()}
+                                                        >
                                                             {cat.getName()}
                                                         </MenuItem>
                                                     ))}
@@ -241,31 +358,72 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                 placeholder="Add any additional notes here"
                                 onChange={handleInputChange}
                             ></TextField>
-                            {acceptedDonations && acceptedDonations.length > 0 && (
-                                <FormControl fullWidth sx={{ marginTop: '2em' }}>
-                                    <InputLabel variant="standard" htmlFor="location" shrink={true}>
-                                        Select calendar for accepted donations
-                                    </InputLabel>
-                                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                        <option value="" disabled>
-                                            Select Calendar (Optional)
-                                        </option>
-                                        {events &&
-                                            events.map((event, index) => {
-                                                return (
-                                                        <option key={event.uri || index} value={event.uri}>
+                            {acceptedDonations &&
+                                acceptedDonations.length > 0 && (
+                                    <FormControl
+                                        fullWidth
+                                        sx={{ marginTop: '2em' }}
+                                    >
+                                        <InputLabel
+                                            variant="standard"
+                                            htmlFor="location"
+                                            shrink={true}
+                                        >
+                                            Select calendar for accepted
+                                            donations
+                                        </InputLabel>
+                                        <NativeSelect
+                                            variant="outlined"
+                                            name="location"
+                                            id="location"
+                                            onChange={handleSelect}
+                                            value={inviteUrl}
+                                        >
+                                            <option
+                                                value=""
+                                                disabled
+                                            >
+                                                Select Calendar (Optional)
+                                            </option>
+                                            {events &&
+                                                events.map((event, index) => {
+                                                    return (
+                                                        <option
+                                                            key={
+                                                                event.uri ||
+                                                                index
+                                                            }
+                                                            value={event.uri}
+                                                        >
                                                             {event.name}
                                                         </option>
-                                                );
-                                            })}
-                                    </NativeSelect>
-                                </FormControl>
-                            )}
-                            <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button onClick={handleSubmit} variant="contained" disabled={categoryErrors.length > 0 && !allErrorsCorrected}>
-                                    {allErrorsCorrected ? 'Retry & Send Email' : 'Send Email'}
+                                                    );
+                                                })}
+                                        </NativeSelect>
+                                    </FormControl>
+                                )}
+                            <Box
+                                sx={{ marginTop: '2em' }}
+                                display={'flex'}
+                                gap={2}
+                            >
+                                <Button
+                                    onClick={handleSubmit}
+                                    variant="contained"
+                                    disabled={
+                                        categoryErrors.length > 0 &&
+                                        !allErrorsCorrected
+                                    }
+                                >
+                                    {allErrorsCorrected
+                                        ? 'Retry & Send Email'
+                                        : 'Send Email'}
                                 </Button>
-                                <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>
+                                <Button
+                                    variant="outlined"
+                                    type="button"
+                                    onClick={() => setOpenScheduler(false)}
+                                >
                                     Cancel
                                 </Button>
                             </Box>
@@ -273,8 +431,18 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                     </div>
                 </>
             )}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${donorEmail}`} />
-            <CustomDialog isOpen={errorMessage !== ''} onClose={() => setErrorMessage('')} title="Error Processing Donations" content={errorMessage} />
+            <CustomDialog
+                isOpen={isDialogOpen}
+                onClose={handleClose}
+                title="Email sent"
+                content={`Email successfully sent to ${donorEmail}`}
+            />
+            <CustomDialog
+                isOpen={errorMessage !== ''}
+                onClose={() => setErrorMessage('')}
+                title="Error Processing Donations"
+                content={errorMessage}
+            />
         </ProtectedAdminRoute>
     );
 };

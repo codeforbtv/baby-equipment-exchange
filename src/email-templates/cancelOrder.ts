@@ -1,7 +1,13 @@
 import { emailCc, emailSender } from '@/data/emailSender';
 import { sanitize } from '@/utils/utils';
 
-export default function cancelOrder(email: string, message: string, tagNumbers: string[], notes?: string, inviteUrl?: string) {
+export default function cancelOrder(
+    email: string,
+    message: string,
+    tagNumbers: string[],
+    notes?: string,
+    inviteUrl?: string
+) {
     let html = message;
 
     if (tagNumbers.length > 0) {

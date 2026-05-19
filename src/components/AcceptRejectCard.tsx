@@ -40,15 +40,27 @@ type AcceptRejectCardProps = {
 type ButtonStatus = 'accepted' | 'rejected' | null;
 
 const AcceptRejectCard = (props: AcceptRejectCardProps) => {
-    const { donation, handleAcceptReject, setIdToDisplay, categories, onCategoryFixed } = props;
+    const {
+        donation,
+        handleAcceptReject,
+        setIdToDisplay,
+        categories,
+        onCategoryFixed
+    } = props;
     const [status, setStatus] = useState<ButtonStatus>(null);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [isSaving, setIsSaving] = useState(false);
 
     const validCategoryNames = categories?.map((c) => c.getName()) || [];
-    const hasInvalidCategory = categories && categories.length > 0 && !validCategoryNames.includes(donation.category);
+    const hasInvalidCategory =
+        categories &&
+        categories.length > 0 &&
+        !validCategoryNames.includes(donation.category);
 
-    const handleToggle = (event: React.MouseEvent<HTMLElement>, value: ButtonStatus) => {
+    const handleToggle = (
+        event: React.MouseEvent<HTMLElement>,
+        value: ButtonStatus
+    ) => {
         setStatus(value);
     };
 
@@ -69,9 +81,20 @@ const AcceptRejectCard = (props: AcceptRejectCardProps) => {
 
     return (
         <ProtectedAdminRoute>
-            <Card className="card--container" elevation={3}>
-                <CardActions onClick={() => setIdToDisplay(donation.id)} sx={{ cursor: 'pointer' }}>
-                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
+            <Card
+                className="card--container"
+                elevation={3}
+            >
+                <CardActions
+                    onClick={() => setIdToDisplay(donation.id)}
+                    sx={{ cursor: 'pointer' }}
+                >
+                    <CardMedia
+                        component="img"
+                        alt={donation.model}
+                        image={donation.images[0]}
+                        sx={thumbnailStyles}
+                    />
                     <CardContent>
                         <Typography variant="h4">{donation.model}</Typography>
                         <Typography variant="h4">{donation.brand}</Typography>
@@ -79,38 +102,83 @@ const AcceptRejectCard = (props: AcceptRejectCardProps) => {
                 </CardActions>
                 <CardActions>
                     {hasInvalidCategory ? (
-                        <Alert severity="warning" sx={{ width: '100%' }}>
-                            <Typography variant="body2" fontWeight="bold" gutterBottom>
-                                Unrecognized category: &ldquo;{donation.category}&rdquo;
+                        <Alert
+                            severity="warning"
+                            sx={{ width: '100%' }}
+                        >
+                            <Typography
+                                variant="body2"
+                                fontWeight="bold"
+                                gutterBottom
+                            >
+                                Unrecognized category: &ldquo;
+                                {donation.category}&rdquo;
                             </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
-                                <FormControl size="small" sx={{ minWidth: 180 }}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    gap: 1,
+                                    alignItems: 'center',
+                                    mt: 1
+                                }}
+                            >
+                                <FormControl
+                                    size="small"
+                                    sx={{ minWidth: 180 }}
+                                >
                                     <Select
                                         value={selectedCategory}
-                                        onChange={(e) => setSelectedCategory(e.target.value as string)}
+                                        onChange={(e) =>
+                                            setSelectedCategory(
+                                                e.target.value as string
+                                            )
+                                        }
                                         displayEmpty
                                     >
-                                        <MenuItem value="" disabled>
+                                        <MenuItem
+                                            value=""
+                                            disabled
+                                        >
                                             Select category
                                         </MenuItem>
                                         {categories!.map((cat) => (
-                                            <MenuItem key={cat.getId()} value={cat.getName()}>
+                                            <MenuItem
+                                                key={cat.getId()}
+                                                value={cat.getName()}
+                                            >
                                                 {cat.getName()}
                                             </MenuItem>
                                         ))}
                                     </Select>
                                 </FormControl>
-                                <Button variant="contained" size="small" onClick={handleFixCategory} disabled={!selectedCategory || isSaving}>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={handleFixCategory}
+                                    disabled={!selectedCategory || isSaving}
+                                >
                                     {isSaving ? 'Saving...' : 'Fix'}
                                 </Button>
                             </Box>
                         </Alert>
                     ) : (
-                        <ToggleButtonGroup value={status} exclusive onChange={handleToggle}>
-                            <ToggleButton value="accepted" aria-label="accept button" color="success">
+                        <ToggleButtonGroup
+                            value={status}
+                            exclusive
+                            onChange={handleToggle}
+                        >
+                            <ToggleButton
+                                value="accepted"
+                                aria-label="accept button"
+                                color="success"
+                            >
                                 Accept
                             </ToggleButton>
-                            <ToggleButton value="rejected" aria-label="reject button" color="error">
+                            <ToggleButton
+                                value="rejected"
+                                aria-label="reject button"
+                                color="error"
+                            >
                                 Reject
                             </ToggleButton>
                         </ToggleButtonGroup>

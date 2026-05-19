@@ -1,5 +1,4 @@
 declare module 'scheduling' {
-
     // Event Types
 
     export interface EventType {
@@ -122,7 +121,10 @@ declare module 'scheduling' {
     export type EventCategory = 'pickup' | 'dropoff' | 'unknown';
 
     /** Confidence level of a booking match */
-    export type BookingMatchConfidence = 'confirmed' | 'possible-match' | 'unconfirmed';
+    export type BookingMatchConfidence =
+        | 'confirmed'
+        | 'possible-match'
+        | 'unconfirmed';
 
     /** Result of matching an entity to a booking */
     export interface BookingMatchResult {
@@ -156,9 +158,11 @@ declare module 'scheduling' {
     }
 
     /** Typeguard for booking match result with confirmed confidence */
-    export function isConfirmedMatch(result: BookingMatchResult): result is BookingMatchResult & {
+    export function isConfirmedMatch(
+        result: BookingMatchResult
+    ): result is BookingMatchResult & {
         confidence: 'confirmed';
         matchedEvent: ScheduledEventWithInvitees;
         matchedInvitee: Invitee;
-    }
+    };
 }

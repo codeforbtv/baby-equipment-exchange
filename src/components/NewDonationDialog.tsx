@@ -4,10 +4,23 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import Link from 'next/link';
 // Containers
-import { Box, Button, Dialog, DialogActions, DialogContent, FormControl, FormLabel, NativeSelect, TextField } from '@mui/material';
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    FormControl,
+    FormLabel,
+    NativeSelect,
+    TextField
+} from '@mui/material';
 import InputContainer from './InputContainer';
 // Controllers
-import { appendImagesToState, removeImageFromState } from '@/controllers/images';
+import {
+    appendImagesToState,
+    removeImageFromState
+} from '@/controllers/images';
 // Data
 import { categories } from '@/data/html';
 // Styles

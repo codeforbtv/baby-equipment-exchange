@@ -1,5 +1,16 @@
 // Modules
-import { collection, DocumentData, doc, getDocs, query, QueryDocumentSnapshot, serverTimestamp, setDoc, SnapshotOptions, Timestamp } from 'firebase/firestore';
+import {
+    collection,
+    DocumentData,
+    doc,
+    getDocs,
+    query,
+    QueryDocumentSnapshot,
+    serverTimestamp,
+    setDoc,
+    SnapshotOptions,
+    Timestamp
+} from 'firebase/firestore';
 // Models
 import { IStorage, Storage } from '@/models/storage';
 import { StorageBody } from '@/types/post-data';
@@ -25,7 +36,10 @@ export const storageConverter = {
         }
         return storageData;
     },
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Storage {
+    fromFirestore(
+        snapshot: QueryDocumentSnapshot,
+        options: SnapshotOptions
+    ): Storage {
         const data = snapshot.data(options);
         const storageData: IStorage = {
             active: data.active,
@@ -54,7 +68,9 @@ export async function addStorage(newStorage: StorageBody) {
 }
 
 export async function getAllStorage(): Promise<Storage[]> {
-    const q = query(collection(db, STORAGE_COLLECTION)).withConverter(storageConverter);
+    const q = query(collection(db, STORAGE_COLLECTION)).withConverter(
+        storageConverter
+    );
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => doc.data());
 }

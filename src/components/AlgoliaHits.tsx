@@ -9,7 +9,10 @@ export default function AlgoliaHits(props: UseHitsProps) {
     return (
         <div className={styles['hits__container']}>
             {hits.map((hit) => (
-                <AlgoliaHitCard key={hit.objectID} hit={hit} />
+                <AlgoliaHitCard
+                    key={hit.objectID}
+                    hit={hit}
+                />
             ))}
         </div>
     );

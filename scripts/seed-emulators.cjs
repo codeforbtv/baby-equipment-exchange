@@ -3,13 +3,17 @@ const admin = require('firebase-admin');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
-const AUTH_EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOST || 'localhost:9099';
-const FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || 'localhost:8080';
+const AUTH_EMULATOR_HOST =
+    process.env.FIREBASE_AUTH_EMULATOR_HOST || 'localhost:9099';
+const FIRESTORE_EMULATOR_HOST =
+    process.env.FIRESTORE_EMULATOR_HOST || 'localhost:8080';
 
 process.env.FIREBASE_AUTH_EMULATOR_HOST = AUTH_EMULATOR_HOST;
 process.env.FIRESTORE_EMULATOR_HOST = FIRESTORE_EMULATOR_HOST;
 
-const app = admin.initializeApp({ projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID });
+const app = admin.initializeApp({
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+});
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -80,16 +84,66 @@ const USERS = {
 };
 
 const CATEGORIES = [
-    { name: 'Car Seats', tagPrefix: 'CAR', tagCount: 14, description: 'Infant and convertible car seats, boosters' },
-    { name: 'Strollers', tagPrefix: 'STR', tagCount: 8, description: 'Single and double strollers, joggers, umbrella strollers' },
-    { name: 'Cribs', tagPrefix: 'CRB', tagCount: 5, description: 'Full-size cribs, mini cribs, bassinets, pack-n-plays' },
-    { name: 'High Chairs', tagPrefix: 'HCH', tagCount: 3, description: 'Standard and portable high chairs, clip-on seats' },
-    { name: 'Baby Carriers', tagPrefix: 'BCR', tagCount: 2, description: 'Wraps, structured carriers, slings, hiking carriers' },
-    { name: 'Changing Tables', tagPrefix: 'CHG', tagCount: 1, description: 'Changing tables and pads' },
-    { name: 'Monitors', tagPrefix: 'MON', tagCount: 4, description: 'Audio and video baby monitors' },
-    { name: 'Breast Pumps', tagPrefix: 'BPM', tagCount: 6, description: 'Manual and electric breast pumps' },
-    { name: 'Clothing', tagPrefix: 'CLT', tagCount: 20, description: 'Baby and toddler clothing bundles' },
-    { name: 'Toys', tagPrefix: 'TOY', tagCount: 11, description: 'Developmental toys, play mats, bouncers' }
+    {
+        name: 'Car Seats',
+        tagPrefix: 'CAR',
+        tagCount: 14,
+        description: 'Infant and convertible car seats, boosters'
+    },
+    {
+        name: 'Strollers',
+        tagPrefix: 'STR',
+        tagCount: 8,
+        description: 'Single and double strollers, joggers, umbrella strollers'
+    },
+    {
+        name: 'Cribs',
+        tagPrefix: 'CRB',
+        tagCount: 5,
+        description: 'Full-size cribs, mini cribs, bassinets, pack-n-plays'
+    },
+    {
+        name: 'High Chairs',
+        tagPrefix: 'HCH',
+        tagCount: 3,
+        description: 'Standard and portable high chairs, clip-on seats'
+    },
+    {
+        name: 'Baby Carriers',
+        tagPrefix: 'BCR',
+        tagCount: 2,
+        description: 'Wraps, structured carriers, slings, hiking carriers'
+    },
+    {
+        name: 'Changing Tables',
+        tagPrefix: 'CHG',
+        tagCount: 1,
+        description: 'Changing tables and pads'
+    },
+    {
+        name: 'Monitors',
+        tagPrefix: 'MON',
+        tagCount: 4,
+        description: 'Audio and video baby monitors'
+    },
+    {
+        name: 'Breast Pumps',
+        tagPrefix: 'BPM',
+        tagCount: 6,
+        description: 'Manual and electric breast pumps'
+    },
+    {
+        name: 'Clothing',
+        tagPrefix: 'CLT',
+        tagCount: 20,
+        description: 'Baby and toddler clothing bundles'
+    },
+    {
+        name: 'Toys',
+        tagPrefix: 'TOY',
+        tagCount: 11,
+        description: 'Developmental toys, play mats, bouncers'
+    }
 ];
 
 const ORGANIZATIONS = [
@@ -98,7 +152,8 @@ const ORGANIZATIONS = [
         name: 'Vermont Connector',
         county: 'Chittenden',
         phoneNumber: '802-555-0100',
-        emailFooter: 'Vermont Connector — building community one family at a time.',
+        emailFooter:
+            'Vermont Connector — building community one family at a time.',
         tags: ['social-services', 'early-childhood-education'],
         address: {
             line_1: '123 Church Street',
@@ -123,14 +178,18 @@ const ORGANIZATIONS = [
             state: 'VT',
             zipcode: '05401'
         },
-        notes: ['Family support programs', 'Housing assistance referral partner']
+        notes: [
+            'Family support programs',
+            'Housing assistance referral partner'
+        ]
     },
     {
         id: 'org-parent-child-ctr',
         name: 'Parent Child Center',
         county: 'Washington',
         phoneNumber: '802-555-0300',
-        emailFooter: 'Central Vermont Parent Child Center — strengthening families.',
+        emailFooter:
+            'Central Vermont Parent Child Center — strengthening families.',
         tags: ['early-childhood-education', 'pediatric-maternal-health'],
         address: {
             line_1: '550 North Main Street',
@@ -149,7 +208,8 @@ const DONOR1_DONATIONS = [
         category: 'Car Seats',
         brand: 'Graco',
         model: 'SnugRide SnugLock 35',
-        description: 'Rear-facing infant seat, base included. Used for 14 months, no accidents.',
+        description:
+            'Rear-facing infant seat, base included. Used for 14 months, no accidents.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Car+Seat']
     },
@@ -158,7 +218,8 @@ const DONOR1_DONATIONS = [
         category: 'Strollers',
         brand: 'UPPAbaby',
         model: 'Vista V2',
-        description: 'Full-size stroller with bassinet attachment. Rain cover included. Minor scuff on front wheel.',
+        description:
+            'Full-size stroller with bassinet attachment. Rain cover included. Minor scuff on front wheel.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Stroller']
     },
@@ -167,7 +228,8 @@ const DONOR1_DONATIONS = [
         category: 'Play Mats',
         brand: 'Fisher Price',
         model: '?',
-        description: 'Colorful activity gym with hanging toys. Batteries not included.',
+        description:
+            'Colorful activity gym with hanging toys. Batteries not included.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Play+Mat']
     }
@@ -179,7 +241,8 @@ const DONOR1_DONATIONS_BATCH2 = [
         category: 'High Chairs',
         brand: 'IKEA',
         model: 'ANTILOP',
-        description: 'White high chair with tray and inflatable cushion. Legs detach for transport.',
+        description:
+            'White high chair with tray and inflatable cushion. Legs detach for transport.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=High+Chair']
     },
@@ -188,7 +251,8 @@ const DONOR1_DONATIONS_BATCH2 = [
         category: 'Clothing',
         brand: 'Mixed',
         model: '12-18 months bundle',
-        description: '15-piece lot: pants, long-sleeve tops, fleece jacket. Gender neutral colors.',
+        description:
+            '15-piece lot: pants, long-sleeve tops, fleece jacket. Gender neutral colors.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Clothing']
     }
@@ -200,7 +264,8 @@ const DONOR2_DONATIONS = [
         category: 'Cribs',
         brand: 'IKEA',
         model: 'SNIGLAR',
-        description: 'Beech wood crib with mattress. Disassembled, all hardware in labeled bags.',
+        description:
+            'Beech wood crib with mattress. Disassembled, all hardware in labeled bags.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
     },
@@ -209,7 +274,8 @@ const DONOR2_DONATIONS = [
         category: 'High Chairs',
         brand: 'Stokke',
         model: 'Tripp Trapp',
-        description: 'Walnut brown, includes baby set and tray. Some tooth marks on the front rail.',
+        description:
+            'Walnut brown, includes baby set and tray. Some tooth marks on the front rail.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=High+Chair']
     },
@@ -218,7 +284,8 @@ const DONOR2_DONATIONS = [
         category: 'Monitors',
         brand: 'Infant Optics',
         model: 'DXR-8 PRO',
-        description: 'Video monitor with wide-angle lens. Camera, monitor unit, and USB charger.',
+        description:
+            'Video monitor with wide-angle lens. Camera, monitor unit, and USB charger.',
         status: 'in processing',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Monitor']
     }
@@ -230,7 +297,8 @@ const ADMIN_DONATIONS = [
         category: 'Car Seats',
         brand: 'Chicco',
         model: 'KeyFit 35',
-        description: 'Infant seat, expires 2028. Comes with two bases. Smoke-free home.',
+        description:
+            'Infant seat, expires 2028. Comes with two bases. Smoke-free home.',
         status: 'available',
         tagNumber: 'CAR 12',
         donorEmail: 'anonymous@babyproductexchange.org',
@@ -243,7 +311,8 @@ const ADMIN_DONATIONS = [
         category: 'Strollers',
         brand: 'Baby Jogger',
         model: 'City Mini GT2',
-        description: 'All-terrain stroller, hand brake, one-hand fold. Charcoal gray.',
+        description:
+            'All-terrain stroller, hand brake, one-hand fold. Charcoal gray.',
         status: 'available',
         tagNumber: 'STR 7',
         donorEmail: 'anonymous@babyproductexchange.org',
@@ -256,7 +325,8 @@ const ADMIN_DONATIONS = [
         category: 'Breast Pumps',
         brand: 'Spectra',
         model: 'S1 Plus',
-        description: 'Hospital-grade portable pump, rechargeable battery. Includes carrying case and extra flanges.',
+        description:
+            'Hospital-grade portable pump, rechargeable battery. Includes carrying case and extra flanges.',
         status: 'available',
         tagNumber: 'BPM 5',
         donorEmail: 'anonymous@babyproductexchange.org',
@@ -269,7 +339,8 @@ const ADMIN_DONATIONS = [
         category: 'Baby Carriers',
         brand: 'Ergobaby',
         model: 'Omni 360',
-        description: 'Cool air mesh, forward and rear facing. Lumbar support pad included.',
+        description:
+            'Cool air mesh, forward and rear facing. Lumbar support pad included.',
         status: 'available',
         tagNumber: 'BCR 2',
         donorEmail: 'anonymous@babyproductexchange.org',
@@ -282,7 +353,8 @@ const ADMIN_DONATIONS = [
         category: 'Clothing',
         brand: 'Mixed',
         model: '0-6 months bundle',
-        description: "25-piece lot: onesies, sleepers, socks. Freshly laundered, mostly Carter's and Gerber.",
+        description:
+            "25-piece lot: onesies, sleepers, socks. Freshly laundered, mostly Carter's and Gerber.",
         status: 'available',
         tagNumber: 'CLT 18',
         donorEmail: 'anonymous@babyproductexchange.org',
@@ -295,7 +367,8 @@ const ADMIN_DONATIONS = [
         category: 'Toys',
         brand: 'VTech',
         model: 'Sit-to-Stand Learning Walker',
-        description: 'Interactive panel with shapes, piano keys, phone. Detaches from walker frame.',
+        description:
+            'Interactive panel with shapes, piano keys, phone. Detaches from walker frame.',
         status: 'requested',
         tagNumber: 'TOY 9',
         donorEmail: 'anonymous@babyproductexchange.org',
@@ -310,8 +383,9 @@ const DONOR1_PENDING_DELIVERY = [
         id: 'donation-pd-001',
         category: 'Cribs',
         brand: 'Graco',
-        model: 'Pack \'n Play',
-        description: 'Portable playard with bassinet attachment. Includes carry bag.',
+        model: "Pack 'n Play",
+        description:
+            'Portable playard with bassinet attachment. Includes carry bag.',
         status: 'pending delivery',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Pack-n-Play']
     },
@@ -332,7 +406,8 @@ const DONOR2_PENDING_DELIVERY = [
         category: 'Toys',
         brand: 'Melissa & Doug',
         model: 'Wooden Activity Cube',
-        description: 'Five-sided play cube with bead maze, shape sorter, spinning gears.',
+        description:
+            'Five-sided play cube with bead maze, shape sorter, spinning gears.',
         status: 'pending delivery',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Activity+Cube']
     },
@@ -341,7 +416,8 @@ const DONOR2_PENDING_DELIVERY = [
         category: 'Changing Tables',
         brand: 'Keekaroo',
         model: 'Peanut Changer',
-        description: 'Contoured changing pad, vanilla color. Wipeable surface, no cover needed.',
+        description:
+            'Contoured changing pad, vanilla color. Wipeable surface, no cover needed.',
         status: 'pending delivery',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Changing+Pad']
     },
@@ -350,7 +426,8 @@ const DONOR2_PENDING_DELIVERY = [
         category: 'Monitors',
         brand: 'Nanit',
         model: 'Pro Camera',
-        description: 'Wall-mount smart camera with breathing band. Factory reset complete.',
+        description:
+            'Wall-mount smart camera with breathing band. Factory reset complete.',
         status: 'pending delivery',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Monitor']
     }
@@ -391,7 +468,8 @@ const RESERVED_DONATIONS_DONOR2 = [
         category: 'Cribs',
         brand: 'Babyletto',
         model: 'Lolly 3-in-1',
-        description: 'White and natural finish. Toddler bed conversion kit included.',
+        description:
+            'White and natural finish. Toddler bed conversion kit included.',
         status: 'reserved',
         tagNumber: 'CRB 4',
         images: ['https://placehold.co/400x300/e8e8e8/666?text=Crib']
@@ -404,7 +482,8 @@ const HISTORY_DONATIONS = [
         category: 'Cribs',
         brand: 'Babyletto',
         model: 'Hudson 3-in-1',
-        description: 'Convertible crib, white/washed natural. Toddler rail included.',
+        description:
+            'Convertible crib, white/washed natural. Toddler rail included.',
         status: 'distributed',
         tagNumber: 'CRB 3',
         donorEmail: 'donor2@email.com',
@@ -497,9 +576,27 @@ function makeDonationDoc(d, donor) {
         images: d.images || [],
         createdAt: now,
         modifiedAt: now,
-        dateAccepted: ['available', 'requested', 'reserved', 'distributed'].includes(d.status) ? now : null,
-        dateReceived: ['available', 'requested', 'reserved', 'distributed'].includes(d.status) ? now : null,
-        dateRequested: ['requested', 'reserved', 'distributed'].includes(d.status) ? now : null,
+        dateAccepted: [
+            'available',
+            'requested',
+            'reserved',
+            'distributed'
+        ].includes(d.status)
+            ? now
+            : null,
+        dateReceived: [
+            'available',
+            'requested',
+            'reserved',
+            'distributed'
+        ].includes(d.status)
+            ? now
+            : null,
+        dateRequested: ['requested', 'reserved', 'distributed'].includes(
+            d.status
+        )
+            ? now
+            : null,
         dateDistributed: d.status === 'distributed' ? now : null,
         requestor: d.requestor || null,
         distributor: d.distributor || null
@@ -550,14 +647,26 @@ async function seed() {
     console.log('\nCreating donations...');
 
     await createBulkDonation('bulk-donor1-001', USERS.donor1, DONOR1_DONATIONS);
-    console.log(`  Bulk from ${USERS.donor1.displayName}: ${DONOR1_DONATIONS.length} items (in processing)`);
-    console.log('    ** donation-mj-003 has category "Play Mats" — Bug 1 repro **');
+    console.log(
+        `  Bulk from ${USERS.donor1.displayName}: ${DONOR1_DONATIONS.length} items (in processing)`
+    );
+    console.log(
+        '    ** donation-mj-003 has category "Play Mats" — Bug 1 repro **'
+    );
 
-    await createBulkDonation('bulk-donor1-002', USERS.donor1, DONOR1_DONATIONS_BATCH2);
-    console.log(`  Bulk #2 from ${USERS.donor1.displayName}: ${DONOR1_DONATIONS_BATCH2.length} items (in processing) — same donor, separate submission`);
+    await createBulkDonation(
+        'bulk-donor1-002',
+        USERS.donor1,
+        DONOR1_DONATIONS_BATCH2
+    );
+    console.log(
+        `  Bulk #2 from ${USERS.donor1.displayName}: ${DONOR1_DONATIONS_BATCH2.length} items (in processing) — same donor, separate submission`
+    );
 
     await createBulkDonation('bulk-donor2-001', USERS.donor2, DONOR2_DONATIONS);
-    console.log(`  Bulk from ${USERS.donor2.displayName}: ${DONOR2_DONATIONS.length} items (in processing)`);
+    console.log(
+        `  Bulk from ${USERS.donor2.displayName}: ${DONOR2_DONATIONS.length} items (in processing)`
+    );
 
     for (const d of ADMIN_DONATIONS) {
         if (d.id === 'donation-admin-006') {
@@ -572,11 +681,23 @@ async function seed() {
         console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}]`);
     }
 
-    await createBulkDonation('bulk-pd-donor1-001', USERS.donor1, DONOR1_PENDING_DELIVERY);
-    console.log(`  Bulk pending delivery from ${USERS.donor1.displayName}: ${DONOR1_PENDING_DELIVERY.length} items`);
+    await createBulkDonation(
+        'bulk-pd-donor1-001',
+        USERS.donor1,
+        DONOR1_PENDING_DELIVERY
+    );
+    console.log(
+        `  Bulk pending delivery from ${USERS.donor1.displayName}: ${DONOR1_PENDING_DELIVERY.length} items`
+    );
 
-    await createBulkDonation('bulk-pd-donor2-001', USERS.donor2, DONOR2_PENDING_DELIVERY);
-    console.log(`  Bulk pending delivery from ${USERS.donor2.displayName}: ${DONOR2_PENDING_DELIVERY.length} items`);
+    await createBulkDonation(
+        'bulk-pd-donor2-001',
+        USERS.donor2,
+        DONOR2_PENDING_DELIVERY
+    );
+    console.log(
+        `  Bulk pending delivery from ${USERS.donor2.displayName}: ${DONOR2_PENDING_DELIVERY.length} items`
+    );
 
     for (const d of RESERVED_DONATIONS_ANON) {
         d.requestor = {
@@ -586,7 +707,9 @@ async function seed() {
         };
         const donDoc = makeDonationDoc(d, USERS.admin);
         await db.collection('Donations').doc(d.id).set(donDoc);
-        console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}] — reserved for ${USERS.aidWorker.displayName}`);
+        console.log(
+            `  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}] — reserved for ${USERS.aidWorker.displayName}`
+        );
     }
 
     for (const d of RESERVED_DONATIONS_DONOR2) {
@@ -597,7 +720,9 @@ async function seed() {
         };
         const donDoc = makeDonationDoc(d, USERS.donor2);
         await db.collection('Donations').doc(d.id).set(donDoc);
-        console.log(`  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}] — reserved for ${USERS.aidWorker2.displayName}`);
+        console.log(
+            `  ${d.tagNumber}: ${d.brand} ${d.model} [${d.status}] — reserved for ${USERS.aidWorker2.displayName}`
+        );
     }
 
     for (const d of HISTORY_DONATIONS) {
@@ -629,7 +754,10 @@ async function seed() {
                 name: USERS.aidWorker.displayName,
                 email: USERS.aidWorker.email
             },
-            items: [db.collection('Donations').doc('donation-admin-001'), db.collection('Donations').doc('donation-admin-003')],
+            items: [
+                db.collection('Donations').doc('donation-admin-001'),
+                db.collection('Donations').doc('donation-admin-003')
+            ],
             createdAt: FieldValue.serverTimestamp(),
             modifiedAt: FieldValue.serverTimestamp()
         });
@@ -648,7 +776,9 @@ async function seed() {
                 modifiedAt: FieldValue.serverTimestamp()
             });
     }
-    console.log('  order-normal-001: Chicco KeyFit 35 + Spectra S1 Plus [open, 2 items]');
+    console.log(
+        '  order-normal-001: Chicco KeyFit 35 + Spectra S1 Plus [open, 2 items]'
+    );
 
     await db
         .collection('Orders')
@@ -664,17 +794,22 @@ async function seed() {
             createdAt: FieldValue.serverTimestamp(),
             modifiedAt: FieldValue.serverTimestamp()
         });
-    await db.collection('Donations').doc('donation-admin-004').update({
-        status: 'requested',
-        requestor: {
-            id: USERS.aidWorker.uid,
-            name: USERS.aidWorker.displayName,
-            email: USERS.aidWorker.email
-        },
-        dateRequested: FieldValue.serverTimestamp(),
-        modifiedAt: FieldValue.serverTimestamp()
-    });
-    console.log('  order-normal-002: Ergobaby Omni 360 [open, 1 item] — second order from Noor');
+    await db
+        .collection('Donations')
+        .doc('donation-admin-004')
+        .update({
+            status: 'requested',
+            requestor: {
+                id: USERS.aidWorker.uid,
+                name: USERS.aidWorker.displayName,
+                email: USERS.aidWorker.email
+            },
+            dateRequested: FieldValue.serverTimestamp(),
+            modifiedAt: FieldValue.serverTimestamp()
+        });
+    console.log(
+        '  order-normal-002: Ergobaby Omni 360 [open, 1 item] — second order from Noor'
+    );
 
     await db
         .collection('Orders')
@@ -690,17 +825,22 @@ async function seed() {
             createdAt: FieldValue.serverTimestamp(),
             modifiedAt: FieldValue.serverTimestamp()
         });
-    await db.collection('Donations').doc('donation-admin-005').update({
-        status: 'requested',
-        requestor: {
-            id: USERS.aidWorker2.uid,
-            name: USERS.aidWorker2.displayName,
-            email: USERS.aidWorker2.email
-        },
-        dateRequested: FieldValue.serverTimestamp(),
-        modifiedAt: FieldValue.serverTimestamp()
-    });
-    console.log('  order-normal-003: Mixed Clothing bundle [open, 1 item] — order from Jules');
+    await db
+        .collection('Donations')
+        .doc('donation-admin-005')
+        .update({
+            status: 'requested',
+            requestor: {
+                id: USERS.aidWorker2.uid,
+                name: USERS.aidWorker2.displayName,
+                email: USERS.aidWorker2.email
+            },
+            dateRequested: FieldValue.serverTimestamp(),
+            modifiedAt: FieldValue.serverTimestamp()
+        });
+    console.log(
+        '  order-normal-003: Mixed Clothing bundle [open, 1 item] — order from Jules'
+    );
 
     await db
         .collection('Orders')
@@ -713,7 +853,9 @@ async function seed() {
                 email: USERS.aidWorker2.email
             },
             items: [],
-            rejectedItems: [db.collection('Donations').doc('donation-admin-006')],
+            rejectedItems: [
+                db.collection('Donations').doc('donation-admin-006')
+            ],
             createdAt: FieldValue.serverTimestamp(),
             modifiedAt: FieldValue.serverTimestamp()
         });
@@ -722,7 +864,9 @@ async function seed() {
         requestor: null,
         modifiedAt: FieldValue.serverTimestamp()
     });
-    console.log('  order-stuck-001: VTech walker rejected, status still "open" — Bug 2 repro');
+    console.log(
+        '  order-stuck-001: VTech walker rejected, status still "open" — Bug 2 repro'
+    );
 
     await db
         .collection('Users')
@@ -739,7 +883,9 @@ async function seed() {
         .collection('Users')
         .doc(USERS.aidWorker2.uid)
         .update({
-            requestedItems: [{ id: 'donation-admin-005', model: '0-6 months bundle' }],
+            requestedItems: [
+                { id: 'donation-admin-005', model: '0-6 months bundle' }
+            ],
             distributedItems: [{ id: 'donation-hist-001', tagNumber: 'CRB 3' }],
             modifiedAt: FieldValue.serverTimestamp()
         });

@@ -2,7 +2,13 @@
 import { DocumentReference, Timestamp } from 'firebase/firestore';
 
 export interface IImageDetail {
-    [key: string]: string | DocumentReference | Timestamp | (() => string) | (() => DocumentReference) | (() => Timestamp);
+    [key: string]:
+        | string
+        | DocumentReference
+        | Timestamp
+        | (() => string)
+        | (() => DocumentReference)
+        | (() => Timestamp);
     image: DocumentReference;
     uploadedBy: DocumentReference;
     uri: string;
@@ -12,7 +18,13 @@ export interface IImageDetail {
 }
 
 export class ImageDetail implements IImageDetail {
-    [key: string]: string | DocumentReference | Timestamp | (() => string) | (() => DocumentReference) | (() => Timestamp);
+    [key: string]:
+        | string
+        | DocumentReference
+        | Timestamp
+        | (() => string)
+        | (() => DocumentReference)
+        | (() => Timestamp);
     image: DocumentReference;
     uploadedBy: DocumentReference;
     uri: string;

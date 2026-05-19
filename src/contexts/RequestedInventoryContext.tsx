@@ -1,7 +1,13 @@
 'use client';
 
 //Hooks
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import {
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useState
+} from 'react';
 
 import { InventoryItem } from '@/models/inventoryItem';
 import { getInventoryByIds } from '@/api/firebase-donations';
@@ -21,16 +27,19 @@ type Props = {
 
 const defaultRequestedInventory: InventoryItem[] = [];
 
-export const RequestedInventoryContext = createContext<RequestedInventoryContextType>({
-    requestedInventory: [],
-    addRequestedInventoryItem: (inventoryItem: InventoryItem) => {},
-    removeRequestedInventoryItem: () => {},
-    clearRequestedInventory: () => {},
-    isLoading: false
-});
+export const RequestedInventoryContext =
+    createContext<RequestedInventoryContextType>({
+        requestedInventory: [],
+        addRequestedInventoryItem: (inventoryItem: InventoryItem) => {},
+        removeRequestedInventoryItem: () => {},
+        clearRequestedInventory: () => {},
+        isLoading: false
+    });
 
 export const RequestedInventoryProvider = ({ children }: Props) => {
-    const [requestedInventory, setRequestedInventory] = useState<InventoryItem[]>(defaultRequestedInventory);
+    const [requestedInventory, setRequestedInventory] = useState<
+        InventoryItem[]
+    >(defaultRequestedInventory);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     const addRequestedInventoryItem = (inventoryItem: InventoryItem) => {
@@ -46,17 +55,29 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
     };
 
     //We only need IDs to request inventory items
-    const addRequestedInventoryToLocalStorage = async (requestedInventory: InventoryItem[]): Promise<void> => {
-        const requestedInventoryIds = requestedInventory.map((inventoryItem) => inventoryItem.id);
-        localStorage.setItem('requestedInventory', JSON.stringify(requestedInventoryIds));
+    const addRequestedInventoryToLocalStorage = async (
+        requestedInventory: InventoryItem[]
+    ): Promise<void> => {
+        const requestedInventoryIds = requestedInventory.map(
+            (inventoryItem) => inventoryItem.id
+        );
+        localStorage.setItem(
+            'requestedInventory',
+            JSON.stringify(requestedInventoryIds)
+        );
     };
 
     //Fetched request inventory Items from stored IDs
     const getRequestedInventoryFromLocalStorage = async () => {
-        const requestedInventoryIdsFromLocalStorage = localStorage.getItem('requestedInventory');
+        const requestedInventoryIdsFromLocalStorage =
+            localStorage.getItem('requestedInventory');
         if (requestedInventoryIdsFromLocalStorage) {
-            const existingRequestedInventoryIds: string[] = JSON.parse(requestedInventoryIdsFromLocalStorage);
-            const existingRequestedInventory = await getInventoryByIds(existingRequestedInventoryIds);
+            const existingRequestedInventoryIds: string[] = JSON.parse(
+                requestedInventoryIdsFromLocalStorage
+            );
+            const existingRequestedInventory = await getInventoryByIds(
+                existingRequestedInventoryIds
+            );
             setRequestedInventory(existingRequestedInventory);
         }
     };
@@ -85,7 +106,12 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
         return <Loader />;
     }
 
-    return <RequestedInventoryContext.Provider value={value}>{children}</RequestedInventoryContext.Provider>;
+    return (
+        <RequestedInventoryContext.Provider value={value}>
+            {children}
+        </RequestedInventoryContext.Provider>
+    );
 };
 
-export const useRequestedInventoryContext = () => useContext(RequestedInventoryContext);
+export const useRequestedInventoryContext = () =>
+    useContext(RequestedInventoryContext);

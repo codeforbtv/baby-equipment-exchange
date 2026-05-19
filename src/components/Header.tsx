@@ -22,17 +22,30 @@ export default function Header() {
     }
 
     return (
-        <div className={styles['header__wrapper']} data-unmask="true">
+        <div
+            className={styles['header__wrapper']}
+            data-unmask="true"
+        >
             <header className={styles['header__primary']}>
-                <Link className={styles['header__logo']} href="/">
+                <Link
+                    className={styles['header__logo']}
+                    href="/"
+                >
                     <StrollerOutlinedIcon />
-                    <h4 id="headerTitle" className={styles['header__title']}>
+                    <h4
+                        id="headerTitle"
+                        className={styles['header__title']}
+                    >
                         Baby Product Exchange
                     </h4>
                 </Link>
             </header>
 
-            <NavMenu isOpen={isOpen} handleIsOpen={handleIsOpen} closeMenu={closeMenu} />
+            <NavMenu
+                isOpen={isOpen}
+                handleIsOpen={handleIsOpen}
+                closeMenu={closeMenu}
+            />
         </div>
     );
 }

@@ -4,9 +4,26 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 //API
 import { addErrorEvent, getAuthIdToken } from '@/api/firebase';
-import { getOrganizationNames, isEmailInUse as checkEmailInUse, setCustomClaims, updateAuthUser } from '@/app/actions/firebase';
+import {
+    getOrganizationNames,
+    isEmailInUse as checkEmailInUse,
+    setCustomClaims,
+    updateAuthUser
+} from '@/app/actions/firebase';
 //Components
-import { Paper, Box, FormControl, Autocomplete, TextField, Button, FormLabel, RadioGroup, FormControlLabel, Radio, Typography } from '@mui/material';
+import {
+    Paper,
+    Box,
+    FormControl,
+    Autocomplete,
+    TextField,
+    Button,
+    FormLabel,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    Typography
+} from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from './CustomDialog';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -26,7 +43,16 @@ type EditUserProps = {
 };
 
 const EditUser = (props: EditUserProps) => {
-    const { uid, email, displayName, customClaims, phoneNumber, organization, isDisabled, title } = props.userDetails;
+    const {
+        uid,
+        email,
+        displayName,
+        customClaims,
+        phoneNumber,
+        organization,
+        isDisabled,
+        title
+    } = props.userDetails;
     const { setIsEditMode, setUserDetailsUpdated } = props;
 
     let initialRole = '';
@@ -83,7 +109,9 @@ const EditUser = (props: EditUserProps) => {
         }
     };
 
-    const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const handleEmailInput = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ): Promise<void> => {
         const nextEmail = event.target.value;
         setNewEmail(nextEmail);
         validateEmail(nextEmail);
@@ -107,19 +135,33 @@ const EditUser = (props: EditUserProps) => {
         setRole((event.target as HTMLInputElement).value);
     };
 
-    const handleSubmitUpdatedUser = async (event: React.FormEvent): Promise<void> => {
+    const handleSubmitUpdatedUser = async (
+        event: React.FormEvent
+    ): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
         try {
             if (role !== initialRole) {
                 try {
-                    const claims: Partial<Record<string, boolean>> = { [role]: true };
-                    await setCustomClaims({ idToken: await getAuthIdToken(), userId: uid, claims });
+                    const claims: Partial<Record<string, boolean>> = {
+                        [role]: true
+                    };
+                    await setCustomClaims({
+                        idToken: await getAuthIdToken(),
+                        userId: uid,
+                        claims
+                    });
                 } catch (error) {
                     addErrorEvent('Error updated custom claims', error);
                 }
             }
-            if (email !== newEmail || displayName !== newDisplayName || phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || title !== newTitle) {
+            if (
+                email !== newEmail ||
+                displayName !== newDisplayName ||
+                phoneNumber !== newPhoneNumber ||
+                initialOrg !== selectedOrg ||
+                title !== newTitle
+            ) {
                 try {
                     const updatedOrganization = selectedOrg
                         ? { id: orgNamesAndIds[selectedOrg], name: selectedOrg }
@@ -155,17 +197,30 @@ const EditUser = (props: EditUserProps) => {
 
     return (
         <ProtectedAdminRoute>
-            <Paper className="content--container" elevation={8} square={false}>
+            <Paper
+                className="content--container"
+                elevation={8}
+                square={false}
+            >
                 {isLoading ? (
                     <Loader />
                 ) : (
-                    <Box component="form" gap={3} display={'flex'} flexDirection={'column'} className="form--container" onSubmit={handleSubmitUpdatedUser}>
+                    <Box
+                        component="form"
+                        gap={3}
+                        display={'flex'}
+                        flexDirection={'column'}
+                        className="form--container"
+                        onSubmit={handleSubmitUpdatedUser}
+                    >
                         <TextField
                             type="text"
                             label="Display Name"
                             name="displayName"
                             id="displayName"
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                            onChange={(
+                                event: React.ChangeEvent<HTMLInputElement>
+                            ): void => {
                                 setNewDisplayName(event.target.value);
                             }}
                             value={newDisplayName}
@@ -179,7 +234,11 @@ const EditUser = (props: EditUserProps) => {
                             autoComplete="email"
                             value={newEmail}
                             error={isEmailInUse || isInvalidEmail}
-                            helperText={(isInvalidEmail && 'Please enter a valid email address') || (isEmailInUse && 'This email is already in use')}
+                            helperText={
+                                (isInvalidEmail &&
+                                    'Please enter a valid email address') ||
+                                (isEmailInUse && 'This email is already in use')
+                            }
                             required
                             onChange={handleEmailInput}
                             onBlur={handleBlur}
@@ -189,20 +248,32 @@ const EditUser = (props: EditUserProps) => {
                                 disablePortal
                                 sx={{ maxWidth: { sm: '88%', xs: '80%' } }}
                                 value={selectedOrg}
-                                onChange={(event: any, newValue: string | null) => setSelectedOrg(newValue)}
+                                onChange={(
+                                    event: any,
+                                    newValue: string | null
+                                ) => setSelectedOrg(newValue)}
                                 id="organzation-select"
                                 options={orgNames}
-                                renderInput={(params) => <TextField {...params} label="Organization" />}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Organization"
+                                    />
+                                )}
                             />
                         ) : (
-                            <Typography variant="body1">Could not load list of organizations</Typography>
+                            <Typography variant="body1">
+                                Could not load list of organizations
+                            </Typography>
                         )}
                         <TextField
                             type="text"
                             label="Title"
                             name="title"
                             id="title"
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                            onChange={(
+                                event: React.ChangeEvent<HTMLInputElement>
+                            ): void => {
                                 setNewTitle(event.target.value);
                             }}
                             value={newTitle}
@@ -219,30 +290,65 @@ const EditUser = (props: EditUserProps) => {
                             customInput={TextField}
                         />
                         {isDisabled && (
-                            <Typography variant="body2" color="text.secondary">
-                                Saving these changes will not enable this user account.
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                            >
+                                Saving these changes will not enable this user
+                                account.
                             </Typography>
                         )}
                         <FormControl disabled={!customClaims}>
-                            <FormLabel id="role-radio-buttons-label">Role:</FormLabel>
-                            <RadioGroup aria-labelledby="role-radio-buttons-label" name="role-radio-buttons-group" value={role} onChange={handleRadioChange}>
-                                <FormControlLabel value="admin" control={<Radio />} label="Administrator" />
-                                <FormControlLabel value="aid-worker" control={<Radio />} label="Aid Worker" />
+                            <FormLabel id="role-radio-buttons-label">
+                                Role:
+                            </FormLabel>
+                            <RadioGroup
+                                aria-labelledby="role-radio-buttons-label"
+                                name="role-radio-buttons-group"
+                                value={role}
+                                onChange={handleRadioChange}
+                            >
+                                <FormControlLabel
+                                    value="admin"
+                                    control={<Radio />}
+                                    label="Administrator"
+                                />
+                                <FormControlLabel
+                                    value="aid-worker"
+                                    control={<Radio />}
+                                    label="Aid Worker"
+                                />
                             </RadioGroup>
                         </FormControl>
-                        <Box display={'flex'} gap={2}>
-                            <Button variant="contained" type="submit" disabled={isEmailInUse || isInvalidEmail}>
+                        <Box
+                            display={'flex'}
+                            gap={2}
+                        >
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                disabled={isEmailInUse || isInvalidEmail}
+                            >
                                 Update User
                             </Button>
 
-                            <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
+                            <Button
+                                variant="outlined"
+                                type="button"
+                                onClick={() => setIsEditMode(false)}
+                            >
                                 Cancel
                             </Button>
                         </Box>
                     </Box>
                 )}
             </Paper>
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="User updated" content={`The user ${newDisplayName} has been updated.`} />
+            <CustomDialog
+                isOpen={isDialogOpen}
+                onClose={handleClose}
+                title="User updated"
+                content={`The user ${newDisplayName} has been updated.`}
+            />
         </ProtectedAdminRoute>
     );
 };

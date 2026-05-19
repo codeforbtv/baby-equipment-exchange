@@ -22,15 +22,31 @@ export default function Footer() {
     };
 
     return (
-        <footer className={styles['footer-wrapper']} data-unmask="true">
+        <footer
+            className={styles['footer-wrapper']}
+            data-unmask="true"
+        >
             <div className={styles['footer-links-container']}>
-                <Link className={styles['menu__link']} id="donate" href="/donate">
+                <Link
+                    className={styles['menu__link']}
+                    id="donate"
+                    href="/donate"
+                >
                     Donate
                 </Link>
-                <Link className={styles['menu__link']} id="about" href="/about">
+                <Link
+                    className={styles['menu__link']}
+                    id="about"
+                    href="/about"
+                >
                     About
                 </Link>
-                <Link className={styles['menu__link']} id="contact" href="https://www.vermontconnector.org/contact" target="_blank">
+                <Link
+                    className={styles['menu__link']}
+                    id="contact"
+                    href="https://www.vermontconnector.org/contact"
+                    target="_blank"
+                >
                     Contact
                 </Link>
                 <Link
@@ -44,7 +60,11 @@ export default function Footer() {
                     {currentUser ? 'Sign Out' : 'Login'}
                 </Link>
                 {!currentUser && (
-                    <Link className={styles['menu__link']} id="join" href="/join">
+                    <Link
+                        className={styles['menu__link']}
+                        id="join"
+                        href="/join"
+                    >
                         Join
                     </Link>
                 )}

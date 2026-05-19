@@ -1,18 +1,34 @@
 'use client';
 
 //Hooks
-import { useState, useEffect, ReactElement, SetStateAction, Dispatch, useCallback } from 'react';
+import {
+    useState,
+    useEffect,
+    ReactElement,
+    SetStateAction,
+    Dispatch,
+    useCallback
+} from 'react';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //Components
 import ImageThumbnail from './ImageThumbnail';
 import InputContainer from '@/components/InputContainer';
-import { Autocomplete, Box, Button, TextField, Typography } from '@mui/material';
+import {
+    Autocomplete,
+    Box,
+    Button,
+    TextField,
+    Typography
+} from '@mui/material';
 import CustomDialog from './CustomDialog';
 import Loader from './Loader';
 //Icons
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 //Api
-import { appendImagesToState, removeImageFromState } from '@/controllers/images';
+import {
+    appendImagesToState,
+    removeImageFromState
+} from '@/controllers/images';
 import { addErrorEvent } from '@/api/firebase';
 import { getAllCategories } from '@/api/firebase-categories';
 import posthog from 'posthog-js';
@@ -44,7 +60,8 @@ export default function DonationForm(props: DonationFormProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[] | null>(null);
 
-    const { addPendingDonation, pendingDonations } = usePendingDonationsContext();
+    const { addPendingDonation, pendingDonations } =
+        usePendingDonationsContext();
 
     const fetchCategories = useCallback(async (): Promise<void> => {
         try {
@@ -60,12 +77,18 @@ export default function DonationForm(props: DonationFormProps) {
     }, []);
 
     const isDisabled =
-        !images || !formData.category || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
+        !images ||
+        !formData.category ||
+        formData.brand?.length === 0 ||
+        formData.model?.length === 0 ||
+        formData.description?.length === 0;
 
     const isCategoryActive = (category: string) => {
         if (props.includeInactiveCategories) return false;
         if (categories) {
-            const currentCategory = categories.find((cat) => cat.name === category);
+            const currentCategory = categories.find(
+                (cat) => cat.name === category
+            );
             return !currentCategory?.active;
         }
         return false;
@@ -78,7 +101,13 @@ export default function DonationForm(props: DonationFormProps) {
                 const imagePreview = (
                     <ImageThumbnail
                         key={i}
-                        removeFromState={(fileToRemove: File) => removeImageFromState(images, setImages, fileToRemove)}
+                        removeFromState={(fileToRemove: File) =>
+                            removeImageFromState(
+                                images,
+                                setImages,
+                                fileToRemove
+                            )
+                        }
                         file={images[i]}
                         width={'32%'}
                         margin={'.66%'}
@@ -92,7 +121,12 @@ export default function DonationForm(props: DonationFormProps) {
 
     const handleClose = () => setIsOpen(false);
 
-    function handleInputChange(e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement> | React.ChangeEvent<HTMLTextAreaElement>) {
+    function handleInputChange(
+        e:
+            | React.ChangeEvent<HTMLInputElement>
+            | React.ChangeEvent<HTMLSelectElement>
+            | React.ChangeEvent<HTMLTextAreaElement>
+    ) {
         setFormData((prev) => {
             return { ...prev, [e.target.name]: e.target.value };
         });
@@ -163,19 +197,38 @@ export default function DonationForm(props: DonationFormProps) {
     return (
         <>
             {isLoading && <Loader />}
-            {!isLoading && !categories && <Typography variant="body1">Could not load donation form. Please try again later.</Typography>}
+            {!isLoading && !categories && (
+                <Typography variant="body1">
+                    Could not load donation form. Please try again later.
+                </Typography>
+            )}
             {!isLoading && categories && (
                 <div className="content--container">
                     <p>Enter item details:</p>
-                    <Box component="form" className={styles['form']}>
+                    <Box
+                        component="form"
+                        className={styles['form']}
+                    >
                         <Box className={styles['form__section--left']}>
-                            <Box display={'flex'} flexDirection={'column'} gap={1}>
+                            <Box
+                                display={'flex'}
+                                flexDirection={'column'}
+                                gap={1}
+                            >
                                 <Autocomplete
                                     sx={{ maxWidth: '87%' }}
                                     disablePortal
-                                    options={categories.map((option) => option.name)}
+                                    options={categories.map(
+                                        (option) => option.name
+                                    )}
                                     getOptionDisabled={isCategoryActive}
-                                    renderInput={(params) => <TextField {...params} label="Category" required />}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="Category"
+                                            required
+                                        />
+                                    )}
                                     value={formData.category}
                                     onChange={handleCategoryChange}
                                     aria-label="Category"
@@ -187,7 +240,9 @@ export default function DonationForm(props: DonationFormProps) {
                                     id="brand"
                                     placeholder=" Brand"
                                     required
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                                    onChange={(
+                                        e: React.ChangeEvent<HTMLInputElement>
+                                    ) => handleInputChange(e)}
                                     value={formData.brand ? formData.brand : ''}
                                 ></TextField>
                                 <TextField
@@ -196,7 +251,9 @@ export default function DonationForm(props: DonationFormProps) {
                                     name="model"
                                     id="model"
                                     required
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                                    onChange={(
+                                        e: React.ChangeEvent<HTMLInputElement>
+                                    ) => handleInputChange(e)}
                                     value={formData.model ? formData.model : ''}
                                 ></TextField>
                                 <TextField
@@ -207,27 +264,68 @@ export default function DonationForm(props: DonationFormProps) {
                                     rows={12}
                                     placeholder="Key details might include: special features, accessories, how the item works, ease of cleaning, size, and/or information about missing or damaged parts"
                                     id="description"
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
-                                    value={formData.description ? formData.description : ''}
+                                    onChange={(
+                                        e: React.ChangeEvent<HTMLInputElement>
+                                    ) => handleInputChange(e)}
+                                    value={
+                                        formData.description
+                                            ? formData.description
+                                            : ''
+                                    }
                                 />
                             </Box>
                         </Box>
                         <Box className={styles['form__section--right']}>
-                            <InputContainer for="images" label="Upload images (required)">
-                                <div className={styles['image-uploader__container']}>
-                                    <div className={styles['image-uploader__display']}>{imageElements && imageElements}</div>
-                                    <div className={styles['image-uploader__input']}>
-                                        <label id="labelForImages" htmlFor="images">
+                            <InputContainer
+                                for="images"
+                                label="Upload images (required)"
+                            >
+                                <div
+                                    className={
+                                        styles['image-uploader__container']
+                                    }
+                                >
+                                    <div
+                                        className={
+                                            styles['image-uploader__display']
+                                        }
+                                    >
+                                        {imageElements && imageElements}
+                                    </div>
+                                    <div
+                                        className={
+                                            styles['image-uploader__input']
+                                        }
+                                    >
+                                        <label
+                                            id="labelForImages"
+                                            htmlFor="images"
+                                        >
                                             <input
                                                 required
                                                 type="file"
                                                 id="images"
                                                 name="images"
                                                 accept="image/*"
-                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => appendImagesToState(images, setImages, event)}
+                                                onChange={(
+                                                    event: React.ChangeEvent<HTMLInputElement>
+                                                ) =>
+                                                    appendImagesToState(
+                                                        images,
+                                                        setImages,
+                                                        event
+                                                    )
+                                                }
                                                 multiple
                                             />
-                                            <Button variant="contained" component="span" className={styles['form-btn']} endIcon={<AddPhotoAlternateIcon />}>
+                                            <Button
+                                                variant="contained"
+                                                component="span"
+                                                className={styles['form-btn']}
+                                                endIcon={
+                                                    <AddPhotoAlternateIcon />
+                                                }
+                                            >
                                                 Add Image
                                             </Button>
                                         </label>
@@ -236,11 +334,24 @@ export default function DonationForm(props: DonationFormProps) {
                             </InputContainer>
                         </Box>
                         <Box className={styles['form__section--bottom']}>
-                            <Button variant="contained" fullWidth={false} size="medium" type="button" onClick={handleAddPendingDonation} disabled={isDisabled}>
+                            <Button
+                                variant="contained"
+                                fullWidth={false}
+                                size="medium"
+                                type="button"
+                                onClick={handleAddPendingDonation}
+                                disabled={isDisabled}
+                            >
                                 Add item
                             </Button>
                             {pendingDonations.length > 0 && (
-                                <Button variant="outlined" fullWidth={false} size="medium" type="button" onClick={handleCancel}>
+                                <Button
+                                    variant="outlined"
+                                    fullWidth={false}
+                                    size="medium"
+                                    type="button"
+                                    onClick={handleCancel}
+                                >
                                     Cancel
                                 </Button>
                             )}

@@ -22,24 +22,41 @@ export default function ImageThumbnail(props: ImageThumbnailProps) {
     }
     //only diaplay 'X' if a removal function is passed as props
     const removeButton =
-        props.removeFromState != undefined || props.removeFromDb != undefined ? (
-            <button type="button" className={styles['thumbnail__delete']} onClick={clickHandler}>
+        props.removeFromState != undefined ||
+        props.removeFromDb != undefined ? (
+            <button
+                type="button"
+                className={styles['thumbnail__delete']}
+                onClick={clickHandler}
+            >
                 X
             </button>
         ) : null;
 
     if (props.file) {
         return (
-            <div className={styles['thumbnail__container']} style={{ width: `${props.width}`, margin: `${props.margin}` }}>
-                <img className={styles['thumbnail']} src={URL.createObjectURL(props.file)} />
+            <div
+                className={styles['thumbnail__container']}
+                style={{ width: `${props.width}`, margin: `${props.margin}` }}
+            >
+                <img
+                    className={styles['thumbnail']}
+                    src={URL.createObjectURL(props.file)}
+                />
                 {removeButton}
             </div>
         );
     }
     if (props.url) {
         return (
-            <div className={styles['thumbnail__container']} style={{ width: `${props.width}`, margin: `${props.margin}` }}>
-                <img className={styles['thumbnail']} src={props.url} />
+            <div
+                className={styles['thumbnail__container']}
+                style={{ width: `${props.width}`, margin: `${props.margin}` }}
+            >
+                <img
+                    className={styles['thumbnail']}
+                    src={props.url}
+                />
                 {removeButton}
             </div>
         );

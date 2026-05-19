@@ -1,6 +1,16 @@
 // Libs
 import { addErrorEvent, db, auth } from './firebase';
-import { doc, DocumentData, getDoc, QueryDocumentSnapshot, SnapshotOptions, where, collection, query, getDocs } from 'firebase/firestore';
+import {
+    doc,
+    DocumentData,
+    getDoc,
+    QueryDocumentSnapshot,
+    SnapshotOptions,
+    where,
+    collection,
+    query,
+    getDocs
+} from 'firebase/firestore';
 import {
     NextOrObserver,
     onAuthStateChanged,
@@ -70,7 +80,9 @@ export const userConverter = {
 export async function getAllDbUsers(): Promise<IUser[]> {
     try {
         const users: IUser[] = [];
-        const usersSnapshot = await getDocs(collection(db, USERS_COLLECTION).withConverter(userConverter));
+        const usersSnapshot = await getDocs(
+            collection(db, USERS_COLLECTION).withConverter(userConverter)
+        );
         usersSnapshot.forEach((doc) => users.push(doc.data()));
         return users;
     } catch (error) {
@@ -82,7 +94,10 @@ export async function getAllDbUsers(): Promise<IUser[]> {
 export async function getAllActiveDbUsers(): Promise<IUser[]> {
     try {
         const users: IUser[] = [];
-        const q = query(collection(db, USERS_COLLECTION), where('isDisabled', '==', false)).withConverter(userConverter);
+        const q = query(
+            collection(db, USERS_COLLECTION),
+            where('isDisabled', '==', false)
+        ).withConverter(userConverter);
         const activeUsersSnapshot = await getDocs(q);
         activeUsersSnapshot.forEach((doc) => users.push(doc.data()));
         return users;
@@ -94,7 +109,9 @@ export async function getAllActiveDbUsers(): Promise<IUser[]> {
 
 export async function getDbUser(uid: string): Promise<UserCollection> {
     try {
-        const userRef = doc(db, `${USERS_COLLECTION}/${uid}`).withConverter(userConverter);
+        const userRef = doc(db, `${USERS_COLLECTION}/${uid}`).withConverter(
+            userConverter
+        );
         const snapshot = await getDoc(userRef);
         if (snapshot.exists()) {
             return snapshot.data();
@@ -111,8 +128,13 @@ export async function getUsersNotifications(): Promise<IUser[]> {
     const users: IUser[] = [];
     try {
         const usersRef = collection(db, USERS_COLLECTION);
-        const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
-        const usersNotificationsSnapshot = await getDocs(usersNotificationsQuery);
+        const usersNotificationsQuery = query(
+            usersRef,
+            where('isDisabled', '==', true)
+        ).withConverter(userConverter);
+        const usersNotificationsSnapshot = await getDocs(
+            usersNotificationsQuery
+        );
         for (const doc of usersNotificationsSnapshot.docs) {
             users.push(doc.data());
         }
@@ -133,11 +155,18 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject();
 }
 
-export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
+export async function signInAuthUserWithEmailAndPassword(
+    email: string,
+    password: string
+): Promise<null | User> {
     if (!email || !password) {
         return null;
     }
-    const userCredential: UserCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential: UserCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+    );
     return userCredential.user;
 }
 

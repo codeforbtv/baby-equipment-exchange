@@ -1,17 +1,36 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState
+} from 'react';
 //API
 import { updateDonation } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 import { getAllCategories, getTagNumber } from '@/api/firebase-categories';
-import { appendImagesToState, removeImageFromState } from '@/controllers/images';
+import {
+    appendImagesToState,
+    removeImageFromState
+} from '@/controllers/images';
 import { uploadImages } from '@/api/firebase-images';
 //Components
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import Loader from './Loader';
-import { Paper, Box, TextField, Button, Stack, Typography, Autocomplete, MenuItem } from '@mui/material';
+import {
+    Paper,
+    Box,
+    TextField,
+    Button,
+    Stack,
+    Typography,
+    Autocomplete,
+    MenuItem
+} from '@mui/material';
 import CustomDialog from './CustomDialog';
 import InputContainer from './InputContainer';
 import ImageThumbnail from './ImageThumbnail';
@@ -21,10 +40,21 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import '@/styles/globalStyles.css';
 import styles from '@/components/DonationForm.module.css';
 //Types
-import { Donation, DonationStatusKeys, DonationStatusValues, donationStatuses } from '@/models/donation';
+import {
+    Donation,
+    DonationStatusKeys,
+    DonationStatusValues,
+    donationStatuses
+} from '@/models/donation';
 import { Category } from '@/models/category';
 
-const editableStatusLabels = ['In Processing', 'Available', 'Unavailable', 'Rejected', 'Not Received'];
+const editableStatusLabels = [
+    'In Processing',
+    'Available',
+    'Unavailable',
+    'Rejected',
+    'Not Received'
+];
 
 type EditDonationProps = {
     donationDetails: Donation;
@@ -34,23 +64,40 @@ type EditDonationProps = {
 };
 
 const EditDonation = (props: EditDonationProps) => {
-    const { id, category, brand, model, description, status, tagNumber, images } = props.donationDetails;
-    const { setIsEditMode, setDonationDetailsUpdated, setDonationsUpdated } = props;
+    const {
+        id,
+        category,
+        brand,
+        model,
+        description,
+        status,
+        tagNumber,
+        images
+    } = props.donationDetails;
+    const { setIsEditMode, setDonationDetailsUpdated, setDonationsUpdated } =
+        props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[] | null>(null);
     const [newCategory, setNewCategory] = useState<string | null>(category);
-    const [newTagNumber, setNewTagnumber] = useState<string | undefined | null>(tagNumber);
+    const [newTagNumber, setNewTagnumber] = useState<string | undefined | null>(
+        tagNumber
+    );
     const [newBrand, setNewBrand] = useState<string>(brand);
     const [newModel, setNewModel] = useState<string>(model);
-    const [newDescription, setNewDescription] = useState<string>(description ?? '');
+    const [newDescription, setNewDescription] = useState<string>(
+        description ?? ''
+    );
     const [newStatus, setNewStatus] = useState<DonationStatusValues>(status);
     const [newImages, setNewImages] = useState<string[]>(images);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const [addedImages, setAddedImages] = useState<File[] | null>();
 
-    const categoryOptions = useMemo(() => categories?.map((option) => option.name) ?? [], [categories]);
+    const categoryOptions = useMemo(
+        () => categories?.map((option) => option.name) ?? [],
+        [categories]
+    );
 
     const statusOptions = useMemo(() => {
         const options = editableStatusLabels.map((label) => ({
@@ -58,8 +105,13 @@ const EditDonation = (props: EditDonationProps) => {
             value: donationStatuses[label as DonationStatusKeys],
             disabled: false
         }));
-        const currentStatusOption = Object.entries(donationStatuses).find(([, value]) => value === status);
-        if (currentStatusOption && !options.some((option) => option.value === status)) {
+        const currentStatusOption = Object.entries(donationStatuses).find(
+            ([, value]) => value === status
+        );
+        if (
+            currentStatusOption &&
+            !options.some((option) => option.value === status)
+        ) {
             options.unshift({
                 label: `${currentStatusOption[0]} (current)`,
                 value: status,
@@ -89,15 +141,22 @@ const EditDonation = (props: EditDonationProps) => {
         setDonationsUpdated?.(true);
     };
 
-    const handleCategoryChange = (_event: React.SyntheticEvent, newValue: string | null) => {
+    const handleCategoryChange = (
+        _event: React.SyntheticEvent,
+        newValue: string | null
+    ) => {
         setNewCategory(newValue);
     };
 
     const handleRemoveExistingImage = useCallback((url: string) => {
-        setNewImages((currentImages) => currentImages.filter((image) => image !== url));
+        setNewImages((currentImages) =>
+            currentImages.filter((image) => image !== url)
+        );
     }, []);
 
-    const handleSubmitUpdatedDonation = async (event: React.FormEvent): Promise<void> => {
+    const handleSubmitUpdatedDonation = async (
+        event: React.FormEvent
+    ): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
 
@@ -138,17 +197,40 @@ const EditDonation = (props: EditDonationProps) => {
 
     return (
         <ProtectedAdminRoute>
-            <Paper className="content--container" elevation={8} square={false}>
+            <Paper
+                className="content--container"
+                elevation={8}
+                square={false}
+            >
                 {isLoading && <Loader />}
-                {!isLoading && !categories && <Typography variant="body1">Could not load edit donation form. Please try again later. </Typography>}
+                {!isLoading && !categories && (
+                    <Typography variant="body1">
+                        Could not load edit donation form. Please try again
+                        later.{' '}
+                    </Typography>
+                )}
                 {!isLoading && categories && (
-                    <Box component="form" className={styles['form']} onSubmit={handleSubmitUpdatedDonation}>
-                        <Box className={styles['form__section--left']} gap={3} display={'flex'} flexDirection={'column'}>
+                    <Box
+                        component="form"
+                        className={styles['form']}
+                        onSubmit={handleSubmitUpdatedDonation}
+                    >
+                        <Box
+                            className={styles['form__section--left']}
+                            gap={3}
+                            display={'flex'}
+                            flexDirection={'column'}
+                        >
                             <Autocomplete
                                 sx={{ maxWidth: { sm: '88%', xs: '80%' } }}
                                 disablePortal
                                 options={categoryOptions}
-                                renderInput={(params) => <TextField {...params} label="Category" />}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Category"
+                                    />
+                                )}
                                 value={newCategory}
                                 onChange={handleCategoryChange}
                                 aria-label="Category"
@@ -159,25 +241,47 @@ const EditDonation = (props: EditDonationProps) => {
                                 name="status"
                                 id="status"
                                 value={newStatus}
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewStatus(event.target.value as DonationStatusValues)}
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>
+                                ): void =>
+                                    setNewStatus(
+                                        event.target
+                                            .value as DonationStatusValues
+                                    )
+                                }
                             >
                                 {statusOptions.map((statusOption) => (
-                                    <MenuItem key={statusOption.value} value={statusOption.value} disabled={statusOption.disabled}>
+                                    <MenuItem
+                                        key={statusOption.value}
+                                        value={statusOption.value}
+                                        disabled={statusOption.disabled}
+                                    >
                                         {statusOption.label}
                                     </MenuItem>
                                 ))}
                             </TextField>
                             {status !== 'rejected' && (
-                                <Stack direction="row" spacing={2}>
+                                <Stack
+                                    direction="row"
+                                    spacing={2}
+                                >
                                     <TextField
                                         type="text"
                                         label="Tag Number"
                                         name="tagNumber"
                                         id="tagNumber"
-                                        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewTagnumber(event.target.value)}
+                                        onChange={(
+                                            event: React.ChangeEvent<HTMLInputElement>
+                                        ): void =>
+                                            setNewTagnumber(event.target.value)
+                                        }
                                         value={newTagNumber}
                                     />
-                                    <Button variant="text" type="button" onClick={assignTagNumber}>
+                                    <Button
+                                        variant="text"
+                                        type="button"
+                                        onClick={assignTagNumber}
+                                    >
                                         Generate New Tag Number
                                     </Button>
                                 </Stack>
@@ -188,7 +292,9 @@ const EditDonation = (props: EditDonationProps) => {
                                 label="Brand"
                                 name="brand"
                                 id="brand"
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewBrand(event.target.value)}
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>
+                                ): void => setNewBrand(event.target.value)}
                                 value={newBrand}
                                 required
                             />
@@ -197,7 +303,9 @@ const EditDonation = (props: EditDonationProps) => {
                                 label="Model"
                                 name="model"
                                 id="model"
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewModel(event.target.value)}
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>
+                                ): void => setNewModel(event.target.value)}
                                 value={newModel}
                                 required
                             />
@@ -208,24 +316,41 @@ const EditDonation = (props: EditDonationProps) => {
                                 name="description"
                                 id="description"
                                 rows={4}
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewDescription(event.target.value)}
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>
+                                ): void =>
+                                    setNewDescription(event.target.value)
+                                }
                                 value={newDescription}
                                 required
                             />
                         </Box>
                         <Box className={styles['form__section--right']}>
-                            <InputContainer for="images" label="Images">
-                                <div className={styles['image-uploader__container']}>
+                            <InputContainer
+                                for="images"
+                                label="Images"
+                            >
+                                <div
+                                    className={
+                                        styles['image-uploader__container']
+                                    }
+                                >
                                     {newImages.map((image) => (
                                         <ImageThumbnail
                                             key={image}
                                             url={image}
                                             width={'32%'}
                                             margin={'.66%'}
-                                            removeFromDb={() => handleRemoveExistingImage(image)}
+                                            removeFromDb={() =>
+                                                handleRemoveExistingImage(image)
+                                            }
                                         />
                                     ))}
-                                    <div className={styles['image-uploader__display']}>
+                                    <div
+                                        className={
+                                            styles['image-uploader__display']
+                                        }
+                                    >
                                         {addedImages &&
                                             addedImages.map((image) => (
                                                 <ImageThumbnail
@@ -233,23 +358,51 @@ const EditDonation = (props: EditDonationProps) => {
                                                     file={image}
                                                     width={'32%'}
                                                     margin={'.66%'}
-                                                    removeFromState={(fileToRemove: File) => removeImageFromState(addedImages, setAddedImages, fileToRemove)}
+                                                    removeFromState={(
+                                                        fileToRemove: File
+                                                    ) =>
+                                                        removeImageFromState(
+                                                            addedImages,
+                                                            setAddedImages,
+                                                            fileToRemove
+                                                        )
+                                                    }
                                                 />
                                             ))}
                                     </div>
-                                    <div className={styles['image-uploader__input']}>
-                                        <label id="labelForImages" htmlFor="images">
+                                    <div
+                                        className={
+                                            styles['image-uploader__input']
+                                        }
+                                    >
+                                        <label
+                                            id="labelForImages"
+                                            htmlFor="images"
+                                        >
                                             <input
                                                 type="file"
                                                 id="images"
                                                 name="images"
                                                 accept="image/*"
-                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                                                    appendImagesToState(addedImages, setAddedImages, event)
+                                                onChange={(
+                                                    event: React.ChangeEvent<HTMLInputElement>
+                                                ) =>
+                                                    appendImagesToState(
+                                                        addedImages,
+                                                        setAddedImages,
+                                                        event
+                                                    )
                                                 }
                                                 multiple
                                             />
-                                            <Button variant="contained" component="span" className={styles['form-btn']} endIcon={<AddPhotoAlternateIcon />}>
+                                            <Button
+                                                variant="contained"
+                                                component="span"
+                                                className={styles['form-btn']}
+                                                endIcon={
+                                                    <AddPhotoAlternateIcon />
+                                                }
+                                            >
                                                 Add Image
                                             </Button>
                                         </label>
@@ -258,10 +411,22 @@ const EditDonation = (props: EditDonationProps) => {
                             </InputContainer>
                         </Box>
                         <Box className={styles['form__section--bottom']}>
-                            <Button variant="contained" type="submit" disabled={(!addedImages || addedImages.length === 0) && newImages.length === 0}>
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                disabled={
+                                    (!addedImages ||
+                                        addedImages.length === 0) &&
+                                    newImages.length === 0
+                                }
+                            >
                                 Save changes
                             </Button>
-                            <Button variant="outlined" type="button" onClick={() => setIsEditMode(false)}>
+                            <Button
+                                variant="outlined"
+                                type="button"
+                                onClick={() => setIsEditMode(false)}
+                            >
                                 Cancel
                             </Button>
                         </Box>

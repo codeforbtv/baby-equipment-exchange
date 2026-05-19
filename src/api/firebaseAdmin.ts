@@ -20,7 +20,9 @@ export async function initAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    return initializeApp({ projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID });
+    return initializeApp({
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    });
 }
 
 const app = await initAdmin();
@@ -29,11 +31,14 @@ export const db = getFirestore(app);
 
 export function findPaths(fileNames: string[]): string[] {
     const filePaths = [];
-    const directoryPath = process.env.IMPORT_DIRECTORY ? process.env.IMPORT_DIRECTORY : '';
+    const directoryPath = process.env.IMPORT_DIRECTORY
+        ? process.env.IMPORT_DIRECTORY
+        : '';
     const files = fs.readdirSync(directoryPath, { withFileTypes: true });
     for (const file of files) {
         const filePath = path.join(directoryPath, file.name);
-        if (fileNames && fileNames.includes(file.name)) filePaths.push(filePath);
+        if (fileNames && fileNames.includes(file.name))
+            filePaths.push(filePath);
     }
     return filePaths;
 }
@@ -56,7 +61,10 @@ export async function getAuthUserById(uid: string): Promise<AuthUserRecord> {
     return Promise.reject();
 }
 
-export async function addErrorEvent(location: string, error: any): Promise<void> {
+export async function addErrorEvent(
+    location: string,
+    error: any
+): Promise<void> {
     try {
         const currentTime = new Date().toDateString();
         await db.collection(EVENTS_COLLECTION).add({

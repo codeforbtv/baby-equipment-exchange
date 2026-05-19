@@ -1,7 +1,10 @@
 //Firebase types
 import { Timestamp, serverTimestamp } from 'firebase/firestore';
 
-export function imageFactory(uploadedBy: string, ...downloadURLs: [string]): Image[] | Image | null {
+export function imageFactory(
+    uploadedBy: string,
+    ...downloadURLs: [string]
+): Image[] | Image | null {
     const images: Image[] = [];
 
     if (downloadURLs.length === (0 as number)) {

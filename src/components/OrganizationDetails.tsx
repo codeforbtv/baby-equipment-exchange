@@ -5,10 +5,22 @@ import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
 import EditOrganization from '@/components/EditOrganization';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    IconButton
+} from '@mui/material';
 import CustomDialog from './CustomDialog';
 //Api
-import { getOrganizationById, deleteOrganization } from '@/api/firebase-organizations';
+import {
+    getOrganizationById,
+    deleteOrganization
+} from '@/api/firebase-organizations';
 import { addErrorEvent } from '@/api/firebase';
 //icons
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -16,7 +28,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
-import { orgTags, OrganizationTagKeys, IOrganization } from '@/models/organization';
+import {
+    orgTags,
+    OrganizationTagKeys,
+    IOrganization
+} from '@/models/organization';
 
 type OrganizationDetailsProps = {
     id: string;
@@ -24,14 +40,17 @@ type OrganizationDetailsProps = {
     setOrgsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
-const tagNames: OrganizationTagKeys[] = Object.keys(orgTags) as OrganizationTagKeys[];
+const tagNames: OrganizationTagKeys[] = Object.keys(
+    orgTags
+) as OrganizationTagKeys[];
 
 const OrganizationDetails = (props: OrganizationDetailsProps) => {
     const { id, setIdToDisplay, setOrgsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
-    const [organizationDetails, setOrganizationDetails] = useState<IOrganization | null>(null);
+    const [organizationDetails, setOrganizationDetails] =
+        useState<IOrganization | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
@@ -73,14 +92,20 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                {!isEditMode ? <h3>Organization Details</h3> : <h3>Edit Organization</h3>}
+                {!isEditMode ? (
+                    <h3>Organization Details</h3>
+                ) : (
+                    <h3>Edit Organization</h3>
+                )}
                 {setIdToDisplay && (
                     <IconButton onClick={() => setIdToDisplay(null)}>
                         <ArrowBackIcon />
                     </IconButton>
                 )}
                 {isLoading && <Loader />}
-                {!isLoading && !organizationDetails && <p>Organization not found</p>}
+                {!isLoading && !organizationDetails && (
+                    <p>Organization not found</p>
+                )}
                 {!isLoading && organizationDetails && !isEditMode && (
                     <div className="content--container">
                         <h3>{organizationDetails.name}</h3>
@@ -89,7 +114,9 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
                                 <p>{organizationDetails.address.line_1}</p>
                                 <p>{organizationDetails.address.line_2}</p>
                                 <p>
-                                    {organizationDetails.address.city} {organizationDetails.address.state} {organizationDetails.address.zipcode}
+                                    {organizationDetails.address.city}{' '}
+                                    {organizationDetails.address.state}{' '}
+                                    {organizationDetails.address.zipcode}
                                 </p>
                             </div>
                         )}
@@ -111,7 +138,11 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
 
                         <ul>
                             {organizationDetails.tags.map((tag) => (
-                                <li key={tag}>{tagNames.find((tagname) => orgTags[tagname] === tag)}</li>
+                                <li key={tag}>
+                                    {tagNames.find(
+                                        (tagname) => orgTags[tagname] === tag
+                                    )}
+                                </li>
                             ))}
                         </ul>
 
@@ -121,29 +152,66 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
                                     <b>Notes:</b>
                                 </p>
                                 <ul>
-                                    {organizationDetails.notes.map((note, i) => (
-                                        <li key={i}>{note}</li>
-                                    ))}
+                                    {organizationDetails.notes.map(
+                                        (note, i) => (
+                                            <li key={i}>{note}</li>
+                                        )
+                                    )}
                                 </ul>
                             </>
                         )}
-                        <Box display="flex" gap={2}>
-                            <Button type="button" variant="contained" onClick={() => setIsEditMode(true)}>
+                        <Box
+                            display="flex"
+                            gap={2}
+                        >
+                            <Button
+                                type="button"
+                                variant="contained"
+                                onClick={() => setIsEditMode(true)}
+                            >
                                 Edit Organization
                             </Button>
-                            <Button type="button" variant="contained" color="error" startIcon={<DeleteIcon />} onClick={() => setShowDeleteDialog(true)}>
+                            <Button
+                                type="button"
+                                variant="contained"
+                                color="error"
+                                startIcon={<DeleteIcon />}
+                                onClick={() => setShowDeleteDialog(true)}
+                            >
                                 Delete Organiztion
                             </Button>
                         </Box>
-                        <Dialog open={showDeleteDialog} aria-labelledby="dialog-title" aria-describedby="dialog-description">
-                            <DialogTitle id="dialog-title">Delete Organization</DialogTitle>
+                        <Dialog
+                            open={showDeleteDialog}
+                            aria-labelledby="dialog-title"
+                            aria-describedby="dialog-description"
+                        >
+                            <DialogTitle id="dialog-title">
+                                Delete Organization
+                            </DialogTitle>
                             <DialogContent>
-                                <DialogContentText>This will permanently delete the organization {organizationDetails.name}. Are you sure?</DialogContentText>
+                                <DialogContentText>
+                                    This will permanently delete the
+                                    organization {organizationDetails.name}. Are
+                                    you sure?
+                                </DialogContentText>
                                 <DialogActions>
-                                    <Button variant="contained" onClick={() => handleDeleteOrganization(organizationDetails.id)}>
+                                    <Button
+                                        variant="contained"
+                                        onClick={() =>
+                                            handleDeleteOrganization(
+                                                organizationDetails.id
+                                            )
+                                        }
+                                    >
                                         Confirm
                                     </Button>
-                                    <Button variant="outlined" onClick={() => setShowDeleteDialog(false)}>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={() =>
+                                            setShowDeleteDialog(false)
+                                        }
+                                    >
                                         Cancel
                                     </Button>
                                 </DialogActions>

@@ -43,8 +43,15 @@ export default function AlgoliaSearchBox(props: CustomSearchBox) {
 
     return (
         <div className={styles['search__container']}>
-            <form role="search" onSubmit={handleSubmit} onReset={handleReset} />
-            <label className={styles['search-bar__label']} htmlFor="search-bar">
+            <form
+                role="search"
+                onSubmit={handleSubmit}
+                onReset={handleReset}
+            />
+            <label
+                className={styles['search-bar__label']}
+                htmlFor="search-bar"
+            >
                 Search
             </label>
             <div className={styles['search-bar']}>
@@ -59,7 +66,10 @@ export default function AlgoliaSearchBox(props: CustomSearchBox) {
                         setQuery(e.currentTarget.value);
                     }}
                 />
-                <button type="submit" className={styles['search-bar__button']}>
+                <button
+                    type="submit"
+                    className={styles['search-bar__button']}
+                >
                     <FontAwesomeIcon icon={faMagnifyingGlass} />
                 </button>
             </div>

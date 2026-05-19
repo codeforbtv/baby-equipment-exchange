@@ -1,6 +1,16 @@
 'use client';
 //Components
-import { Autocomplete, Box, Button, Checkbox, FormControlLabel, FormGroup, Paper, TextField, Typography } from '@mui/material';
+import {
+    Autocomplete,
+    Box,
+    Button,
+    Checkbox,
+    FormControlLabel,
+    FormGroup,
+    Paper,
+    TextField,
+    Typography
+} from '@mui/material';
 import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
 import Loader from '@/components/Loader';
 //Hooks
@@ -8,7 +18,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Api
 import { addErrorEvent } from '@/api/firebase';
-import { isEmailInUse as checkEmailInUse, getOrganizationNames, createUser } from '@/app/actions/firebase';
+import {
+    isEmailInUse as checkEmailInUse,
+    getOrganizationNames,
+    createUser
+} from '@/app/actions/firebase';
 import posthog from 'posthog-js';
 import { PatternFormat, OnValueChange } from 'react-number-format';
 //Styling
@@ -26,7 +40,8 @@ export default function NewAccount() {
     const [email, setEmail] = useState<string>('');
     const [isEmailInUse, setIsEmailInUse] = useState<boolean>(false);
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
-    const [passwordsDoNotMatch, setPasswordsDoNotMatch] = useState<boolean>(false);
+    const [passwordsDoNotMatch, setPasswordsDoNotMatch] =
+        useState<boolean>(false);
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [phoneNumber, setPhoneNumber] = useState<string>('');
@@ -69,7 +84,9 @@ export default function NewAccount() {
         }
     };
 
-    const handleAccountCreate = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    const handleAccountCreate = async (
+        event: React.FormEvent<HTMLFormElement>
+    ): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
 
@@ -122,12 +139,16 @@ export default function NewAccount() {
         }
     };
 
-    const handleEmailInput = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const handleEmailInput = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ): Promise<void> => {
         setEmail(event.target.value);
         validateEmail(email);
     };
 
-    const handlePassword = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const handlePassword = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ): void => {
         setPassword(event.target.value);
         if (password.length != 0 && event.target.value != confirmPassword) {
             setPasswordsDoNotMatch(true);
@@ -136,7 +157,9 @@ export default function NewAccount() {
         }
     };
 
-    const handleConfirmPassword = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const handleConfirmPassword = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ): void => {
         setConfirmPassword(event.target.value);
         if (confirmPassword.length != 0 && event.target.value != password) {
             setPasswordsDoNotMatch(true);
@@ -176,20 +199,37 @@ export default function NewAccount() {
                 <h1>Join</h1>
             </div>
 
-            <Paper className="content--container" elevation={8} square={false}>
+            <Paper
+                className="content--container"
+                elevation={8}
+                square={false}
+            >
                 {isLoading ? (
                     <Loader />
                 ) : (
                     <>
-                        <Box component="form" gap={3} display={'flex'} flexDirection={'column'} onSubmit={handleAccountCreate} className="form--container">
-                            <UserConfirmationDialogue open={openDialog} onClose={handleClose} displayName={confirmedUserName} />
+                        <Box
+                            component="form"
+                            gap={3}
+                            display={'flex'}
+                            flexDirection={'column'}
+                            onSubmit={handleAccountCreate}
+                            className="form--container"
+                        >
+                            <UserConfirmationDialogue
+                                open={openDialog}
+                                onClose={handleClose}
+                                displayName={confirmedUserName}
+                            />
                             <TextField
                                 type="text"
                                 label="Display Name"
                                 name="displayName"
                                 id="displayName"
                                 placeholder="Provide a display name"
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>
+                                ): void => {
                                     setDisplayName(event.target.value);
                                 }}
                                 value={displayName}
@@ -204,7 +244,12 @@ export default function NewAccount() {
                                 autoComplete="email"
                                 value={email}
                                 error={isEmailInUse || isInvalidEmail}
-                                helperText={(isInvalidEmail && 'Please enter a valid email address') || (isEmailInUse && 'This email is already in use')}
+                                helperText={
+                                    (isInvalidEmail &&
+                                        'Please enter a valid email address') ||
+                                    (isEmailInUse &&
+                                        'This email is already in use')
+                                }
                                 required
                                 onChange={handleEmailInput}
                                 onBlur={handleBlur}
@@ -214,12 +259,22 @@ export default function NewAccount() {
                                 disablePortal
                                 freeSolo={true}
                                 value={orgValue}
-                                onChange={(event: any, newValue: string | null) => setOrgValue(newValue)}
+                                onChange={(
+                                    event: any,
+                                    newValue: string | null
+                                ) => setOrgValue(newValue)}
                                 inputValue={orgInputValue}
-                                onInputChange={(event, newInputValue) => setOrgInputValue(newInputValue)}
+                                onInputChange={(event, newInputValue) =>
+                                    setOrgInputValue(newInputValue)
+                                }
                                 id="organzation-select"
                                 options={orgNames}
-                                renderInput={(params) => <TextField {...params} label="Organization (select or enter a name)" />}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Organization (select or enter a name)"
+                                    />
+                                )}
                             />
                             <TextField
                                 type="text"
@@ -229,7 +284,9 @@ export default function NewAccount() {
                                 placeholder="Title"
                                 value={title}
                                 required
-                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                onChange={(
+                                    event: React.ChangeEvent<HTMLInputElement>
+                                ): void => {
                                     setTitle(event.target.value);
                                 }}
                                 onBlur={handleBlur}
@@ -253,7 +310,11 @@ export default function NewAccount() {
                                 placeholder="Confirm password"
                                 value={confirmPassword}
                                 error={passwordsDoNotMatch}
-                                helperText={passwordsDoNotMatch ? 'Passwords do not match.' : undefined}
+                                helperText={
+                                    passwordsDoNotMatch
+                                        ? 'Passwords do not match.'
+                                        : undefined
+                                }
                                 required
                                 onChange={handleConfirmPassword}
                             />
@@ -270,17 +331,40 @@ export default function NewAccount() {
                                 required
                                 error={phoneNumber.includes('_')}
                             />
-                            <Paper variant="outlined" sx={{ padding: '1em', display: 'flex', flexDirection: 'column', gap: '1em' }}>
+                            <Paper
+                                variant="outlined"
+                                sx={{
+                                    padding: '1em',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '1em'
+                                }}
+                            >
                                 <Typography variant="body2">
                                     <b>Cancellation & Liability Notice: </b>
                                     {cancellationNotice}
                                 </Typography>
-                                <Typography variant="body2">{liabiltyNotice}</Typography>
+                                <Typography variant="body2">
+                                    {liabiltyNotice}
+                                </Typography>
                                 <RecallStatuses />
 
-                                <FormControlLabel control={<Checkbox size="small" checked={hasAgreed} onChange={handleCheck} />} label="I agree" />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            size="small"
+                                            checked={hasAgreed}
+                                            onChange={handleCheck}
+                                        />
+                                    }
+                                    label="I agree"
+                                />
                             </Paper>
-                            <Button variant="contained" type={'submit'} disabled={isDisabled}>
+                            <Button
+                                variant="contained"
+                                type={'submit'}
+                                disabled={isDisabled}
+                            >
                                 Join
                             </Button>
                         </Box>

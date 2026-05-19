@@ -4,7 +4,10 @@ import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
 import { User, connectAuthEmulator, getAuth } from 'firebase/auth';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectStorageEmulator, getStorage } from 'firebase/storage';
-import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
+import {
+    getDonationNotifications,
+    getOrdersNotifications
+} from './firebase-donations';
 import { getUsersNotifications } from './firebase-users';
 import { addEvent, checkClaims } from '@/app/actions/firebase';
 
@@ -17,7 +20,7 @@ function initApp(): FirebaseApp {
         projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
         storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
         messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-        appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+        appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
     });
 }
 
@@ -32,10 +35,25 @@ export const auth = getAuth(app);
 const isCallerClientSide = typeof window !== 'undefined';
 // prevents HMR re-init. emulator throws if called twice on the same instance.
 const isFirstLoad = !(db as any)._settingsFrozen;
-if (process.env.NODE_ENV !== 'production' && isCallerClientSide && isFirstLoad) {
-    connectFirestoreEmulator(db, 'localhost', Number(process.env.NEXT_PUBLIC_EMULATOR_FIRESTORE_PORT));
-    connectAuthEmulator(auth, `http://localhost:${process.env.NEXT_PUBLIC_EMULATOR_AUTH_PORT}`);
-    connectStorageEmulator(storage, 'localhost', Number(process.env.NEXT_PUBLIC_EMULATOR_STORAGE_PORT));
+if (
+    process.env.NODE_ENV !== 'production' &&
+    isCallerClientSide &&
+    isFirstLoad
+) {
+    connectFirestoreEmulator(
+        db,
+        'localhost',
+        Number(process.env.NEXT_PUBLIC_EMULATOR_FIRESTORE_PORT)
+    );
+    connectAuthEmulator(
+        auth,
+        `http://localhost:${process.env.NEXT_PUBLIC_EMULATOR_AUTH_PORT}`
+    );
+    connectStorageEmulator(
+        storage,
+        'localhost',
+        Number(process.env.NEXT_PUBLIC_EMULATOR_STORAGE_PORT)
+    );
 }
 
 export async function getAuthIdToken(): Promise<string> {
@@ -44,7 +62,9 @@ export async function getAuthIdToken(): Promise<string> {
     return token;
 }
 
-export async function callCheckClaims(...claimNames: string[]): Promise<Record<string, boolean>> {
+export async function callCheckClaims(
+    ...claimNames: string[]
+): Promise<Record<string, boolean>> {
     if (claimNames.length === 0) {
         claimNames = ['admin', 'aid-worker'];
     }
@@ -55,11 +75,12 @@ export async function callCheckClaims(...claimNames: string[]): Promise<Record<s
 //Multi-collection query
 export async function getNotifications(): Promise<Notification> {
     try {
-        const [donationNotifications, userNotifications, orderNotifications] = await Promise.all([
-            getDonationNotifications(),
-            getUsersNotifications(),
-            getOrdersNotifications()
-        ]);
+        const [donationNotifications, userNotifications, orderNotifications] =
+            await Promise.all([
+                getDonationNotifications(),
+                getUsersNotifications(),
+                getOrdersNotifications()
+            ]);
 
         return {
             donations: donationNotifications,
@@ -94,7 +115,10 @@ export async function checkIsAidWorker(user: User): Promise<boolean> {
 }
 
 // Utilitarian
-export async function addErrorEvent(location: string, error: any): Promise<void> {
+export async function addErrorEvent(
+    location: string,
+    error: any
+): Promise<void> {
     try {
         await addEvent({ location, error: convertToString(error) });
     } catch (err) {

@@ -1,6 +1,13 @@
 'use client';
 
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+    Button
+} from '@mui/material';
 
 type UserConfirmationDialogProps = {
     open: boolean;
@@ -13,7 +20,10 @@ const UserConfirmationDialogue = (props: UserConfirmationDialogProps) => {
     const handleClose = () => onClose();
 
     return (
-        <Dialog onClose={handleClose} open={open}>
+        <Dialog
+            onClose={handleClose}
+            open={open}
+        >
             <DialogTitle>User successfully created</DialogTitle>
             <DialogContent>
                 <DialogContentText>
@@ -22,7 +32,10 @@ const UserConfirmationDialogue = (props: UserConfirmationDialogProps) => {
                 </DialogContentText>
             </DialogContent>
             <DialogActions>
-                <Button variant="contained" onClick={handleClose}>
+                <Button
+                    variant="contained"
+                    onClick={handleClose}
+                >
                     Close
                 </Button>
             </DialogActions>
