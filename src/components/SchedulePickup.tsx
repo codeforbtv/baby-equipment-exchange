@@ -38,15 +38,13 @@ import Loader from './Loader';
 
 type SchedulePickupProps = {
     order: Order;
-    setShowScheduler?: Dispatch<SetStateAction<boolean>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
     onClose?: () => void;
 };
 
 const SchedulePickup = (props: SchedulePickupProps) => {
-    const { order, setShowScheduler, setNotificationsUpdated, onClose } = props;
+    const { order, setNotificationsUpdated, onClose } = props;
     const { requestor, id, items, rejectedItems } = order;
-    const router = useRouter();
 
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [schedulingOptions, setSchedulingOptions] = useState<
@@ -64,13 +62,6 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             onClose();
             return;
         }
-
-        if (setShowScheduler) {
-            setShowScheduler(false);
-            return;
-        }
-
-        router.push('/');
     };
 
     const handleSuccessDialogClose = () => {

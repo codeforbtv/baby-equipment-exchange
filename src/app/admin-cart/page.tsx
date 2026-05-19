@@ -157,7 +157,10 @@ const AdminCart = () => {
             {showScheduler && currentOrder && (
                 <SchedulePickup
                     order={currentOrder}
-                    setShowScheduler={setShowScheduler}
+                    onClose={() => {
+                        setShowScheduler(false);
+                        setCurrentOrder(null);
+                    }}
                 />
             )}
             {!showScheduler && !currentOrder && (
