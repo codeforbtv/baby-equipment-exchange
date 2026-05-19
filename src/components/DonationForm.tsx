@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { useState, useEffect, ReactElement, SetStateAction, Dispatch } from 'react';
+import { useState, useEffect, ReactElement, SetStateAction, Dispatch, useCallback } from 'react';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //Components
 import ImageThumbnail from './ImageThumbnail';
@@ -24,6 +24,9 @@ import { Category } from '@/models/category';
 
 export type DonationFormProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
+    keepFormOpenAfterAdd?: boolean;
+    keepFormOpenAfterCancel?: boolean;
+    includeInactiveCategories?: boolean;
 };
 
 export default function DonationForm(props: DonationFormProps) {
@@ -42,7 +45,7 @@ export default function DonationForm(props: DonationFormProps) {
 
     const { addPendingDonation, pendingDonations } = usePendingDonationsContext();
 
-    const fetchCategories = async (): Promise<void> => {
+    const fetchCategories = useCallback(async (): Promise<void> => {
         try {
             setIsLoading(true);
             const categoriesResult = await getAllCategories();
@@ -53,12 +56,13 @@ export default function DonationForm(props: DonationFormProps) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const isDisabled =
-        !images || formData.category?.length === 0 || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
+        !images || !formData.category || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
 
     const isCategoryActive = (category: string) => {
+        if (props.includeInactiveCategories) return false;
         if (categories) {
             const currentCategory = categories.find((cat) => cat.name === category);
             return !currentCategory?.active;
@@ -126,7 +130,9 @@ export default function DonationForm(props: DonationFormProps) {
         });
         setImages(null);
         setImageElements([]);
-        props.setShowForm(false);
+        if (!props.keepFormOpenAfterAdd) {
+            props.setShowForm(false);
+        }
     }
 
     function handleCancel(e: React.SyntheticEvent) {
@@ -140,12 +146,14 @@ export default function DonationForm(props: DonationFormProps) {
         });
         setImages(null);
         setImageElements([]);
-        props.setShowForm(false);
+        if (!props.keepFormOpenAfterCancel) {
+            props.setShowForm(false);
+        }
     }
 
     useEffect(() => {
         if (!categories) fetchCategories();
-    }, []);
+    }, [categories, fetchCategories]);
 
     return (
         <>
@@ -162,7 +170,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     disablePortal
                                     options={categories.map((option) => option.name)}
                                     getOptionDisabled={isCategoryActive}
-                                    renderInput={(params) => <TextField {...params} label="Category" />}
+                                    renderInput={(params) => <TextField {...params} label="Category" required />}
                                     value={formData.category}
                                     onChange={handleCategoryChange}
                                     aria-label="Category"
@@ -173,6 +181,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     name="brand"
                                     id="brand"
                                     placeholder=" Brand"
+                                    required
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                     value={formData.brand ? formData.brand : ''}
                                 ></TextField>
@@ -181,6 +190,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     label="Model"
                                     name="model"
                                     id="model"
+                                    required
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                     value={formData.model ? formData.model : ''}
                                 ></TextField>
@@ -188,6 +198,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     multiline={true}
                                     name="description"
                                     label="Description"
+                                    required
                                     rows={12}
                                     placeholder="Key details might include: special features, accessories, how the item works, ease of cleaning, size, and/or information about missing or damaged parts"
                                     id="description"

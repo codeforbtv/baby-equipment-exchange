@@ -532,6 +532,8 @@ export async function getOrdersNotifications() {
                 id: doc.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
+                createdAt: orderInfo.createdAt,
+                modifiedAt: orderInfo.modifiedAt,
                 items: [],
                 rejectedItems: []
             };
@@ -565,6 +567,8 @@ export async function getOrderById(id: string): Promise<Order> {
                 id: orderRef.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
+                createdAt: orderInfo.createdAt,
+                modifiedAt: orderInfo.modifiedAt,
                 items: [],
                 rejectedItems: []
             };

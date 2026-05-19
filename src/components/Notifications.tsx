@@ -1,6 +1,6 @@
 'use client';
 //Hooks
-import { Dispatch, ReactNode, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -8,102 +8,240 @@ import UserDetails from '@/components/UserDetails';
 import DonationDetails from '@/components/DonationDetails';
 import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
-import { Box, Button, Paper, Typography } from '@mui/material';
+import { Box, Button, Divider, Paper, Typography } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
-import styles from '@/components/NotificationCard.module.css';
 //Types
 import { Notification } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
+import { Order } from '@/types/OrdersTypes';
 
 type NotificationsProps = {
     notifications: Notification;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
-const sortArrayByBulkId = (array: Donation[]): Donation[][] => {
-    const groupedByField = array.reduce(
-        (acc, item) => {
-            const sortByField = item.bulkCollection;
-            if (!acc[sortByField]) {
-                acc[sortByField] = [];
-            }
-            acc[sortByField].push(item);
-            return acc;
-        },
-        {} as Record<string, Donation[]>
-    );
-    return Object.values(groupedByField).sort((a, b) => {
-        const nameA = a[0]?.donorName || '';
-        const nameB = b[0]?.donorName || '';
-        return nameA.localeCompare(nameB);
-    });
+type DonorGroup = {
+    donorName: string;
+    donorEmail: string;
+    donorId: string;
+    submissions: Donation[][];
+    totalItems: number;
 };
 
-const sortArrayByDonorName = (array: Donation[]): Donation[][] => {
-    const groupedByField = array.reduce(
-        (acc, item) => {
-            const sortByField = item.donorName;
-            if (!acc[sortByField]) {
-                acc[sortByField] = [];
-            }
-            acc[sortByField].push(item);
-            return acc;
-        },
-        {} as Record<string, Donation[]>
-    );
-    return Object.values(groupedByField).sort((a, b) => {
-        const nameA = a[0]?.donorName || '';
-        const nameB = b[0]?.donorName || '';
-        return nameA.localeCompare(nameB);
-    });
+type RequestorGroup = {
+    requestorName: string;
+    requestorId: string;
+    orderGroups: RequestorOrderGroup[];
+    totalItems: number;
 };
 
-const sortOrdersByRequestorName = (array: Notification['orders']): Notification['orders'][] => {
-    const groupedByField = array.reduce(
-        (acc, item) => {
-            const sortByField = item.requestor ? item.requestor.name : '';
-            if (!acc[sortByField]) {
-                acc[sortByField] = [];
-            }
-            acc[sortByField].push(item);
-            return acc;
-        },
-        {} as Record<string, Notification['orders']>
-    );
-    return Object.values(groupedByField).sort((a, b) => {
-        const nameA = a[0]?.requestor?.name || '';
-        const nameB = b[0]?.requestor?.name || '';
-        return nameA.localeCompare(nameB);
-    });
+type PickupRequestorGroup = {
+    requestorName: string;
+    requestorId: string;
+    pickupGroups: PickupOrderGroup[];
+    totalItems: number;
 };
 
-const itemCountLabel = (count: number) => `${count} item${count === 1 ? '' : 's'}`;
+type RequestorOrderGroup = {
+    dateKey: string;
+    date: Date | null;
+    orders: Order[];
+    totalItems: number;
+};
 
-const donorGroupHeader = (donations: Donation[], action?: ReactNode) => {
-    const donorName = donations[0]?.donorName || 'Unknown donor';
+type PickupOrderGroup = {
+    dateKey: string;
+    date: Date | null;
+    donations: Donation[];
+    totalItems: number;
+};
 
-    return (
-        <Box
-            sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 2,
-                backgroundColor: '#f5f5f5',
-                borderBottom: '1px solid #e0e0e0',
-                padding: '0.5rem 1rem'
-            }}
-        >
-            <Typography variant="body2" fontWeight={600}>
-                {donorName}
-                <Typography component="span" variant="body2" color="text.secondary">
-                    {` — ${itemCountLabel(donations.length)}`}
-                </Typography>
-            </Typography>
-            {action}
-        </Box>
-    );
+type DateLike = { toMillis?: () => number; toDate?: () => Date } | Date | string | null | undefined;
+
+const toDateValue = (date: DateLike): Date | null => {
+    if (!date) return null;
+    if (date instanceof Date) return date;
+    if (typeof date === 'string') {
+        const parsed = new Date(date);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    if (date.toMillis) return new Date(date.toMillis());
+    if (date.toDate) return date.toDate();
+    return null;
+};
+
+const formatShortDate = (date: DateLike): string => {
+    return toDateValue(date)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) ?? '';
+};
+
+const formatGroupDate = (date: DateLike): string => formatShortDate(date) || 'Unknown date';
+
+const getDateTime = (date: DateLike): number => toDateValue(date)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+
+const getDateKey = (date: DateLike): string => toDateValue(date)?.toISOString().slice(0, 10) ?? 'unknown-date';
+
+const compareNames = (a: string, b: string): number => a.localeCompare(b, undefined, { sensitivity: 'base' });
+
+const compareDates = (a: DateLike, b: DateLike): number => getDateTime(a) - getDateTime(b);
+
+const compareDonationName = (a: Donation, b: Donation): number => {
+    const aName = `${a.brand ?? ''} ${a.model ?? ''}`.trim();
+    const bName = `${b.brand ?? ''} ${b.model ?? ''}`.trim();
+    return compareNames(aName, bName) || compareNames(a.tagNumber ?? '', b.tagNumber ?? '') || compareNames(a.id, b.id);
+};
+
+const getEarliestDate = (datesToCompare: DateLike[]): Date | null => {
+    const dates = datesToCompare.map((date) => toDateValue(date)).filter((date): date is Date => Boolean(date));
+    if (dates.length === 0) return null;
+    return new Date(Math.min(...dates.map((date) => date.getTime())));
+};
+
+const getSubmissionDate = (submission: Donation[]): Date | null => getEarliestDate(submission.map((donation) => donation.createdAt));
+
+const getSubmissionKey = (submission: Donation[]): string => submission[0]?.bulkCollection || `standalone-${submission[0]?.id ?? 'unknown'}`;
+
+const getOrderRequestedDate = (order: Order): Date | null => getEarliestDate(order.items.map((item) => item.dateRequested)) ?? toDateValue(order.createdAt);
+
+const sortDonationsByName = (donations: Donation[]): Donation[] => [...donations].sort(compareDonationName);
+
+const groupByDonor = (donations: Donation[]): DonorGroup[] => {
+    const bulkMap = new Map<string, Donation[]>();
+    for (const donation of donations) {
+        const key = donation.bulkCollection || `standalone-${donation.id}`;
+        if (!bulkMap.has(key)) bulkMap.set(key, []);
+        bulkMap.get(key)!.push(donation);
+    }
+
+    const donorMap = new Map<string, { donorName: string; donorEmail: string; submissions: Donation[][] }>();
+    for (const submission of bulkMap.values()) {
+        const { donorId, donorName, donorEmail } = submission[0];
+        if (!donorMap.has(donorId)) {
+            donorMap.set(donorId, { donorName, donorEmail, submissions: [] });
+        }
+        donorMap.get(donorId)!.submissions.push(sortDonationsByName(submission));
+    }
+
+    return Array.from(donorMap.entries())
+        .map(([donorId, data]) => {
+            const submissions = [...data.submissions].sort(
+                (a, b) => compareDates(getSubmissionDate(a), getSubmissionDate(b)) || compareNames(a[0]?.bulkCollection ?? '', b[0]?.bulkCollection ?? '')
+            );
+            return {
+                donorId,
+                donorName: data.donorName,
+                donorEmail: data.donorEmail,
+                submissions,
+                totalItems: submissions.reduce((sum, submission) => sum + submission.length, 0)
+            };
+        })
+        .sort((a, b) => compareNames(a.donorName, b.donorName) || compareDates(getSubmissionDate(a.submissions[0]), getSubmissionDate(b.submissions[0])));
+};
+
+const groupByRequestor = (orders: Order[]): RequestorGroup[] => {
+    const map = new Map<string, { name: string; orders: Order[] }>();
+    for (const order of orders) {
+        const { id, name } = order.requestor;
+        if (!map.has(id)) map.set(id, { name, orders: [] });
+        map.get(id)!.orders.push(order);
+    }
+
+    return Array.from(map.entries())
+        .map(([requestorId, data]) => {
+            const orderDateMap = new Map<string, { date: Date | null; orders: Order[] }>();
+            for (const order of data.orders) {
+                const date = getOrderRequestedDate(order);
+                const dateKey = getDateKey(date);
+                if (!orderDateMap.has(dateKey)) orderDateMap.set(dateKey, { date, orders: [] });
+                orderDateMap.get(dateKey)!.orders.push({
+                    ...order,
+                    items: sortDonationsByName(order.items)
+                });
+            }
+
+            const orderGroups = Array.from(orderDateMap.entries())
+                .map(([dateKey, group]) => ({
+                    dateKey,
+                    date: group.date,
+                    orders: [...group.orders].sort((a, b) => compareDates(getOrderRequestedDate(a), getOrderRequestedDate(b)) || compareNames(a.id, b.id)),
+                    totalItems: group.orders.reduce((sum, order) => sum + order.items.length, 0)
+                }))
+                .sort((a, b) => compareDates(a.date, b.date));
+
+            return {
+                requestorId,
+                requestorName: data.name,
+                orderGroups,
+                totalItems: orderGroups.reduce((sum, group) => sum + group.totalItems, 0)
+            };
+        })
+        .sort((a, b) => compareNames(a.requestorName, b.requestorName) || compareDates(a.orderGroups[0]?.date, b.orderGroups[0]?.date));
+};
+
+const groupReservedByRequestor = (donations: Donation[]): PickupRequestorGroup[] => {
+    const map = new Map<string, { name: string; donations: Donation[] }>();
+
+    for (const donation of donations) {
+        const requestorId = donation.requestor?.id || `missing-requestor-${donation.id}`;
+        const requestorName = donation.requestor?.name || 'Missing requestor';
+        if (!map.has(requestorId)) map.set(requestorId, { name: requestorName, donations: [] });
+        map.get(requestorId)!.donations.push(donation);
+    }
+
+    return Array.from(map.entries())
+        .map(([requestorId, data]) => {
+            const pickupDateMap = new Map<string, { date: Date | null; donations: Donation[] }>();
+            for (const donation of data.donations) {
+                const date = toDateValue(donation.dateRequested);
+                const dateKey = getDateKey(donation.dateRequested);
+                if (!pickupDateMap.has(dateKey)) pickupDateMap.set(dateKey, { date, donations: [] });
+                pickupDateMap.get(dateKey)!.donations.push(donation);
+            }
+
+            const pickupGroups = Array.from(pickupDateMap.entries())
+                .map(([dateKey, group]) => ({
+                    dateKey,
+                    date: group.date,
+                    donations: sortDonationsByName(group.donations),
+                    totalItems: group.donations.length
+                }))
+                .sort((a, b) => compareDates(a.date, b.date));
+
+            return {
+                requestorId,
+                requestorName: data.name,
+                pickupGroups,
+                totalItems: pickupGroups.reduce((sum, group) => sum + group.totalItems, 0)
+            };
+        })
+        .sort((a, b) => compareNames(a.requestorName, b.requestorName) || compareDates(a.pickupGroups[0]?.date, b.pickupGroups[0]?.date));
+};
+
+const donorHeader = (name: string, count: number) => (
+    <Typography variant="body2" fontWeight={600}>
+        {name}
+        <Typography component="span" variant="body2" color="text.secondary">
+            {` - ${count} item${count !== 1 ? 's' : ''}`}
+        </Typography>
+    </Typography>
+);
+
+const sectionHeadingSx = { marginTop: '1rem' };
+const groupHeaderSx = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 2,
+    bgcolor: '#f5f5f5',
+    px: 2,
+    py: 1,
+    borderBottom: '1px solid #e0e0e0'
+};
+const subgroupHeaderSx = {
+    bgcolor: '#fafafa',
+    px: 2,
+    py: 0.75,
+    borderBottom: '1px solid #f0f0f0'
 };
 
 const Notifications = (props: NotificationsProps) => {
@@ -114,13 +252,14 @@ const Notifications = (props: NotificationsProps) => {
     const [orderIdToDisplay, setOrderIdToDisplay] = useState<string | null>(null);
 
     const donationsAwaitingApproval = notifications.donations.filter((donation) => donation.status === 'in processing');
-    const sortedDonationsWaitingApproval = sortArrayByBulkId(donationsAwaitingApproval);
+    const donorGroupsApproval = groupByDonor(donationsAwaitingApproval);
     const donationsAwaitingDropoff = notifications.donations.filter((donation) => donation.status === 'pending delivery');
-    const sortedDonationsAwaitingDropoff = sortArrayByDonorName(donationsAwaitingDropoff);
+    const donorGroupsDelivery = groupByDonor(donationsAwaitingDropoff);
     const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
-    const sortedDonationsAwaitingPickup = sortArrayByDonorName(donationsAwaitingPickup);
-    const orders = notifications.orders;
-    const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted); //Filters out recently deleted users
+    const pickupGroups = groupReservedByRequestor(donationsAwaitingPickup);
+    const orders = notifications.orders.filter((order) => order.items.length > 0);
+    const requestorGroups = groupByRequestor(orders);
+    const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted);
 
     const router = useRouter();
 
@@ -129,120 +268,198 @@ const Notifications = (props: NotificationsProps) => {
             {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
             {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
             {orderIdToDisplay && (
-                <ReviewOrder
-                    id={orderIdToDisplay}
-                    // order={orders.find((o) => o.id === orderIdToDisplay)}
-                    setIdToDisplay={setOrderIdToDisplay}
-                    setNotificationsUpdated={setNotificationsUpdated}
-                />
+                <ReviewOrder id={orderIdToDisplay} setIdToDisplay={setOrderIdToDisplay} setNotificationsUpdated={setNotificationsUpdated} />
             )}
             {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
                 <>
                     {notifications.donations.length === 0 && notifications.orders.length === 0 && notifications.users.length === 0 && (
-                        <Typography sx={{ marginTop: '1rem' }} variant="body1">
+                        <Typography sx={sectionHeadingSx} variant="body1">
                             No new notifications at this time.
                         </Typography>
                     )}
-                    {sortedDonationsWaitingApproval.length > 0 && (
+                    {donorGroupsApproval.length > 0 && (
                         <>
-                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                            <Typography sx={sectionHeadingSx} variant="h6">
                                 Donations requiring approval
                             </Typography>
-                            {sortedDonationsWaitingApproval.map((donationArray, i) => (
-                                <Paper className={styles['notification-card--container']} key={i} variant="outlined">
-                                    {donorGroupHeader(
-                                        donationArray,
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            onClick={() => router.push(`/accept/${donationArray[0].bulkCollection}`)}
-                                        >
-                                            Review
-                                        </Button>
-                                    )}
-                                    {donationArray.map((donation) => (
-                                        <NotificationCard
-                                            key={donation.id}
-                                            donation={donation}
-                                            type="pending-donation"
-                                            setIdToDisplay={setDonationIdToDisplay}
-                                            setNotificationsUpdated={setNotificationsUpdated}
-                                        />
-                                    ))}
-                                </Paper>
-                            ))}
-                        </>
-                    )}
-                    {sortedDonationsAwaitingDropoff.length > 0 && (
-                        <>
-                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
-                                Donations waiting to be received
-                            </Typography>
-                            {sortedDonationsAwaitingDropoff.map((donationArray, i) => (
-                                <Paper className={styles['notification-card--container']} key={i} variant="outlined">
-                                    {donorGroupHeader(donationArray)}
-                                    {donationArray.map((donation) => (
-                                        <NotificationCard
-                                            key={donation.id}
-                                            donation={donation}
-                                            type="pending-delivery"
-                                            setIdToDisplay={setDonationIdToDisplay}
-                                            setNotificationsUpdated={setNotificationsUpdated}
-                                        />
-                                    ))}
-                                </Paper>
-                            ))}
-                        </>
-                    )}
-                    {sortedDonationsAwaitingPickup.length > 0 && (
-                        <>
-                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
-                                Donations waiting for pickup
-                            </Typography>
-                            {sortedDonationsAwaitingPickup.map((donationArray, i) => (
-                                <Paper className={styles['notification-card--container']} key={i} variant="outlined">
-                                    {donorGroupHeader(donationArray)}
-                                    {donationArray.map((donation) => (
-                                        <NotificationCard
-                                            key={donation.id}
-                                            donation={donation}
-                                            type="reserved"
-                                            setIdToDisplay={setDonationIdToDisplay}
-                                            setNotificationsUpdated={setNotificationsUpdated}
-                                        />
-                                    ))}
-                                </Paper>
-                            ))}
-                        </>
-                    )}
-                    {orders.length > 0 && (
-                        <>
-                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
-                                Requested Equipment
-                            </Typography>
-                            {sortOrdersByRequestorName(orders).map((orderArray, i) => (
-                                <Paper className={styles['notification-card--container']} key={i} variant="outlined">
-                                    <Typography variant="h6">{`${orderArray[0].requestor.name} has requested the following items:`}</Typography>
-                                    {orderArray.map((order) => (
-                                        <div key={order.id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                                            {order.items.map((item) => (
+                            {donorGroupsApproval.map((group) => (
+                                <Paper key={group.donorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                    {group.submissions.length === 1 ? (
+                                        <>
+                                            <Box sx={groupHeaderSx}>
+                                                {donorHeader(group.donorName, group.totalItems)}
+                                                <Button
+                                                    size="small"
+                                                    variant="contained"
+                                                    onClick={() => router.push(`/accept/${group.submissions[0][0].bulkCollection}`)}
+                                                >
+                                                    Review
+                                                </Button>
+                                            </Box>
+                                            {group.submissions[0].map((donation) => (
                                                 <NotificationCard
-                                                    key={item.id}
-                                                    type="order"
-                                                    donation={item}
+                                                    key={donation.id}
+                                                    donation={donation}
+                                                    type="pending-donation"
                                                     setIdToDisplay={setDonationIdToDisplay}
                                                     setNotificationsUpdated={setNotificationsUpdated}
                                                 />
                                             ))}
-                                            <Button
-                                                className={styles['notification-card--container--btn']}
-                                                variant="contained"
-                                                onClick={() => setOrderIdToDisplay(order.id)}
-                                                sx={{ mb: orderArray.length > 1 ? 2 : 0 }}
-                                            >
-                                                Review
-                                            </Button>
-                                        </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Box sx={groupHeaderSx}>{donorHeader(group.donorName, group.totalItems)}</Box>
+                                            {group.submissions.map((submission, submissionIndex) => (
+                                                <Box key={getSubmissionKey(submission)}>
+                                                    {submissionIndex > 0 && <Divider />}
+                                                    <Box sx={{ ...subgroupHeaderSx, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {`${formatGroupDate(getSubmissionDate(submission))} - ${submission.length} item${submission.length !== 1 ? 's' : ''}`}
+                                                        </Typography>
+                                                        <Button size="small" variant="contained" onClick={() => router.push(`/accept/${submission[0].bulkCollection}`)}>
+                                                            Review
+                                                        </Button>
+                                                    </Box>
+                                                    {submission.map((donation) => (
+                                                        <NotificationCard
+                                                            key={donation.id}
+                                                            donation={donation}
+                                                            type="pending-donation"
+                                                            setIdToDisplay={setDonationIdToDisplay}
+                                                            setNotificationsUpdated={setNotificationsUpdated}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            ))}
+                                        </>
+                                    )}
+                                </Paper>
+                            ))}
+                        </>
+                    )}
+                    {donorGroupsDelivery.length > 0 && (
+                        <>
+                            <Typography sx={sectionHeadingSx} variant="h6">
+                                Donations waiting to be received
+                            </Typography>
+                            {donorGroupsDelivery.map((group) => (
+                                <Paper key={group.donorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                    <Box sx={groupHeaderSx}>{donorHeader(group.donorName, group.totalItems)}</Box>
+                                    {group.submissions.map((submission, submissionIndex) => (
+                                        <Box key={getSubmissionKey(submission)}>
+                                            {submissionIndex > 0 && <Divider />}
+                                            <Box sx={subgroupHeaderSx}>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {`${formatGroupDate(getSubmissionDate(submission))} - ${submission.length} item${submission.length !== 1 ? 's' : ''}`}
+                                                </Typography>
+                                            </Box>
+                                            {submission.map((donation) => (
+                                                <NotificationCard
+                                                    key={donation.id}
+                                                    donation={donation}
+                                                    type="pending-delivery"
+                                                    setIdToDisplay={setDonationIdToDisplay}
+                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                />
+                                            ))}
+                                        </Box>
+                                    ))}
+                                </Paper>
+                            ))}
+                        </>
+                    )}
+                    {pickupGroups.length > 0 && (
+                        <>
+                            <Typography sx={sectionHeadingSx} variant="h6">
+                                Donations waiting for pickup
+                            </Typography>
+                            {pickupGroups.map((group) => (
+                                <Paper key={group.requestorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                    <Box sx={groupHeaderSx}>{donorHeader(group.requestorName, group.totalItems)}</Box>
+                                    {group.pickupGroups.map((pickupGroup, pickupGroupIndex) => (
+                                        <Box key={pickupGroup.dateKey}>
+                                            {pickupGroupIndex > 0 && <Divider />}
+                                            <Box sx={subgroupHeaderSx}>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {`${formatGroupDate(pickupGroup.date)} - ${pickupGroup.totalItems} item${pickupGroup.totalItems !== 1 ? 's' : ''}`}
+                                                </Typography>
+                                            </Box>
+                                            {pickupGroup.donations.map((donation) => (
+                                                <NotificationCard
+                                                    key={donation.id}
+                                                    donation={donation}
+                                                    type="reserved"
+                                                    setIdToDisplay={setDonationIdToDisplay}
+                                                    setNotificationsUpdated={setNotificationsUpdated}
+                                                />
+                                            ))}
+                                        </Box>
+                                    ))}
+                                </Paper>
+                            ))}
+                        </>
+                    )}
+                    {requestorGroups.length > 0 && (
+                        <>
+                            <Typography sx={sectionHeadingSx} variant="h6">
+                                Requested Equipment
+                            </Typography>
+                            {requestorGroups.map((group) => (
+                                <Paper key={group.requestorId} variant="outlined" sx={{ mb: 2, overflow: 'hidden' }}>
+                                    <Box sx={groupHeaderSx}>
+                                        <Typography variant="body2" fontWeight={600}>
+                                            {group.requestorName}
+                                            <Typography component="span" variant="body2" color="text.secondary">
+                                                {` - ${group.orderGroups.reduce((sum, orderGroup) => sum + orderGroup.orders.length, 0)} orders, ${group.totalItems} item${
+                                                    group.totalItems !== 1 ? 's' : ''
+                                                }`}
+                                            </Typography>
+                                        </Typography>
+                                    </Box>
+                                    {group.orderGroups.map((orderGroup, orderGroupIndex) => (
+                                        <Box key={orderGroup.dateKey}>
+                                            {orderGroupIndex > 0 && <Divider />}
+                                            <Box sx={subgroupHeaderSx}>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {`${formatGroupDate(orderGroup.date)} - ${orderGroup.orders.length} order${
+                                                        orderGroup.orders.length !== 1 ? 's' : ''
+                                                    }, ${orderGroup.totalItems} item${orderGroup.totalItems !== 1 ? 's' : ''}`}
+                                                </Typography>
+                                            </Box>
+                                            {orderGroup.orders.map((order, orderIndex) => (
+                                                <Box key={order.id}>
+                                                    {orderIndex > 0 && <Divider />}
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            bgcolor: '#fff',
+                                                            px: 2,
+                                                            py: 0.75,
+                                                            borderBottom: '1px solid #f0f0f0'
+                                                        }}
+                                                    >
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {`${order.items.length} item${order.items.length !== 1 ? 's' : ''}`}
+                                                            {getOrderRequestedDate(order) && ` - ${formatShortDate(getOrderRequestedDate(order))}`}
+                                                        </Typography>
+                                                        <Button size="small" variant="contained" onClick={() => setOrderIdToDisplay(order.id)}>
+                                                            Review
+                                                        </Button>
+                                                    </Box>
+                                                    {order.items.map((item) => (
+                                                        <NotificationCard
+                                                            key={item.id}
+                                                            type="order"
+                                                            donation={item}
+                                                            setIdToDisplay={setDonationIdToDisplay}
+                                                            setNotificationsUpdated={setNotificationsUpdated}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            ))}
+                                        </Box>
                                     ))}
                                 </Paper>
                             ))}
@@ -250,7 +467,7 @@ const Notifications = (props: NotificationsProps) => {
                     )}
                     {usersAwaitingApproval.length > 0 && (
                         <>
-                            <Typography sx={{ marginTop: '1rem' }} variant="h6">
+                            <Typography sx={sectionHeadingSx} variant="h6">
                                 Users awaiting approval
                             </Typography>
                             {usersAwaitingApproval.map((user) => (

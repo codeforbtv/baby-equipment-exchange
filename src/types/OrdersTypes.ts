@@ -8,5 +8,5 @@ export type Order = {
     items: Donation[];
     rejectedItems?: Donation[];
     createdAt?: Timestamp;
-    modfiedAt?: Timestamp;
+    modifiedAt?: Timestamp;
 };
