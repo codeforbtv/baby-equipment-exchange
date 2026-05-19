@@ -141,7 +141,7 @@ const CancelOrder = (props: CancelOrderProps) => {
                                     Select calendar for follow up
                                 </InputLabel>
                                 <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                    <option value="">No follow-up calendar</option>
+                                    <option value="">No scheduling invite</option>
                                     {events &&
                                         events.map((event) => {
                                             if (event.active === true) {

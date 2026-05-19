@@ -136,9 +136,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                     Select calendar for accepted donations
                                 </InputLabel>
                                 <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                    <option value="" disabled>
-                                        Select Calendar
-                                    </option>
+                                    <option value="">No scheduling invite</option>
                                     {events &&
                                         events.map((event, index) => {
                                             if (event.active === true) {
