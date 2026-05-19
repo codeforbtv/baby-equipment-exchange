@@ -57,6 +57,7 @@ type DonationDetailsProps = {
     setDonationsUpdated?: Dispatch<SetStateAction<boolean>>;
     onDonationChanged?: (donation: Donation) => void;
     onDonationDeleted?: (id: string) => void;
+    onClose?: () => void;
 };
 
 const DonationDetails = (props: DonationDetailsProps) => {
@@ -66,7 +67,8 @@ const DonationDetails = (props: DonationDetailsProps) => {
         donation,
         setDonationsUpdated,
         onDonationChanged,
-        onDonationDeleted
+        onDonationDeleted,
+        onClose
     } = props;
     const intialDonation = donation ? donation : null;
     const [donationDetails, setDonationDetails] = useState<Donation | null>(
@@ -99,7 +101,9 @@ const DonationDetails = (props: DonationDetailsProps) => {
             options: { showLoader?: boolean; notifyParent?: boolean } = {}
         ) => {
             const showLoader = options.showLoader ?? true;
-            if (showLoader) setIsLoading(true);
+            if (showLoader) {
+                setIsLoading(true);
+            }
             try {
                 const donationToView = await getDonationById(donationId);
                 setDonationDetails(donationToView);
@@ -112,7 +116,9 @@ const DonationDetails = (props: DonationDetailsProps) => {
                 addErrorEvent(`Fetch donation by ID`, error);
                 throw error;
             } finally {
-                if (showLoader) setIsLoading(false);
+                if (showLoader) {
+                    setIsLoading(false);
+                }
             }
         },
         [onDonationChanged, setDonationsUpdated]
@@ -149,6 +155,15 @@ const DonationDetails = (props: DonationDetailsProps) => {
         setIsDialogOpen(false);
     };
 
+    const handleBack = (): void => {
+        if (onClose) {
+            onClose();
+            return;
+        }
+
+        setIdToDisplay?.(null);
+    };
+
     const handleImageClick: MouseEventHandler<HTMLImageElement> = (event) => {
         setOpenImageURL(event.currentTarget.src);
         setIsImageOpen(true);
@@ -179,14 +194,16 @@ const DonationDetails = (props: DonationDetailsProps) => {
     };
 
     const deleteInventoryDonation = async (): Promise<void> => {
-        if (!donationDetails) return;
+        if (!donationDetails) {
+            return;
+        }
         setActionInProgress(true);
         try {
             await deleteInventoryDonationById(donationDetails.id);
             onDonationDeleted?.(donationDetails.id);
             setDonationsUpdated?.(true);
             setIsDeleteDialogOpen(false);
-            setIdToDisplay?.(null);
+            handleBack();
         } catch (error) {
             addErrorEvent('Error deleting inventory donation', error);
             throw error;
@@ -202,7 +219,9 @@ const DonationDetails = (props: DonationDetailsProps) => {
     };
 
     useEffect(() => {
-        if (!id) return;
+        if (!id) {
+            return;
+        }
         if (!donation || donationDetailsUpdated) {
             fetchDonation(id, {
                 showLoader: !donationDetailsUpdated,
@@ -223,8 +242,8 @@ const DonationDetails = (props: DonationDetailsProps) => {
                 ) : (
                     <h3>Edit Donation</h3>
                 )}
-                {setIdToDisplay && (
-                    <IconButton onClick={() => setIdToDisplay(null)}>
+                {(onClose || setIdToDisplay) && (
+                    <IconButton onClick={handleBack}>
                         <ArrowBackIcon />
                     </IconButton>
                 )}

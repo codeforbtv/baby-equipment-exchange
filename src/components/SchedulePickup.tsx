@@ -38,55 +38,78 @@ import Loader from './Loader';
 
 type SchedulePickupProps = {
     order: Order;
-    setShowScheduler: Dispatch<SetStateAction<boolean>>;
+    setShowScheduler?: Dispatch<SetStateAction<boolean>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onClose?: () => void;
 };
 
 const SchedulePickup = (props: SchedulePickupProps) => {
-    const { order, setShowScheduler, setNotificationsUpdated } = props;
+    const { order, setShowScheduler, setNotificationsUpdated, onClose } = props;
     const { requestor, id, items, rejectedItems } = order;
     const router = useRouter();
 
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(
-        null
-    );
-    const [inviteUrl, setInviteUrl] = useState<string>('');
-    const [notes, setNotes] = useState<string>('');
-    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [schedulingOptions, setSchedulingOptions] = useState<
+        SchedulingPageLinkOption[] | null
+    >(null);
+    const [selectedEventTypeUri, setSelectedEventTypeUri] =
+        useState<string>('');
+    const [emailNotes, setEmailNotes] = useState<string>('');
+    const [isSuccessDialogOpen, setIsSuccessDialogOpen] =
+        useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
 
-    const handleClose = () => {
-        setIsDialogOpen(false);
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
+    const closeWorkflow = () => {
+        if (onClose) {
+            onClose();
+            return;
+        }
+
+        if (setShowScheduler) {
+            setShowScheduler(false);
+            return;
+        }
+
         router.push('/');
     };
 
-    const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
-        setInviteUrl(event.target.value);
+    const handleSuccessDialogClose = () => {
+        setIsSuccessDialogOpen(false);
+        if (setNotificationsUpdated) {
+            setNotificationsUpdated(true);
+        }
+        closeWorkflow();
     };
-    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) =>
-        setNotes(event.target.value);
 
-    const handleSubmit = async () => {
-        setIsLoading(true);
+    const handleSchedulingOptionChange = (
+        event: ChangeEvent<HTMLSelectElement>
+    ) => {
+        setSelectedEventTypeUri(event.target.value);
+    };
+    const handleEmailNotesChange = (event: ChangeEvent<HTMLTextAreaElement>) =>
+        setEmailNotes(event.target.value);
+
+    const handleCancel = () => closeWorkflow();
+
+    const handleSendPickupEmail = async () => {
+        setIsSubmitting(true);
         try {
             const idToken = await getAuthIdToken();
-            const schedulingUrl = events?.find(
-                (event) => event.uri === inviteUrl
+            const selectedSchedulingUrl = schedulingOptions?.find(
+                (option) => option.uri === selectedEventTypeUri
             )?.scheduling_url;
             await sendPickupSchedulingEmail({
                 idToken,
                 orderId: id,
-                eventTypeUri: inviteUrl || undefined,
-                notes
+                eventTypeUri: selectedEventTypeUri || undefined,
+                notes: emailNotes
             });
-            await schedulePickupForOrder(order, schedulingUrl);
+            await schedulePickupForOrder(order, selectedSchedulingUrl);
             posthog.capture('pickup_scheduled', {
                 order_id: id,
                 item_count: items.length
             });
-            setIsDialogOpen(true);
+            setIsSuccessDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting schedule pickup email', error);
             posthog.captureException(error);
@@ -94,11 +117,11 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                 'Something went wrong while scheduling the pickup. Please try again.'
             );
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
-    const message = (
+    const emailPreview = (
         <>
             <p>{`Hello ${requestor.name}`}</p>
             <p>Your request for the following items has been fulfilled:</p>
@@ -126,18 +149,19 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     );
 
     useEffect(() => {
-        const fetchEvents = async () => {
+        const fetchSchedulingOptions = async () => {
             try {
-                const eventResult = await getAdminSchedulingPageLinks({
-                    idToken: await getAuthIdToken()
-                });
-                setEvents(eventResult);
+                const schedulingOptionsResult =
+                    await getAdminSchedulingPageLinks({
+                        idToken: await getAuthIdToken()
+                    });
+                setSchedulingOptions(schedulingOptionsResult);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
             }
         };
 
-        fetchEvents();
+        fetchSchedulingOptions();
     }, []);
 
     return (
@@ -145,7 +169,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             <div className="page--header">
                 <h3>Send Pickup Scheduling Email</h3>
             </div>
-            {isLoading ? (
+            {isSubmitting ? (
                 <Loader />
             ) : (
                 <>
@@ -155,18 +179,18 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                             display={'flex'}
                             flexDirection={'column'}
                         >
-                            {message}
+                            {emailPreview}
                             <TextField
                                 type="text"
                                 label="Additional notes"
                                 name="notes"
                                 id="notes"
-                                value={notes}
+                                value={emailNotes}
                                 multiline={true}
                                 minRows={4}
                                 maxRows={Infinity}
                                 placeholder="Add any additional notes here"
-                                onChange={handleInputChange}
+                                onChange={handleEmailNotesChange}
                             />
                             <FormControl
                                 fullWidth
@@ -183,23 +207,27 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                     variant="outlined"
                                     name="location"
                                     id="location"
-                                    onChange={handleSelect}
-                                    value={inviteUrl}
+                                    onChange={handleSchedulingOptionChange}
+                                    value={selectedEventTypeUri}
                                 >
                                     <option value="">
                                         No scheduling invite
                                     </option>
-                                    {events &&
-                                        events.map((event, index) => {
-                                            return (
-                                                <option
-                                                    key={event.uri || index}
-                                                    value={event.uri}
-                                                >
-                                                    {event.name}
-                                                </option>
-                                            );
-                                        })}
+                                    {schedulingOptions &&
+                                        schedulingOptions.map(
+                                            (option, index) => {
+                                                return (
+                                                    <option
+                                                        key={
+                                                            option.uri || index
+                                                        }
+                                                        value={option.uri}
+                                                    >
+                                                        {option.name}
+                                                    </option>
+                                                );
+                                            }
+                                        )}
                                 </NativeSelect>
                             </FormControl>
                             <Box
@@ -209,13 +237,13 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                             >
                                 <Button
                                     variant="contained"
-                                    onClick={handleSubmit}
+                                    onClick={handleSendPickupEmail}
                                 >
                                     Send Email
                                 </Button>
                                 <Button
                                     variant="outlined"
-                                    onClick={() => setShowScheduler(false)}
+                                    onClick={handleCancel}
                                 >
                                     Cancel
                                 </Button>
@@ -225,8 +253,8 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                 </>
             )}
             <CustomDialog
-                isOpen={isDialogOpen}
-                onClose={handleClose}
+                isOpen={isSuccessDialogOpen}
+                onClose={handleSuccessDialogClose}
                 title="Email sent"
                 content={`Email successfully sent to ${requestor.email}`}
             />

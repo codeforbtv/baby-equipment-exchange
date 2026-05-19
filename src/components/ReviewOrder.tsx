@@ -32,15 +32,19 @@ type ReviewOrderProps = {
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
+type ReviewOrderView =
+    | { name: 'reviewOrder' }
+    | { name: 'donationDetails'; donationId: string }
+    | { name: 'schedulePickup' }
+    | { name: 'cancelOrder' };
+
 const ReviewOrder = (props: ReviewOrderProps) => {
     const { setIdToDisplay, id, setNotificationsUpdated } = props;
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [donationIdToDisplay, setDonationIdToDisplay] = useState<
-        string | null
-    >(null);
-    const [showScheduler, setShowScheduler] = useState<boolean>(false);
-    const [showCancelOrder, setShowCancelOrder] = useState<boolean>(false);
+    const [view, setView] = useState<ReviewOrderView>({
+        name: 'reviewOrder'
+    });
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogContent, setDialogContent] = useState<string>(
         'Donation successfully removed from order'
@@ -70,7 +74,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
             setCurrentOrder(updatedOrder);
             setNotificationsUpdated?.(true);
             if (updatedOrder.items.length === 0) {
-                setShowCancelOrder(true);
+                setView({ name: 'cancelOrder' });
             } else {
                 setDialogContent(
                     resolution.action === 'available'
@@ -91,8 +95,18 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     };
 
     const handleClose = async (): Promise<void> => {
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
+        if (setNotificationsUpdated) {
+            setNotificationsUpdated(true);
+        }
         setIsDialogOpen(false);
+    };
+
+    const closeView = (): void => {
+        setView({ name: 'reviewOrder' });
+    };
+
+    const openDonationDetails = (donationId: string): void => {
+        setView({ name: 'donationDetails', donationId });
     };
 
     useEffect(() => {
@@ -102,35 +116,37 @@ const ReviewOrder = (props: ReviewOrderProps) => {
 
     return (
         <ProtectedAdminRoute>
-            {donationIdToDisplay && currentOrder && (
+            {view.name === 'donationDetails' && currentOrder && (
                 <DonationDetails
-                    id={donationIdToDisplay}
+                    id={view.donationId}
                     donation={[
                         ...currentOrder.items,
                         ...(currentOrder.rejectedItems ?? [])
-                    ].find((i) => i.id === donationIdToDisplay)}
-                    setIdToDisplay={setDonationIdToDisplay}
+                    ].find((i) => i.id === view.donationId)}
+                    onClose={closeView}
                 />
             )}
-            {showScheduler && currentOrder && (
+            {view.name === 'schedulePickup' && currentOrder && (
                 <SchedulePickup
                     order={currentOrder}
-                    setShowScheduler={setShowScheduler}
                     setNotificationsUpdated={setNotificationsUpdated}
+                    onClose={closeView}
                 />
             )}
-            {showCancelOrder && currentOrder && (
+            {view.name === 'cancelOrder' && currentOrder && (
                 <CancelOrder
                     order={currentOrder}
-                    shouldShow={setShowCancelOrder}
                     setNotificationsUpdated={setNotificationsUpdated}
+                    onClose={closeView}
                     onComplete={() => {
-                        if (setIdToDisplay) setIdToDisplay(null);
+                        if (setIdToDisplay) {
+                            setIdToDisplay(null);
+                        }
                     }}
                 />
             )}
 
-            {!showScheduler && !showCancelOrder && !donationIdToDisplay && (
+            {view.name === 'reviewOrder' && (
                 <>
                     <div className="page--header">
                         <h2>Review Order</h2>
@@ -159,7 +175,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                                 orderId={id}
                                                 donation={item}
                                                 setIdToDisplay={
-                                                    setDonationIdToDisplay
+                                                    openDonationDetails
                                                 }
                                                 handleRemoveFromOrder={
                                                     handleRemoveFromOrder
@@ -179,7 +195,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                                     orderId={id}
                                                     donation={item}
                                                     setIdToDisplay={
-                                                        setDonationIdToDisplay
+                                                        openDonationDetails
                                                     }
                                                 />
                                             )
@@ -189,7 +205,9 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                             {currentOrder.items.length > 0 && (
                                 <Button
                                     variant="contained"
-                                    onClick={() => setShowScheduler(true)}
+                                    onClick={() =>
+                                        setView({ name: 'schedulePickup' })
+                                    }
                                 >
                                     Schedule Pickup
                                 </Button>
@@ -197,7 +215,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                             <Button
                                 variant="outlined"
                                 color="error"
-                                onClick={() => setShowCancelOrder(true)}
+                                onClick={() => setView({ name: 'cancelOrder' })}
                                 sx={{ marginLeft: '1rem' }}
                             >
                                 Cancel Order

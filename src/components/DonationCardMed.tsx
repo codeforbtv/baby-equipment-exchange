@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 //Components
 import {
     Autocomplete,
@@ -38,7 +38,7 @@ import type { OrderItemRejectionResolution } from '@/api/firebase-donations';
 type DonationCardMedProps = {
     orderId?: string;
     donation: Donation;
-    setIdToDisplay: Dispatch<SetStateAction<string | null>>;
+    setIdToDisplay: (id: string) => void;
     handleRemoveFromOrder?: (
         orderId: string,
         donation: Donation,
@@ -91,11 +91,15 @@ const DonationCardMed = (props: DonationCardMedProps) => {
     );
 
     const handleRemove = async (id: string, donation: Donation) => {
-        if (!handleRemoveFromOrder) return;
+        if (!handleRemoveFromOrder) {
+            return;
+        }
 
         let resolution: OrderItemRejectionResolution;
         if (rejectionAction === 'requested') {
-            if (!selectedUser) return;
+            if (!selectedUser) {
+                return;
+            }
             resolution = {
                 action: 'requested',
                 requestor: {
@@ -118,7 +122,9 @@ const DonationCardMed = (props: DonationCardMedProps) => {
     };
 
     useEffect(() => {
-        if (!showRemoveDialog || hasLoadedUsers || isLoadingUsers) return;
+        if (!showRemoveDialog || hasLoadedUsers || isLoadingUsers) {
+            return;
+        }
 
         const fetchActiveUsers = async () => {
             setIsLoadingUsers(true);

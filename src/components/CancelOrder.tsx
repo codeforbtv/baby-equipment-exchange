@@ -15,7 +15,6 @@ import {
     Box,
     Button,
     FormControl,
-    InputLabel,
     NativeSelect,
     TextField
 } from '@mui/material';
@@ -36,62 +35,76 @@ import { Order } from '@/types/OrdersTypes';
 
 type CancelOrderProps = {
     order: Order;
-    shouldShow: Dispatch<SetStateAction<boolean>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onClose?: () => void;
     onComplete?: () => void;
 };
 
 const CancelOrder = (props: CancelOrderProps) => {
-    const { order, shouldShow, setNotificationsUpdated, onComplete } = props;
+    const { order, setNotificationsUpdated, onClose, onComplete } = props;
     const { requestor, items, rejectedItems } = order;
 
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [events, setEvents] = useState<SchedulingPageLinkOption[] | null>(
-        null
-    );
-    const [inviteUrl, setInviteUrl] = useState<string>('');
-    const [notes, setNotes] = useState<string>('');
-    const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [schedulingOptions, setSchedulingOptions] = useState<
+        SchedulingPageLinkOption[] | null
+    >(null);
+    const [selectedEventTypeUri, setSelectedEventTypeUri] =
+        useState<string>('');
+    const [emailNotes, setEmailNotes] = useState<string>('');
+    const [isSuccessDialogOpen, setIsSuccessDialogOpen] =
+        useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
 
-    const handleClose = () => {
-        setIsDialogOpen(false);
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
-        shouldShow(false);
-        if (onComplete) onComplete();
+    const closeWorkflow = () => {
+        onClose?.();
     };
 
-    const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
-        setInviteUrl(event.target.value);
+    const handleSuccessDialogClose = () => {
+        setIsSuccessDialogOpen(false);
+        if (setNotificationsUpdated) {
+            setNotificationsUpdated(true);
+        }
+        if (onComplete) {
+            onComplete();
+        }
+        closeWorkflow();
     };
 
-    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) =>
-        setNotes(event.target.value);
+    const handleCancel = () => closeWorkflow();
 
-    const handleSubmit = async () => {
-        setIsLoading(true);
+    const handleSchedulingOptionChange = (
+        event: ChangeEvent<HTMLSelectElement>
+    ) => {
+        setSelectedEventTypeUri(event.target.value);
+    };
+
+    const handleEmailNotesChange = (event: ChangeEvent<HTMLTextAreaElement>) =>
+        setEmailNotes(event.target.value);
+
+    const handleSendCancellationEmail = async () => {
+        setIsSubmitting(true);
 
         try {
             const idToken = await getAuthIdToken();
             await sendCancelOrderSchedulingEmail({
                 idToken,
                 orderId: order.id,
-                eventTypeUri: inviteUrl || undefined,
-                notes
+                eventTypeUri: selectedEventTypeUri || undefined,
+                notes: emailNotes
             });
             await cancelOrderAndReturnItems(order);
-            setIsDialogOpen(true);
+            setIsSuccessDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting order cancellation email', error);
             setErrorMessage(
                 'Something went wrong while cancelling the order. Please try again.'
             );
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
-    const message = (
+    const emailPreview = (
         <>
             <p>{`Hello ${requestor.name},`}</p>
             {items.length > 0 && (
@@ -126,18 +139,19 @@ const CancelOrder = (props: CancelOrderProps) => {
     );
 
     useEffect(() => {
-        const fetchEvents = async () => {
+        const fetchSchedulingOptions = async () => {
             try {
-                const eventResult = await getAdminSchedulingPageLinks({
-                    idToken: await getAuthIdToken()
-                });
-                setEvents(eventResult);
+                const schedulingOptionsResult =
+                    await getAdminSchedulingPageLinks({
+                        idToken: await getAuthIdToken()
+                    });
+                setSchedulingOptions(schedulingOptionsResult);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
             }
         };
 
-        fetchEvents();
+        fetchSchedulingOptions();
     }, []);
 
     return (
@@ -145,7 +159,7 @@ const CancelOrder = (props: CancelOrderProps) => {
             <div className="page--header">
                 <h3>Send Order Update Email</h3>
             </div>
-            {isLoading ? (
+            {isSubmitting ? (
                 <Loader />
             ) : (
                 <>
@@ -155,18 +169,18 @@ const CancelOrder = (props: CancelOrderProps) => {
                             display={'flex'}
                             flexDirection={'column'}
                         >
-                            {message}
+                            {emailPreview}
                             <TextField
                                 type="text"
                                 label="Additional notes"
                                 name="notes"
                                 id="notes"
-                                value={notes}
+                                value={emailNotes}
                                 multiline={true}
                                 minRows={4}
                                 maxRows={Infinity}
                                 placeholder="Add any additional notes here"
-                                onChange={handleInputChange}
+                                onChange={handleEmailNotesChange}
                             />
                             <FormControl
                                 fullWidth
@@ -176,19 +190,19 @@ const CancelOrder = (props: CancelOrderProps) => {
                                     variant="outlined"
                                     name="location"
                                     id="location"
-                                    onChange={handleSelect}
-                                    value={inviteUrl}
+                                    onChange={handleSchedulingOptionChange}
+                                    value={selectedEventTypeUri}
                                 >
                                     <option value="">
                                         No scheduling invite
                                     </option>
-                                    {events &&
-                                        events.map((event) => (
+                                    {schedulingOptions &&
+                                        schedulingOptions.map((option) => (
                                             <option
-                                                key={event.uri}
-                                                value={event.uri}
+                                                key={option.uri}
+                                                value={option.uri}
                                             >
-                                                {event.name}
+                                                {option.name}
                                             </option>
                                         ))}
                                 </NativeSelect>
@@ -200,13 +214,13 @@ const CancelOrder = (props: CancelOrderProps) => {
                             >
                                 <Button
                                     variant="contained"
-                                    onClick={handleSubmit}
+                                    onClick={handleSendCancellationEmail}
                                 >
                                     Send Email and Close Order
                                 </Button>
                                 <Button
                                     variant="outlined"
-                                    onClick={() => shouldShow(false)}
+                                    onClick={handleCancel}
                                 >
                                     Back
                                 </Button>
@@ -216,8 +230,8 @@ const CancelOrder = (props: CancelOrderProps) => {
                 </>
             )}
             <CustomDialog
-                isOpen={isDialogOpen}
-                onClose={handleClose}
+                isOpen={isSuccessDialogOpen}
+                onClose={handleSuccessDialogClose}
                 title="Email sent"
                 content={`Email successfully sent to ${requestor.email}`}
             />
