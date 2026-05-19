@@ -172,13 +172,6 @@ const CancelOrder = (props: CancelOrderProps) => {
                                 fullWidth
                                 sx={{ marginTop: '2em' }}
                             >
-                                <InputLabel
-                                    variant="standard"
-                                    htmlFor="location"
-                                    shrink={true}
-                                >
-                                    Select calendar for follow up
-                                </InputLabel>
                                 <NativeSelect
                                     variant="outlined"
                                     name="location"
@@ -187,7 +180,7 @@ const CancelOrder = (props: CancelOrderProps) => {
                                     value={inviteUrl}
                                 >
                                     <option value="">
-                                        No follow-up calendar
+                                        No scheduling invite
                                     </option>
                                     {events &&
                                         events.map((event) => (

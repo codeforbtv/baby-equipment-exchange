@@ -379,11 +379,8 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                             onChange={handleSelect}
                                             value={inviteUrl}
                                         >
-                                            <option
-                                                value=""
-                                                disabled
-                                            >
-                                                Select Calendar (Optional)
+                                            <option value="">
+                                                No scheduling invite
                                             </option>
                                             {events &&
                                                 events.map((event, index) => {
