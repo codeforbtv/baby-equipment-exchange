@@ -288,7 +288,7 @@ export async function sendPickupSchedulingEmail(
             donationListHtml(order.rejectedItems)
         ].join('');
 
-        await sendMail(
+        sendMail(
             schedulePickup(
                 order.requestor.email,
                 schedulingUrl,
@@ -338,7 +338,7 @@ export async function sendDropOffSchedulingEmail(
             const tagNumbers = acceptedDonations.flatMap((donation) =>
                 donation.tagNumber ? [donation.tagNumber] : []
             );
-            await sendMail(
+            sendMail(
                 accept(
                     donorEmail,
                     schedulingUrl,
@@ -350,7 +350,7 @@ export async function sendDropOffSchedulingEmail(
             return;
         }
 
-        await sendMail(reject(donorEmail, message, request.notes));
+        sendMail(reject(donorEmail, message, request.notes));
     } catch (error) {
         addErrorEvent('sendDropOffSchedulingEmail', error);
         throw new Error(GENERIC_SCHEDULING_EMAIL_ERROR);
@@ -381,7 +381,7 @@ export async function sendCancelOrderSchedulingEmail(
             donationListHtml(order.rejectedItems)
         ].join('');
 
-        await sendMail(
+        sendMail(
             cancelOrder(
                 order.requestor.email,
                 message,

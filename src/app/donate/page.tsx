@@ -212,7 +212,7 @@ export default function Donate() {
                 donorName,
                 donationsToUpload
             );
-            await sendMail(emailMsg);
+            sendMail(emailMsg);
             setShouldSignOutAnonymousUser(shouldSignOutAnonymousUser);
             setIsDialogOpen(true);
         } catch (error) {

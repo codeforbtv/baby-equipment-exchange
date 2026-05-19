@@ -166,7 +166,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         try {
             await enableUser({ idToken: await getAuthIdToken(), userId: uid });
             const msg = userEnabled(userEmail, userName);
-            await sendMail(msg);
+            sendMail(msg);
             setDialogTitle('User enabled');
             setDialogContent(`The user ${userName} has been enabled.`);
             setIsDialogOpen(true);
@@ -186,7 +186,7 @@ const NotificationCard = (props: NotificationCardProps) => {
         try {
             await deleteUser({ idToken: await getAuthIdToken(), userId: uid });
             const msg = rejectUser(userEmail, userName);
-            await sendMail(msg);
+            sendMail(msg);
             setIsDeleteDialogOpen(false);
             setDialogTitle('User deleted');
             setDialogContent(`The user ${userName} has been deleted.`);

@@ -50,7 +50,7 @@ async function sendAdminNotificationEmail(
     location: string
 ): Promise<void> {
     try {
-        await sendMail(message);
+        sendMail(message);
     } catch (emailError) {
         addErrorEvent(location, emailError);
     }
@@ -269,7 +269,7 @@ export async function enableUser(request: {
             }),
             'enableUser admin notification email'
         );
-        await sendMail(userEnabled(user.email ?? '', user.displayName ?? ''));
+        sendMail(userEnabled(user.email ?? '', user.displayName ?? ''));
     } catch (error) {
         addErrorEvent('enableUser', error);
         throw error;
