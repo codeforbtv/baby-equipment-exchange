@@ -35,7 +35,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
 
-    const handleSubmit = async () => {};
+    const handleSubmit = async () => { };
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -67,8 +67,8 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
             <div className="content--container">
                 <Box display={'flex'} flexDirection={'column'} gap={4}>
                     <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                        <option value="" disabled>
-                            Select an Drop Off Location
+                        <option value="" >
+                            Send without calendar invite
                         </option>
                         {events.map((event, index) => {
                             if (event.active === true) {
@@ -92,8 +92,8 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                         placeholder="Add notes here"
                         onChange={handleInputChange}
                     ></TextField>
-                    <Button onClick={handleSubmit} disabled={!inviteUrl}>
-                        Send scheduling Link
+                    <Button onClick={handleSubmit} >
+                        Confirm
                     </Button>
                 </Box>
             </div>
