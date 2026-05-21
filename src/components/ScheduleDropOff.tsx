@@ -41,8 +41,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const router = useRouter();
 
-    const isDisabled = acceptedDonations && acceptedDonations.length > 0 ? !inviteUrl : false;
-
     let donorEmail = '';
     let donorName = '';
     if (acceptedDonations && acceptedDonations.length > 0) {
@@ -133,8 +131,12 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         setIsLoading(true);
         try {
             let tagNumbers: string[] = [];
-            if (acceptedDonations) tagNumbers = await acceptPromise(acceptedDonations);
-            if (rejectedDonations) await rejectPromise(rejectedDonations);
+            if (acceptedDonations) {
+                tagNumbers = await acceptPromise(acceptedDonations);
+            }
+            if (rejectedDonations) {
+                await rejectPromise(rejectedDonations);
+            }
             const emailMsg =
                 acceptedDonations && acceptedDonations.length > 0
                     ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)
@@ -184,9 +186,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                         Select calendar for accepted donations
                                     </InputLabel>
                                     <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                        <option value="" disabled>
-                                            Select Calendar
-                                        </option>
+                                        <option value="">Send without calendar invite</option>
                                         {events &&
                                             events.map((event, index) => {
                                                 if (event.active === true) {
@@ -201,7 +201,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                 </FormControl>
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button onClick={handleSubmit} disabled={isDisabled} variant="contained">
+                                <Button onClick={handleSubmit} variant="contained">
                                     Send Email
                                 </Button>
                                 <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>

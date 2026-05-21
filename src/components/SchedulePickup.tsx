@@ -55,7 +55,9 @@ const SchedulePickup = (props: SchedulePickupProps) => {
         setIsLoading(true);
         let tagNumbers: string[] = [];
         items.map((item) => {
-            if (item.tagNumber) tagNumbers.push(item.tagNumber);
+            if (item.tagNumber) {
+                tagNumbers.push(item.tagNumber);
+            }
         });
         const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), tagNumbers, notes);
         try {
@@ -135,9 +137,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                     Select calendar for accepted donations
                                 </InputLabel>
                                 <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                    <option value="" disabled>
-                                        Select Calendar
-                                    </option>
+                                    <option value="">Send without calendar invite</option>
                                     {events &&
                                         events.map((event, index) => {
                                             if (event.active === true) {
@@ -151,7 +151,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                 </NativeSelect>
                             </FormControl>
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button variant="contained" disabled={!inviteUrl} onClick={handleSubmit}>
+                                <Button variant="contained" onClick={handleSubmit}>
                                     Send Email
                                 </Button>
                                 <Button variant="outlined" onClick={() => setShowScheduler(false)}>
