@@ -8,7 +8,7 @@ const OAuth2 = google.auth.OAuth2;
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'thebabyproductexchange@gmail.com',
+        user: process.env.EMAIL_SENDER,
         pass: process.env.GOOGLE_APP_PASSWORD
     }
 });
