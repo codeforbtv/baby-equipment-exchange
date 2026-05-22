@@ -55,12 +55,18 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         try {
             await removeDonationFromOrder(orderId, donation);
             if (currentOrder) {
+                const remainingItems = currentOrder.items.filter((item) => item.id !== donation.id);
                 const updatedOrder: Order = {
                     ...currentOrder,
-                    items: currentOrder.items.filter((item) => item.id !== donation.id),
+                    status: remainingItems.length === 0 ? 'closed' : currentOrder.status,
+                    items: remainingItems,
                     rejectedItems: !currentOrder.rejectedItems ? [donation] : [...currentOrder.rejectedItems, donation]
                 };
                 setCurrentOrder(updatedOrder);
+                if (remainingItems.length === 0) {
+                    setShowCancelOrder(true);
+                    return;
+                }
                 setIsDialogOpen(true);
             }
         } catch (error) {
@@ -105,6 +111,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     order={currentOrder}
                     shouldShow={setShowCancelOrder}
                     setNotificationsUpdated={setNotificationsUpdated}
+                    shouldCancelOrderOnSubmit={currentOrder.status === 'open'}
                     onComplete={() => {
                         if (setIdToDisplay) {
                             setIdToDisplay(null);
@@ -152,12 +159,16 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                     ))}
                                 </>
                             )}
-                            <Button variant="contained" onClick={() => setShowScheduler(true)}>
-                                Schedule Pickup
-                            </Button>
-                            <Button variant="outlined" color="error" onClick={() => setShowCancelOrder(true)} sx={{ marginLeft: '1rem' }}>
-                                Cancel Order
-                            </Button>
+                            {currentOrder.items.length > 0 && (
+                                <Button variant="contained" onClick={() => setShowScheduler(true)}>
+                                    Schedule Pickup
+                                </Button>
+                            )}
+                            {currentOrder.status === 'open' && (
+                                <Button variant="outlined" color="error" onClick={() => setShowCancelOrder(true)} sx={{ marginLeft: '1rem' }}>
+                                    Cancel Order
+                                </Button>
+                            )}
                         </div>
                     )}
                 </>

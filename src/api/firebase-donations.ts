@@ -832,6 +832,7 @@ export async function cancelOrderAndReturnItems(order: Order): Promise<void> {
             });
 
             const orderUpdates: Record<string, unknown> = {
+                status: 'closed',
                 modifiedAt: serverTimestamp()
             };
             if (itemRefsInOrder.length > 0) {

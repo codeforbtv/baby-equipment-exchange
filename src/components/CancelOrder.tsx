@@ -27,10 +27,11 @@ type CancelOrderProps = {
     shouldShow: Dispatch<SetStateAction<boolean>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
     onComplete?: () => void;
+    shouldCancelOrderOnSubmit?: boolean;
 };
 
 const CancelOrder = (props: CancelOrderProps) => {
-    const { order, shouldShow, setNotificationsUpdated, onComplete } = props;
+    const { order, shouldShow, setNotificationsUpdated, onComplete, shouldCancelOrderOnSubmit = true } = props;
     const { requestor, items, rejectedItems } = order;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -70,7 +71,9 @@ const CancelOrder = (props: CancelOrderProps) => {
         const emailMsg = cancelOrder(requestor.email, renderToString(message), tagNumbers, notes, inviteUrl);
 
         try {
-            await cancelOrderAndReturnItems(order);
+            if (shouldCancelOrderOnSubmit) {
+                await cancelOrderAndReturnItems(order);
+            }
             await sendMail(emailMsg);
             setIsDialogOpen(true);
         } catch (error) {
@@ -85,6 +88,7 @@ const CancelOrder = (props: CancelOrderProps) => {
     const message = (
         <>
             <p>{`Hello ${requestor.name},`}</p>
+            {items.length === 0 && <p>Your order has been cancelled because none of the requested items remain available.</p>}
             {items.length > 0 && (
                 <>
                     <p>Your request for the following items has been cancelled. These items will be returned to available inventory.</p>
