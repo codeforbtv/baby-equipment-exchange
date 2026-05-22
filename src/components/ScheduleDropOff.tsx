@@ -16,14 +16,12 @@ import { addErrorEvent } from '@/api/firebase';
 import sendMail from '@/api/nodemailer';
 import accept from '@/email-templates/accept';
 import reject from '@/email-templates/reject';
-import { updateDonation, updateDonationStatus } from '@/api/firebase-donations';
-import { getTagNumber } from '@/api/firebase-categories';
+import { updateDropOffDonationStatuses } from '@/api/firebase-donations';
 //Styles
 import '@/styles/globalStyles.css';
 //types
 import { EventType } from '@/types/CalendlyTypes';
 import { Donation } from '@/models/donation';
-import { serverTimestamp } from 'firebase/firestore';
 
 type ScheduleDropOffProps = {
     acceptedDonations?: Donation[];
@@ -71,34 +69,6 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         }
     };
 
-    const acceptPromise = async (donations: Donation[]): Promise<string[]> => {
-        const tagNumbers: string[] = [];
-        await Promise.all(
-            donations.map(async (donation) => {
-                try {
-                    const newTagNumber = await getTagNumber(donation.category);
-                    tagNumbers.push(newTagNumber);
-                    await updateDonation(donation.id, {
-                        status: 'pending delivery',
-                        dateAccepted: serverTimestamp(),
-                        tagNumber: newTagNumber
-                    });
-                } catch (error) {
-                    addErrorEvent('Error accepting donation', error);
-                    throw error;
-                }
-            })
-        );
-        return tagNumbers;
-    };
-    const rejectPromise = async (donations: Donation[]) => {
-        await Promise.all(
-            donations.map(async (donation) => {
-                await updateDonationStatus(donation.id, 'rejected');
-            })
-        );
-    };
-
     const message = (
         <>
             <p>{`Hello ${donorName},`}</p>
@@ -130,13 +100,16 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
         //send email with renderToString(message) and update donation statuses. If donation is accepted, assign a tagNumber
         setIsLoading(true);
         try {
-            let tagNumbers: string[] = [];
-            if (acceptedDonations) {
-                tagNumbers = await acceptPromise(acceptedDonations);
-            }
-            if (rejectedDonations) {
-                await rejectPromise(rejectedDonations);
-            }
+            const acceptedDonationUpdates = await updateDropOffDonationStatuses({
+                acceptedDonations:
+                    acceptedDonations?.map((donation) => ({
+                        id: donation.id,
+                        category: donation.category
+                    })) ?? [],
+                rejectedDonationIds: rejectedDonations?.map((donation) => donation.id) ?? [],
+                schedulingLink: inviteUrl || undefined
+            });
+            const tagNumbers = acceptedDonationUpdates.map((donation) => donation.tagNumber);
             const emailMsg =
                 acceptedDonations && acceptedDonations.length > 0
                     ? accept(donorEmail, inviteUrl, renderToString(message), tagNumbers, notes)

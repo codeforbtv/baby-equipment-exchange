@@ -1,6 +1,7 @@
 // Modules
 import {
     DocumentData,
+    DocumentReference,
     QueryConstraint,
     QueryDocumentSnapshot,
     SnapshotOptions,
@@ -18,7 +19,8 @@ import {
     where,
     writeBatch,
     documentId,
-    arrayRemove
+    arrayRemove,
+    runTransaction
 } from 'firebase/firestore';
 // Models
 import { Donation, IDonation } from '@/models/donation';
@@ -32,6 +34,7 @@ import { deleteObject, ref } from 'firebase/storage';
 import { AdminDonationBody, base64ImageObj } from '@/types/DonationTypes';
 import { base64ObjToFile } from '@/utils/utils';
 import { uploadImages } from './firebase-images';
+import { CATEGORIES_COLLECTION } from './firebase-categories';
 
 // Imported constants
 import { USERS_COLLECTION } from './firebase-users';
@@ -40,6 +43,22 @@ import { ORGANIZATIONS_COLLECTION } from './firebase-organizations';
 export const DONATIONS_COLLECTION = 'Donations';
 export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
 export const ORDERS_COLLECTION = 'Orders';
+
+type CategoryTagData = {
+    ref: DocumentReference;
+    tagCount: number;
+    tagPrefix: string;
+};
+
+async function getCategoryRefByName(category: string): Promise<DocumentReference> {
+    const categoryQuery = query(collection(db, CATEGORIES_COLLECTION), where('name', '==', category));
+    const categorySnapshot = await getDocs(categoryQuery);
+    const categoryRef = categorySnapshot.docs[0]?.ref;
+    if (!categoryRef) {
+        throw new Error(`Category not found: "${category}". No matching category exists.`);
+    }
+    return categoryRef;
+}
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -139,7 +158,7 @@ const inventoryConverter = {
 
 export async function getAllDonations(): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
+        const donations: Donation[] = [];
         const querySnapshot = await getDocs(collection(db, DONATIONS_COLLECTION).withConverter(donationConverter));
         querySnapshot.forEach((snapshot) => {
             donations.push(snapshot.data());
@@ -152,7 +171,7 @@ export async function getAllDonations(): Promise<Donation[]> {
 }
 
 export async function getDonationNotifications(): Promise<Donation[]> {
-    let donations: Donation[] = [];
+    const donations: Donation[] = [];
     try {
         const donationsRef = collection(db, DONATIONS_COLLECTION);
         const donationNotificationsQuery = query(
@@ -172,7 +191,7 @@ export async function getDonationNotifications(): Promise<Donation[]> {
 
 export async function getInventory(): Promise<InventoryItem[]> {
     try {
-        let inventory: InventoryItem[] = [];
+        const inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const contraints: QueryConstraint[] = [where('status', '==', 'available')];
         const q = query(collectionRef, ...contraints).withConverter(inventoryConverter);
@@ -208,7 +227,7 @@ export async function getInventoryByIds(inventoryIds: string[]): Promise<Invento
         return [];
     }
     try {
-        let inventory: InventoryItem[] = [];
+        const inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const q = query(collectionRef, where(documentId(), 'in', inventoryIds)).withConverter(inventoryConverter);
         const querySnapshot = await getDocs(q);
@@ -239,7 +258,7 @@ export async function getDonationById(id: string): Promise<Donation> {
 
 export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
+        const donations: Donation[] = [];
         const bulkRef = doc(db, BULK_DONATIONS_COLLECTION, id);
         const bulkSnapshot = await getDoc(bulkRef);
         if (bulkSnapshot.exists()) {
@@ -306,52 +325,117 @@ export async function addDonation(newDonations: DonationBody[], termsAccepted: s
     }
 }
 
-//When admins make donations, status is automatically set to 'available'
-export async function addAdminDonation(newDonations: AdminDonationBody[]): Promise<void> {
+type RequestorInfo = { id: string; name: string; email: string };
+
+//When admins make donations, status is automatically set to 'available' unless it is attached to a requestor order.
+export async function addAdminDonation(newDonations: AdminDonationBody[], requestor?: RequestorInfo, orderId?: string): Promise<Order | null> {
     try {
+        if (newDonations.length === 0) {
+            throw new Error('At least one donation is required.');
+        }
+        if (orderId && !requestor) {
+            throw new Error('Requestor is required when adding donations to an order.');
+        }
+
         //All donations are assigned a bulk donatin id to account for multiple items
         const bulkDonationsRef = doc(collection(db, BULK_DONATIONS_COLLECTION));
-        const batch = writeBatch(db);
-        batch.set(bulkDonationsRef, {
-            donations: [],
-            donorEmail: newDonations[0].donorEmail,
-            donorName: newDonations[0].donorName,
-            donorId: newDonations[0].donorId
-        });
-        for (const newDonation of newDonations) {
-            const donationRef = doc(collection(db, DONATIONS_COLLECTION));
-            const donationParams: IDonation = {
-                id: donationRef.id,
-                donorEmail: newDonation.donorEmail,
-                donorName: newDonation.donorName,
-                donorId: newDonation.donorId,
-                category: newDonation.category,
-                brand: newDonation.brand,
-                model: newDonation.model,
-                description: newDonation.description,
-                tagNumber: newDonation.tagNumber,
-                notes: null,
-                status: 'available',
-                bulkCollection: bulkDonationsRef.id,
-                images: newDonation.images,
-                createdAt: serverTimestamp() as Timestamp,
-                modifiedAt: serverTimestamp() as Timestamp,
-                dateAccepted: serverTimestamp() as Timestamp,
-                dateReceived: serverTimestamp() as Timestamp,
-                dateRequested: null,
-                dateDistributed: null,
-                requestor: null,
-                distributor: null
-            };
-            const donation = new Donation(donationParams);
-            batch.set(donationRef, donationConverter.toFirestore(donation));
-            batch.update(bulkDonationsRef, {
-                donations: arrayUnion(donationRef)
+        const orderRef = orderId ? doc(db, ORDERS_COLLECTION, orderId) : requestor ? doc(collection(db, ORDERS_COLLECTION)) : null;
+        const donationRefs = newDonations.map(() => doc(collection(db, DONATIONS_COLLECTION)));
+        const uniqueCategories = Array.from(new Set(newDonations.map((donation) => donation.category || 'Other')));
+        const categoryEntries = await Promise.all(
+            uniqueCategories.map(async (category) => ({
+                category,
+                ref: await getCategoryRefByName(category)
+            }))
+        );
+
+        await runTransaction(db, async (transaction) => {
+            const categoryDataByName = new Map<string, CategoryTagData>();
+
+            for (const { category, ref } of categoryEntries) {
+                const categoryDoc = await transaction.get(ref);
+                if (!categoryDoc.exists()) {
+                    throw new Error(`Category not found: ${category}`);
+                }
+                const categoryData = categoryDoc.data();
+                categoryDataByName.set(category, {
+                    ref,
+                    tagCount: Number(categoryData.tagCount ?? 0),
+                    tagPrefix: String(categoryData.tagPrefix ?? '').trim()
+                });
+            }
+
+            transaction.set(bulkDonationsRef, {
+                donations: donationRefs,
+                donorEmail: newDonations[0].donorEmail,
+                donorName: newDonations[0].donorName,
+                donorId: newDonations[0].donorId,
+                createdAt: serverTimestamp()
             });
-        }
-        await batch.commit();
+
+            if (orderRef && requestor && orderId) {
+                transaction.update(orderRef, {
+                    items: arrayUnion(...donationRefs),
+                    modifiedAt: serverTimestamp()
+                });
+            } else if (orderRef && requestor) {
+                transaction.set(orderRef, {
+                    status: 'open',
+                    requestor,
+                    items: donationRefs,
+                    rejectedItems: [],
+                    createdAt: serverTimestamp(),
+                    modifiedAt: serverTimestamp()
+                });
+            }
+
+            newDonations.forEach((newDonation, index) => {
+                const categoryName = newDonation.category || 'Other';
+                const categoryData = categoryDataByName.get(categoryName);
+                if (!categoryData) {
+                    throw new Error(`Category not found: ${categoryName}`);
+                }
+
+                categoryData.tagCount += 1;
+                const donationParams: IDonation = {
+                    id: donationRefs[index].id,
+                    donorEmail: newDonation.donorEmail,
+                    donorName: newDonation.donorName,
+                    donorId: newDonation.donorId,
+                    category: categoryName,
+                    brand: newDonation.brand,
+                    model: newDonation.model,
+                    description: newDonation.description,
+                    tagNumber: `${categoryData.tagPrefix} ${categoryData.tagCount}`.trim(),
+                    notes: null,
+                    status: requestor ? 'requested' : 'available',
+                    bulkCollection: bulkDonationsRef.id,
+                    images: newDonation.images,
+                    createdAt: serverTimestamp() as Timestamp,
+                    modifiedAt: serverTimestamp() as Timestamp,
+                    dateAccepted: serverTimestamp() as Timestamp,
+                    dateReceived: serverTimestamp() as Timestamp,
+                    dateRequested: requestor ? (serverTimestamp() as Timestamp) : null,
+                    dateDistributed: null,
+                    requestor: requestor ?? null,
+                    distributor: null
+                };
+                const donation = new Donation(donationParams);
+                transaction.set(donationRefs[index], donationConverter.toFirestore(donation));
+            });
+
+            for (const categoryData of categoryDataByName.values()) {
+                transaction.update(categoryData.ref, {
+                    tagCount: categoryData.tagCount,
+                    modifiedAt: serverTimestamp()
+                });
+            }
+        });
+
+        return orderRef ? await getOrderById(orderRef.id) : null;
     } catch (error) {
         addErrorEvent('addBulkDonation', error);
+        throw error;
     }
 }
 
@@ -399,6 +483,147 @@ export async function updateDonationStatus(id: string, status: DonationStatusVal
     }
 }
 
+export async function updateDropOffDonationStatuses(params: {
+    acceptedDonations: { id: string; category: string }[];
+    rejectedDonationIds: string[];
+    schedulingLink?: string;
+}): Promise<{ id: string; tagNumber: string }[]> {
+    try {
+        const uniqueCategories = [...new Set(params.acceptedDonations.map((donation) => donation.category))];
+        const categoryRefsByName = new Map<string, DocumentReference>();
+
+        await Promise.all(
+            uniqueCategories.map(async (category) => {
+                categoryRefsByName.set(category, await getCategoryRefByName(category));
+            })
+        );
+
+        return await runTransaction(db, async (transaction) => {
+            const categoryDataByName = new Map<string, CategoryTagData>();
+
+            for (const category of uniqueCategories) {
+                const categoryRef = categoryRefsByName.get(category);
+                if (!categoryRef) {
+                    throw new Error(`Category not found: "${category}". No matching category exists.`);
+                }
+
+                const categoryDoc = await transaction.get(categoryRef);
+                if (!categoryDoc.exists()) {
+                    throw new Error(`Category not found: "${category}". No matching category exists.`);
+                }
+
+                const categoryData = categoryDoc.data();
+                categoryDataByName.set(category, {
+                    ref: categoryRef,
+                    tagCount: Number(categoryData.tagCount ?? 0),
+                    tagPrefix: String(categoryData.tagPrefix ?? '').trim()
+                });
+            }
+
+            const acceptedDonationUpdates = params.acceptedDonations.map((donation) => {
+                const categoryData = categoryDataByName.get(donation.category);
+                if (!categoryData) {
+                    throw new Error(`Category not found: "${donation.category}". No matching category exists.`);
+                }
+
+                categoryData.tagCount += 1;
+                return {
+                    id: donation.id,
+                    tagNumber: `${categoryData.tagPrefix} ${categoryData.tagCount}`.trim()
+                };
+            });
+
+            categoryDataByName.forEach((categoryData) => {
+                transaction.update(categoryData.ref, {
+                    tagCount: categoryData.tagCount,
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            acceptedDonationUpdates.forEach((donation) => {
+                const donationRef = doc(db, DONATIONS_COLLECTION, donation.id).withConverter(donationConverter);
+                transaction.update(donationRef, {
+                    status: 'pending delivery',
+                    dateAccepted: serverTimestamp(),
+                    tagNumber: donation.tagNumber,
+                    schedulingLink: params.schedulingLink ?? null,
+                    schedulingEmailSentAt: params.schedulingLink ? serverTimestamp() : null,
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            params.rejectedDonationIds.forEach((donationId) => {
+                const donationRef = doc(db, DONATIONS_COLLECTION, donationId).withConverter(donationConverter);
+                transaction.update(donationRef, {
+                    status: 'rejected',
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            return acceptedDonationUpdates;
+        });
+    } catch (error) {
+        addErrorEvent('updateDropOffDonationStatuses', error);
+        throw error;
+    }
+}
+
+export async function schedulePickupForOrder(order: Order, schedulingLink?: string): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        const schedulingFields = schedulingLink
+            ? {
+                  schedulingLink,
+                  schedulingEmailSentAt: serverTimestamp()
+              }
+            : {};
+
+        order.items.forEach((item) => {
+            const donationRef = doc(db, DONATIONS_COLLECTION, item.id).withConverter(donationConverter);
+            batch.update(donationRef, {
+                status: 'reserved',
+                ...schedulingFields,
+                modifiedAt: serverTimestamp()
+            });
+        });
+
+        const orderRef = doc(db, ORDERS_COLLECTION, order.id);
+        batch.update(orderRef, {
+            modifiedAt: serverTimestamp()
+        });
+
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('schedulePickupForOrder', error);
+        throw error;
+    }
+}
+
+export async function cancelOrderAndReturnItems(order: Order): Promise<void> {
+    try {
+        const batch = writeBatch(db);
+        const orderRef = doc(db, ORDERS_COLLECTION, order.id);
+
+        order.items.forEach((item) => {
+            const donationRef = doc(db, DONATIONS_COLLECTION, item.id).withConverter(donationConverter);
+            batch.update(donationRef, {
+                status: 'available',
+                requestor: null,
+                modifiedAt: serverTimestamp()
+            });
+        });
+
+        batch.update(orderRef, {
+            modifiedAt: serverTimestamp()
+        });
+
+        await batch.commit();
+    } catch (error) {
+        addErrorEvent('cancelOrderAndReturnItems', error);
+        throw error;
+    }
+}
+
 export async function deleteDonationById(id: string): Promise<void> {
     //to-do make admin only
     try {
@@ -423,7 +648,7 @@ export async function deleteDonationById(id: string): Promise<void> {
 
 export async function adminAreDonationsAvailable(ids: string[]): Promise<string[]> {
     try {
-        let unavailableDonations = [];
+        const unavailableDonations = [];
         for (const id of ids) {
             const donationref = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
             const donationSnapshot = await getDoc(donationref);
@@ -508,14 +733,14 @@ export async function adminRequestInventoryItems(inventoryItemIds: string[], use
 
 //Get items requested by aid workers
 export async function getOrdersNotifications() {
-    let orders: Order[] = [];
+    const orders: Order[] = [];
     try {
         const ordersRef = collection(db, ORDERS_COLLECTION);
         const q = query(ordersRef, where('status', '==', 'open'));
         const ordersSnapshot = await getDocs(q);
         for (const doc of ordersSnapshot.docs) {
             const orderInfo = doc.data();
-            let order: Order = {
+            const order: Order = {
                 id: doc.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
@@ -548,7 +773,7 @@ export async function getOrderById(id: string): Promise<Order> {
         const orderSnapShot = await getDoc(orderRef);
         if (orderSnapShot.exists()) {
             const orderInfo = orderSnapShot.data();
-            let order: Order = {
+            const order: Order = {
                 id: orderRef.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,

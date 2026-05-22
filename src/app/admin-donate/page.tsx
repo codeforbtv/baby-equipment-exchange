@@ -12,11 +12,11 @@ import Loader from '@/components/Loader';
 import AdminDonationForm from '@/components/AdminDonationForm';
 import PendingDonations from '@/components/PendingDonations';
 import CustomDialog from '@/components/CustomDialog';
+import SchedulePickup from '@/components/SchedulePickup';
 //Api
 import { uploadImages } from '@/api/firebase-images';
 import { addErrorEvent } from '@/api/firebase';
-import { addAdminDonation } from '@/api/firebase-donations';
-import { getTagNumber } from '@/api/firebase-categories';
+import { addAdminDonation, getOrderById } from '@/api/firebase-donations';
 //Icons
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -25,11 +25,15 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import '@/styles/globalStyles.css';
 //Types
 import { AdminDonationBody, DonationFormData } from '@/types/DonationTypes';
+import { Order } from '@/types/OrdersTypes';
 
 export default function AdminDonate() {
     const [showForm, setShowForm] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+    const [orderId, setOrderId] = useState<string | null>(null);
+    const [showScheduler, setShowScheduler] = useState<boolean>(false);
 
     const { currentUser } = useUserContext();
     const { pendingDonations, clearPendingDonations } = usePendingDonationsContext();
@@ -41,7 +45,7 @@ export default function AdminDonate() {
     };
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<AdminDonationBody[]> {
-        let bulkDonations: AdminDonationBody[] = [];
+        const bulkDonations: AdminDonationBody[] = [];
         if (currentUser && currentUser.uid && currentUser.displayName && currentUser.email) {
             try {
                 for (const donation of pendingDonations) {
@@ -49,9 +53,6 @@ export default function AdminDonate() {
                     if (donation.images) {
                         imageURLs = await uploadImages(donation.images);
                     }
-                    //generate tag number using 'Other' category if category somehow isn't provided
-                    const tagNumber = donation.category ? await getTagNumber(donation.category) : await getTagNumber('Other');
-
                     const newDonation = {
                         donorName: currentUser.displayName,
                         donorEmail: currentUser.email,
@@ -60,8 +61,7 @@ export default function AdminDonate() {
                         category: donation.category ?? '',
                         model: donation.model ?? '',
                         description: donation.description ?? '',
-                        images: imageURLs,
-                        tagNumber: tagNumber
+                        images: imageURLs
                     };
                     bulkDonations.push(newDonation);
                 }
@@ -80,10 +80,15 @@ export default function AdminDonate() {
         setIsLoading(true);
         try {
             const donationsToUpload: AdminDonationBody[] = await convertPendingDonations(pendingDonations);
-            await addAdminDonation(donationsToUpload);
+            const updatedOrder = await addAdminDonation(donationsToUpload, currentOrder?.requestor, orderId ?? undefined);
             clearPendingDonations();
-            localStorage.clear();
-            setIsOpen(true);
+            localStorage.removeItem('pendingDonations');
+            if (updatedOrder) {
+                setCurrentOrder(updatedOrder);
+                setShowScheduler(true);
+            } else {
+                setIsOpen(true);
+            }
         } catch (error) {
             addErrorEvent('Error submiting admin donation', error);
             throw error;
@@ -94,20 +99,40 @@ export default function AdminDonate() {
 
     //show form if all pending donations are deleted
     useEffect(() => {
-        if (!showForm && pendingDonations.length === 0) setShowForm(true);
+        if (!showForm && pendingDonations.length === 0) {
+            setShowForm(true);
+        }
     }, [pendingDonations, showForm]);
+
+    useEffect(() => {
+        const requestedOrderId = new URLSearchParams(window.location.search).get('orderId');
+        if (!requestedOrderId) {
+            return;
+        }
+
+        setOrderId(requestedOrderId);
+        setIsLoading(true);
+        getOrderById(requestedOrderId)
+            .then(setCurrentOrder)
+            .catch((error) => addErrorEvent('Fetch order for admin donation', error))
+            .finally(() => setIsLoading(false));
+    }, []);
 
     return (
         <ProtectedAdminRoute>
-            <div className="page--header">
-                <h3>Create donation</h3>
-                <IconButton onClick={() => router.push('./')}>
-                    <ArrowBackIcon />
-                </IconButton>
-            </div>
+            {showScheduler && currentOrder ? (
+                <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} />
+            ) : (
+                <div className="page--header">
+                    <h3>Create donation</h3>
+                    <IconButton onClick={() => router.push('./')}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                </div>
+            )}
             {isLoading ? (
                 <Loader />
-            ) : (
+            ) : !showScheduler ? (
                 <Stack direction="column" spacing={2}>
                     {showForm && <AdminDonationForm setShowForm={setShowForm} />}
                     <hr />
@@ -124,7 +149,7 @@ export default function AdminDonate() {
                         </Stack>
                     )}
                 </Stack>
-            )}
+            ) : null}
             <CustomDialog isOpen={isOpen} onClose={handleClose} title="Donation Submitted" content="Your donation has been successfully submitted." />
         </ProtectedAdminRoute>
     );

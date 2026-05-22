@@ -27,6 +27,7 @@ export type DonationFormData = {
     model: string | null;
     description: string | null;
     images: File[] | null | undefined;
+    quantity?: number | string;
     base64Images?: base64ImageObj[];
 };
 
@@ -42,5 +43,5 @@ export type DonationBody = {
 };
 
 export type AdminDonationBody = DonationBody & {
-    tagNumber: string;
+    tagNumber?: string;
 };
