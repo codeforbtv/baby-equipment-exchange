@@ -1,12 +1,12 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { User, getAuth } from 'firebase/auth';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
+import { connectStorageEmulator, getStorage } from 'firebase/storage';
+import { User, connectAuthEmulator, getAuth } from 'firebase/auth';
 
 import { firebaseConfig } from './config';
 import { addEvent, checkClaims } from './firebaseAdmin';
 
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
 
 import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
@@ -23,6 +23,16 @@ export const auth = getAuth(app);
 
 //Cloud functions
 const functions = getFunctions(app);
+
+const isCallerClientSide = typeof window !== 'undefined';
+const isFirstLoad = !(db as any)._settingsFrozen;
+if (process.env.NODE_ENV !== 'production' && isCallerClientSide && isFirstLoad) {
+    connectFirestoreEmulator(db, 'localhost', Number(process.env.NEXT_PUBLIC_EMULATOR_FIRESTORE_PORT));
+    connectAuthEmulator(auth, `http://localhost:${process.env.NEXT_PUBLIC_EMULATOR_AUTH_PORT}`);
+    connectStorageEmulator(storage, 'localhost', Number(process.env.NEXT_PUBLIC_EMULATOR_STORAGE_PORT));
+    connectFunctionsEmulator(functions, 'localhost', Number(process.env.NEXT_PUBLIC_EMULATOR_FUNCTIONS_PORT));
+}
+
 const createNewUser = httpsCallable(functions, 'createnewuser');
 const enableUser = httpsCallable(functions, 'enableuser');
 const getOrganizationNames = httpsCallable(functions, 'getorganizationnames');

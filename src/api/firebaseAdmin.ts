@@ -12,7 +12,7 @@ import * as admin from 'firebase-admin';
 import { getAuth, UserRecord } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { initializeApp, ServiceAccount } from 'firebase-admin/app';
+import { initializeApp } from 'firebase-admin/app';
 
 import { convertToString } from '@/utils/utils';
 import { AuthUserRecord } from '@/types/UserTypes';
@@ -40,18 +40,11 @@ export async function initAdmin() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
-    if (process.env.NODE_ENV == 'production') {
+    if (process.env.NODE_ENV === 'production') {
         return initializeApp();
-    } else {
-        const credentials: ServiceAccount = {
-            projectId: 'baby-equipment-exchange',
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY
-        };
-        return initializeApp({
-            credential: admin.credential.cert(credentials)
-        });
     }
+
+    return initializeApp({ projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID });
 }
 
 const app = await initAdmin();
@@ -61,7 +54,7 @@ const db = getFirestore(app);
 
 //Used for importing images from spreadsheet
 function findPaths(fileNames: string[]): string[] {
-    let filePaths = [];
+    const filePaths = [];
     const directoryPath = process.env.IMPORT_DIRECTORY ? process.env.IMPORT_DIRECTORY : '';
     const files = fs.readdirSync(directoryPath, { withFileTypes: true });
     for (const file of files) {
@@ -599,7 +592,7 @@ export const toggleClaimForVolunteer = async (request: any) => {
 // Non-exported utility methods
 async function _checkClaims(idToken: string, claimNames: string[]) {
     try {
-        let userClaims = {};
+        const userClaims = {};
         const claims = await auth.verifyIdToken(idToken);
         if (claims === undefined || claims === null) {
             return Promise.reject();
