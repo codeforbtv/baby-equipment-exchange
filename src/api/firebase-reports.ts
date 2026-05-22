@@ -1,9 +1,6 @@
 //Apis
 import { json2csv } from 'json-2-csv';
-import { addErrorEvent } from './firebase';
 import { stripNullUndefined } from '@/utils/utils';
-//Constants
-import { DONATIONS_COLLECTION } from './firebase-donations';
 import { Donation } from '@/models/donation';
 
 export function downloadCsv(data: object[], fileName: string) {

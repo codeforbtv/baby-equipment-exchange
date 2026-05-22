@@ -7,8 +7,14 @@ service cloud.firestore {
       // Administrator role
 
 
-      // Allow admin to read events (errors)
+      // Allow authenticated clients to create events (errors) and admins to read them.
+      // The application writes to Event; keep Events readable for any legacy data.
+      match /Event/{document=**} {
+        allow create: if request.auth != null;
+        allow read: if request.auth != null && request.auth.token.admin == true;
+      }
       match /Events/{document=**} {
+        allow create: if request.auth != null;
         allow read: if request.auth != null && request.auth.token.admin == true;
       }
 

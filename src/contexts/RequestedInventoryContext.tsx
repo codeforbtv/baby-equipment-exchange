@@ -5,6 +5,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 
 import { InventoryItem } from '@/models/inventoryItem';
 import { getInventoryByIds } from '@/api/firebase-donations';
+import { addErrorEvent } from '@/api/firebase';
 import Loader from '@/components/Loader';
 
 type RequestedInventoryContextType = {
@@ -23,7 +24,7 @@ const defaultRequestedInventory: InventoryItem[] = [];
 
 export const RequestedInventoryContext = createContext<RequestedInventoryContextType>({
     requestedInventory: [],
-    addRequestedInventoryItem: (inventoryItem: InventoryItem) => {},
+    addRequestedInventoryItem: () => {},
     removeRequestedInventoryItem: () => {},
     clearRequestedInventory: () => {},
     isLoading: false
@@ -38,7 +39,7 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
     };
 
     const removeRequestedInventoryItem = (index: number) => {
-        setRequestedInventory(requestedInventory.filter((_, i) => index !== i));
+        setRequestedInventory((prev) => prev.filter((_, i) => index !== i));
     };
 
     const clearRequestedInventory = () => {
@@ -55,7 +56,13 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
     const getRequestedInventoryFromLocalStorage = async () => {
         const requestedInventoryIdsFromLocalStorage = localStorage.getItem('requestedInventory');
         if (requestedInventoryIdsFromLocalStorage) {
-            const existingRequestedInventoryIds: string[] = JSON.parse(requestedInventoryIdsFromLocalStorage);
+            let existingRequestedInventoryIds: string[];
+            try {
+                existingRequestedInventoryIds = JSON.parse(requestedInventoryIdsFromLocalStorage);
+            } catch (error) {
+                localStorage.removeItem('requestedInventory');
+                throw error;
+            }
             const existingRequestedInventory = await getInventoryByIds(existingRequestedInventoryIds);
             setRequestedInventory(existingRequestedInventory);
         }
@@ -70,9 +77,17 @@ export const RequestedInventoryProvider = ({ children }: Props) => {
     };
 
     useEffect(() => {
-        setIsLoading(true);
-        getRequestedInventoryFromLocalStorage();
-        setIsLoading(false);
+        const hydrateRequestedInventory = async () => {
+            setIsLoading(true);
+            try {
+                await getRequestedInventoryFromLocalStorage();
+            } catch (error) {
+                addErrorEvent('Get requested inventory from local storage', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        hydrateRequestedInventory();
     }, []);
 
     useEffect(() => {

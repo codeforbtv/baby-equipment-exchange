@@ -19,7 +19,6 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 
 // Models
 import { IImage, Image } from '@/models/image';
-import { getUserId } from './firebase-users';
 
 const IMAGES_COLLECTION = 'Images';
 const IMAGE_DETAILS_COLLECTION = 'ImageDetails';
@@ -56,13 +55,11 @@ const imageConverter = {
 export async function uploadImages(files: File[]): Promise<string[]> {
     try {
         const imageURLs: string[] = [];
-        const userId = await getUserId();
 
         for (const file of files) {
             const currentTime = Date.now();
             // eslint-disable-next-line no-useless-escape
             const extension = /[^\.]*$/.exec(file.name)![0]; // Suppress the no-useless-escape rule from being called on a regular expression.
-            const fileSize = file.size;
             const storageFilename = `${uuidv4()}-${currentTime}.${extension}`;
 
             // todo: Validate file size
@@ -130,10 +127,12 @@ export async function imageReferenceConverter(...documentReferences: DocumentRef
             const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter));
             if (imageSnapshot.exists()) {
                 const imageDocument = imageSnapshot.data();
-                let url = imageDocument?.getDownloadURL();
+                const url = imageDocument?.getDownloadURL();
                 await getDownloadURL(ref(storage, url))
                     .then((url) => {
-                        if (url) images.push(url);
+                        if (url) {
+                            images.push(url);
+                        }
                     })
                     .catch((error) => {
                         addErrorEvent('imageReferenceConverter', error);

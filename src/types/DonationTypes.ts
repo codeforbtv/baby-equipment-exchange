@@ -1,8 +1,3 @@
-import { SetStateAction, Dispatch } from 'react';
-
-import { Timestamp, DocumentReference } from 'firebase/firestore';
-import { InventoryItem } from '@/models/inventoryItem';
-
 import { DonationStatusValues } from '@/models/donation';
 
 export type base64ImageObj = {

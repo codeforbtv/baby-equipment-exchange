@@ -12,7 +12,7 @@ import Notifications from './Notifications';
 import Inventory from './Inventory';
 import Categories from './Categories';
 //Hooks
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 //API
 import { addErrorEvent, callGetOrganizationNames, getNotifications } from '@/api/firebase';
 import { getAllDonations, getAllInventory } from '@/api/firebase-donations';
@@ -75,8 +75,8 @@ export default function Dashboard() {
         setCurrentTab(target);
     };
 
-    async function fetchNotifications(showLoader = false): Promise<void> {
-        if (showLoader || !notifications) {
+    const fetchNotifications = useCallback(async (showLoader = false): Promise<void> => {
+        if (showLoader) {
             setIsLoading(true);
         }
         try {
@@ -88,10 +88,10 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchDonations(showLoader = false): Promise<void> {
-        if (showLoader || !donations) {
+    const fetchDonations = useCallback(async (showLoader = false): Promise<void> => {
+        if (showLoader) {
             setIsLoading(true);
         }
         try {
@@ -103,24 +103,25 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchInventory(showLoader = false): Promise<void> {
-        if (showLoader || !inventory) {
+    const fetchInventory = useCallback(async (showLoader = false): Promise<void> => {
+        if (showLoader) {
             setIsLoading(true);
         }
         try {
             const inventoryResult = await getAllInventory();
             setInventory(inventoryResult);
+            setInventoryUpdated(false);
         } catch (error) {
             addErrorEvent('Could not fetch inventory', error);
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchUsers(showLoader = false): Promise<void> {
-        if (showLoader || !users) {
+    const fetchUsers = useCallback(async (showLoader = false): Promise<void> => {
+        if (showLoader) {
             setIsLoading(true);
         }
         try {
@@ -132,10 +133,10 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchOrgNames(showLoader = false): Promise<void> {
-        if (showLoader || !orgNamesAndIds) {
+    const fetchOrgNames = useCallback(async (showLoader = false): Promise<void> => {
+        if (showLoader) {
             setIsLoading(true);
         }
         try {
@@ -147,10 +148,10 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
-    async function fetchCategories(showLoader = false): Promise<void> {
-        if (showLoader || !categories) {
+    const fetchCategories = useCallback(async (showLoader = false): Promise<void> => {
+        if (showLoader) {
             setIsLoading(true);
         }
         try {
@@ -162,7 +163,7 @@ export default function Dashboard() {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
     function handleRefresh() {
         if (currentTab === 0) {
@@ -180,22 +181,74 @@ export default function Dashboard() {
         }
     }
 
-    // Only fetch collections once when selected unless there's been an update
+    // Only fetch each collection once when its tab is selected.
     useEffect(() => {
-        if ((currentTab === 0 && !notifications) || notificationsUpdated || donationsUpdated || usersUpdated) {
+        if (currentTab === 0 && !notifications) {
+            fetchNotifications(true);
+        } else if (currentTab === 1 && !donations) {
+            fetchDonations(true);
+        } else if (currentTab === 2 && !inventory) {
+            fetchInventory(true);
+        } else if (currentTab === 3 && !users) {
+            fetchUsers(true);
+        } else if (currentTab === 4 && !orgNamesAndIds) {
+            fetchOrgNames(true);
+        } else if (currentTab === 5 && !categories) {
+            fetchCategories(true);
+        }
+    }, [
+        categories,
+        currentTab,
+        donations,
+        fetchCategories,
+        fetchDonations,
+        fetchInventory,
+        fetchNotifications,
+        fetchOrgNames,
+        fetchUsers,
+        inventory,
+        notifications,
+        orgNamesAndIds,
+        users
+    ]);
+
+    useEffect(() => {
+        if (notificationsUpdated) {
             fetchNotifications();
-        } else if ((currentTab === 1 && !donations) || donationsUpdated) {
+        }
+    }, [fetchNotifications, notificationsUpdated]);
+
+    useEffect(() => {
+        if (donationsUpdated) {
             fetchDonations();
-        } else if ((currentTab === 2 && !inventory) || inventoryUpdated) {
+            fetchNotifications();
+        }
+    }, [donationsUpdated, fetchDonations, fetchNotifications]);
+
+    useEffect(() => {
+        if (inventoryUpdated) {
             fetchInventory();
-        } else if ((currentTab === 3 && !users) || usersUpdated) {
+        }
+    }, [fetchInventory, inventoryUpdated]);
+
+    useEffect(() => {
+        if (usersUpdated) {
             fetchUsers();
-        } else if ((currentTab === 4 && !orgNamesAndIds) || orgsUpdated) {
+            fetchNotifications();
+        }
+    }, [fetchNotifications, fetchUsers, usersUpdated]);
+
+    useEffect(() => {
+        if (orgsUpdated) {
             fetchOrgNames();
-        } else if ((currentTab === 5 && !categories) || categoriesUpdated) {
+        }
+    }, [fetchOrgNames, orgsUpdated]);
+
+    useEffect(() => {
+        if (categoriesUpdated) {
             fetchCategories();
         }
-    }, [currentTab, donationsUpdated, inventoryUpdated, usersUpdated, orgsUpdated, notificationsUpdated, categoriesUpdated]);
+    }, [categoriesUpdated, fetchCategories]);
 
     return (
         <ProtectedAdminRoute>

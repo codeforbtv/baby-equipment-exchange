@@ -33,7 +33,6 @@ const Donations = (props: DonationsProps) => {
     const { donations, setDonationsUpdated } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [searchInput, setSearchInput] = useState<string>('');
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[] | null>(null);
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
     const [statusFilter, setStatusFilter] = useState<string[] | undefined>([]);
@@ -44,14 +43,11 @@ const Donations = (props: DonationsProps) => {
 
     const fetchCategories = async (): Promise<void> => {
         try {
-            setIsLoading(true);
             const categoriesResult = await getAllCategories();
             setCategories(categoriesResult);
         } catch (error) {
             addErrorEvent('Error fetching all categories: ', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -77,11 +73,13 @@ const Donations = (props: DonationsProps) => {
             );
         }
         return currentDonations;
-    }, [categoryFilter, statusFilter, searchInput]);
+    }, [categoryFilter, donations, searchInput, statusFilter]);
 
     useEffect(() => {
-        if (!categories) fetchCategories();
-    }, []);
+        if (!categories) {
+            fetchCategories();
+        }
+    }, [categories]);
 
     return (
         <ProtectedAdminRoute>

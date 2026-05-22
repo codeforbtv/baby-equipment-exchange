@@ -1,7 +1,7 @@
 import { IAddress } from '@/models/address';
 import { IContact } from '@/models/contact';
 import { DocumentReference } from 'firebase/firestore';
-import { UserMetadata, UserRecord } from 'firebase-admin/auth';
+import { AuthUserMetadata } from '@/types/UserTypes';
 
 export type UserCardProps = {
     readonly uid: string;
@@ -11,7 +11,7 @@ export type UserCardProps = {
     photoURL?: string;
     phoneNumber?: string;
     disabled: boolean;
-    metadata: UserMetadata;
+    metadata: AuthUserMetadata;
     readonly customClaims?: {
         [key: string]: any;
     };

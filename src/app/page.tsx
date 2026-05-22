@@ -2,11 +2,9 @@
 
 //Hooks
 import { useUserContext } from '@/contexts/UserContext';
-import { redirect } from 'next/navigation';
 
 //Components
 import HomePage from '@/components/HomePage';
-import Loader from '@/components/Loader';
 import Dashboard from '@/components/Dashboard';
 import Inventory from '@/components/Inventory';
 
@@ -21,9 +19,5 @@ export default function Home() {
         return <Inventory />;
     }
 
-    if (!isAdmin || !isAidWorker) {
-        return <HomePage />;
-    }
-
-    return <Loader />;
+    return <HomePage />;
 }

@@ -10,7 +10,6 @@ import '@/styles/globalStyles.css';
 //Types
 import { Category } from '@/models/category';
 import { Button, InputAdornment, List, ListItem, ListItemButton, ListItemText, TextField, Typography } from '@mui/material';
-import Loader from './Loader';
 import CategoryDetails from './CategoryDetails';
 import CategoryForm from './CategoryForm';
 
@@ -21,7 +20,6 @@ type CategoryProps = {
 
 const Categories = (props: CategoryProps) => {
     const { categories, setCategoriesUpdated } = props;
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [searchInput, setSearchInput] = useState<string>('');
@@ -37,18 +35,11 @@ const Categories = (props: CategoryProps) => {
         setFilteredCategories(
             categories.filter((category) => Object.values(category).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase())))
         );
-    }, [searchInput]);
+    }, [categories, searchInput]);
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && (
-                <CategoryDetails
-                    id={idToDisplay}
-                    category={categories.find((c) => c.id === idToDisplay)}
-                    setIdToDisplay={setIdToDisplay}
-                    setCategoriesUpdated={setCategoriesUpdated}
-                />
-            )}
+            {idToDisplay && <CategoryDetails id={idToDisplay} category={categories.find((c) => c.id === idToDisplay)} setIdToDisplay={setIdToDisplay} />}
             {showForm && <CategoryForm setShowForm={setShowForm} setCategoriesUpdated={setCategoriesUpdated} />}
             {!idToDisplay && !showForm && (
                 <>
@@ -72,8 +63,7 @@ const Categories = (props: CategoryProps) => {
                         }}
                     />
                     <div className="content--container">
-                        {isLoading && <Loader />}
-                        {!isLoading && filteredCategories && (
+                        {filteredCategories && (
                             <List>
                                 {filteredCategories.map((category) => (
                                     <ListItem key={category.name}>

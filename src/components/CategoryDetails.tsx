@@ -22,11 +22,10 @@ type CategoryDetailsProps = {
     id: string;
     category?: Category;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
-    setCategoriesUpdated?: Dispatch<SetStateAction<boolean>>;
 };
 
 const CategoryDetails = (props: CategoryDetailsProps) => {
-    const { id, category, setIdToDisplay, setCategoriesUpdated } = props;
+    const { id, category, setIdToDisplay } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -72,8 +71,10 @@ const CategoryDetails = (props: CategoryDetailsProps) => {
     };
 
     useEffect(() => {
-        if (!categoryDetails || categoryDetailsUpdated) fetchCategory(id);
-    }, [categoryDetailsUpdated]);
+        if (!categoryDetails || categoryDetailsUpdated) {
+            fetchCategory(id);
+        }
+    }, [categoryDetails, categoryDetailsUpdated, id]);
 
     return (
         <ProtectedAdminRoute>

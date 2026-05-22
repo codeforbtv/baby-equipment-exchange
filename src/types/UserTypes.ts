@@ -1,5 +1,3 @@
-import { UserMetadata } from 'firebase-admin/auth';
-
 export type NewUserAccountInfo = {
     displayName: string;
     email: string;
@@ -11,12 +9,18 @@ export type NewUserAccountInfo = {
     notes: string[];
 };
 
+export type AuthUserMetadata = {
+    creationTime?: string;
+    lastSignInTime?: string;
+    lastRefreshTime?: string;
+};
+
 export interface AuthUserRecord {
     readonly uid: string;
     email: string;
     displayName: string;
     disabled: boolean;
-    metadata: UserMetadata;
+    metadata: AuthUserMetadata;
     readonly customClaims?: {
         [key: string]: any;
     };

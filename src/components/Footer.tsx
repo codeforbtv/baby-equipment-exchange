@@ -14,11 +14,13 @@ export default function Footer() {
     const { currentUser } = useUserContext();
     const { clearPendingDonations } = usePendingDonationsContext();
 
-    const handleSignOut = () => {
+    const handleSignOut = async () => {
         clearPendingDonations();
-        localStorage.clear();
-        signOutUser();
-        window.location.reload();
+        localStorage.removeItem('pendingDonations');
+        localStorage.removeItem('donorEmail');
+        localStorage.removeItem('donorName');
+        localStorage.removeItem('requestedInventory');
+        await signOutUser();
     };
 
     return (
@@ -38,7 +40,9 @@ export default function Footer() {
                     id="signout"
                     href={currentUser ? '/' : '/login'}
                     onClick={() => {
-                        if (currentUser) handleSignOut();
+                        if (currentUser) {
+                            handleSignOut();
+                        }
                     }}
                 >
                     {currentUser ? 'Sign Out' : 'Login'}

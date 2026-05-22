@@ -4,8 +4,6 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
 // Components
 import { InputAdornment, List, TextField, Typography } from '@mui/material';
-import SearchBar from '@/components/SearchBar';
-import Filter from '@/components/Filter';
 import UserCard from '@/components/UserCard';
 import UserDetails from '@/components/UserDetails';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -16,7 +14,6 @@ import styles from '@/components/Browse.module.css';
 import '@/styles/globalStyles.css';
 // Types
 import { IUser } from '@/models/user';
-import { user } from 'firebase-functions/v1/auth';
 
 type UserListProps = {
     users: IUser[];
@@ -31,7 +28,7 @@ export default function Users(props: UserListProps) {
 
     useEffect(() => {
         setFilteredUsers(users.filter((user) => Object.values(user).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))));
-    }, [searchInput]);
+    }, [searchInput, users]);
 
     return (
         <ProtectedAdminRoute>

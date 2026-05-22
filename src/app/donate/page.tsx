@@ -40,7 +40,6 @@ export default function Donate() {
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [confirmEmail, setConfirmEmail] = useState<string>('');
     const [isInvalidEmail, setIsInvalidEmail] = useState<boolean>(false);
-    const [emailsDoNotMatch, setEmailsDoNotMatch] = useState<boolean>(false);
     const [showForm, setShowForm] = useState<boolean>(false);
     const [hasAgreed, setHasAgreed] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
@@ -50,7 +49,9 @@ export default function Donate() {
         usePendingDonationsContext();
     const router = useRouter();
 
-    const isDisabled = emailsDoNotMatch || donorName.length === 0;
+    const donorEmailIsValid = emailRegex.test(donorEmail);
+    const emailsDoNotMatch = confirmEmail.length > 0 && confirmEmail !== donorEmail;
+    const isDisabled = donorName.length === 0 || donorEmail.length === 0 || !donorEmailIsValid || donorEmail !== confirmEmail;
 
     const handleClose = () => {
         if (!currentUser || currentUser.isAnonymous) {
@@ -122,13 +123,7 @@ export default function Donate() {
     function handleConfirmEmail(
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
     ): void {
-        const confirmEmailValue = event.target.value;
-        setConfirmEmail(confirmEmailValue);
-        if (confirmEmailValue.length !== 0 && confirmEmailValue !== donorEmail) {
-            setEmailsDoNotMatch(true);
-        } else {
-            setEmailsDoNotMatch(false);
-        }
+        setConfirmEmail(event.target.value);
     }
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
@@ -175,7 +170,9 @@ export default function Donate() {
             clearPendingDonations();
             setPendingDonorEmail('');
             setPendingDonorName('');
-            localStorage.clear();
+            localStorage.removeItem('pendingDonations');
+            localStorage.removeItem('donorEmail');
+            localStorage.removeItem('donorName');
             const emailMsg = donationsSubmitted(donorEmail, donorName, donationsToUpload);
             await sendMail(emailMsg);
             setIsDialogOpen(true);

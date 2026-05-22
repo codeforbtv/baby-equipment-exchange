@@ -43,6 +43,8 @@ export const UserProvider = ({ children }: Props) => {
             try {
                 if (!user) {
                     setCurrentUser(null);
+                    setIsAdmin(false);
+                    setIsAidworker(false);
                 }
                 if (user) {
                     setCurrentUser(user);
@@ -53,7 +55,9 @@ export const UserProvider = ({ children }: Props) => {
                 }
             } catch (error) {
                 addErrorEvent('Error updating user context', error);
-                throw error;
+                setCurrentUser(null);
+                setIsAdmin(false);
+                setIsAidworker(false);
             } finally {
                 setIsLoading(false);
             }

@@ -1,5 +1,6 @@
 //Styles
 import styles from './ImageThumbnail.module.css';
+import { useEffect, useMemo } from 'react';
 
 type ImageThumbnailProps = {
     file?: File;
@@ -11,6 +12,16 @@ type ImageThumbnailProps = {
 };
 
 export default function ImageThumbnail(props: ImageThumbnailProps) {
+    const objectUrl = useMemo(() => (props.file ? URL.createObjectURL(props.file) : undefined), [props.file]);
+
+    useEffect(() => {
+        return () => {
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [objectUrl]);
+
     function clickHandler() {
         if (props.removeFromState && props.file) {
             return props.removeFromState(props.file);
@@ -31,7 +42,7 @@ export default function ImageThumbnail(props: ImageThumbnailProps) {
     if (props.file) {
         return (
             <div className={styles['thumbnail__container']} style={{ width: `${props.width}`, margin: `${props.margin}` }}>
-                <img className={styles['thumbnail']} src={URL.createObjectURL(props.file)} />
+                <img className={styles['thumbnail']} src={objectUrl} alt={props.file.name} />
                 {removeButton}
             </div>
         );
@@ -39,7 +50,7 @@ export default function ImageThumbnail(props: ImageThumbnailProps) {
     if (props.url) {
         return (
             <div className={styles['thumbnail__container']} style={{ width: `${props.width}`, margin: `${props.margin}` }}>
-                <img className={styles['thumbnail']} src={props.url} />
+                <img className={styles['thumbnail']} src={props.url} alt="Uploaded item" />
                 {removeButton}
             </div>
         );

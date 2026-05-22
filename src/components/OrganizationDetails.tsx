@@ -49,8 +49,12 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
     };
 
     const handleClose = () => {
-        if (setIdToDisplay) setIdToDisplay(null);
-        if (setOrgsUpdated) setOrgsUpdated(true);
+        if (setIdToDisplay) {
+            setIdToDisplay(null);
+        }
+        if (setOrgsUpdated) {
+            setOrgsUpdated(true);
+        }
         setIsDialogOpen(false);
     };
 
@@ -68,7 +72,7 @@ const OrganizationDetails = (props: OrganizationDetailsProps) => {
 
     useEffect(() => {
         fetchOrganizationById(id);
-    }, []);
+    }, [id]);
 
     return (
         <ProtectedAdminRoute>

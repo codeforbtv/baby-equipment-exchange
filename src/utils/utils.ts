@@ -1,15 +1,9 @@
-import { addErrorEvent } from '@/api/firebase';
 import { base64ImageObj } from '@/types/DonationTypes';
 
 export async function blobToArrayBuffer(blob: Blob): Promise<{ arrayBuffer: ArrayBuffer; type: string }> {
-    try {
-        const arrayBuffer: ArrayBuffer = await blob.arrayBuffer();
-        const type: string = blob.type;
-        return { arrayBuffer, type };
-    } catch (error: any) {
-        // eslint-disable-line no-empty
-    }
-    return Promise.reject();
+    const arrayBuffer: ArrayBuffer = await blob.arrayBuffer();
+    const type: string = blob.type;
+    return { arrayBuffer, type };
 }
 
 export function fileToBase64(file: File): Promise<string> {
@@ -39,9 +33,8 @@ export async function base64ObjToFile(base64: base64ImageObj): Promise<File> {
         const file = new File([u8arr], base64.base64ImageName, options);
         return file;
     } catch (error) {
-        addErrorEvent('Convert base64 to File', error);
+        throw new Error(`Could not convert stored image "${base64.base64ImageName}" to a file`, { cause: error });
     }
-    return Promise.reject();
 }
 
 export function contains(object: object, objects: object[]) {
@@ -73,7 +66,18 @@ export function convertToString(object: any): string {
     if (object === null) {
         return 'null';
     }
-    return JSON.stringify(object, Object.getOwnPropertyNames(object));
+    if (object instanceof Error) {
+        return JSON.stringify({
+            name: object.name,
+            message: object.message,
+            stack: object.stack
+        });
+    }
+    try {
+        return JSON.stringify(object, Object.getOwnPropertyNames(object));
+    } catch {
+        return String(object);
+    }
 }
 
 export function sanitize(string: string) {

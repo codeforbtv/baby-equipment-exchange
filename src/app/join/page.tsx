@@ -1,6 +1,6 @@
 'use client';
 //Components
-import { Autocomplete, Box, Button, Checkbox, FormControlLabel, FormGroup, Paper, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, FormControlLabel, Paper, TextField, Typography } from '@mui/material';
 import UserConfirmationDialogue from '@/components/UserConfirmationDialogue';
 import Loader from '@/components/Loader';
 //Hooks

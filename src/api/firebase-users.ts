@@ -24,8 +24,6 @@ import {
     User,
     UserCredential
 } from 'firebase/auth';
-//API
-import { getAuthUserById } from './firebaseAdmin';
 // Models
 import { IUser, UserCollection } from '@/models/user';
 import { Event, IEvent } from '@/models/event';
@@ -84,7 +82,7 @@ export const userConverter = {
 
 export async function getAllDbUsers(): Promise<IUser[]> {
     try {
-        let users: IUser[] = [];
+        const users: IUser[] = [];
         const usersSnapshot = await getDocs(collection(db, USERS_COLLECTION).withConverter(userConverter));
         usersSnapshot.forEach((doc) => users.push(doc.data()));
         return users;
@@ -96,7 +94,7 @@ export async function getAllDbUsers(): Promise<IUser[]> {
 
 export async function getAllActiveDbUsers(): Promise<IUser[]> {
     try {
-        let users: IUser[] = [];
+        const users: IUser[] = [];
         const q = query(collection(db, USERS_COLLECTION), where('isDisabled', '==', false)).withConverter(userConverter);
         const activeUsersSnapshot = await getDocs(q);
         activeUsersSnapshot.forEach((doc) => users.push(doc.data()));
@@ -113,13 +111,12 @@ export async function getDbUser(uid: string): Promise<UserCollection> {
         const snapshot = await getDoc(userRef);
         if (snapshot.exists()) {
             return snapshot.data();
-        } else {
-            Promise.reject('User not found');
         }
+        return Promise.reject(new Error('User not found'));
     } catch (error) {
         addErrorEvent('Error getting db User', error);
+        throw error;
     }
-    return Promise.reject();
 }
 
 export async function updateDbUser(uid: string, accountInformation: any): Promise<void> {
@@ -134,6 +131,7 @@ export async function updateDbUser(uid: string, accountInformation: any): Promis
         });
     } catch (error) {
         addErrorEvent('Error updating db user', error);
+        throw error;
     }
 }
 
@@ -142,48 +140,22 @@ export async function deleteDbUser(uid: string): Promise<void> {
         await deleteDoc(doc(db, USERS_COLLECTION, uid));
     } catch (error) {
         addErrorEvent('Error deleting db User', error);
+        throw error;
     }
 }
 
 export async function enableDbUser(uid: string): Promise<void> {
     try {
         const docRef = doc(db, USERS_COLLECTION, uid);
-        await updateDoc(docRef, { isDisabled: false, customClaims: { 'aid-worker': true } });
+        await updateDoc(docRef, { isDisabled: false, customClaims: { 'aid-worker': true }, modifiedAt: serverTimestamp() });
     } catch (error) {
         addErrorEvent('Error enabling db User', error);
+        throw error;
     }
-}
-
-//returns Auth User and db User details combined
-export async function getUserDetails(uid: string): Promise<IUser> {
-    try {
-        const [authUser, dbUser] = await Promise.all([getAuthUserById(uid), getDbUser(uid)]);
-        const userDetails: IUser = {
-            uid: authUser.uid,
-            email: authUser.email,
-            displayName: authUser.displayName,
-            disabled: authUser.disabled,
-            metadata: authUser.metadata,
-            customClaims: authUser.customClaims,
-            phoneNumber: dbUser.phoneNumber,
-            requestedItems: dbUser.requestedItems,
-            distributedItems: dbUser.distributedItems,
-            notes: dbUser.notes,
-            organization: dbUser.organization,
-            title: dbUser.title,
-            termsAccepted: dbUser.termsAccepted,
-            createdAt: dbUser.createdAt,
-            modifiedAt: dbUser.modifiedAt
-        };
-        return userDetails;
-    } catch (error) {
-        addErrorEvent('Get User Details', error);
-    }
-    return Promise.reject();
 }
 
 export async function getUsersNotifications(): Promise<IUser[]> {
-    let users: IUser[] = [];
+    const users: IUser[] = [];
     try {
         const usersRef = collection(db, USERS_COLLECTION);
         const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
@@ -208,16 +180,6 @@ export async function getUserId(): Promise<string> {
     return currentUser ?? Promise.reject();
 }
 
-export async function getUserEmailById(id: string): Promise<string> {
-    try {
-        const user = await getAuthUserById(id);
-        if (user.email) return user.email;
-    } catch (error) {
-        addErrorEvent('Get user email by ID', error);
-    }
-    return Promise.reject();
-}
-
 export async function signInAuthUserWithEmailAndPassword(email: string, password: string): Promise<null | User> {
     if (!email || !password) {
         return null;
@@ -226,16 +188,18 @@ export async function signInAuthUserWithEmailAndPassword(email: string, password
     return userCredential.user;
 }
 
-export function signOutUser(): void {
-    signOut(auth);
+export function signOutUser(): Promise<void> {
+    return signOut(auth);
 }
 
 export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
-    onAuthStateChanged(auth, callback);
+    return onAuthStateChanged(auth, callback);
 }
 
 export async function resetPassword(email: string): Promise<void> {
-    if (!email) Promise.reject();
+    if (!email) {
+        return Promise.reject(new Error('Email is required to reset password'));
+    }
     await sendPasswordResetEmail(auth, email);
 }
 
@@ -261,7 +225,7 @@ export async function addNote(note: NoteBody) {
             createdAt: currentTimeString,
             modifiedAt: currentTimeString
         };
-        const event = new Event(eventParams);
+        return new Event(eventParams);
     } catch (error) {
         addErrorEvent('addNote', { error: error, note: note });
     }

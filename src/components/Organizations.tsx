@@ -9,20 +9,15 @@ import OrganizationDetails from '@/components/OrganizationDetails';
 import OrganizationForm from '@/components/OrganizationForm';
 //Styles
 import '@/styles/globalStyles.css';
-import Loader from '@/components/Loader';
-import { Button, IconButton, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
-//Icons
-import RefreshIcon from '@mui/icons-material/Refresh';
+import { Button, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
 //Types
 type OrganizationsProps = {
     orgNamesAndIds: { [key: string]: string };
     setOrgsUpdated?: Dispatch<SetStateAction<boolean>>;
-    handleRefresh?: () => void;
 };
 
 const Organizations = (props: OrganizationsProps) => {
-    const { orgNamesAndIds, setOrgsUpdated, handleRefresh } = props;
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const { orgNamesAndIds, setOrgsUpdated } = props;
     const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
     const [showForm, setShowForm] = useState<boolean>(false);
 
@@ -48,8 +43,7 @@ const Organizations = (props: OrganizationsProps) => {
                     </Button>
 
                     <div className="content--container">
-                        {isLoading && <Loader />}
-                        {!isLoading && orgNamesAndIds && (
+                        {orgNamesAndIds && (
                             <List>
                                 {orgNames.map((org) => (
                                     <ListItem key={org}>

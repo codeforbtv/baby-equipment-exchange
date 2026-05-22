@@ -29,7 +29,7 @@ type EditUserProps = {
 };
 
 const EditUser = (props: EditUserProps) => {
-    const { uid, email, displayName, customClaims, phoneNumber, notes, organization, isDisabled, title } = props.userDetails;
+    const { uid, email, displayName, customClaims, phoneNumber, organization, isDisabled, title } = props.userDetails;
     const { setIsEditMode, setUserDetailsUpdated } = props;
 
     let initialRole = '';
@@ -50,7 +50,9 @@ const EditUser = (props: EditUserProps) => {
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const handleClose = () => {
-        if (setUserDetailsUpdated) setUserDetailsUpdated(true);
+        if (setUserDetailsUpdated) {
+            setUserDetailsUpdated(true);
+        }
         setIsDialogOpen(false);
         setIsEditMode(false);
     };
@@ -125,7 +127,7 @@ const EditUser = (props: EditUserProps) => {
             //if any fields stored in the firebase auth user have changed, update auth user.
             if (email !== newEmail || displayName !== newDisplayName) {
                 try {
-                    const updatedAuthUser = await callUpdateAuthUser(uid, {
+                    await callUpdateAuthUser(uid, {
                         email: newEmail,
                         displayName: newDisplayName
                     });

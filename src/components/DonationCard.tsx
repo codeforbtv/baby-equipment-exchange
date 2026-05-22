@@ -3,14 +3,13 @@
 // Hooks
 import { Dispatch, SetStateAction } from 'react';
 // Components
-import { Box, IconButton, ImageListItem, ImageListItemBar } from '@mui/material';
-import Loader from './Loader';
+import { IconButton, ImageListItem, ImageListItemBar } from '@mui/material';
 // Icons
 import InfoIcon from '@mui/icons-material/Info';
 // Styles
 import styles from './Card.module.css';
 // Types
-import { Donation, donationStatuses, DonationStatusKeys, DonationStatusValues } from '@/models/donation';
+import { Donation, donationStatuses, DonationStatusKeys } from '@/models/donation';
 
 type DonationCardProps = {
     donation: Donation;

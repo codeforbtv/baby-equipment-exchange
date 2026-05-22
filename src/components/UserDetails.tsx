@@ -35,7 +35,9 @@ export default function UserDetails(props: UserDetailsProps) {
     const [userDetailsUpdated, setUserDetailsUpdated] = useState<boolean>(false);
 
     const handleClose = () => {
-        if (setUsersUpdated) setUsersUpdated(true);
+        if (setUsersUpdated) {
+            setUsersUpdated(true);
+        }
         //Re-fetch user to show updated details
         if (userDetails) {
             fetchUserDetails(userDetails.uid);
@@ -62,7 +64,7 @@ export default function UserDetails(props: UserDetailsProps) {
         } else {
             setUserDetails(user);
         }
-    }, [userDetailsUpdated]);
+    }, [id, user, userDetailsUpdated]);
 
     return (
         <ProtectedAdminRoute>
@@ -100,7 +102,7 @@ export default function UserDetails(props: UserDetailsProps) {
                                 </Typography>
                                 <ul>
                                     {userDetails.distributedItems.map((item) => (
-                                        <li>{item.tagNumber}</li>
+                                        <li key={item.id ?? item.tagNumber}>{item.tagNumber}</li>
                                     ))}
                                 </ul>
                             </>

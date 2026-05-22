@@ -22,10 +22,18 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
         const accountInfo = request.data;
         const { email, password, displayName, phoneNumber, organization, notes, title, termsAccepted } = accountInfo;
 
-        if (!email || email.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'A valid email address is required.'));
-        if (!password || password.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Password is required.'));
-        if (!displayName || displayName.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Display name is required.'));
-        if (!phoneNumber || phoneNumber.length === 0) return Promise.reject(new HttpsError('invalid-argument', 'Phone number is required.'));
+        if (!email || email.length === 0) {
+            return Promise.reject(new HttpsError('invalid-argument', 'A valid email address is required.'));
+        }
+        if (!password || password.length === 0) {
+            return Promise.reject(new HttpsError('invalid-argument', 'Password is required.'));
+        }
+        if (!displayName || displayName.length === 0) {
+            return Promise.reject(new HttpsError('invalid-argument', 'Display name is required.'));
+        }
+        if (!phoneNumber || phoneNumber.length === 0) {
+            return Promise.reject(new HttpsError('invalid-argument', 'Phone number is required.'));
+        }
 
         const userRecord: UserRecord = await auth.createUser({
             email: email,
@@ -55,10 +63,10 @@ export const createnewuser = onCall(async (request: CallableRequest): Promise<Us
         //If User exists in firestore, merge data
         if (doc.exists) {
             logger.error('User already exists in database', doc.data());
-            docRef.set(userParams, { merge: true });
+            await docRef.set(userParams, { merge: true });
         } else {
             //Create new User in firestore
-            docRef.set(userParams);
+            await docRef.set(userParams);
         }
         return userRecord;
     } catch (error) {
@@ -78,10 +86,14 @@ export const enableuser = onCall(async (request): Promise<void> => {
         if (!userId) {
             return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to enable a user account.'));
         } else {
-            auth.updateUser(userId, { disabled: false })
-                .then((user) => auth.setCustomUserClaims(user.uid, { 'aid-worker': true }))
-                .then(() => console.log(`User ${userId} enabled`))
-                .catch((error) => Promise.reject(new HttpsError('invalid-argument', 'Unable to update user account.')));
+            try {
+                const user = await auth.updateUser(userId, { disabled: false });
+                await auth.setCustomUserClaims(user.uid, { 'aid-worker': true });
+                logger.info(`User ${userId} enabled`);
+            } catch (error) {
+                logger.error('Unable to update user account', error);
+                throw new HttpsError('invalid-argument', 'Unable to update user account.');
+            }
         }
     }
 });
@@ -98,9 +110,13 @@ export const deleteuser = onCall(async (request): Promise<void> => {
         if (!userId) {
             return Promise.reject(new HttpsError('invalid-argument', 'Must provide a user Id to delete a user account.'));
         } else {
-            auth.deleteUser(userId)
-                .then(() => console.log(`User with ID: ${userId} deleted`))
-                .catch((error) => Promise.reject(new HttpsError('invalid-argument', 'Unable to delete user account.')));
+            try {
+                await auth.deleteUser(userId);
+                logger.info(`User with ID: ${userId} deleted`);
+            } catch (error) {
+                logger.error('Unable to delete user account', error);
+                throw new HttpsError('invalid-argument', 'Unable to delete user account.');
+            }
         }
     }
 });

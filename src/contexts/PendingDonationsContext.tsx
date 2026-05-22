@@ -50,7 +50,7 @@ export const PendingDonationsProvider = ({ children }: Props) => {
     };
 
     const removePendingDonation = (index: number) => {
-        setPendingDonations(pendingDonations.filter((_, i) => index !== i));
+        setPendingDonations((prev) => prev.filter((_, i) => index !== i));
     };
     const clearPendingDonations = () => {
         setPendingDonations([]);
@@ -95,7 +95,13 @@ export const PendingDonationsProvider = ({ children }: Props) => {
             const existingPendingDonations = localStorage.getItem('pendingDonations');
             if (existingPendingDonations) {
                 const fromLocalStorageArray: DonationFormData[] = [];
-                const existingDonations = JSON.parse(existingPendingDonations) as DonationFormData[];
+                let existingDonations: DonationFormData[];
+                try {
+                    existingDonations = JSON.parse(existingPendingDonations) as DonationFormData[];
+                } catch (error) {
+                    localStorage.removeItem('pendingDonations');
+                    throw error;
+                }
                 for (const existingDonation of existingDonations) {
                     const fromLocalStorageItem: DonationFormData = {
                         category: existingDonation.category,

@@ -1,19 +1,18 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
-import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
+import { addDoc, collection, connectFirestoreEmulator, getFirestore, serverTimestamp } from 'firebase/firestore';
 import { connectStorageEmulator, getStorage } from 'firebase/storage';
 import { User, connectAuthEmulator, getAuth } from 'firebase/auth';
 
 import { firebaseConfig } from './config';
-import { addEvent, checkClaims } from './firebaseAdmin';
 
 import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
 
 import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
-import { UserRecord } from 'firebase-admin/auth';
 import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
 import { getUsersNotifications } from './firebase-users';
 import { Notification } from '@/types/NotificationTypes';
+import { EVENTS_COLLECTION } from './firebase-events';
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 
@@ -44,23 +43,14 @@ const deleteUser = httpsCallable(functions, 'deleteuser');
 const areDonationsAvailable = httpsCallable(functions, 'aredonationsavailable');
 
 //Cloud function calls
-export async function callCreateUser(accountInfo: NewUserAccountInfo): Promise<UserRecord> {
+export async function callCreateUser(accountInfo: NewUserAccountInfo): Promise<AuthUserRecord> {
     try {
         const result = await createNewUser(accountInfo);
-        return result.data as UserRecord;
+        return result.data as AuthUserRecord;
     } catch (error) {
         addErrorEvent('Create user', error);
     }
     return Promise.reject();
-}
-
-export async function callCheckClaims(...claimNames: string[]): Promise<any> {
-    if (claimNames.length === 0) {
-        claimNames = ['admin', 'aid-worker'];
-    }
-    const idToken = await auth.currentUser?.getIdToken();
-    const response = await checkClaims({ idToken: idToken, claimNames: claimNames });
-    return response;
 }
 
 export async function callIsEmailInUse(email: string): Promise<boolean> {
@@ -71,10 +61,10 @@ export async function callIsEmailInUse(email: string): Promise<boolean> {
 export async function callListAllUsers(): Promise<AuthUserRecord[]> {
     try {
         const listUsersResult = await listAllUsers();
-        const listUsers = listUsersResult.data as UserRecord[];
+        const listUsers = listUsersResult.data as Array<AuthUserRecord & { providerData?: unknown[] }>;
         //Filter out anonymous users
         const authUsers = listUsers
-            .filter((user) => user.providerData.length !== 0)
+            .filter((user) => (user.providerData?.length ?? 0) !== 0)
             .map((user) => {
                 const authUser = {
                     uid: user.uid,
@@ -93,10 +83,10 @@ export async function callListAllUsers(): Promise<AuthUserRecord[]> {
     return Promise.reject();
 }
 
-export async function callUpdateAuthUser(uid: string, accountInformation: AccountInformation): Promise<UserRecord> {
+export async function callUpdateAuthUser(uid: string, accountInformation: AccountInformation): Promise<AuthUserRecord> {
     try {
         const updatedAuthUser = await updateAuthUser({ uid: uid, accountInformation: accountInformation });
-        return updatedAuthUser.data as UserRecord;
+        return updatedAuthUser.data as AuthUserRecord;
     } catch (error) {
         addErrorEvent('Error calling update auth user', error);
     }
@@ -108,6 +98,7 @@ export async function callEnableUser(userId: string): Promise<void> {
         await enableUser({ userId: userId });
     } catch (error) {
         addErrorEvent('Could not enable user', error);
+        throw error;
     }
 }
 
@@ -116,6 +107,7 @@ export async function callDeleteUser(userId: string): Promise<void> {
         await deleteUser({ userId: userId });
     } catch (error) {
         addErrorEvent('Error deleting user', error);
+        throw error;
     }
 }
 
@@ -124,6 +116,7 @@ export async function callSetClaims(userId: string, claims: any): Promise<void> 
         await setCustomClaims({ userId: userId, claims: claims });
     } catch (error) {
         addErrorEvent('Error calling set claims', error);
+        throw error;
     }
 }
 
@@ -195,7 +188,13 @@ export async function checkIsAidWorker(user: User): Promise<boolean> {
 // Utilitarian
 export async function addErrorEvent(location: string, error: any): Promise<void> {
     try {
-        await addEvent({ location: location, error: convertToString(error) });
+        await addDoc(collection(db, EVENTS_COLLECTION), {
+            type: 'error',
+            note: JSON.stringify({ location, error: convertToString(error) }),
+            createdBy: auth.currentUser?.uid ?? 'system',
+            createdAt: serverTimestamp(),
+            modifiedAt: serverTimestamp()
+        });
     } catch (error) {
         console.log(error);
     }

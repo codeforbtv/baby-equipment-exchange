@@ -12,7 +12,6 @@ import { onAuthStateChangedListener, signInAuthUserWithEmailAndPassword } from '
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 //Styling
 import '../../styles/globalStyles.css';
-import styles from './Login.module.css';
 
 export default function Login() {
     const [loginState, setLoginState] = useState<'pending' | 'loggedIn' | 'loggedOut'>('pending');
@@ -41,11 +40,15 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
     const [isInvalidLogin, setIsInvalidLogin] = useState<boolean>(false);
 
     useEffect(() => {
-        onAuthStateChangedListener((user) => {
-            if (user) router.push('/');
-            else setLoginState('loggedOut');
+        const unsubscribe = onAuthStateChangedListener((user) => {
+            if (user) {
+                router.push('/');
+            } else {
+                setLoginState('loggedOut');
+            }
         });
-    }, [router]);
+        return unsubscribe;
+    }, [router, setLoginState]);
 
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
         event.preventDefault();
@@ -110,7 +113,7 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
             </div>
             <hr />
             <h4>
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link id="join" href="./join">
                     Join here
                 </Link>

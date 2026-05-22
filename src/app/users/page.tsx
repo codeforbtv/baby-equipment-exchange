@@ -7,7 +7,7 @@ import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
 import Users from '@/components/Users';
 //Api
-import { addErrorEvent, callListAllUsers } from '@/api/firebase';
+import { addErrorEvent } from '@/api/firebase';
 //Styles
 import '@/styles/globalStyles.css';
 // Types

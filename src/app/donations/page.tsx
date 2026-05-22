@@ -11,7 +11,6 @@ import { getAllDonations } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
 //Styles
 import '@/styles/globalStyles.css';
-import styles from '@/components/Browse.module.css';
 //Types
 import { Donation } from '@/models/donation';
 
