@@ -93,7 +93,16 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                 />
             )}
             {showScheduler && currentOrder && (
-                <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
+                <SchedulePickup
+                    order={currentOrder}
+                    setShowScheduler={setShowScheduler}
+                    setNotificationsUpdated={setNotificationsUpdated}
+                    onComplete={() => {
+                        if (setIdToDisplay) {
+                            setIdToDisplay(null);
+                        }
+                    }}
+                />
             )}
             {showCancelOrder && currentOrder && (
                 <CancelOrder

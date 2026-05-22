@@ -16,6 +16,7 @@ import sendMail from '@/api/nodemailer';
 import { schedulePickupForOrder } from '@/api/firebase-donations';
 //styles
 import '@/styles/globalStyles.css';
+import { getNotificationReturnPath } from '@/utils/notificationNavigation';
 //types
 import { Order } from '@/types/OrdersTypes';
 import { EventType } from '@/types/CalendlyTypes';
@@ -27,10 +28,11 @@ type SchedulePickupProps = {
     order: Order;
     setShowScheduler: Dispatch<SetStateAction<boolean>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onComplete?: () => void;
 };
 
 const SchedulePickup = (props: SchedulePickupProps) => {
-    const { order, setShowScheduler, setNotificationsUpdated } = props;
+    const { order, setShowScheduler, setNotificationsUpdated, onComplete } = props;
     const { requestor, id, items, rejectedItems } = order;
     const router = useRouter();
 
@@ -42,8 +44,16 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleClose = () => {
         setIsDialogOpen(false);
-        router.push('/');
-        window.location.reload();
+        if (setNotificationsUpdated) {
+            setNotificationsUpdated(true);
+        }
+        setShowScheduler(false);
+
+        if (onComplete) {
+            onComplete();
+        } else {
+            router.push(getNotificationReturnPath());
+        }
     };
 
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {

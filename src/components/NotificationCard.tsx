@@ -63,7 +63,9 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsDialogOpen(false);
         setDialogTitle('');
         setDialogContent('');
-        if (setNotificationsUpdated) setNotificationsUpdated(true);
+        if (setNotificationsUpdated) {
+            setNotificationsUpdated(true);
+        }
     };
 
     const handleDeleteDialogClose = () => {
@@ -74,13 +76,13 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'available');
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
+            if (setNotificationsUpdated) {
+                setNotificationsUpdated(true);
+            }
         } catch (error) {
+            setIsLoading(false);
             addErrorEvent('Mark donation as received', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -88,7 +90,9 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await updateDonationStatus(id, 'not-received');
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
+            if (setNotificationsUpdated) {
+                setNotificationsUpdated(true);
+            }
         } catch (error) {
             addErrorEvent('Mark donation as not received', error);
             throw error;
@@ -101,13 +105,13 @@ const NotificationCard = (props: NotificationCardProps) => {
         setIsLoading(true);
         try {
             await markDonationAsDistributed(donation);
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
+            if (setNotificationsUpdated) {
+                setNotificationsUpdated(true);
+            }
         } catch (error) {
+            setIsLoading(false);
             addErrorEvent('Mark as distributed', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -117,13 +121,13 @@ const NotificationCard = (props: NotificationCardProps) => {
             await updateDonation(id, {
                 status: 'available'
             });
-            if (setNotificationsUpdated) setNotificationsUpdated(true);
-            window.location.reload();
+            if (setNotificationsUpdated) {
+                setNotificationsUpdated(true);
+            }
         } catch (error) {
+            setIsLoading(false);
             addErrorEvent('Return to inventory', error);
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -320,7 +324,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                             <Dialog open={isDeleteDialogOpen} aria-labelledby="dialog-title" aria-describedby="dialog-description">
                                 <DialogTitle id="dialog-title">Reject pending user?</DialogTitle>
                                 <DialogContent>
-                                    <DialogContentText id="dialog-description">This will delete the user "{user.displayName}." Are you sure?</DialogContentText>
+                                    <DialogContentText id="dialog-description">{`This will delete the user "${user.displayName}." Are you sure?`}</DialogContentText>
                                     <DialogActions>
                                         <Button variant="contained" onClick={() => handleDeleteUser(user.uid, user.displayName, user.email)}>
                                             Confirm

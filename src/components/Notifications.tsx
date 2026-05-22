@@ -1,7 +1,7 @@
 'use client';
 //Hooks
-import { Dispatch, SetStateAction, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import UserDetails from '@/components/UserDetails';
@@ -12,6 +12,7 @@ import { Button, Paper, Typography } from '@mui/material';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
+import { restoreNotificationScrollPosition, saveNotificationReturnPosition } from '@/utils/notificationNavigation';
 //Types
 import { Notification } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
@@ -68,6 +69,25 @@ const Notifications = (props: NotificationsProps) => {
     const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted); //Filters out recently deleted users
 
     const router = useRouter();
+    const pathname = usePathname();
+
+    const handleReviewDonation = (bulkCollectionId: string) => {
+        saveNotificationReturnPosition(pathname);
+        router.push(`/accept/${bulkCollectionId}`);
+    };
+
+    const handleReviewOrder = (orderId: string) => {
+        saveNotificationReturnPosition(pathname);
+        setOrderIdToDisplay(orderId);
+    };
+
+    useEffect(() => {
+        if (donationIdToDisplay || userIdToDisplay || orderIdToDisplay) {
+            return;
+        }
+
+        restoreNotificationScrollPosition();
+    }, [donationIdToDisplay, notifications, orderIdToDisplay, userIdToDisplay]);
 
     return (
         <ProtectedAdminRoute>
@@ -107,7 +127,7 @@ const Notifications = (props: NotificationsProps) => {
                                     <Button
                                         className={styles['notification-card--container--btn']}
                                         variant="contained"
-                                        onClick={() => router.push(`/accept/${donationArray[0].bulkCollection}`)}
+                                        onClick={() => handleReviewDonation(donationArray[0].bulkCollection)}
                                     >
                                         Review
                                     </Button>
@@ -175,7 +195,7 @@ const Notifications = (props: NotificationsProps) => {
                                     <Button
                                         className={styles['notification-card--container--btn']}
                                         variant="contained"
-                                        onClick={() => setOrderIdToDisplay(order.id)}
+                                        onClick={() => handleReviewOrder(order.id)}
                                     >
                                         Review
                                     </Button>

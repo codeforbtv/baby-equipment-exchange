@@ -19,6 +19,7 @@ import reject from '@/email-templates/reject';
 import { updateDropOffDonationStatuses } from '@/api/firebase-donations';
 //Styles
 import '@/styles/globalStyles.css';
+import { getNotificationReturnPath } from '@/utils/notificationNavigation';
 //types
 import { EventType } from '@/types/CalendlyTypes';
 import { Donation } from '@/models/donation';
@@ -51,7 +52,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const handleClose = () => {
         setIsDialogOpen(false);
-        router.push('/');
+        router.push(getNotificationReturnPath());
     };
 
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
