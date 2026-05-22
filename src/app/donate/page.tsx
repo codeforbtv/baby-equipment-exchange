@@ -119,9 +119,12 @@ export default function Donate() {
         validateEmail(event.target.value);
     }
 
-    function handleConfirmEmail(event: React.ChangeEvent<HTMLInputElement>): void {
-        setConfirmEmail(event.target.value);
-        if (confirmEmail.length !== 0 && event.target.value !== donorEmail) {
+    function handleConfirmEmail(
+        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+    ): void {
+        const confirmEmailValue = event.target.value;
+        setConfirmEmail(confirmEmailValue);
+        if (confirmEmailValue.length !== 0 && confirmEmailValue !== donorEmail) {
             setEmailsDoNotMatch(true);
         } else {
             setEmailsDoNotMatch(false);
@@ -258,7 +261,7 @@ export default function Donate() {
                                     helperText={emailsDoNotMatch ? 'Emails do not match.' : undefined}
                                     required
                                     onChange={handleConfirmEmail}
-                                    onBlur={() => handleConfirmEmail}
+                                    onBlur={handleConfirmEmail}
                                 />
                                 <Button type="button" variant="contained" onClick={handleSave} disabled={isDisabled} sx={{ marginTop: '1em' }}>
                                     Save
