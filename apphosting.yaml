@@ -64,9 +64,3 @@ env:
       availability:
           - BUILD
           - RUNTIME
-
-    - variable: ALGOLIA_API_KEY
-      secret: ALGOLIA_API_KEY
-      availability:
-          - BUILD
-          - RUNTIME
