@@ -13,7 +13,7 @@ import ScheduleDropOff from '@/components/ScheduleDropOff';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //API
 import { addErrorEvent } from '@/api/firebase';
-import { getDonationNotifications, getDonationsByBulkId } from '@/api/firebase-donations';
+import { getDonationById, getDonationNotifications, getDonationsByBulkId } from '@/api/firebase-donations';
 import { getAllCategories } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
@@ -84,11 +84,29 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
           ? 'Fix Categories to Accept All'
           : 'Accept All';
 
+    const getDonationsForAcceptId = useCallback(async (id: string): Promise<Donation[]> => {
+        if (id === ALL_PENDING_DONATIONS_ROUTE_ID) {
+            return getDonationNotifications();
+        }
+
+        const bulkDonations = await getDonationsByBulkId(id);
+        const referenceDonation = bulkDonations[0] ?? (await getDonationById(id));
+        const bulkCollection = referenceDonation.bulkCollection;
+        const donorEmail = referenceDonation.donorEmail;
+        if (!bulkCollection) {
+            return [referenceDonation];
+        }
+
+        const donations = bulkDonations.length > 0 ? bulkDonations : await getDonationsByBulkId(bulkCollection);
+
+        return donations.filter((donation) => donation.bulkCollection === bulkCollection && donation.donorEmail === donorEmail);
+    }, []);
+
     const fetchDonationsByBulkId = useCallback(
         async (id: string): Promise<void> => {
             setIsLoading(true);
             try {
-                const donationsResult = id === ALL_PENDING_DONATIONS_ROUTE_ID ? await getDonationNotifications() : await getDonationsByBulkId(id);
+                const donationsResult = await getDonationsForAcceptId(id);
                 const pendingDonations = donationsResult.filter((donation) => donation.status === 'in processing');
 
                 if (pendingDonations.length === 0) {
@@ -104,7 +122,7 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                 setIsLoading(false);
             }
         },
-        [router]
+        [getDonationsForAcceptId, router]
     );
     const handleAcceptReject = useCallback((value: ButtonStatus, id: string): void => {
         if (value === 'accepted') {
