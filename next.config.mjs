@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-const fs = require('fs');
-const path = require('path');
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 const config = process.env.FIREBASE_CONFIG ?? 'firebase-config.json';
 let emulatorEnv = {};
 
 try {
-    const firebaseJSON = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'firebase.json'), 'utf-8'));
+    const firebaseJSON = JSON.parse(readFileSync(resolve(import.meta.dirname, 'firebase.json'), 'utf-8'));
     const emu = firebaseJSON.emulators ?? {};
     emulatorEnv = {
         NEXT_PUBLIC_EMULATOR_FIRESTORE_PORT: String(emu.firestore?.port ?? 8080),
@@ -49,4 +48,4 @@ const nextConfig = {
     }
 };
 
-module.exports = nextConfig;
+export default nextConfig;
