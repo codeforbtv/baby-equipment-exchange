@@ -27,11 +27,23 @@ type CancelOrderProps = {
     shouldShow: Dispatch<SetStateAction<boolean>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
     onComplete?: () => void;
+    onBack?: () => void;
     shouldCancelOrderOnSubmit?: boolean;
+    submitLabel?: string;
+    backLabel?: string;
 };
 
 const CancelOrder = (props: CancelOrderProps) => {
-    const { order, shouldShow, setNotificationsUpdated, onComplete, shouldCancelOrderOnSubmit = true } = props;
+    const {
+        order,
+        shouldShow,
+        setNotificationsUpdated,
+        onComplete,
+        onBack,
+        shouldCancelOrderOnSubmit = true,
+        submitLabel = 'Send Email',
+        backLabel = 'Back'
+    } = props;
     const { requestor, items, rejectedItems } = order;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -58,6 +70,13 @@ const CancelOrder = (props: CancelOrderProps) => {
     };
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
+
+    const handleBack = () => {
+        shouldShow(false);
+        if (onBack) {
+            onBack();
+        }
+    };
 
     const handleSubmit = async () => {
         if (isSubmittingRef.current) {
@@ -166,10 +185,10 @@ const CancelOrder = (props: CancelOrderProps) => {
                             </FormControl>
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
                                 <Button variant="contained" onClick={handleSubmit}>
-                                    Send Email
+                                    {submitLabel}
                                 </Button>
-                                <Button variant="outlined" onClick={() => shouldShow(false)}>
-                                    Back
+                                <Button variant="outlined" onClick={handleBack}>
+                                    {backLabel}
                                 </Button>
                             </Box>
                         </Box>

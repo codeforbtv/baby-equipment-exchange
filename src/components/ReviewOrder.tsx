@@ -36,6 +36,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
     const [showCancelOrder, setShowCancelOrder] = useState<boolean>(false);
+    const [isTerminalCancellationEmail, setIsTerminalCancellationEmail] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const fetchOrder = useCallback(async (id: string): Promise<void> => {
@@ -64,6 +65,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                 };
                 setCurrentOrder(updatedOrder);
                 if (remainingItems.length === 0) {
+                    setIsTerminalCancellationEmail(true);
                     setShowCancelOrder(true);
                     return;
                 }
@@ -79,6 +81,17 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const handleClose = async (): Promise<void> => {
         // if (setNotificationsUpdated) setNotificationsUpdated(true);
         setIsDialogOpen(false);
+    };
+
+    const handleCompleteOrderCancellation = () => {
+        setShowCancelOrder(false);
+        setIsTerminalCancellationEmail(false);
+        if (setNotificationsUpdated) {
+            setNotificationsUpdated(true);
+        }
+        if (setIdToDisplay) {
+            setIdToDisplay(null);
+        }
     };
 
     useEffect(() => {
@@ -112,11 +125,10 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     shouldShow={setShowCancelOrder}
                     setNotificationsUpdated={setNotificationsUpdated}
                     shouldCancelOrderOnSubmit={currentOrder.status === 'open'}
-                    onComplete={() => {
-                        if (setIdToDisplay) {
-                            setIdToDisplay(null);
-                        }
-                    }}
+                    submitLabel={isTerminalCancellationEmail ? 'Send Email and Complete Cancellation' : 'Send Email'}
+                    backLabel={isTerminalCancellationEmail ? 'Return to Notifications' : 'Back'}
+                    onBack={isTerminalCancellationEmail ? handleCompleteOrderCancellation : undefined}
+                    onComplete={handleCompleteOrderCancellation}
                 />
             )}
 
