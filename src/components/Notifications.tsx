@@ -71,9 +71,9 @@ const Notifications = (props: NotificationsProps) => {
     const router = useRouter();
     const pathname = usePathname();
 
-    const handleReviewDonation = (bulkCollectionId: string) => {
+    const handleReviewDonation = () => {
         saveNotificationReturnPosition(pathname);
-        router.push(`/accept/${bulkCollectionId}`);
+        router.push('/accept/pending');
     };
 
     const handleReviewOrder = (orderId: string) => {
@@ -124,11 +124,7 @@ const Notifications = (props: NotificationsProps) => {
                                             setNotificationsUpdated={setNotificationsUpdated}
                                         />
                                     ))}
-                                    <Button
-                                        className={styles['notification-card--container--btn']}
-                                        variant="contained"
-                                        onClick={() => handleReviewDonation(donationArray[0].bulkCollection)}
-                                    >
+                                    <Button className={styles['notification-card--container--btn']} variant="contained" onClick={handleReviewDonation}>
                                         Review
                                     </Button>
                                 </Paper>

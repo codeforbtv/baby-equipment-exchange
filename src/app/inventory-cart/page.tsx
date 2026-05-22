@@ -119,7 +119,8 @@ const InventoryCart = () => {
                                                         style={{ objectFit: 'cover', aspectRatio: '1/1' }}
                                                     />
                                                     <Typography variant="body1">
-                                                        {inventoryItem.brand} - {inventoryItem.model}
+                                                        {inventoryItem.brand} - {inventoryItem.model} - {inventoryItem.status}
+                                                        {inventoryItem.tagNumber ? ` - ${inventoryItem.tagNumber}` : ''}
                                                     </Typography>
                                                 </div>
 

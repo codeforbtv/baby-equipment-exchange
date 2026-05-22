@@ -1,7 +1,5 @@
 'use client';
 
-//Hooks
-import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 //Components
 import { ImageListItem, ImageListItemBar, IconButton, Tooltip } from '@mui/material';
 // Icons
@@ -12,11 +10,14 @@ import '@/styles/globalStyles.css';
 //Types
 import { InventoryItem } from '@/models/inventoryItem';
 import { Dispatch, SetStateAction } from 'react';
+import { DonationStatusKeys, donationStatuses } from '@/models/donation';
 type InventoryItemCardProps = {
     inventoryItem: InventoryItem;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     handleRequestInventoryItem: (inventoryItem: InventoryItem) => void;
 };
+
+const statusSelectOptions = Object.keys(donationStatuses);
 
 const InventoryItemCard = (props: InventoryItemCardProps) => {
     const { inventoryItem, handleRequestInventoryItem, setIdToDisplay } = props;
@@ -24,6 +25,8 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
     //Images were previously document references. Ensure they are now all strings. TO-DO remove all doc refs from images
     const images = inventoryItem.images as string[];
     const image = images ? images[0] : '';
+    const statusLabel = statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === inventoryItem.status) ?? inventoryItem.status;
+    const tagLabel = inventoryItem.tagNumber ? ` - ${inventoryItem.tagNumber}` : '';
 
     return (
         <ImageListItem key={inventoryItem.id} className={styles['grid__item']}>
@@ -35,7 +38,7 @@ const InventoryItemCard = (props: InventoryItemCardProps) => {
             />
             <ImageListItemBar
                 title={`${inventoryItem.brand} - ${inventoryItem.model}`}
-                subtitle={inventoryItem.category}
+                subtitle={`${inventoryItem.category} - ${statusLabel}${tagLabel}`}
                 actionIcon={
                     <Tooltip title="Add to order">
                         <IconButton

@@ -13,7 +13,7 @@ import ScheduleDropOff from '@/components/ScheduleDropOff';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //API
 import { addErrorEvent } from '@/api/firebase';
-import { getDonationsByBulkId } from '@/api/firebase-donations';
+import { getDonationNotifications, getDonationsByBulkId } from '@/api/firebase-donations';
 import { getAllCategories } from '@/api/firebase-categories';
 //Styles
 import '@/styles/globalStyles.css';
@@ -23,9 +23,12 @@ import { Category } from '@/models/category';
 import { getNotificationReturnPath } from '@/utils/notificationNavigation';
 
 type ButtonStatus = 'accepted' | 'rejected' | null;
+const ALL_PENDING_DONATIONS_ROUTE_ID = 'pending';
 
 const getDonationSignature = (donation: Donation): string =>
     JSON.stringify({
+        bulkCollection: donation.bulkCollection,
+        donorEmail: donation.donorEmail,
         category: donation.category,
         brand: donation.brand,
         model: donation.model,
@@ -47,6 +50,12 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
     const hasSelectedDonations = accepted.length + rejected.length > 0;
     const areCategoriesLoaded = categories.length > 0;
     const validCategoryNames = useMemo(() => categories.map((category) => category.getName()), [categories]);
+    const selectedDonations = useMemo(
+        () => donations?.filter((donation) => accepted.includes(donation.id) || rejected.includes(donation.id)) ?? [],
+        [accepted, donations, rejected]
+    );
+    const selectedDonorEmails = useMemo(() => Array.from(new Set(selectedDonations.map((donation) => donation.donorEmail))), [selectedDonations]);
+    const hasMultipleDonorsSelected = selectedDonorEmails.length > 1;
     const quantityDonationIds = useMemo(() => {
         if (!donations) {
             return [];
@@ -79,7 +88,7 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
         async (id: string): Promise<void> => {
             setIsLoading(true);
             try {
-                const donationsResult = await getDonationsByBulkId(id);
+                const donationsResult = id === ALL_PENDING_DONATIONS_ROUTE_ID ? await getDonationNotifications() : await getDonationsByBulkId(id);
                 const pendingDonations = donationsResult.filter((donation) => donation.status === 'in processing');
 
                 if (pendingDonations.length === 0) {
@@ -199,7 +208,13 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                                         onCategoryFixed={handleCategoryFixed}
                                     />
                                 ))}
-                                <Button type="button" variant="contained" disabled={!hasSelectedDonations} onClick={() => setOpenScheduler(true)}>
+                                {hasMultipleDonorsSelected && <p>Select items from one donor at a time before sending an email.</p>}
+                                <Button
+                                    type="button"
+                                    variant="contained"
+                                    disabled={!hasSelectedDonations || hasMultipleDonorsSelected}
+                                    onClick={() => setOpenScheduler(true)}
+                                >
                                     {accepted.length === 0 ? 'Send Rejection Email' : ' Send Email'}
                                 </Button>
                             </div>

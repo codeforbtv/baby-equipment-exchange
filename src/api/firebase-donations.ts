@@ -253,6 +253,21 @@ export async function getInventory(): Promise<InventoryItem[]> {
     return Promise.reject();
 }
 
+export async function getAllInventory(): Promise<InventoryItem[]> {
+    try {
+        const inventory: InventoryItem[] = [];
+        const collectionRef = collection(db, DONATIONS_COLLECTION).withConverter(inventoryConverter);
+        const querySnapshot = await getDocs(collectionRef);
+        querySnapshot.forEach((snapshot) => {
+            inventory.push(snapshot.data());
+        });
+        return inventory;
+    } catch (error) {
+        addErrorEvent('Get all inventory', error);
+    }
+    return Promise.reject();
+}
+
 export async function getInventoryItemById(id: string): Promise<InventoryItem> {
     try {
         const itemRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(inventoryConverter);

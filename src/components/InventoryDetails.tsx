@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, MouseEventHandler, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, MouseEventHandler, SetStateAction, useCallback, useEffect, useState } from 'react';
 //Components
 import ProtectedAidWorkerRoute from './ProtectedAidWorkerRoute';
 import { Button, Dialog, DialogActions, IconButton, ImageList, ImageListItem } from '@mui/material';
@@ -16,6 +16,7 @@ import '@/styles/globalStyles.css';
 import { InventoryItem } from '@/models/inventoryItem';
 import { addErrorEvent } from '@/api/firebase';
 import Loader from './Loader';
+import { DonationStatusKeys, donationStatuses } from '@/models/donation';
 
 type InventoryDetailsProps = {
     id: string | null;
@@ -28,13 +29,14 @@ type InventoryDetailsProps = {
 const InventoryDetails = (props: InventoryDetailsProps) => {
     const { id, inventoryItem, setIdToDisplay, handleRequestInventoryItem } = props;
     const initialItem = inventoryItem ? inventoryItem : null;
+    const statusSelectOptions = Object.keys(donationStatuses);
 
     const [itemDetails, setItemDetails] = useState<InventoryItem | null>(initialItem);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isImageOpen, setIsImageOpen] = useState<boolean>(false);
     const [openImageURL, setOpenImageURL] = useState<string>('');
 
-    async function fetchInventoryItem(id: string) {
+    const fetchInventoryItem = useCallback(async (id: string) => {
         setIsLoading(true);
         try {
             const itemToView = await getInventoryItemById(id);
@@ -44,7 +46,7 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
         } finally {
             setIsLoading(false);
         }
-    }
+    }, []);
 
     const handleImageClick: MouseEventHandler<HTMLImageElement> = (event) => {
         setOpenImageURL(event.currentTarget.src);
@@ -55,12 +57,16 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
 
     const handleAddItemToCart = (item: InventoryItem) => {
         handleRequestInventoryItem(item);
-        if (setIdToDisplay) setIdToDisplay(null);
+        if (setIdToDisplay) {
+            setIdToDisplay(null);
+        }
     };
 
     useEffect(() => {
-        if (id && !inventoryItem) fetchInventoryItem(id);
-    }, []);
+        if (id && !inventoryItem) {
+            fetchInventoryItem(id);
+        }
+    }, [fetchInventoryItem, id, inventoryItem]);
 
     return (
         <ProtectedAidWorkerRoute>
@@ -95,6 +101,14 @@ const InventoryDetails = (props: InventoryDetailsProps) => {
                         <b>Description: </b>
                         {itemDetails.description}
                     </p>
+                    <h3>
+                        <b>Status: </b>
+                        {statusSelectOptions.find((key) => donationStatuses[key as DonationStatusKeys] === itemDetails.status) ?? itemDetails.status}
+                    </h3>
+                    <h3>
+                        <b>Tag number: </b>
+                        {itemDetails.tagNumber ?? 'No tag'}
+                    </h3>
                     <Button variant="contained" onClick={() => handleAddItemToCart(itemDetails)} endIcon={<AddShoppingCartIcon />}>
                         Add to order
                     </Button>
