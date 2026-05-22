@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
-    const { currentUser } = useUserContext();
+    const { currentUser, isAdmin } = useUserContext();
     const { clearPendingDonations } = usePendingDonationsContext();
 
     const handleSignOut = () => {
@@ -45,7 +45,7 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                     </Link>
                     {currentUser && (
                         <>
-                            <Link className={styles['menu__link']} id="donate" href="/donate" onClick={closeMenu}>
+                            <Link className={styles['menu__link']} id="donate" href={isAdmin ? '/admin-donate' : '/donate'} onClick={closeMenu}>
                                 <span>Donate</span>
                             </Link>
                         </>
@@ -67,7 +67,9 @@ export default function NavMenu({ isOpen, handleIsOpen, closeMenu }: Props) {
                         href={currentUser ? '/' : '/login'}
                         onClick={() => {
                             closeMenu();
-                            if (currentUser) handleSignOut();
+                            if (currentUser) {
+                                handleSignOut();
+                            }
                         }}
                     >
                         {currentUser ? <span>Log Out</span> : <span>Login</span>}

@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { renderToString } from 'react-dom/server';
 import { useRouter } from 'next/navigation';
 //Components
@@ -33,7 +33,7 @@ type SchedulePickupProps = {
 
 const SchedulePickup = (props: SchedulePickupProps) => {
     const { order, setShowScheduler, setNotificationsUpdated, onComplete } = props;
-    const { requestor, id, items, rejectedItems } = order;
+    const { requestor, items, rejectedItems } = order;
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -41,6 +41,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const isSubmittingRef = useRef<boolean>(false);
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -62,6 +63,11 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
     const handleSubmit = async () => {
+        if (isSubmittingRef.current) {
+            return;
+        }
+
+        isSubmittingRef.current = true;
         setIsLoading(true);
         const tagNumbers = items.flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
         const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), tagNumbers, notes);
@@ -72,6 +78,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
         } catch (error) {
             addErrorEvent('Error submitting schedule pickup email', error);
         } finally {
+            isSubmittingRef.current = false;
             setIsLoading(false);
         }
     };

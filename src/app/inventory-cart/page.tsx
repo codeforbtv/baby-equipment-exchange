@@ -40,8 +40,10 @@ const InventoryCart = () => {
         setIsUnavailableDialogOpen(false);
     };
 
-    const handleRequestItems = async (event: React.MouseEvent<HTMLElement>): Promise<void> => {
-        if (!requestedInventory || requestedInventory.length == 0 || !currentUser) return;
+    const handleRequestItems = async (): Promise<void> => {
+        if (!requestedInventory || requestedInventory.length == 0 || !currentUser) {
+            return;
+        }
         setLoading(true);
         try {
             const requestedItemIds = requestedInventory.map((item) => item.id);
@@ -78,7 +80,9 @@ const InventoryCart = () => {
         }
     };
 
-    if (isLoading) return <Loader />;
+    if (isLoading) {
+        return <Loader />;
+    }
 
     return (
         <>
@@ -103,7 +107,7 @@ const InventoryCart = () => {
                             <Typography variant="h5">Items to be requested:</Typography>
                             <Box className={styles['inventoryItem--container']}>
                                 {requestedInventory.map((inventoryItem, i) => {
-                                    if (inventoryItem.images)
+                                    if (inventoryItem.images) {
                                         return (
                                             <Card key={i} elevation={5} className={styles['inventoryItem--card']}>
                                                 <div className={styles['inventoryItem--card-content']}>
@@ -124,6 +128,7 @@ const InventoryCart = () => {
                                                 </Button>
                                             </Card>
                                         );
+                                    }
                                 })}
                             </Box>
                             <div className={styles['btn--group']}>

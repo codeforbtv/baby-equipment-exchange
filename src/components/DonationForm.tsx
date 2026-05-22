@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { useState, useEffect, ReactElement, SetStateAction, Dispatch } from 'react';
+import { useState, useEffect, ReactElement, SetStateAction, Dispatch, useCallback } from 'react';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //Components
 import ImageThumbnail from './ImageThumbnail';
@@ -24,6 +24,9 @@ import { Category } from '@/models/category';
 
 export type DonationFormProps = {
     setShowForm: Dispatch<SetStateAction<boolean>>;
+    keepFormOpenAfterAdd?: boolean;
+    keepFormOpenAfterCancel?: boolean;
+    includeInactiveCategories?: boolean;
 };
 
 export default function DonationForm(props: DonationFormProps) {
@@ -32,7 +35,8 @@ export default function DonationForm(props: DonationFormProps) {
         brand: '',
         model: '',
         description: '',
-        images: null
+        images: null,
+        quantity: 1
     });
     const [images, setImages] = useState<File[] | null>();
     const [imageElements, setImageElements] = useState<ReactElement[]>([]);
@@ -42,7 +46,7 @@ export default function DonationForm(props: DonationFormProps) {
 
     const { addPendingDonation, pendingDonations } = usePendingDonationsContext();
 
-    const fetchCategories = async (): Promise<void> => {
+    const fetchCategories = useCallback(async (): Promise<void> => {
         try {
             setIsLoading(true);
             const categoriesResult = await getAllCategories();
@@ -53,12 +57,27 @@ export default function DonationForm(props: DonationFormProps) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
+    const quantityValue = Number(formData.quantity);
+    const quantity = Number.isInteger(quantityValue) && quantityValue > 0 ? quantityValue : 0;
     const isDisabled =
-        !images || formData.category?.length === 0 || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
+        !images ||
+        images.length === 0 ||
+        !formData.category ||
+        formData.category.trim().length === 0 ||
+        !formData.brand ||
+        formData.brand.trim().length === 0 ||
+        !formData.model ||
+        formData.model.trim().length === 0 ||
+        !formData.description ||
+        formData.description.trim().length === 0 ||
+        quantity < 1;
 
     const isCategoryActive = (category: string) => {
+        if (props.includeInactiveCategories) {
+            return false;
+        }
         if (categories) {
             const currentCategory = categories.find((cat) => cat.name === category);
             return !currentCategory?.active;
@@ -114,7 +133,8 @@ export default function DonationForm(props: DonationFormProps) {
             category: formData.category ?? '',
             model: formData.model ?? '',
             description: formData.description ?? '',
-            images: images
+            images: images,
+            quantity
         };
         addPendingDonation(pendingDonation);
         setFormData({
@@ -122,11 +142,14 @@ export default function DonationForm(props: DonationFormProps) {
             brand: '',
             model: '',
             description: '',
-            images: null
+            images: null,
+            quantity: 1
         });
         setImages(null);
         setImageElements([]);
-        props.setShowForm(false);
+        if (!props.keepFormOpenAfterAdd) {
+            props.setShowForm(false);
+        }
     }
 
     function handleCancel(e: React.SyntheticEvent) {
@@ -136,16 +159,21 @@ export default function DonationForm(props: DonationFormProps) {
             brand: '',
             model: '',
             description: '',
-            images: null
+            images: null,
+            quantity: 1
         });
         setImages(null);
         setImageElements([]);
-        props.setShowForm(false);
+        if (!props.keepFormOpenAfterCancel) {
+            props.setShowForm(false);
+        }
     }
 
     useEffect(() => {
-        if (!categories) fetchCategories();
-    }, []);
+        if (!categories) {
+            fetchCategories();
+        }
+    }, [categories, fetchCategories]);
 
     return (
         <>
@@ -162,7 +190,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     disablePortal
                                     options={categories.map((option) => option.name)}
                                     getOptionDisabled={isCategoryActive}
-                                    renderInput={(params) => <TextField {...params} label="Category" />}
+                                    renderInput={(params) => <TextField {...params} label="Category" required />}
                                     value={formData.category}
                                     onChange={handleCategoryChange}
                                     aria-label="Category"
@@ -173,6 +201,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     name="brand"
                                     id="brand"
                                     placeholder=" Brand"
+                                    required
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                     value={formData.brand ? formData.brand : ''}
                                 ></TextField>
@@ -181,13 +210,25 @@ export default function DonationForm(props: DonationFormProps) {
                                     label="Model"
                                     name="model"
                                     id="model"
+                                    required
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                                     value={formData.model ? formData.model : ''}
                                 ></TextField>
                                 <TextField
+                                    type="number"
+                                    label="Quantity"
+                                    name="quantity"
+                                    id="quantity"
+                                    inputProps={{ min: 1, step: 1 }}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
+                                    value={formData.quantity ?? 1}
+                                    required
+                                />
+                                <TextField
                                     multiline={true}
                                     name="description"
                                     label="Description"
+                                    required
                                     rows={12}
                                     placeholder="Key details might include: special features, accessories, how the item works, ease of cleaning, size, and/or information about missing or damaged parts"
                                     id="description"

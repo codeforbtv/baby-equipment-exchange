@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { useState, ChangeEvent, useEffect, Dispatch, SetStateAction } from 'react';
+import { useState, ChangeEvent, useEffect, Dispatch, SetStateAction, useRef } from 'react';
 import { renderToString } from 'react-dom/server';
 import { useRouter } from 'next/navigation';
 //Components
@@ -37,6 +37,8 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>('');
+    const isSubmittingRef = useRef<boolean>(false);
 
     const router = useRouter();
 
@@ -99,7 +101,13 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
 
     const handleSubmit = async () => {
         //send email with renderToString(message) and update donation statuses. If donation is accepted, assign a tagNumber
+        if (isSubmittingRef.current) {
+            return;
+        }
+
+        isSubmittingRef.current = true;
         setIsLoading(true);
+        setErrorMessage('');
         try {
             const acceptedDonationUpdates = await updateDropOffDonationStatuses({
                 acceptedDonations:
@@ -119,8 +127,13 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting accept/reject email', error);
-            throw error;
+            if (error instanceof Error && error.message.startsWith('Category not found:')) {
+                setErrorMessage(error.message);
+            } else {
+                setErrorMessage('An unexpected error occurred while processing donations. Please try again.');
+            }
         } finally {
+            isSubmittingRef.current = false;
             setIsLoading(false);
         }
     };
@@ -187,6 +200,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                 </>
             )}
             <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Email sent" content={`Email successfully sent to ${donorEmail}`} />
+            <CustomDialog isOpen={errorMessage !== ''} onClose={() => setErrorMessage('')} title="Error Processing Donations" content={errorMessage} />
         </ProtectedAdminRoute>
     );
 };

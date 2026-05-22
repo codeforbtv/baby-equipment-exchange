@@ -4,9 +4,9 @@
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useUserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 //Components
-import { Card, Button, Box, Typography, Stack, Autocomplete, InputBaseProps, TextField } from '@mui/material';
+import { Card, Button, Box, Typography, Stack, Autocomplete, TextField } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Loader from '@/components/Loader';
 import Image from 'next/image';
@@ -53,7 +53,7 @@ const AdminCart = () => {
         setIsUnavailableDialogOpen(false);
     };
 
-    const fetchActiveUsers = async (): Promise<void> => {
+    const fetchActiveUsers = useCallback(async (): Promise<void> => {
         setLoading(true);
         try {
             const activeUsersReuslt = await getAllActiveDbUsers();
@@ -63,10 +63,12 @@ const AdminCart = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const handleAdminRequestItems = async (event: React.MouseEvent<HTMLElement>): Promise<void> => {
-        if (!isAdmin || !selectedUser) return;
+    const handleAdminRequestItems = async (): Promise<void> => {
+        if (!isAdmin || !selectedUser) {
+            return;
+        }
         setLoading(true);
         try {
             const requestedItemIds = requestedInventory.map((item) => item.id);
@@ -88,9 +90,13 @@ const AdminCart = () => {
 
             //extract email address from automplete selection and use it to find user info.
             const requestorEmailMatch = extractEmail(selectedUser);
-            if (!requestorEmailMatch) return Promise.reject('Requestor email not found');
+            if (!requestorEmailMatch) {
+                return Promise.reject('Requestor email not found');
+            }
             const requestor = activeUsers?.find((user) => user.email === requestorEmailMatch[0]);
-            if (!requestor) return Promise.reject('Selected requestor not found.');
+            if (!requestor) {
+                return Promise.reject('Selected requestor not found.');
+            }
 
             const requestorInfo = {
                 id: requestor.uid,
@@ -111,8 +117,10 @@ const AdminCart = () => {
     };
 
     useEffect(() => {
-        if (!activeUsers) fetchActiveUsers();
-    }, []);
+        if (!activeUsers) {
+            fetchActiveUsers();
+        }
+    }, [activeUsers, fetchActiveUsers]);
 
     return (
         <ProtectedAdminRoute>
@@ -140,7 +148,7 @@ const AdminCart = () => {
                                     <Typography variant="h5">Items to be requested:</Typography>
                                     <Box className={styles['inventoryItem--container']}>
                                         {requestedInventory.map((inventoryItem, i) => {
-                                            if (inventoryItem.images)
+                                            if (inventoryItem.images) {
                                                 return (
                                                     <Card key={i} elevation={5} className={styles['inventoryItem--card']}>
                                                         <div className={styles['inventoryItem--card-content']}>
@@ -161,6 +169,7 @@ const AdminCart = () => {
                                                         </Button>
                                                     </Card>
                                                 );
+                                            }
                                         })}
                                     </Box>
                                     {activeUsers ? (

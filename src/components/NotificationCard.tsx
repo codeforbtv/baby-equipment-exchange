@@ -2,7 +2,6 @@
 
 //Hooks
 import { Dispatch, SetStateAction, useState } from 'react';
-import { useRouter } from 'next/navigation';
 //Components
 import Link from 'next/link';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -17,13 +16,12 @@ import {
     DialogTitle,
     DialogContent,
     DialogContentText,
-    DialogActions,
-    Box
+    DialogActions
 } from '@mui/material';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
-import { markDonationAsDistributed, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
+import { markDonationAsDistributed, returnOrderDonationToInventory, updateDonationStatus } from '@/api/firebase-donations';
 import { addErrorEvent, callDeleteUser, callEnableUser } from '@/api/firebase';
 import { deleteDbUser, enableDbUser } from '@/api/firebase-users';
 import sendMail from '@/api/nodemailer';
@@ -49,15 +47,13 @@ type NotificationCardProps = {
 
 //TO-DO: Set up buttons
 const NotificationCard = (props: NotificationCardProps) => {
-    const { type, donation, user, order, setIdToDisplay, setNotificationsUpdated } = props;
+    const { type, donation, user, setIdToDisplay, setNotificationsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [dialogTitle, setDialogTitle] = useState<string>('');
     const [dialogContent, setDialogContent] = useState<string>('');
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
-
-    const router = useRouter();
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -118,9 +114,7 @@ const NotificationCard = (props: NotificationCardProps) => {
     const returnToInventory = async (id: string) => {
         setIsLoading(true);
         try {
-            await updateDonation(id, {
-                status: 'available'
-            });
+            await returnOrderDonationToInventory(id);
             if (setNotificationsUpdated) {
                 setNotificationsUpdated(true);
             }

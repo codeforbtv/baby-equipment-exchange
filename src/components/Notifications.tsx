@@ -65,7 +65,7 @@ const Notifications = (props: NotificationsProps) => {
     const sortedDonationsAwaitingDropoff = sortArrayByBulkId(donationsAwaitingDropoff);
     const donationsAwaitingPickup = notifications.donations.filter((donation) => donation.status === 'reserved');
     const sortedDonationsAwaitingPickup = sortArrayByRequestor(donationsAwaitingPickup);
-    const orders = notifications.orders;
+    const orders = notifications.orders.filter((order) => order.items.length > 0);
     const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted); //Filters out recently deleted users
 
     const router = useRouter();

@@ -1,13 +1,14 @@
 'use client';
 
 //Hooks
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '@/contexts/UserContext';
 import { usePendingDonationsContext } from '@/contexts/PendingDonationsContext';
 //components
 import PendingDonations from '@/components/PendingDonations';
 import DonationForm from '@/components/DonationForm';
+import AdminDonationFlow from '@/components/AdminDonationFlow';
 import { Button, Box, TextField, Typography, Paper, FormControlLabel, Checkbox } from '@mui/material';
 import Loader from '@/components/Loader';
 import CustomDialog from '@/components/CustomDialog';
@@ -44,15 +45,17 @@ export default function Donate() {
     const [hasAgreed, setHasAgreed] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
-    const { currentUser } = useUserContext();
-    const { pendingDonations, removePendingDonation, clearPendingDonations, pendingDonorEmail, setPendingDonorEmail, pendingDonorName, setPendingDonorName } =
+    const { currentUser, isAdmin, isLoading: isUserLoading } = useUserContext();
+    const { pendingDonations, clearPendingDonations, pendingDonorEmail, setPendingDonorEmail, pendingDonorName, setPendingDonorName } =
         usePendingDonationsContext();
     const router = useRouter();
 
     const isDisabled = emailsDoNotMatch || donorName.length === 0;
 
     const handleClose = () => {
-        signOutUser();
+        if (!currentUser || currentUser.isAnonymous) {
+            signOutUser();
+        }
         router.push('/');
         setIsDialogOpen(false);
     };
@@ -70,24 +73,16 @@ export default function Donate() {
         setPendingDonorName(donorName);
         setPendingDonorEmail(donorEmail);
         //Dont open the donation form unless saving name for first time
-        if (pendingDonations.length === 0) setShowForm(true);
+        if (pendingDonations.length === 0) {
+            setShowForm(true);
+        }
     };
 
     const handleCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasAgreed(event.target.checked);
     };
 
-    useEffect(() => {
-        getDonorFromLocalStorage();
-    }, []);
-
-    useEffect(() => {
-        if (pendingDonations.length === 0 && pendingDonorEmail.length > 0) {
-            setShowForm(true);
-        }
-    }, [pendingDonations, pendingDonorEmail]);
-
-    function getDonorFromLocalStorage() {
+    const getDonorFromLocalStorage = useCallback(() => {
         const donorNameFromLocalStorage = localStorage.getItem('donorName');
         if (donorNameFromLocalStorage) {
             setDonorName(donorNameFromLocalStorage);
@@ -99,7 +94,17 @@ export default function Donate() {
             setConfirmEmail(donorEmailFromLocalStorage);
             setPendingDonorEmail(donorEmailFromLocalStorage);
         }
-    }
+    }, [setPendingDonorEmail, setPendingDonorName]);
+
+    useEffect(() => {
+        getDonorFromLocalStorage();
+    }, [getDonorFromLocalStorage]);
+
+    useEffect(() => {
+        if (pendingDonations.length === 0 && pendingDonorEmail.length > 0) {
+            setShowForm(true);
+        }
+    }, [pendingDonations, pendingDonorEmail]);
 
     function validateEmail(email: string): void {
         if (email.length === 0 || !emailRegex.test(email)) {
@@ -111,7 +116,7 @@ export default function Donate() {
 
     function handleEmailInput(event: React.ChangeEvent<HTMLInputElement>): void {
         setDonorEmail(event.target.value);
-        validateEmail(donorEmail);
+        validateEmail(event.target.value);
     }
 
     function handleConfirmEmail(event: React.ChangeEvent<HTMLInputElement>): void {
@@ -124,7 +129,7 @@ export default function Donate() {
     }
 
     async function convertPendingDonations(pendingDonations: DonationFormData[]): Promise<DonationBody[]> {
-        let bulkDonations: DonationBody[] = [];
+        const bulkDonations: DonationBody[] = [];
         let anonymousUser;
         try {
             //create anonymous user if not loged in
@@ -136,17 +141,19 @@ export default function Donate() {
                 if (donation.images) {
                     imageURLs = await uploadImages(donation.images);
                 }
-                const newDonation = {
-                    donorName: donorName,
-                    donorEmail: donorEmail,
-                    donorId: currentUser ? currentUser.uid : anonymousUser ? anonymousUser.uid : '',
-                    brand: donation.brand ?? '',
-                    category: donation.category ?? '',
-                    model: donation.model ?? '',
-                    description: donation.description ?? '',
-                    images: imageURLs
-                };
-                bulkDonations.push(newDonation);
+                const quantity = Math.max(1, Math.floor(Number(donation.quantity ?? 1)));
+                for (let index = 0; index < quantity; index++) {
+                    bulkDonations.push({
+                        donorName: donorName,
+                        donorEmail: donorEmail,
+                        donorId: currentUser ? currentUser.uid : anonymousUser ? anonymousUser.uid : '',
+                        brand: donation.brand ?? '',
+                        category: donation.category ?? '',
+                        model: donation.model ?? '',
+                        description: donation.description ?? '',
+                        images: imageURLs
+                    });
+                }
             }
             return bulkDonations;
         } catch (error) {
@@ -175,6 +182,14 @@ export default function Donate() {
         } finally {
             setIsLoading(false);
         }
+    }
+
+    if (isUserLoading) {
+        return <Loader />;
+    }
+
+    if (isAdmin) {
+        return <AdminDonationFlow />;
     }
 
     return (

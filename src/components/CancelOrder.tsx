@@ -1,7 +1,7 @@
 'use client';
 
 //Hooks
-import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { renderToString } from 'react-dom/server';
 //Components
 import DonationCardSmall from './DonationCardSmall';
@@ -39,6 +39,7 @@ const CancelOrder = (props: CancelOrderProps) => {
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
+    const isSubmittingRef = useRef<boolean>(false);
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -58,7 +59,13 @@ const CancelOrder = (props: CancelOrderProps) => {
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
     const handleSubmit = async () => {
+        if (isSubmittingRef.current) {
+            return;
+        }
+
+        isSubmittingRef.current = true;
         setIsLoading(true);
+        setErrorMessage('');
         const tagNumbers = items.flatMap((item) => (item.tagNumber ? [item.tagNumber] : []));
         const emailMsg = cancelOrder(requestor.email, renderToString(message), tagNumbers, notes, inviteUrl);
 
@@ -70,6 +77,7 @@ const CancelOrder = (props: CancelOrderProps) => {
             addErrorEvent('Error submitting order cancellation email', error);
             setErrorMessage('Something went wrong while cancelling the order. Please try again.');
         } finally {
+            isSubmittingRef.current = false;
             setIsLoading(false);
         }
     };

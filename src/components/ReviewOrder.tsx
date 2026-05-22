@@ -1,8 +1,7 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 //Components
 import Loader from './Loader';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
@@ -31,17 +30,15 @@ type ReviewOrderProps = {
 };
 
 const ReviewOrder = (props: ReviewOrderProps) => {
-    const { order, setIdToDisplay, id, setNotificationsUpdated } = props;
+    const { setIdToDisplay, id, setNotificationsUpdated } = props;
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
     const [showCancelOrder, setShowCancelOrder] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [isOrderUpdated, setIsOrderUpdated] = useState<boolean>(false);
-    const router = useRouter();
 
-    const fetchOrder = async (id: string): Promise<void> => {
+    const fetchOrder = useCallback(async (id: string): Promise<void> => {
         setIsLoading(true);
         try {
             const orderResult = await getOrderById(id);
@@ -51,7 +48,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const handleRemoveFromOrder = async (orderId: string, donation: Donation): Promise<void> => {
         setIsLoading(true);
@@ -75,13 +72,12 @@ const ReviewOrder = (props: ReviewOrderProps) => {
 
     const handleClose = async (): Promise<void> => {
         // if (setNotificationsUpdated) setNotificationsUpdated(true);
-        setIsOrderUpdated(true);
         setIsDialogOpen(false);
     };
 
     useEffect(() => {
         fetchOrder(id);
-    }, []);
+    }, [fetchOrder, id]);
 
     return (
         <ProtectedAdminRoute>
@@ -152,19 +148,10 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                 <>
                                     <h4>Rejected items</h4>
                                     {currentOrder.rejectedItems.map((item) => (
-                                        <DonationCardMed
-                                            key={item.id}
-                                            orderId={item.id}
-                                            donation={item}
-                                            setIdToDisplay={setDonationIdToDisplay}
-                                            handleRemoveFromOrder={handleRemoveFromOrder}
-                                        />
+                                        <DonationCardMed key={item.id} donation={item} setIdToDisplay={setDonationIdToDisplay} />
                                     ))}
                                 </>
                             )}
-                            <Button variant="outlined" onClick={() => router.push(`/admin-donate?orderId=${id}`)}>
-                                Add Donation
-                            </Button>
                             <Button variant="contained" onClick={() => setShowScheduler(true)}>
                                 Schedule Pickup
                             </Button>

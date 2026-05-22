@@ -31,9 +31,7 @@ import { Order } from '@/types/OrdersTypes';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
-import { AdminDonationBody, base64ImageObj } from '@/types/DonationTypes';
-import { base64ObjToFile } from '@/utils/utils';
-import { uploadImages } from './firebase-images';
+import { AdminDonationBody } from '@/types/DonationTypes';
 import { CATEGORIES_COLLECTION } from './firebase-categories';
 
 // Imported constants
@@ -50,14 +48,63 @@ type CategoryTagData = {
     tagPrefix: string;
 };
 
+type AcceptedDonationUpdate = {
+    id: string;
+    category: string;
+    ref: DocumentReference;
+    tagNumber: string;
+};
+
 async function getCategoryRefByName(category: string): Promise<DocumentReference> {
-    const categoryQuery = query(collection(db, CATEGORIES_COLLECTION), where('name', '==', category));
+    const categoryName = category.trim();
+    if (!categoryName) {
+        throw new Error('Category not found: donation category is empty.');
+    }
+
+    const categoryQuery = query(collection(db, CATEGORIES_COLLECTION), where('name', '==', categoryName));
     const categorySnapshot = await getDocs(categoryQuery);
     const categoryRef = categorySnapshot.docs[0]?.ref;
     if (!categoryRef) {
-        throw new Error(`Category not found: "${category}". No matching category exists.`);
+        throw new Error(`Category not found: "${categoryName}". No matching category exists.`);
+    }
+    if (categorySnapshot.docs.length > 1) {
+        throw new Error(`Category "${categoryName}" is duplicated. Tag assignment requires a single matching category.`);
     }
     return categoryRef;
+}
+
+function getValidatedCategoryTagData(category: string, categoryRef: DocumentReference, categoryData: DocumentData): CategoryTagData {
+    const tagCount = Number(categoryData.tagCount ?? 0);
+    const tagPrefix = String(categoryData.tagPrefix ?? '').trim();
+
+    if (!Number.isFinite(tagCount) || !Number.isInteger(tagCount) || tagCount < 0) {
+        throw new Error(`Category "${category}" has an invalid tag count.`);
+    }
+    if (!tagPrefix) {
+        throw new Error(`Category "${category}" has an empty tag prefix.`);
+    }
+
+    return {
+        ref: categoryRef,
+        tagCount,
+        tagPrefix
+    };
+}
+
+function getDonationRef(id: string): DocumentReference {
+    return doc(db, DONATIONS_COLLECTION, id);
+}
+
+function getDonationRefs(ids: string[]): DocumentReference[] {
+    return Array.from(new Set(ids)).map(getDonationRef);
+}
+
+function getOrderDonationRefs(order: Order): DocumentReference[] {
+    return getDonationRefs(order.items.map((item) => item.id));
+}
+
+function isActiveOrderItemStatus(status: unknown): boolean {
+    return status === 'requested' || status === 'reserved';
 }
 
 const donationConverter = {
@@ -357,12 +404,17 @@ export async function addAdminDonation(newDonations: AdminDonationBody[], reques
                 if (!categoryDoc.exists()) {
                     throw new Error(`Category not found: ${category}`);
                 }
-                const categoryData = categoryDoc.data();
-                categoryDataByName.set(category, {
-                    ref,
-                    tagCount: Number(categoryData.tagCount ?? 0),
-                    tagPrefix: String(categoryData.tagPrefix ?? '').trim()
-                });
+                categoryDataByName.set(category, getValidatedCategoryTagData(category, ref, categoryDoc.data()));
+            }
+
+            if (orderRef && requestor && orderId) {
+                const orderDoc = await transaction.get(orderRef);
+                if (!orderDoc.exists()) {
+                    throw new Error(`Order ${orderId} not found.`);
+                }
+                if (orderDoc.data().status !== 'open') {
+                    throw new Error(`Order ${orderId} is not open.`);
+                }
             }
 
             transaction.set(bulkDonationsRef, {
@@ -451,6 +503,49 @@ export async function updateDonation(id: string, donationDetails: any): Promise<
     }
 }
 
+export async function updateDonationWithGeneratedTagNumber(id: string, category: string, donationDetails: any): Promise<string> {
+    try {
+        const categoryName = category.trim();
+        const categoryRef = await getCategoryRefByName(categoryName);
+        const donationRef = doc(db, DONATIONS_COLLECTION, id);
+
+        return await runTransaction(db, async (transaction) => {
+            const categoryDoc = await transaction.get(categoryRef);
+            const donationDoc = await transaction.get(donationRef);
+
+            if (!categoryDoc.exists()) {
+                throw new Error(`Category not found: "${categoryName}". No matching category exists.`);
+            }
+            if (!donationDoc.exists()) {
+                throw new Error(`Donation ${id} not found.`);
+            }
+
+            const categoryData = getValidatedCategoryTagData(categoryName, categoryRef, categoryDoc.data());
+            const newTagCount = categoryData.tagCount + 1;
+            const tagNumber = `${categoryData.tagPrefix} ${newTagCount}`.trim();
+            const detailsToUpdate = { ...donationDetails };
+            delete detailsToUpdate.tagNumber;
+            delete detailsToUpdate.category;
+
+            transaction.update(categoryRef, {
+                tagCount: newTagCount,
+                modifiedAt: serverTimestamp()
+            });
+            transaction.update(donationRef, {
+                ...detailsToUpdate,
+                category: categoryName,
+                tagNumber,
+                modifiedAt: serverTimestamp()
+            });
+
+            return tagNumber;
+        });
+    } catch (error) {
+        addErrorEvent('Error updating donation with generated tag number', error);
+        throw error;
+    }
+}
+
 export async function updateDonationStatus(id: string, status: DonationStatusValues): Promise<DonationStatusValues> {
     try {
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
@@ -489,7 +584,28 @@ export async function updateDropOffDonationStatuses(params: {
     schedulingLink?: string;
 }): Promise<{ id: string; tagNumber: string }[]> {
     try {
-        const uniqueCategories = [...new Set(params.acceptedDonations.map((donation) => donation.category))];
+        const acceptedDonations = Array.from(
+            new Map(
+                params.acceptedDonations.map((donation) => [
+                    donation.id,
+                    {
+                        ...donation,
+                        category: donation.category.trim()
+                    }
+                ])
+            ).values()
+        );
+        const acceptedDonationIds = new Set(acceptedDonations.map((donation) => donation.id));
+        const rejectedDonationIds = [...new Set(params.rejectedDonationIds)];
+        const rejectedDonationIdSet = new Set(rejectedDonationIds);
+
+        for (const acceptedDonationId of acceptedDonationIds) {
+            if (rejectedDonationIdSet.has(acceptedDonationId)) {
+                throw new Error(`Donation ${acceptedDonationId} cannot be both accepted and rejected.`);
+            }
+        }
+
+        const uniqueCategories = [...new Set(acceptedDonations.map((donation) => donation.category))];
         const categoryRefsByName = new Map<string, DocumentReference>();
 
         await Promise.all(
@@ -512,26 +628,51 @@ export async function updateDropOffDonationStatuses(params: {
                     throw new Error(`Category not found: "${category}". No matching category exists.`);
                 }
 
-                const categoryData = categoryDoc.data();
-                categoryDataByName.set(category, {
-                    ref: categoryRef,
-                    tagCount: Number(categoryData.tagCount ?? 0),
-                    tagPrefix: String(categoryData.tagPrefix ?? '').trim()
-                });
+                categoryDataByName.set(category, getValidatedCategoryTagData(category, categoryRef, categoryDoc.data()));
             }
 
-            const acceptedDonationUpdates = params.acceptedDonations.map((donation) => {
+            const acceptedDonationUpdates: AcceptedDonationUpdate[] = [];
+            for (const donation of acceptedDonations) {
+                const donationRef = doc(db, DONATIONS_COLLECTION, donation.id);
+                const donationDoc = await transaction.get(donationRef);
+                if (!donationDoc.exists()) {
+                    throw new Error(`Donation ${donation.id} not found.`);
+                }
+
+                const donationData = donationDoc.data();
+                if (donationData.status !== 'in processing') {
+                    throw new Error(`Donation ${donation.id} is no longer pending approval.`);
+                }
+                if (donationData.tagNumber) {
+                    throw new Error(`Donation ${donation.id} already has tag number ${donationData.tagNumber}.`);
+                }
+
                 const categoryData = categoryDataByName.get(donation.category);
                 if (!categoryData) {
                     throw new Error(`Category not found: "${donation.category}". No matching category exists.`);
                 }
 
                 categoryData.tagCount += 1;
-                return {
+                acceptedDonationUpdates.push({
                     id: donation.id,
+                    category: donation.category,
+                    ref: donationRef,
                     tagNumber: `${categoryData.tagPrefix} ${categoryData.tagCount}`.trim()
-                };
-            });
+                });
+            }
+
+            const rejectedDonationRefs = rejectedDonationIds.map((donationId) => doc(db, DONATIONS_COLLECTION, donationId));
+            for (let index = 0; index < rejectedDonationRefs.length; index++) {
+                const rejectedDonationDoc = await transaction.get(rejectedDonationRefs[index]);
+                if (!rejectedDonationDoc.exists()) {
+                    throw new Error(`Donation ${rejectedDonationIds[index]} not found.`);
+                }
+
+                const rejectedDonationData = rejectedDonationDoc.data();
+                if (rejectedDonationData.status !== 'in processing') {
+                    throw new Error(`Donation ${rejectedDonationIds[index]} is no longer pending approval.`);
+                }
+            }
 
             categoryDataByName.forEach((categoryData) => {
                 transaction.update(categoryData.ref, {
@@ -541,8 +682,7 @@ export async function updateDropOffDonationStatuses(params: {
             });
 
             acceptedDonationUpdates.forEach((donation) => {
-                const donationRef = doc(db, DONATIONS_COLLECTION, donation.id).withConverter(donationConverter);
-                transaction.update(donationRef, {
+                transaction.update(donation.ref, {
                     status: 'pending delivery',
                     dateAccepted: serverTimestamp(),
                     tagNumber: donation.tagNumber,
@@ -552,15 +692,17 @@ export async function updateDropOffDonationStatuses(params: {
                 });
             });
 
-            params.rejectedDonationIds.forEach((donationId) => {
-                const donationRef = doc(db, DONATIONS_COLLECTION, donationId).withConverter(donationConverter);
+            rejectedDonationRefs.forEach((donationRef) => {
                 transaction.update(donationRef, {
                     status: 'rejected',
                     modifiedAt: serverTimestamp()
                 });
             });
 
-            return acceptedDonationUpdates;
+            return acceptedDonationUpdates.map((donation) => ({
+                id: donation.id,
+                tagNumber: donation.tagNumber
+            }));
         });
     } catch (error) {
         addErrorEvent('updateDropOffDonationStatuses', error);
@@ -570,7 +712,12 @@ export async function updateDropOffDonationStatuses(params: {
 
 export async function schedulePickupForOrder(order: Order, schedulingLink?: string): Promise<void> {
     try {
-        const batch = writeBatch(db);
+        if (order.items.length === 0) {
+            throw new Error(`Order ${order.id} has no items to schedule.`);
+        }
+
+        const orderRef = doc(db, ORDERS_COLLECTION, order.id);
+        const itemRefs = getOrderDonationRefs(order);
         const schedulingFields = schedulingLink
             ? {
                   schedulingLink,
@@ -578,21 +725,46 @@ export async function schedulePickupForOrder(order: Order, schedulingLink?: stri
               }
             : {};
 
-        order.items.forEach((item) => {
-            const donationRef = doc(db, DONATIONS_COLLECTION, item.id).withConverter(donationConverter);
-            batch.update(donationRef, {
-                status: 'reserved',
-                ...schedulingFields,
+        await runTransaction(db, async (transaction) => {
+            const orderDoc = await transaction.get(orderRef);
+            if (!orderDoc.exists()) {
+                throw new Error(`Order ${order.id} not found.`);
+            }
+
+            const orderData = orderDoc.data();
+            if (orderData.status !== 'open') {
+                throw new Error(`Order ${order.id} is not open.`);
+            }
+
+            const currentOrderItemPaths = new Set(((orderData.items ?? []) as DocumentReference[]).map((itemRef) => itemRef.path));
+            for (const itemRef of itemRefs) {
+                if (!currentOrderItemPaths.has(itemRef.path)) {
+                    throw new Error(`Donation ${itemRef.id} is no longer in order ${order.id}.`);
+                }
+
+                const itemDoc = await transaction.get(itemRef);
+                if (!itemDoc.exists()) {
+                    throw new Error(`Donation ${itemRef.id} not found.`);
+                }
+
+                const itemData = itemDoc.data();
+                if (itemData.status !== 'requested' && itemData.status !== 'reserved') {
+                    throw new Error(`Donation ${itemRef.id} cannot be scheduled from status "${itemData.status}".`);
+                }
+            }
+
+            itemRefs.forEach((itemRef) => {
+                transaction.update(itemRef, {
+                    status: 'reserved',
+                    ...schedulingFields,
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            transaction.update(orderRef, {
                 modifiedAt: serverTimestamp()
             });
         });
-
-        const orderRef = doc(db, ORDERS_COLLECTION, order.id);
-        batch.update(orderRef, {
-            modifiedAt: serverTimestamp()
-        });
-
-        await batch.commit();
     } catch (error) {
         addErrorEvent('schedulePickupForOrder', error);
         throw error;
@@ -601,25 +773,111 @@ export async function schedulePickupForOrder(order: Order, schedulingLink?: stri
 
 export async function cancelOrderAndReturnItems(order: Order): Promise<void> {
     try {
-        const batch = writeBatch(db);
         const orderRef = doc(db, ORDERS_COLLECTION, order.id);
+        const itemRefs = getOrderDonationRefs(order);
 
-        order.items.forEach((item) => {
-            const donationRef = doc(db, DONATIONS_COLLECTION, item.id).withConverter(donationConverter);
-            batch.update(donationRef, {
+        await runTransaction(db, async (transaction) => {
+            const orderDoc = await transaction.get(orderRef);
+            if (!orderDoc.exists()) {
+                throw new Error(`Order ${order.id} not found.`);
+            }
+
+            const orderData = orderDoc.data();
+            if (orderData.status !== 'open') {
+                throw new Error(`Order ${order.id} is not open.`);
+            }
+
+            const currentOrderItemPaths = new Set(((orderData.items ?? []) as DocumentReference[]).map((itemRef) => itemRef.path));
+            const itemRefsInOrder = itemRefs.filter((itemRef) => currentOrderItemPaths.has(itemRef.path));
+            const itemRefsToReturn: DocumentReference[] = [];
+
+            for (const itemRef of itemRefsInOrder) {
+                const itemDoc = await transaction.get(itemRef);
+                if (!itemDoc.exists()) {
+                    throw new Error(`Donation ${itemRef.id} not found.`);
+                }
+
+                const itemData = itemDoc.data();
+                if (itemData.status === 'distributed') {
+                    throw new Error(`Donation ${itemRef.id} has already been distributed.`);
+                }
+                if (isActiveOrderItemStatus(itemData.status)) {
+                    itemRefsToReturn.push(itemRef);
+                }
+            }
+
+            itemRefsToReturn.forEach((itemRef) => {
+                transaction.update(itemRef, {
+                    status: 'available',
+                    requestor: null,
+                    schedulingLink: null,
+                    schedulingEmailSentAt: null,
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            const orderUpdates: Record<string, unknown> = {
+                modifiedAt: serverTimestamp()
+            };
+            if (itemRefsInOrder.length > 0) {
+                orderUpdates.items = arrayRemove(...itemRefsInOrder);
+            }
+            transaction.update(orderRef, {
+                ...orderUpdates
+            });
+        });
+    } catch (error) {
+        addErrorEvent('cancelOrderAndReturnItems', error);
+        throw error;
+    }
+}
+
+export async function returnOrderDonationToInventory(donationId: string): Promise<void> {
+    try {
+        const donationRef = getDonationRef(donationId);
+        const openOrdersQuery = query(collection(db, ORDERS_COLLECTION), where('status', '==', 'open'), where('items', 'array-contains', donationRef));
+        const openOrdersSnapshot = await getDocs(openOrdersQuery);
+        const openOrderRefs = openOrdersSnapshot.docs.map((orderDoc) => orderDoc.ref);
+
+        await runTransaction(db, async (transaction) => {
+            const donationDoc = await transaction.get(donationRef);
+            if (!donationDoc.exists()) {
+                throw new Error(`Donation ${donationId} not found.`);
+            }
+
+            const donationData = donationDoc.data();
+            if (donationData.status === 'distributed') {
+                throw new Error(`Donation ${donationId} has already been distributed.`);
+            }
+            if (donationData.status !== 'available' && !isActiveOrderItemStatus(donationData.status)) {
+                throw new Error(`Donation ${donationId} cannot be returned to inventory from status "${donationData.status}".`);
+            }
+
+            const existingOrderRefs: DocumentReference[] = [];
+            for (const orderRef of openOrderRefs) {
+                const orderDoc = await transaction.get(orderRef);
+                if (orderDoc.exists()) {
+                    existingOrderRefs.push(orderRef);
+                }
+            }
+
+            existingOrderRefs.forEach((orderRef) => {
+                transaction.update(orderRef, {
+                    items: arrayRemove(donationRef),
+                    modifiedAt: serverTimestamp()
+                });
+            });
+
+            transaction.update(donationRef, {
                 status: 'available',
                 requestor: null,
+                schedulingLink: null,
+                schedulingEmailSentAt: null,
                 modifiedAt: serverTimestamp()
             });
         });
-
-        batch.update(orderRef, {
-            modifiedAt: serverTimestamp()
-        });
-
-        await batch.commit();
     } catch (error) {
-        addErrorEvent('cancelOrderAndReturnItems', error);
+        addErrorEvent('returnOrderDonationToInventory', error);
         throw error;
     }
 }
@@ -653,11 +911,11 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
             const donationref = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
             const donationSnapshot = await getDoc(donationref);
             const donation = donationSnapshot.data();
-            if (donation && donation.status !== 'available') {
-                unavailableDonations.push(donation.id);
+            if (!donation || donation.status !== 'available') {
+                unavailableDonations.push(id);
             }
-            return unavailableDonations;
         }
+        return unavailableDonations;
     } catch (error) {
         addErrorEvent('Admin are donations available', error);
     }
@@ -666,63 +924,81 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
 
 export async function requestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
     try {
+        const inventoryItemRefs = getDonationRefs(inventoryItemIds);
         const orderRef = doc(collection(db, ORDERS_COLLECTION));
-        const batch = writeBatch(db);
-        //Create a new order collection doc
-        batch.set(orderRef, {
-            status: 'open',
-            requestor: user,
-            items: [],
-            createdAt: serverTimestamp()
-        });
-        for (const inventoryItemId of inventoryItemIds) {
-            const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
-            //Update state of each requested item to 'requested'
-            batch.update(inventoryItemRef, {
-                status: 'requested',
+
+        await runTransaction(db, async (transaction) => {
+            for (const inventoryItemRef of inventoryItemRefs) {
+                const inventoryItemDoc = await transaction.get(inventoryItemRef);
+                if (!inventoryItemDoc.exists()) {
+                    throw new Error(`Donation ${inventoryItemRef.id} not found.`);
+                }
+                const inventoryItemData = inventoryItemDoc.data();
+                if (inventoryItemData.status !== 'available') {
+                    throw new Error(`Donation ${inventoryItemRef.id} is not available.`);
+                }
+            }
+
+            transaction.set(orderRef, {
+                status: 'open',
                 requestor: user,
-                dateRequested: serverTimestamp(),
+                items: inventoryItemRefs,
+                rejectedItems: [],
+                createdAt: serverTimestamp(),
                 modifiedAt: serverTimestamp()
             });
-            //Add donation ref to items array
-            batch.update(orderRef, {
-                items: arrayUnion(inventoryItemRef),
-                modifiedAt: serverTimestamp()
+
+            inventoryItemRefs.forEach((inventoryItemRef) => {
+                transaction.update(inventoryItemRef, {
+                    status: 'requested',
+                    requestor: user,
+                    dateRequested: serverTimestamp(),
+                    modifiedAt: serverTimestamp()
+                });
             });
-        }
-        await batch.commit();
+        });
     } catch (error) {
         addErrorEvent('Request inventory items', error);
+        throw error;
     }
 }
 
 export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<Order> {
     try {
+        const inventoryItemRefs = getDonationRefs(inventoryItemIds);
         const orderRef = doc(collection(db, ORDERS_COLLECTION));
-        const batch = writeBatch(db);
-        //Create and close order
-        batch.set(orderRef, {
-            status: 'open',
-            requestor: user,
-            items: [],
-            createdAt: serverTimestamp()
-        });
-        for (const inventoryItemId of inventoryItemIds) {
-            const inventoryItemRef = doc(db, DONATIONS_COLLECTION, inventoryItemId);
-            //Update state of each requested item to 'requested'
-            batch.update(inventoryItemRef, {
-                status: 'requested',
+
+        await runTransaction(db, async (transaction) => {
+            for (const inventoryItemRef of inventoryItemRefs) {
+                const inventoryItemDoc = await transaction.get(inventoryItemRef);
+                if (!inventoryItemDoc.exists()) {
+                    throw new Error(`Donation ${inventoryItemRef.id} not found.`);
+                }
+                const inventoryItemData = inventoryItemDoc.data();
+                if (inventoryItemData.status !== 'available') {
+                    throw new Error(`Donation ${inventoryItemRef.id} is not available.`);
+                }
+            }
+
+            transaction.set(orderRef, {
+                status: 'open',
                 requestor: user,
-                dateRequested: serverTimestamp(),
+                items: inventoryItemRefs,
+                rejectedItems: [],
+                createdAt: serverTimestamp(),
                 modifiedAt: serverTimestamp()
             });
-            //Add donation ref to items array
-            batch.update(orderRef, {
-                items: arrayUnion(inventoryItemRef),
-                modifiedAt: serverTimestamp()
+
+            inventoryItemRefs.forEach((inventoryItemRef) => {
+                transaction.update(inventoryItemRef, {
+                    status: 'requested',
+                    requestor: user,
+                    dateRequested: serverTimestamp(),
+                    modifiedAt: serverTimestamp()
+                });
             });
-        }
-        await batch.commit();
+        });
+
         const order = await getOrderById(orderRef.id);
         return order;
     } catch (error) {
@@ -749,12 +1025,23 @@ export async function getOrdersNotifications() {
             };
             for (const donation of orderInfo.items) {
                 const donationDetails = await getDoc(donation);
-                order.items.push(donationDetails.data() as Donation);
+                if (donationDetails.exists()) {
+                    const donationData = donationDetails.data() as Donation;
+                    if (donationData.status === 'requested') {
+                        order.items.push(donationData);
+                    }
+                } else {
+                    console.warn(`Order ${doc.id}: referenced donation ${donation.id} not found, skipping`);
+                }
             }
             if (orderInfo.rejectedItems) {
                 for (const donation of orderInfo.rejectedItems) {
                     const donationDetails = await getDoc(donation);
-                    order.rejectedItems?.push(donationDetails.data() as Donation);
+                    if (donationDetails.exists()) {
+                        order.rejectedItems?.push(donationDetails.data() as Donation);
+                    } else {
+                        console.warn(`Order ${doc.id}: referenced rejected donation ${donation.id} not found, skipping`);
+                    }
                 }
             }
 
@@ -782,12 +1069,20 @@ export async function getOrderById(id: string): Promise<Order> {
             };
             for (const donation of orderInfo.items) {
                 const donationDetails = await getDoc(donation);
-                order.items.push(donationDetails.data() as Donation);
+                if (donationDetails.exists()) {
+                    order.items.push(donationDetails.data() as Donation);
+                } else {
+                    console.warn(`Order ${id}: referenced donation ${donation.id} not found, skipping`);
+                }
             }
             if (orderInfo.rejectedItems) {
                 for (const donation of orderInfo.rejectedItems) {
                     const donationDetails = await getDoc(donation);
-                    order.rejectedItems?.push(donationDetails.data() as Donation);
+                    if (donationDetails.exists()) {
+                        order.rejectedItems?.push(donationDetails.data() as Donation);
+                    } else {
+                        console.warn(`Order ${id}: referenced rejected donation ${donation.id} not found, skipping`);
+                    }
                 }
             }
             return order;
@@ -812,71 +1107,152 @@ export async function closeOrder(id: string): Promise<void> {
 //Removes rejected donation from order, add to rejectedItems array, and changes status to 'unavailable'.
 export async function removeDonationFromOrder(orderId: string, donation: Donation): Promise<void> {
     try {
-        const batch = writeBatch(db);
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${orderId}`);
-        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
-        batch.update(orderRef, {
-            items: arrayRemove(donationRef),
-            rejectedItems: arrayUnion(donationRef),
-            modifiedAt: serverTimestamp()
+        const donationRef = getDonationRef(donation.id);
+
+        await runTransaction(db, async (transaction) => {
+            const orderSnapshot = await transaction.get(orderRef);
+            if (!orderSnapshot.exists()) {
+                throw new Error(`Order ${orderId} not found`);
+            }
+
+            const orderData = orderSnapshot.data();
+            if (orderData.status !== 'open') {
+                throw new Error(`Order ${orderId} is not open.`);
+            }
+
+            const currentItems = (orderData.items ?? []) as DocumentReference[];
+            if (!currentItems.some((itemRef) => itemRef.path === donationRef.path)) {
+                throw new Error(`Donation ${donation.id} is no longer in order ${orderId}.`);
+            }
+
+            const donationDoc = await transaction.get(donationRef);
+            if (!donationDoc.exists()) {
+                throw new Error(`Donation ${donation.id} not found.`);
+            }
+
+            const donationData = donationDoc.data();
+            if (!isActiveOrderItemStatus(donationData.status)) {
+                throw new Error(`Donation ${donation.id} cannot be removed from order from status "${donationData.status}".`);
+            }
+
+            const remainingItems = currentItems.filter((itemRef) => itemRef.path !== donationRef.path);
+            const orderUpdates: Record<string, unknown> = {
+                items: arrayRemove(donationRef),
+                rejectedItems: arrayUnion(donationRef),
+                modifiedAt: serverTimestamp()
+            };
+
+            if (remainingItems.length === 0) {
+                orderUpdates.status = 'closed';
+            }
+
+            transaction.update(orderRef, orderUpdates);
+            transaction.update(donationRef, {
+                status: 'unavailable',
+                requestor: null,
+                modifiedAt: serverTimestamp()
+            });
         });
-        batch.update(donationRef, {
-            status: 'unavailable',
-            requestor: null,
-            modifiedAt: serverTimestamp()
-        });
-        await batch.commit();
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);
+        throw error;
     }
 }
 
 //Marks donation as distributed and adds it to user's and organization's distributed items list
 export async function markDonationAsDistributed(donation: Donation): Promise<void> {
     try {
-        const batch = writeBatch(db);
-        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
-        const requestorRef = doc(db, `${USERS_COLLECTION}/${donation.requestor?.id}`);
-        const requestorSnapshot = await getDoc(requestorRef);
-        let orgId = '';
-        if (requestorSnapshot.exists()) {
-            const requestor = requestorSnapshot.data();
-            orgId = requestor.organization.id;
-        }
-        const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, orgId);
-        const organizationSnapshot = await getDoc(organizationRef);
-        let orgName;
-        if (organizationSnapshot.exists()) {
-            orgName = organizationSnapshot.data().name;
-        }
+        const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`);
+        const openOrdersQuery = query(collection(db, ORDERS_COLLECTION), where('status', '==', 'open'), where('items', 'array-contains', donationRef));
+        const openOrdersSnapshot = await getDocs(openOrdersQuery);
+        const openOrderRefs = openOrdersSnapshot.docs.map((orderDoc) => orderDoc.ref);
 
-        batch.update(donationRef, {
-            status: 'distributed',
-            distributor: {
-                id: donation.requestor?.id,
-                name: donation.requestor?.name,
-                email: donation.requestor?.email,
-                organization: orgName
-            },
-            modifiedAt: serverTimestamp(),
-            dateDistributed: serverTimestamp()
-        });
-        batch.update(requestorRef, {
-            distributedItems: arrayUnion({
+        await runTransaction(db, async (transaction) => {
+            const donationDoc = await transaction.get(donationRef);
+            if (!donationDoc.exists()) {
+                throw new Error(`Donation ${donation.id} not found.`);
+            }
+
+            const donationData = donationDoc.data();
+            if (donationData.status !== 'reserved') {
+                throw new Error(`Donation ${donation.id} cannot be distributed from status "${donationData.status}".`);
+            }
+            if (!donationData.requestor?.id) {
+                throw new Error(`Donation ${donation.id} does not have a requestor.`);
+            }
+
+            const requestorRef = doc(db, `${USERS_COLLECTION}/${donationData.requestor.id}`);
+            const requestorSnapshot = await transaction.get(requestorRef);
+            if (!requestorSnapshot.exists()) {
+                throw new Error(`Requestor ${donationData.requestor.id} not found.`);
+            }
+
+            const requestor = requestorSnapshot.data();
+            const orgId = requestor.organization?.id;
+            if (!orgId) {
+                throw new Error(`Requestor ${donationData.requestor.id} does not have an organization.`);
+            }
+
+            const organizationRef = doc(db, ORGANIZATIONS_COLLECTION, orgId);
+            const organizationSnapshot = await transaction.get(organizationRef);
+            if (!organizationSnapshot.exists()) {
+                throw new Error(`Organization ${orgId} not found.`);
+            }
+
+            const openOrderUpdates: { ref: DocumentReference; shouldClose: boolean }[] = [];
+            for (const orderRef of openOrderRefs) {
+                const orderDoc = await transaction.get(orderRef);
+                if (!orderDoc.exists()) {
+                    continue;
+                }
+
+                const orderData = orderDoc.data();
+                const remainingItems = ((orderData.items ?? []) as DocumentReference[]).filter((itemRef) => itemRef.path !== donationRef.path);
+                openOrderUpdates.push({
+                    ref: orderRef,
+                    shouldClose: remainingItems.length === 0
+                });
+            }
+
+            const orgName = organizationSnapshot.data().name;
+            const distributedItem = {
                 id: donation.id,
-                tagNumber: donation.tagNumber
-            }),
-            modifiedAt: serverTimestamp()
+                tagNumber: donationData.tagNumber
+            };
+
+            transaction.update(donationRef, {
+                status: 'distributed',
+                distributor: {
+                    id: donationData.requestor.id,
+                    name: donationData.requestor.name,
+                    email: donationData.requestor.email,
+                    organization: orgName
+                },
+                modifiedAt: serverTimestamp(),
+                dateDistributed: serverTimestamp()
+            });
+            transaction.update(requestorRef, {
+                distributedItems: arrayUnion(distributedItem),
+                modifiedAt: serverTimestamp()
+            });
+            transaction.update(organizationRef, {
+                distributedItems: arrayUnion(distributedItem),
+                modifiedAt: serverTimestamp()
+            });
+            openOrderUpdates.forEach((orderUpdate) => {
+                const updates: Record<string, unknown> = {
+                    items: arrayRemove(donationRef),
+                    modifiedAt: serverTimestamp()
+                };
+                if (orderUpdate.shouldClose) {
+                    updates.status = 'closed';
+                }
+                transaction.update(orderUpdate.ref, updates);
+            });
         });
-        batch.update(organizationRef, {
-            distributedItems: arrayUnion({
-                id: donation.id,
-                tagNumber: donation.tagNumber
-            }),
-            modifiedAt: serverTimestamp()
-        });
-        await batch.commit();
     } catch (error) {
         addErrorEvent('Error marking donation as distributed', error);
+        throw error;
     }
 }

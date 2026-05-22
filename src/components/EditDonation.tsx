@@ -1,11 +1,11 @@
 'use client';
 
 //Hooks
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 //API
-import { updateDonation } from '@/api/firebase-donations';
+import { updateDonation, updateDonationWithGeneratedTagNumber } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
-import { getAllCategories, getTagNumber } from '@/api/firebase-categories';
+import { getAllCategories } from '@/api/firebase-categories';
 import { appendImagesToState, removeImageFromState } from '@/controllers/images';
 import { uploadImages } from '@/api/firebase-images';
 //Components
@@ -32,7 +32,7 @@ type EditDonationProps = {
 };
 
 const EditDonation = (props: EditDonationProps) => {
-    const { id, category, brand, model, description, status, tagNumber, images, requestor } = props.donationDetails;
+    const { id, category, brand, model, description, status, tagNumber, images } = props.donationDetails;
     const { setIsEditMode, setDonationDetailsUpdated } = props;
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -44,10 +44,12 @@ const EditDonation = (props: EditDonationProps) => {
     const [newDescription, setNewDescription] = useState<string>(description ?? '');
     const [newImages, setNewImages] = useState<string[]>(images);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [shouldGenerateTagNumber, setShouldGenerateTagNumber] = useState<boolean>(false);
+    const isSubmittingRef = useRef<boolean>(false);
 
     const [addedImages, setAddedImages] = useState<File[] | null>();
 
-    const fetchCategories = async (): Promise<void> => {
+    const fetchCategories = useCallback(async (): Promise<void> => {
         try {
             setIsLoading(true);
             const categoriesResult = await getAllCategories();
@@ -58,7 +60,7 @@ const EditDonation = (props: EditDonationProps) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -68,6 +70,7 @@ const EditDonation = (props: EditDonationProps) => {
 
     const handleCategoryChange = (event: any, newValue: string | null) => {
         setNewCategory(newValue);
+        setShouldGenerateTagNumber(false);
     };
 
     const handleRemoveExistingImage = (url: string) => {
@@ -76,6 +79,11 @@ const EditDonation = (props: EditDonationProps) => {
 
     const handleSubmitUpdatedDonation = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
+        if (isSubmittingRef.current) {
+            return;
+        }
+
+        isSubmittingRef.current = true;
         setIsLoading(true);
 
         try {
@@ -91,26 +99,35 @@ const EditDonation = (props: EditDonationProps) => {
                 description: newDescription,
                 images: [...addedImageUrls, ...newImages]
             };
-            await updateDonation(id, updatedDonation);
+            if (shouldGenerateTagNumber && newCategory) {
+                const assignedTagNumber = await updateDonationWithGeneratedTagNumber(id, newCategory, updatedDonation);
+                setNewTagnumber(assignedTagNumber);
+                setShouldGenerateTagNumber(false);
+            } else {
+                await updateDonation(id, updatedDonation);
+            }
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error submitting donation update', error);
             throw error;
         } finally {
+            isSubmittingRef.current = false;
             setIsLoading(false);
         }
     };
 
-    const assignTagNumber = async () => {
+    const assignTagNumber = () => {
         if (newCategory) {
-            const assignedTagNumber = await getTagNumber(newCategory);
-            setNewTagnumber(assignedTagNumber);
+            setShouldGenerateTagNumber(true);
+            setNewTagnumber('New tag will be assigned when saved');
         }
     };
 
     useEffect(() => {
-        if (!categories) fetchCategories();
-    }, []);
+        if (!categories) {
+            fetchCategories();
+        }
+    }, [categories, fetchCategories]);
 
     return (
         <ProtectedAdminRoute>
@@ -136,7 +153,10 @@ const EditDonation = (props: EditDonationProps) => {
                                         label="Tag Number"
                                         name="tagNumber"
                                         id="tagNumber"
-                                        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setNewTagnumber(event.target.value)}
+                                        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => {
+                                            setShouldGenerateTagNumber(false);
+                                            setNewTagnumber(event.target.value);
+                                        }}
                                         value={newTagNumber}
                                     />
                                     <Button variant="text" type="button" onClick={assignTagNumber}>

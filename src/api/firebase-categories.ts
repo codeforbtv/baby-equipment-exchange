@@ -25,6 +25,20 @@ import { Category, ICategory } from '@/models/category';
 
 export const CATEGORIES_COLLECTION = 'Categories';
 
+function getValidatedTagData(category: string, categoryData: DocumentData): { tagCount: number; tagPrefix: string } {
+    const tagCount = Number(categoryData.tagCount ?? 0);
+    const tagPrefix = String(categoryData.tagPrefix ?? '').trim();
+
+    if (!Number.isFinite(tagCount) || !Number.isInteger(tagCount) || tagCount < 0) {
+        throw new Error(`Category "${category}" has an invalid tag count.`);
+    }
+    if (!tagPrefix) {
+        throw new Error(`Category "${category}" has an empty tag prefix.`);
+    }
+
+    return { tagCount, tagPrefix };
+}
+
 const categoryConverter = {
     toFirestore(category: Category): DocumentData {
         const categoryData: ICategory = {
@@ -55,7 +69,7 @@ const categoryConverter = {
 
 export async function getAllCategories(): Promise<Category[]> {
     try {
-        let categories: Category[] = [];
+        const categories: Category[] = [];
         const q = query(collection(db, CATEGORIES_COLLECTION), orderBy('name')).withConverter(categoryConverter);
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((snapshot) => {
@@ -85,32 +99,65 @@ export async function getCategoryById(id: string): Promise<Category> {
 
 export async function addCategory(newCategory: categoryBody): Promise<void> {
     try {
-        const categoryRef = doc(collection(db, CATEGORIES_COLLECTION), newCategory.name);
+        const categoryName = newCategory.name.trim();
+        const tagPrefix = newCategory.tagPrefix.trim();
+        if (!categoryName) {
+            throw new Error('Category name is required.');
+        }
+        if (!tagPrefix) {
+            throw new Error('Category tag prefix is required.');
+        }
+
+        const categoryRef = doc(collection(db, CATEGORIES_COLLECTION), categoryName);
         const categoryParams: ICategory = {
             id: categoryRef.id,
             active: true,
-            name: newCategory.name,
+            name: categoryName,
             description: newCategory.description,
             tagCount: 0,
-            tagPrefix: newCategory.tagPrefix,
+            tagPrefix,
             modifiedAt: serverTimestamp() as Timestamp
         };
         const category = new Category(categoryParams);
         await setDoc(categoryRef, categoryConverter.toFirestore(category));
     } catch (error) {
         addErrorEvent('Error creating new categoy: ', error);
+        throw error;
     }
 }
 
 export async function updateCategory(id: string, categoryDetails: any): Promise<void> {
     try {
         const categoryRef = doc(db, CATEGORIES_COLLECTION, id).withConverter(categoryConverter);
+        const updatedCategoryDetails = { ...categoryDetails };
+
+        if (typeof updatedCategoryDetails.name === 'string') {
+            updatedCategoryDetails.name = updatedCategoryDetails.name.trim();
+            if (!updatedCategoryDetails.name) {
+                throw new Error('Category name is required.');
+            }
+        }
+        if (typeof updatedCategoryDetails.tagPrefix === 'string') {
+            updatedCategoryDetails.tagPrefix = updatedCategoryDetails.tagPrefix.trim();
+            if (!updatedCategoryDetails.tagPrefix) {
+                throw new Error('Category tag prefix is required.');
+            }
+        }
+        if (updatedCategoryDetails.tagCount !== undefined) {
+            const tagCount = Number(updatedCategoryDetails.tagCount);
+            if (!Number.isFinite(tagCount) || !Number.isInteger(tagCount) || tagCount < 0) {
+                throw new Error('Category tag count must be a non-negative integer.');
+            }
+            updatedCategoryDetails.tagCount = tagCount;
+        }
+
         await updateDoc(categoryRef, {
-            ...categoryDetails,
+            ...updatedCategoryDetails,
             modifiedAt: serverTimestamp()
         });
     } catch (error) {
         addErrorEvent('Error updating category: ', error);
+        throw error;
     }
 }
 
@@ -126,7 +173,12 @@ export async function deleteCategory(id: string): Promise<void> {
 // Increments category's tagCount by 1 and combines it with the category's tagPrefix to create a Tag number
 export async function getTagNumber(category: string): Promise<string> {
     //query by category name in case doc ID !== category name
-    const q = query(collection(db, CATEGORIES_COLLECTION), where('name', '==', category));
+    const categoryName = category.trim();
+    if (!categoryName) {
+        throw new Error('Category not found: donation category is empty.');
+    }
+
+    const q = query(collection(db, CATEGORIES_COLLECTION), where('name', '==', categoryName));
     const querySnapshot = await getDocs(q);
     //query should only return 1 result, but still must be interated through
     const docRefs: DocumentReference[] = [];
@@ -134,7 +186,13 @@ export async function getTagNumber(category: string): Promise<string> {
         const docRef = docSnap.ref;
         docRefs.push(docRef);
     });
-    //Use first (and only) query to obtain doc ref for transaction
+    if (docRefs.length === 0) {
+        throw new Error(`Category not found: "${categoryName}". No matching category exists.`);
+    }
+    if (docRefs.length > 1) {
+        throw new Error(`Category "${categoryName}" is duplicated. Tag assignment requires a single matching category.`);
+    }
+
     const categoryRef = docRefs[0];
     let tagNumber = '';
     try {
@@ -144,8 +202,9 @@ export async function getTagNumber(category: string): Promise<string> {
                 return Promise.reject(new Error('Category not found.'));
             }
             const categoryData = categoryDoc.data();
-            const newTagCount = categoryData.tagCount + 1;
-            tagNumber = `${categoryData.tagPrefix} ${newTagCount}`;
+            const { tagCount, tagPrefix } = getValidatedTagData(categoryName, categoryData);
+            const newTagCount = tagCount + 1;
+            tagNumber = `${tagPrefix} ${newTagCount}`;
             transaction.update(categoryRef, { tagCount: newTagCount, modifiedAt: serverTimestamp() });
         });
         return tagNumber;
