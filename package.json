@@ -2,6 +2,10 @@
     "name": "baby-equipment-exchange",
     "version": "0.1.0",
     "private": true,
+    "engines": {
+        "node": ">=22.0.0",
+        "npm": ">=10.0.0"
+    },
     "scripts": {
         "dev": "next dev",
         "emulators": "npm run --prefix functions build && firebase emulators:start --only auth,firestore,functions,storage --project baby-equipment-exchange-dev",
