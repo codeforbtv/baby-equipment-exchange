@@ -59,6 +59,18 @@ env:
           - BUILD
           - RUNTIME
 
+    - variable: NEXT_PUBLIC_EMAIL_SENDER
+      secret: NEXT_PUBLIC_EMAIL_SENDER
+      availability:
+          - BUILD
+          - RUNTIME
+
+    - variable: NEXT_PUBLIC_EMAIL_CC
+      secret: NEXT_PUBLIC_EMAIL_CC
+      availability:
+          - BUILD
+          - RUNTIME
+
     - variable: GOOGLE_APP_PASSWORD
       secret: GOOGLE_APP_PASSWORD
       availability:
