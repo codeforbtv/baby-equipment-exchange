@@ -237,16 +237,17 @@ export async function getDonationById(id: string): Promise<Donation> {
 
 export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
-        const bulkRef = doc(db, BULK_DONATIONS_COLLECTION, id);
-        const bulkSnapshot = await getDoc(bulkRef);
-        if (bulkSnapshot.exists()) {
-            const bulkData = bulkSnapshot.data();
-            for (const donation of bulkData.donations) {
-                const donationDetails = await getDonationById(donation.id);
-                donations.push(donationDetails);
-            }
+        if (!id) {
+            return [];
         }
+
+        let donations: Donation[] = [];
+        const donationsRef = collection(db, DONATIONS_COLLECTION);
+        const donationsByBulkIdQuery = query(donationsRef, where('bulkCollection', '==', id), where('status', '==', 'in processing')).withConverter(
+            donationConverter
+        );
+        const donationsSnapshot = await getDocs(donationsByBulkIdQuery);
+        donationsSnapshot.forEach((snapshot) => donations.push(snapshot.data()));
         return donations;
     } catch (error) {
         addErrorEvent('Get donations by bulk id', error);
