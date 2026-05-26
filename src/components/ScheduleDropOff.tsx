@@ -34,6 +34,7 @@ type ScheduleDropOffProps = {
 const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const { acceptedDonations, rejectedDonations, setOpenScheduler } = props;
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(true);
     const [events, setEvents] = useState<EventType[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
@@ -63,11 +64,15 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
     const fetchEvents = async () => {
+        setIsLoadingEvents(true);
         try {
             const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
+            setEvents(eventResult ?? []);
         } catch (error) {
             addErrorEvent('Fetch Calendly Scheduling Links', error);
+            setEvents([]);
+        } finally {
+            setIsLoadingEvents(false);
         }
     };
 
@@ -181,10 +186,15 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                     <InputLabel variant="standard" htmlFor="location" shrink={true}>
                                         Select calendar for accepted donations
                                     </InputLabel>
-                                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                        <option value="">
-                                            Send without calendar invite
-                                        </option>
+                                    <NativeSelect
+                                        variant="outlined"
+                                        name="location"
+                                        id="location"
+                                        onChange={handleSelect}
+                                        value={inviteUrl}
+                                        disabled={isLoadingEvents}
+                                    >
+                                        <option value="">{isLoadingEvents ? 'Loading calendars...' : 'Send without calendar invite'}</option>
                                         {events &&
                                             events.map((event, index) => {
                                                 if (event.active === true) {

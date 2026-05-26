@@ -35,6 +35,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(true);
     const [events, setEvents] = useState<EventType[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
@@ -75,11 +76,15 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     };
 
     const fetchEvents = async () => {
+        setIsLoadingEvents(true);
         try {
             const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
+            setEvents(eventResult ?? []);
         } catch (error) {
             addErrorEvent('Fetch Calendly Scheduling Links', error);
+            setEvents([]);
+        } finally {
+            setIsLoadingEvents(false);
         }
     };
 
@@ -134,10 +139,15 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                 <InputLabel variant="standard" htmlFor="location" shrink={true}>
                                     Select calendar for accepted donations
                                 </InputLabel>
-                                <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                    <option value="">
-                                        Send without calendar invite
-                                    </option>
+                                <NativeSelect
+                                    variant="outlined"
+                                    name="location"
+                                    id="location"
+                                    onChange={handleSelect}
+                                    value={inviteUrl}
+                                    disabled={isLoadingEvents}
+                                >
+                                    <option value="">{isLoadingEvents ? 'Loading calendars...' : 'Send without calendar invite'}</option>
                                     {events &&
                                         events.map((event, index) => {
                                             if (event.active === true) {

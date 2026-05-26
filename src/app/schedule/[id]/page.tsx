@@ -25,6 +25,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
     }
 
     const [events, setEvents] = useState<EventType[]>([]);
+    const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(true);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [notes, sentNotes] = useState<string>('');
@@ -35,15 +36,19 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
 
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
 
-    const handleSubmit = async () => { };
+    const handleSubmit = async () => {};
 
     useEffect(() => {
         const fetchEvents = async () => {
+            setIsLoadingEvents(true);
             try {
                 const eventResult = await getSchedulingPageLink();
-                setEvents(eventResult);
+                setEvents(eventResult ?? []);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
+                setEvents([]);
+            } finally {
+                setIsLoadingEvents(false);
             }
         };
         const fetchDonorEmail = async () => {
@@ -66,10 +71,8 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
             </div>
             <div className="content--container">
                 <Box display={'flex'} flexDirection={'column'} gap={4}>
-                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                        <option value="" >
-                            Send without calendar invite
-                        </option>
+                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl} disabled={isLoadingEvents}>
+                        <option value="">{isLoadingEvents ? 'Loading calendars...' : 'Send without calendar invite'}</option>
                         {events.map((event, index) => {
                             if (event.active === true) {
                                 return (
@@ -92,9 +95,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                         placeholder="Add notes here"
                         onChange={handleInputChange}
                     ></TextField>
-                    <Button onClick={handleSubmit} >
-                        Confirm
-                    </Button>
+                    <Button onClick={handleSubmit}>Confirm</Button>
                 </Box>
             </div>
         </ProtectedAdminRoute>
