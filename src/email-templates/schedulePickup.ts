@@ -11,8 +11,12 @@ export default function schedulePickup(email: string, inviteUrl: string, message
             tagsList += tagNumbers[i];
         }
     }
-    const schedulingLink = `<h3><b>*** <a href='${inviteUrl}'>Click here to schedule a pickup of your requested items</a>  ***</b><br>Please reference the following tag numbers: ${tagsList}</h3>`;
-    html += schedulingLink;
+    if (inviteUrl) {
+        const schedulingLink = `<h3><b>*** <a href='${inviteUrl}'>Click here to schedule a pickup of your requested items</a>  ***</b><br>Please reference the following tag numbers: ${tagsList}</h3>`;
+        html += schedulingLink;
+    } else if (tagsList.length > 0) {
+        html += `<h3>Please reference the following tag numbers: ${tagsList}</h3>`;
+    }
     if (notes && notes.length > 0) {
         const sanitizedNotes = sanitize(notes);
         html += `<p><b>Additional notes</b><br>
