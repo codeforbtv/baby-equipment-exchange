@@ -153,8 +153,12 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     };
 
     useEffect(() => {
-        fetchEvents();
-    }, []);
+        if (acceptedDonations && acceptedDonations.length > 0) {
+            fetchEvents();
+        } else {
+            setIsLoadingEvents(false);
+        }
+    }, [rejectedDonations, acceptedDonations]);
 
     return (
         <ProtectedAdminRoute>

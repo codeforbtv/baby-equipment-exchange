@@ -13,6 +13,7 @@ import {
     getDocs,
     query,
     or,
+    runTransaction,
     serverTimestamp,
     updateDoc,
     where,
@@ -586,22 +587,29 @@ export async function closeOrder(id: string): Promise<void> {
 //Removes rejected donation from order, add to rejectedItems array, and changes status to 'unavailable'.
 export async function removeDonationFromOrder(orderId: string, donation: Donation): Promise<void> {
     try {
-        const batch = writeBatch(db);
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${orderId}`);
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
-        batch.update(orderRef, {
-            items: arrayRemove(donationRef),
-            rejectedItems: arrayUnion(donationRef),
-            modifiedAt: serverTimestamp()
+
+        await runTransaction(db, async (transaction) => {
+            const orderSnap = await transaction.get(orderRef);
+            if (!orderSnap.exists()) {
+                throw new Error(`Order ${orderId} does not exist`);
+            }
+
+            transaction.update(orderRef, {
+                items: arrayRemove(donationRef),
+                rejectedItems: arrayUnion(donationRef),
+                modifiedAt: serverTimestamp()
+            });
+            transaction.update(donationRef, {
+                status: 'unavailable',
+                requestor: null,
+                modifiedAt: serverTimestamp()
+            });
         });
-        batch.update(donationRef, {
-            status: 'unavailable',
-            requestor: null,
-            modifiedAt: serverTimestamp()
-        });
-        await batch.commit();
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);
+        throw error;
     }
 }
 

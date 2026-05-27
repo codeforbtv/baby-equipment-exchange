@@ -54,10 +54,13 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         try {
             await removeDonationFromOrder(orderId, donation);
             if (currentOrder) {
+                const rejectedDonation: Donation = { ...donation, status: 'unavailable' } as Donation;
                 const updatedOrder: Order = {
                     ...currentOrder,
                     items: currentOrder.items.filter((item) => item.id !== donation.id),
-                    rejectedItems: !currentOrder.rejectedItems ? [donation] : [...currentOrder.rejectedItems, donation]
+                    rejectedItems: !currentOrder.rejectedItems
+                        ? [rejectedDonation]
+                        : [...currentOrder.rejectedItems, rejectedDonation]
                 };
                 setCurrentOrder(updatedOrder);
                 setIsDialogOpen(true);
@@ -68,6 +71,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
             setIsLoading(false);
         }
     };
+
 
     const handleClose = async (): Promise<void> => {
         // if (setNotificationsUpdated) setNotificationsUpdated(true);
@@ -137,9 +141,15 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                     ))}
                                 </>
                             )}
-                            <Button variant="contained" onClick={() => setShowScheduler(true)}>
-                                Schedule Pickup
-                            </Button>
+                            {currentOrder.items.length > 0 ? (
+                                <Button variant="contained" onClick={() => setShowScheduler(true)}>
+                                    Schedule Pickup
+                                </Button>
+                            ) : (
+                                <Button variant="contained" onClick={() => setShowScheduler(true)}>
+                                    Send Email
+                                </Button>
+                            )}
                         </div>
                     )}
                 </>

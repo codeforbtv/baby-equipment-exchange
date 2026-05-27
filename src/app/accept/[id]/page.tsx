@@ -106,7 +106,7 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                                     />
                                 ))}
                                 <Button type="button" variant="contained" disabled={isDisabled} onClick={() => setOpenScheduler(true)}>
-                                    {accepted.length === 0 ? 'Send Rejection Email' : ' Send Scheduling Link'}
+                                    {rejected.length > 0 ? 'Send Rejection Email' : 'Send Email'}
                                 </Button>
                             </div>
                         )}
