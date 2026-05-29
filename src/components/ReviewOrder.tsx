@@ -29,13 +29,12 @@ type ReviewOrderProps = {
 };
 
 const ReviewOrder = (props: ReviewOrderProps) => {
-    const { order, setIdToDisplay, id, setNotificationsUpdated } = props;
+    const { setIdToDisplay, id, setNotificationsUpdated } = props;
     const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-    const [isOrderUpdated, setIsOrderUpdated] = useState<boolean>(false);
 
     const fetchOrder = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -58,9 +57,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                 const updatedOrder: Order = {
                     ...currentOrder,
                     items: currentOrder.items.filter((item) => item.id !== donation.id),
-                    rejectedItems: !currentOrder.rejectedItems
-                        ? [rejectedDonation]
-                        : [...currentOrder.rejectedItems, rejectedDonation]
+                    rejectedItems: !currentOrder.rejectedItems ? [rejectedDonation] : [...currentOrder.rejectedItems, rejectedDonation]
                 };
                 setCurrentOrder(updatedOrder);
                 setIsDialogOpen(true);
@@ -72,28 +69,34 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         }
     };
 
-
-    const handleClose = async (): Promise<void> => {
-        // if (setNotificationsUpdated) setNotificationsUpdated(true);
-        setIsOrderUpdated(true);
+    const handleClose = () => {
         setIsDialogOpen(false);
     };
 
     useEffect(() => {
         fetchOrder(id);
-    }, []);
+    }, [id]);
+
+    const donationToDisplay =
+        donationIdToDisplay && currentOrder
+            ? (currentOrder.items.find((i) => i.id === donationIdToDisplay) ?? currentOrder.rejectedItems?.find((i) => i.id === donationIdToDisplay))
+            : undefined;
 
     return (
         <ProtectedAdminRoute>
             {donationIdToDisplay && currentOrder && (
                 <DonationDetails
                     id={donationIdToDisplay}
-                    donation={currentOrder?.items.find((i) => i.id === donationIdToDisplay)}
+                    donation={donationToDisplay}
                     setIdToDisplay={setDonationIdToDisplay}
                 />
             )}
             {showScheduler && currentOrder && (
-                <SchedulePickup order={currentOrder} setShowScheduler={setShowScheduler} setNotificationsUpdated={setNotificationsUpdated} />
+                <SchedulePickup
+                    order={currentOrder}
+                    setShowScheduler={setShowScheduler}
+                    setNotificationsUpdated={setNotificationsUpdated}
+                />
             )}
 
             {!showScheduler && !donationIdToDisplay && (
@@ -133,23 +136,18 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                     {currentOrder.rejectedItems.map((item) => (
                                         <DonationCardMed
                                             key={item.id}
-                                            orderId={item.id}
+                                            orderId={id}
                                             donation={item}
                                             setIdToDisplay={setDonationIdToDisplay}
                                             handleRemoveFromOrder={handleRemoveFromOrder}
+                                            showRemoveButton={false}
                                         />
                                     ))}
                                 </>
                             )}
-                            {currentOrder.items.length > 0 ? (
-                                <Button variant="contained" onClick={() => setShowScheduler(true)}>
-                                    Schedule Pickup
-                                </Button>
-                            ) : (
-                                <Button variant="contained" onClick={() => setShowScheduler(true)}>
-                                    Send Email
-                                </Button>
-                            )}
+                            <Button variant="contained" onClick={() => setShowScheduler(true)}>
+                                {currentOrder.items.length > 0 ? 'Send Pickup Email' : 'Send Rejection Email'}
+                            </Button>
                         </div>
                     )}
                 </>

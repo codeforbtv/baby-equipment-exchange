@@ -41,6 +41,8 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
+    const allRejected = items.length === 0;
+
     const handleClose = () => {
         setIsDialogOpen(false);
         router.push('/');
@@ -51,8 +53,6 @@ const SchedulePickup = (props: SchedulePickupProps) => {
         setInviteUrl(event.target.value);
     };
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
-
-    const allRejected = items.length === 0;
 
     const handleSubmit = async () => {
         setIsLoading(true);
@@ -130,12 +130,10 @@ const SchedulePickup = (props: SchedulePickupProps) => {
             setIsLoadingEvents(false);
         }
     }, [allRejected]);
-
-
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                <h3>{allRejected ? 'Send Rejection Email' : 'Send Pickup Scheduling Email'}</h3>
+                <h3>{allRejected ? 'Send Rejection Email' : 'Send Pickup Email'}</h3>
             </div>
             {isLoading ? (
                 <Loader />
@@ -186,7 +184,7 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
                                 <Button variant="contained" onClick={handleSubmit}>
-                                    Send Email
+                                    {allRejected ? 'Send Rejection Email' : 'Send Pickup Email'}
                                 </Button>
                                 <Button variant="outlined" onClick={() => setShowScheduler(false)}>
                                     Cancel

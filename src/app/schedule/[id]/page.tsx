@@ -67,21 +67,17 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
         <ProtectedAdminRoute>
             <div className="page--header">
                 <h1>Accept Donation</h1>
-                <h4>Select a calendar to send a scheduling link</h4>
+                <h4>Select an optional calendar for this email</h4>
             </div>
             <div className="content--container">
                 <Box display={'flex'} flexDirection={'column'} gap={4}>
                     <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl} disabled={isLoadingEvents}>
                         <option value="">{isLoadingEvents ? 'Loading calendars...' : 'Send without calendar invite'}</option>
-                        {events.map((event, index) => {
-                            if (event.active === true) {
-                                return (
-                                    <option key={index} value={event.scheduling_url}>
-                                        {event.name}
-                                    </option>
-                                );
-                            }
-                        })}
+                        {events.map((event, index) => (
+                            <option key={index} value={event.scheduling_url}>
+                                {event.name}
+                            </option>
+                        ))}
                     </NativeSelect>
                     <TextField
                         type="text"
@@ -95,7 +91,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                         placeholder="Add notes here"
                         onChange={handleInputChange}
                     ></TextField>
-                    <Button onClick={handleSubmit}>Confirm</Button>
+                    <Button onClick={handleSubmit}>Send Email</Button>
                 </Box>
             </div>
         </ProtectedAdminRoute>

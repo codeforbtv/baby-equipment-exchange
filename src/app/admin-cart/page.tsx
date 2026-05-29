@@ -203,7 +203,7 @@ const AdminCart = () => {
                 isOpen={isSuccessDialogOpen}
                 onClose={handleSuccessDialogClose}
                 title="Your request has been submitted."
-                content="Your requested items have been submitted. Click ok to send a pickup scheduling link."
+                content="Your requested items have been submitted. Click OK to send a pickup email."
             />
         </ProtectedAdminRoute>
     );
