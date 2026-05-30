@@ -30,9 +30,14 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
 
     const fetchDonationsByBulkId = async (id: string): Promise<void> => {
         setIsLoading(true);
+        setDonations(null);
+        setAccepted([]);
+        setRejected([]);
+        setIdToDisplay(null);
+        setOpenScheduler(false);
         try {
             const donationsResult = await getDonationsByBulkId(id);
-            setDonations(donationsResult);
+            setDonations(donationsResult.filter((donation) => donation.bulkCollection === id && donation.status === 'in processing'));
         } catch (error) {
             addErrorEvent('Fetch donations by bulk id', error);
         } finally {
@@ -57,7 +62,7 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
 
     useEffect(() => {
         fetchDonationsByBulkId(params.id);
-    }, []);
+    }, [params.id]);
 
     return (
         <ProtectedAdminRoute>
@@ -101,7 +106,7 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                                     />
                                 ))}
                                 <Button type="button" variant="contained" disabled={isDisabled} onClick={() => setOpenScheduler(true)}>
-                                    {accepted.length === 0 ? 'Send Rejection Email' : ' Send Scheduling Link'}
+                                    {rejected.length > 0 ? 'Send Rejection Email' : 'Send Email'}
                                 </Button>
                             </div>
                         )}

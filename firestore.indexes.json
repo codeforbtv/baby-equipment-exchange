@@ -1,4 +1,13 @@
 {
-    "indexes": [],
+    "indexes": [
+        {
+            "collectionGroup": "Donations",
+            "queryScope": "COLLECTION",
+            "fields": [
+                { "fieldPath": "bulkCollection", "order": "ASCENDING" },
+                { "fieldPath": "status", "order": "ASCENDING" }
+            ]
+        }
+    ],
     "fieldOverrides": []
 }
