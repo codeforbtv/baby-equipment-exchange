@@ -35,10 +35,13 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(true);
     const [events, setEvents] = useState<EventType[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+    const allRejected = items.length === 0;
 
     const handleClose = () => {
         setIsDialogOpen(false);
@@ -59,11 +62,13 @@ const SchedulePickup = (props: SchedulePickupProps) => {
         });
         const emailMsg = schedulePickup(requestor.email, inviteUrl, renderToString(message), tagNumbers, notes);
         try {
-            await Promise.all(
-                items.map(async (item) => {
-                    await updateDonationStatus(item.id, 'reserved');
-                })
-            );
+            if (!allRejected) {
+                await Promise.all(
+                    items.map(async (item) => {
+                        await updateDonationStatus(item.id, 'reserved');
+                    })
+                );
+            }
             await closeOrder(id);
             sendMail(emailMsg);
             setIsDialogOpen(true);
@@ -75,15 +80,32 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     };
 
     const fetchEvents = async () => {
+        setIsLoadingEvents(true);
         try {
             const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
+            setEvents(eventResult ?? []);
         } catch (error) {
             addErrorEvent('Fetch Calendly Scheduling Links', error);
+            setEvents([]);
+        } finally {
+            setIsLoadingEvents(false);
         }
     };
 
-    const message = (
+    const message = allRejected ? (
+        <>
+            <p>{`Hello ${requestor.name}`}</p>
+            <p>Unfortunately, none of the items you requested are currently available:</p>
+            {rejectedItems && rejectedItems.length > 0 && (
+                <>
+                    {rejectedItems.map((item) => (
+                        <DonationCardSmall key={item.id} donation={item} />
+                    ))}
+                </>
+            )}
+            <p>We apologize for the inconvenience and hope to serve you better in the future.</p>
+        </>
+    ) : (
         <>
             <p>{`Hello ${requestor.name}`}</p>
             <p>Your request for the following items has been fulfilled:</p>
@@ -102,13 +124,16 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     );
 
     useEffect(() => {
-        fetchEvents();
-    }, []);
-
+        if (!allRejected) {
+            fetchEvents();
+        } else {
+            setIsLoadingEvents(false);
+        }
+    }, [allRejected]);
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
-                <h3>Send Pickup Scheduling Email</h3>
+                <h3>{allRejected ? 'Send Rejection Email' : 'Send Pickup Email'}</h3>
             </div>
             {isLoading ? (
                 <Loader />
@@ -130,29 +155,36 @@ const SchedulePickup = (props: SchedulePickupProps) => {
                                 placeholder="Add any additional notes here"
                                 onChange={handleInputChange}
                             />
-                            <FormControl fullWidth sx={{ marginTop: '2em' }}>
-                                <InputLabel variant="standard" htmlFor="location" shrink={true}>
-                                    Select calendar for accepted donations
-                                </InputLabel>
-                                <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                    <option value="" disabled>
-                                        Select Calendar
-                                    </option>
-                                    {events &&
-                                        events.map((event, index) => {
-                                            if (event.active === true) {
-                                                return (
-                                                    <option key={index} value={event.scheduling_url}>
-                                                        {event.name}
-                                                    </option>
-                                                );
-                                            }
-                                        })}
-                                </NativeSelect>
-                            </FormControl>
+                            {!allRejected && (
+                                <FormControl fullWidth sx={{ marginTop: '2em' }}>
+                                    <InputLabel variant="standard" htmlFor="location" shrink={true}>
+                                        Select calendar for accepted donations
+                                    </InputLabel>
+                                    <NativeSelect
+                                        variant="outlined"
+                                        name="location"
+                                        id="location"
+                                        onChange={handleSelect}
+                                        value={inviteUrl}
+                                        disabled={isLoadingEvents}
+                                    >
+                                        <option value="">{isLoadingEvents ? 'Loading calendars...' : 'Send without calendar invite'}</option>
+                                        {events &&
+                                            events.map((event, index) => {
+                                                if (event.active === true) {
+                                                    return (
+                                                        <option key={index} value={event.scheduling_url}>
+                                                            {event.name}
+                                                        </option>
+                                                    );
+                                                }
+                                            })}
+                                    </NativeSelect>
+                                </FormControl>
+                            )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button variant="contained" disabled={!inviteUrl} onClick={handleSubmit}>
-                                    Send Email
+                                <Button variant="contained" onClick={handleSubmit}>
+                                    {allRejected ? 'Send Rejection Email' : 'Send Pickup Email'}
                                 </Button>
                                 <Button variant="outlined" onClick={() => setShowScheduler(false)}>
                                     Cancel

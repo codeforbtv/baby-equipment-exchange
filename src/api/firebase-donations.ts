@@ -13,6 +13,7 @@ import {
     getDocs,
     query,
     or,
+    runTransaction,
     serverTimestamp,
     updateDoc,
     where,
@@ -29,7 +30,6 @@ import { Order } from '@/types/OrdersTypes';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
-import { getBase64ImagesFromTagnumber } from './firebaseAdmin';
 import { AdminDonationBody, base64ImageObj } from '@/types/DonationTypes';
 import { base64ObjToFile } from '@/utils/utils';
 import { uploadImages } from './firebase-images';
@@ -238,16 +238,17 @@ export async function getDonationById(id: string): Promise<Donation> {
 
 export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
-        const bulkRef = doc(db, BULK_DONATIONS_COLLECTION, id);
-        const bulkSnapshot = await getDoc(bulkRef);
-        if (bulkSnapshot.exists()) {
-            const bulkData = bulkSnapshot.data();
-            for (const donation of bulkData.donations) {
-                const donationDetails = await getDonationById(donation.id);
-                donations.push(donationDetails);
-            }
+        if (!id) {
+            return [];
         }
+
+        let donations: Donation[] = [];
+        const donationsRef = collection(db, DONATIONS_COLLECTION);
+        const donationsByBulkIdQuery = query(donationsRef, where('bulkCollection', '==', id), where('status', '==', 'in processing')).withConverter(
+            donationConverter
+        );
+        const donationsSnapshot = await getDocs(donationsByBulkIdQuery);
+        donationsSnapshot.forEach((snapshot) => donations.push(snapshot.data()));
         return donations;
     } catch (error) {
         addErrorEvent('Get donations by bulk id', error);
@@ -586,22 +587,29 @@ export async function closeOrder(id: string): Promise<void> {
 //Removes rejected donation from order, add to rejectedItems array, and changes status to 'unavailable'.
 export async function removeDonationFromOrder(orderId: string, donation: Donation): Promise<void> {
     try {
-        const batch = writeBatch(db);
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${orderId}`);
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
-        batch.update(orderRef, {
-            items: arrayRemove(donationRef),
-            rejectedItems: arrayUnion(donationRef),
-            modifiedAt: serverTimestamp()
+
+        await runTransaction(db, async (transaction) => {
+            const orderSnap = await transaction.get(orderRef);
+            if (!orderSnap.exists()) {
+                throw new Error(`Order ${orderId} does not exist`);
+            }
+
+            transaction.update(orderRef, {
+                items: arrayRemove(donationRef),
+                rejectedItems: arrayUnion(donationRef),
+                modifiedAt: serverTimestamp()
+            });
+            transaction.update(donationRef, {
+                status: 'unavailable',
+                requestor: null,
+                modifiedAt: serverTimestamp()
+            });
         });
-        batch.update(donationRef, {
-            status: 'unavailable',
-            requestor: null,
-            modifiedAt: serverTimestamp()
-        });
-        await batch.commit();
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);
+        throw error;
     }
 }
 
@@ -652,63 +660,5 @@ export async function markDonationAsDistributed(donation: Donation): Promise<voi
         await batch.commit();
     } catch (error) {
         addErrorEvent('Error marking donation as distributed', error);
-    }
-}
-
-//The below functions are for uploading images for donations imported from the original spreadsheet
-export async function uploadImagesFromTagNumber(tagNumber: string) {
-    try {
-        const base64Images: base64ImageObj[] = await getBase64ImagesFromTagnumber(tagNumber);
-        let imageFiles: File[] = [];
-        for (const base64Image of base64Images) {
-            const imageFile = await base64ObjToFile(base64Image);
-            imageFiles.push(imageFile);
-        }
-        const imageUrls = await uploadImages(imageFiles);
-        return imageUrls;
-    } catch (error) {
-        throw error;
-    }
-}
-
-export async function convertImportedDonations(): Promise<void> {
-    try {
-        const importsSnapshot = await getDocs(collection(db, 'BEE_Data_2025-11-19_v1'));
-        const batch = writeBatch(db);
-        for (const doc of importsSnapshot.docs) {
-            const docData = doc.data();
-            const images = await uploadImagesFromTagNumber(docData['tagNumber']);
-            if (docData['donorEmail'] === undefined) {
-                batch.update(doc.ref, {
-                    donorEmail: ''
-                });
-            }
-            if (docData['donorName'] === undefined) {
-                batch.update(doc.ref, {
-                    donorName: ''
-                });
-            }
-            batch.update(doc.ref, {
-                images:
-                    images.length > 0
-                        ? images
-                        : [
-                              'https://firebasestorage.googleapis.com/v0/b/baby-equipment-exchange.appspot.com/o/77def461-02a2-4667-b7cf-6a9d94306823-1763596581708.jpg?alt=media&token=46d43d52-3c5d-4808-8ec5-0bb244d43405'
-                          ],
-                status: docData['status'] === 'Available' ? 'available' : 'unavailable',
-                id: doc.id,
-                dateAccepted: null,
-                dateRequested: null,
-                dateDistributed: null,
-                requestor: null,
-                notes: null,
-                modifiedAt: serverTimestamp()
-            });
-        }
-        await batch.commit();
-        console.log('Done!');
-    } catch (error) {
-        console.log('Not done!');
-        throw error;
     }
 }
