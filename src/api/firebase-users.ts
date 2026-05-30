@@ -231,7 +231,7 @@ export function signOutUser(): void {
 }
 
 export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
-    onAuthStateChanged(auth, callback);
+    return onAuthStateChanged(auth, callback);
 }
 
 export async function resetPassword(email: string): Promise<void> {

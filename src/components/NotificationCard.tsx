@@ -167,7 +167,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                 <Card className={styles['notification-card']} raised>
                     <div className={styles['notification-card--group']}>
                         <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                            <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
+                            <CardMedia component="img" alt={donation.model} image={donation.images[0]} loading="lazy" />
                         </CardActions>
                         <CardContent className={styles['notification-card--info']}>
                             <Typography variant="h5">
@@ -190,7 +190,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <Card className={styles['notification-card']} raised>
                             <div className={styles['notification-card--group']}>
                                 <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
+                                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} loading="lazy" />
                                 </CardActions>
                                 <CardContent className={styles['notification-card--info']}>
                                     <Typography variant="h5">
@@ -229,7 +229,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <Card className={styles['notification-card']} raised>
                             <div className={styles['notification-card--group']}>
                                 <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
+                                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} loading="lazy" />
                                 </CardActions>
                                 <CardContent className={styles['notification-card--info']}>
                                     <Typography variant="h5">
@@ -266,7 +266,7 @@ const NotificationCard = (props: NotificationCardProps) => {
                 <Card className={styles['notification-card']} raised>
                     <div className={styles['notification-card--group']}>
                         <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                            <CardMedia component="img" alt={donation.model} image={donation.images[0]} />
+                            <CardMedia component="img" alt={donation.model} image={donation.images[0]} loading="lazy" />
                         </CardActions>
                         <CardContent className={styles['notification-card--info']}>
                             <Typography variant="h5">

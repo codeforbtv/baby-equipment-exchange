@@ -29,10 +29,11 @@ type DonationCardMedProps = {
     donation: Donation;
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     handleRemoveFromOrder: (orderId: string, donation: Donation) => Promise<void>;
+    showRemoveButton?: boolean;
 };
 
 const DonationCardMed = (props: DonationCardMedProps) => {
-    const { orderId, donation, setIdToDisplay, handleRemoveFromOrder } = props;
+    const { orderId, donation, setIdToDisplay, handleRemoveFromOrder, showRemoveButton = true } = props;
     const [showRemoveDialog, setShowRemoveDialog] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
@@ -53,7 +54,7 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                     <Typography variant="h6">{donation.tagNumber}</Typography>
                 </CardContent>
 
-                {donation.status !== 'unavailable' && (
+                {showRemoveButton && donation.status !== 'unavailable' && (
                     <CardActions>
                         <Button variant="contained" startIcon={<RemoveShoppingCartIcon />} color="error" onClick={() => setShowRemoveDialog(true)}>
                             Remove

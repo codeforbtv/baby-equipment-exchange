@@ -11,8 +11,12 @@ export default function accept(donorEmail: string, inviteUrl: string, message: s
             tagsList += tagNumbers[i];
         }
     }
-    const schedulingLink = `<h3><b>*** <a href='${inviteUrl}'>Click here to schedule a dropoff for your accepted items</a>  ***</b><br>Please reference the following tag numbers: ${tagsList}</h3>`;
-    html += schedulingLink;
+    if (inviteUrl) {
+        const schedulingLink = `<h3><b>*** <a href='${inviteUrl}'>Click here to schedule a dropoff for your accepted items</a>  ***</b><br>Please reference the following tag numbers: ${tagsList}</h3>`;
+        html += schedulingLink;
+    } else if (tagsList.length > 0) {
+        html += `<h3>Please reference the following tag numbers: ${tagsList}</h3>`;
+    }
     if (notes && notes.length > 0) {
         const sanitizedNotes = sanitize(notes);
         html += `<p><b>Additional notes</b><br>
