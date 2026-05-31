@@ -84,7 +84,7 @@ export const userConverter = {
 
 export async function getAllDbUsers(): Promise<IUser[]> {
     try {
-        let users: IUser[] = [];
+        const users: IUser[] = [];
         const usersSnapshot = await getDocs(collection(db, USERS_COLLECTION).withConverter(userConverter));
         usersSnapshot.forEach((doc) => users.push(doc.data()));
         return users;
@@ -96,7 +96,7 @@ export async function getAllDbUsers(): Promise<IUser[]> {
 
 export async function getAllActiveDbUsers(): Promise<IUser[]> {
     try {
-        let users: IUser[] = [];
+        const users: IUser[] = [];
         const q = query(collection(db, USERS_COLLECTION), where('isDisabled', '==', false)).withConverter(userConverter);
         const activeUsersSnapshot = await getDocs(q);
         activeUsersSnapshot.forEach((doc) => users.push(doc.data()));
@@ -183,7 +183,7 @@ export async function getUserDetails(uid: string): Promise<IUser> {
 }
 
 export async function getUsersNotifications(): Promise<IUser[]> {
-    let users: IUser[] = [];
+    const users: IUser[] = [];
     try {
         const usersRef = collection(db, USERS_COLLECTION);
         const usersNotificationsQuery = query(usersRef, where('isDisabled', '==', true)).withConverter(userConverter);
@@ -231,7 +231,7 @@ export function signOutUser(): void {
 }
 
 export function onAuthStateChangedListener(callback: NextOrObserver<User>) {
-    onAuthStateChanged(auth, callback);
+    return onAuthStateChanged(auth, callback);
 }
 
 export async function resetPassword(email: string): Promise<void> {

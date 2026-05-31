@@ -26,7 +26,7 @@ export default function schedulePickup(email: string, inviteUrl: string, message
         to: email,
         cc: emailCc,
         from: emailSender,
-        subject: 'Your Baby Product Exchange order has been fufilled',
+        subject: 'Your Baby Product Exchange order has been fulfilled',
         html: html
     };
 }

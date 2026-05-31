@@ -5,7 +5,6 @@ import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { getDonationById } from '@/api/firebase-donations';
-import accept from '@/email-templates/accept';
 import { addErrorEvent } from '@/api/firebase';
 
 import { EventType } from '@/types/CalendlyTypes';
@@ -17,28 +16,14 @@ import { Box, Button, NativeSelect, TextField } from '@mui/material';
 export default function ScheduleDropoff({ params }: { params: { id: string } }) {
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
-
-    //prevents useEffect from firing
-    if (!isAdmin) {
-        router.push('/');
-        return null;
-    }
-
     const [events, setEvents] = useState<EventType[]>([]);
     const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(true);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [notes, sentNotes] = useState<string>('');
 
-    const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
-        setInviteUrl(event.target.value);
-    };
-
-    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
-
-    const handleSubmit = async () => {};
-
     useEffect(() => {
+        if (!isAdmin) return;
         const fetchEvents = async () => {
             setIsLoadingEvents(true);
             try {
@@ -61,7 +46,20 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
         };
         fetchEvents();
         fetchDonorEmail();
-    }, []);
+    }, [isAdmin, params.id]);
+
+    if (!isAdmin) {
+        router.push('/');
+        return null;
+    }
+
+    const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
+        setInviteUrl(event.target.value);
+    };
+
+    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
+
+    const handleSubmit = async () => {};
 
     return (
         <ProtectedAdminRoute>

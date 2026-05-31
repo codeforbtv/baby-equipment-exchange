@@ -17,7 +17,7 @@ const RecallStatuses = () => {
                 <li>
                     <Typography variant="body2">
                         <a href="https://www.cpsc.gov/s3fs-public/Resellers-Guide-Updated-Final-3-3--21.pdf" target="_blank">
-                            Reseller's Guide to Selling Safer Products
+                            Reseller&apos;s Guide to Selling Safer Products
                         </a>
                     </Typography>
                 </li>

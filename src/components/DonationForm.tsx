@@ -56,7 +56,7 @@ export default function DonationForm(props: DonationFormProps) {
     };
 
     const isDisabled =
-        !images || formData.category?.length === 0 || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
+        !images || !formData.category || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
 
     const isCategoryActive = (category: string) => {
         if (categories) {
@@ -162,12 +162,13 @@ export default function DonationForm(props: DonationFormProps) {
                                     disablePortal
                                     options={categories.map((option) => option.name)}
                                     getOptionDisabled={isCategoryActive}
-                                    renderInput={(params) => <TextField {...params} label="Category" />}
+                                    renderInput={(params) => <TextField {...params} label="Category" required />}
                                     value={formData.category}
                                     onChange={handleCategoryChange}
                                     aria-label="Category"
                                 />
                                 <TextField
+                                    required
                                     type="text"
                                     label="Brand"
                                     name="brand"
@@ -177,6 +178,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     value={formData.brand ? formData.brand : ''}
                                 ></TextField>
                                 <TextField
+                                    required
                                     type="text"
                                     label="Model"
                                     name="model"
@@ -185,6 +187,7 @@ export default function DonationForm(props: DonationFormProps) {
                                     value={formData.model ? formData.model : ''}
                                 ></TextField>
                                 <TextField
+                                    required
                                     multiline={true}
                                     name="description"
                                     label="Description"

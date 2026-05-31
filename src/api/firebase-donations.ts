@@ -1,6 +1,7 @@
 // Modules
 import {
     DocumentData,
+    DocumentReference,
     QueryConstraint,
     QueryDocumentSnapshot,
     SnapshotOptions,
@@ -138,9 +139,28 @@ const inventoryConverter = {
     }
 };
 
+async function batchGetDonationsByRefs(refs: DocumentReference[]): Promise<Donation[]> {
+    if (refs.length === 0) return [];
+
+    const CHUNK_SIZE = 30;
+    const ids = refs.map((ref) => ref.id);
+    const donations: Donation[] = [];
+
+    for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+        const chunk = ids.slice(i, i + CHUNK_SIZE);
+        const q = query(collection(db, DONATIONS_COLLECTION).withConverter(donationConverter), where(documentId(), 'in', chunk));
+        const snapshot = await getDocs(q);
+        snapshot.forEach((doc) => {
+            donations.push(doc.data());
+        });
+    }
+
+    return donations;
+}
+
 export async function getAllDonations(): Promise<Donation[]> {
     try {
-        let donations: Donation[] = [];
+        const donations: Donation[] = [];
         const querySnapshot = await getDocs(collection(db, DONATIONS_COLLECTION).withConverter(donationConverter));
         querySnapshot.forEach((snapshot) => {
             donations.push(snapshot.data());
@@ -153,7 +173,7 @@ export async function getAllDonations(): Promise<Donation[]> {
 }
 
 export async function getDonationNotifications(): Promise<Donation[]> {
-    let donations: Donation[] = [];
+    const donations: Donation[] = [];
     try {
         const donationsRef = collection(db, DONATIONS_COLLECTION);
         const donationNotificationsQuery = query(
@@ -173,7 +193,7 @@ export async function getDonationNotifications(): Promise<Donation[]> {
 
 export async function getInventory(): Promise<InventoryItem[]> {
     try {
-        let inventory: InventoryItem[] = [];
+        const inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const contraints: QueryConstraint[] = [where('status', '==', 'available')];
         const q = query(collectionRef, ...contraints).withConverter(inventoryConverter);
@@ -207,7 +227,7 @@ export async function getInventoryItemById(id: string): Promise<InventoryItem> {
 export async function getInventoryByIds(inventoryIds: string[]): Promise<InventoryItem[]> {
     if (inventoryIds.length === 0) return [];
     try {
-        let inventory: InventoryItem[] = [];
+        const inventory: InventoryItem[] = [];
         const collectionRef = collection(db, DONATIONS_COLLECTION);
         const q = query(collectionRef, where(documentId(), 'in', inventoryIds)).withConverter(inventoryConverter);
         const querySnapshot = await getDocs(q);
@@ -242,7 +262,7 @@ export async function getDonationsByBulkId(id: string): Promise<Donation[]> {
             return [];
         }
 
-        let donations: Donation[] = [];
+        const donations: Donation[] = [];
         const donationsRef = collection(db, DONATIONS_COLLECTION);
         const donationsByBulkIdQuery = query(donationsRef, where('bulkCollection', '==', id), where('status', '==', 'in processing')).withConverter(
             donationConverter
@@ -423,7 +443,7 @@ export async function deleteDonationById(id: string): Promise<void> {
 
 export async function adminAreDonationsAvailable(ids: string[]): Promise<string[]> {
     try {
-        let unavailableDonations = [];
+        const unavailableDonations = [];
         for (const id of ids) {
             const donationref = doc(db, `${DONATIONS_COLLECTION}/${id}`).withConverter(donationConverter);
             const donationSnapshot = await getDoc(donationref);
@@ -508,33 +528,49 @@ export async function adminRequestInventoryItems(inventoryItemIds: string[], use
 
 //Get items requested by aid workers
 export async function getOrdersNotifications() {
-    let orders: Order[] = [];
+    const orders: Order[] = [];
     try {
         const ordersRef = collection(db, ORDERS_COLLECTION);
         const q = query(ordersRef, where('status', '==', 'open'));
         const ordersSnapshot = await getDocs(q);
+
+        const allItemRefs: DocumentReference[] = [];
+        const allRejectedRefs: DocumentReference[] = [];
+        const orderShells: { id: string; status: string; requestor: { email: string; id: string; name: string }; itemIds: string[]; rejectedIds: string[] }[] =
+            [];
+
         for (const doc of ordersSnapshot.docs) {
             const orderInfo = doc.data();
-            let order: Order = {
+            const itemRefs: DocumentReference[] = orderInfo.items ?? [];
+            const rejectedRefs: DocumentReference[] = orderInfo.rejectedItems ?? [];
+
+            orderShells.push({
                 id: doc.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
-                items: [],
-                rejectedItems: []
-            };
-            for (const donation of orderInfo.items) {
-                const donationDetails = await getDoc(donation);
-                order.items.push(donationDetails.data() as Donation);
-            }
-            if (orderInfo.rejectedItems) {
-                for (const donation of orderInfo.rejectedItems) {
-                    const donationDetails = await getDoc(donation);
-                    order.rejectedItems?.push(donationDetails.data() as Donation);
-                }
-            }
+                itemIds: itemRefs.map((ref) => ref.id),
+                rejectedIds: rejectedRefs.map((ref) => ref.id)
+            });
 
-            orders.push(order);
+            allItemRefs.push(...itemRefs);
+            allRejectedRefs.push(...rejectedRefs);
         }
+
+        const [allItems, allRejected] = await Promise.all([batchGetDonationsByRefs(allItemRefs), batchGetDonationsByRefs(allRejectedRefs)]);
+
+        const itemsById = new Map(allItems.map((d) => [d.id, d]));
+        const rejectedById = new Map(allRejected.map((d) => [d.id, d]));
+
+        for (const shell of orderShells) {
+            orders.push({
+                id: shell.id,
+                status: shell.status,
+                requestor: shell.requestor,
+                items: shell.itemIds.map((id) => itemsById.get(id)).filter(Boolean) as Donation[],
+                rejectedItems: shell.rejectedIds.map((id) => rejectedById.get(id)).filter(Boolean) as Donation[]
+            });
+        }
+
         return orders;
     } catch (error) {
         addErrorEvent('Error geting order notifications', error);
@@ -548,22 +584,17 @@ export async function getOrderById(id: string): Promise<Order> {
         const orderSnapShot = await getDoc(orderRef);
         if (orderSnapShot.exists()) {
             const orderInfo = orderSnapShot.data();
-            let order: Order = {
+            const order: Order = {
                 id: orderRef.id,
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
                 items: [],
                 rejectedItems: []
             };
-            for (const donation of orderInfo.items) {
-                const donationDetails = await getDoc(donation);
-                order.items.push(donationDetails.data() as Donation);
-            }
+            order.items = await batchGetDonationsByRefs(orderInfo.items ?? []);
+
             if (orderInfo.rejectedItems) {
-                for (const donation of orderInfo.rejectedItems) {
-                    const donationDetails = await getDoc(donation);
-                    order.rejectedItems?.push(donationDetails.data() as Donation);
-                }
+                order.rejectedItems = await batchGetDonationsByRefs(orderInfo.rejectedItems);
             }
             return order;
         } else {

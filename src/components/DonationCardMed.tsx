@@ -67,7 +67,7 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                 <DialogTitle id="dialog-title">Remove Donation?</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        This will remove {donation.model + ' ' + donation.brand} from this order and change its status to 'unavailable.' Are you sure?
+                        This will remove {donation.model + ' ' + donation.brand} from this order and change its status to &apos;unavailable.&apos; Are you sure?
                     </DialogContentText>
                     <DialogActions>
                         <Button variant="contained" onClick={() => handleRemove(orderId, donation)}>

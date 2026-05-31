@@ -46,9 +46,11 @@ export const UserProvider = ({ children }: Props) => {
                 }
                 if (user) {
                     setCurrentUser(user);
-                    const adminResult = await checkIsAdmin(user);
+                    const [adminResult, aidWorkerResult] = await Promise.all([
+                        checkIsAdmin(user),
+                        checkIsAidWorker(user)
+                    ]);
                     setIsAdmin(adminResult);
-                    const aidWorkerResult = await checkIsAidWorker(user);
                     setIsAidworker(aidWorkerResult);
                 }
             } catch (error) {
@@ -58,7 +60,7 @@ export const UserProvider = ({ children }: Props) => {
                 setIsLoading(false);
             }
         });
-        return () => unsubscribe;
+        return () => unsubscribe();
     }, []);
 
     return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

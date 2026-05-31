@@ -61,7 +61,7 @@ const db = getFirestore(app);
 
 //Used for importing images from spreadsheet
 function findPaths(fileNames: string[]): string[] {
-    let filePaths = [];
+    const filePaths = [];
     const directoryPath = process.env.IMPORT_DIRECTORY ? process.env.IMPORT_DIRECTORY : '';
     const files = fs.readdirSync(directoryPath, { withFileTypes: true });
     for (const file of files) {
@@ -597,7 +597,7 @@ export const toggleClaimForVolunteer = async (request: any) => {
 // Non-exported utility methods
 async function _checkClaims(idToken: string, claimNames: string[]) {
     try {
-        let userClaims = {};
+        const userClaims = {};
         const claims = await auth.verifyIdToken(idToken);
         if (claims === undefined || claims === null) {
             return Promise.reject();
