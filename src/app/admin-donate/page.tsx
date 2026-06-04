@@ -7,7 +7,7 @@ import { useUserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
-import { Button, IconButton, Stack } from '@mui/material';
+import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import Loader from '@/components/Loader';
 import AdminDonationForm from '@/components/AdminDonationForm';
 import PendingDonations from '@/components/PendingDonations';
@@ -17,6 +17,8 @@ import { uploadImages } from '@/api/firebase-images';
 import { addErrorEvent } from '@/api/firebase';
 import { addAdminDonation } from '@/api/firebase-donations';
 import { getTagNumber } from '@/api/firebase-categories';
+import sendMail from '@/api/nodemailer';
+import adminDonationAdded from '@/email-templates/adminDonationAdded';
 //Icons
 import UploadOutlinedIcon from '@mui/icons-material/UploadOutlined';
 import AddIcon from '@mui/icons-material/Add';
@@ -30,6 +32,7 @@ export default function AdminDonate() {
     const [showForm, setShowForm] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [submittedDonations, setSubmittedDonations] = useState<AdminDonationBody[]>([]);
 
     const { currentUser } = useUserContext();
     const { pendingDonations, clearPendingDonations } = usePendingDonationsContext();
@@ -37,6 +40,7 @@ export default function AdminDonate() {
 
     const handleClose = () => {
         setIsOpen(false);
+        setSubmittedDonations([]);
         router.push('/');
     };
 
@@ -83,6 +87,11 @@ export default function AdminDonate() {
             await addAdminDonation(donationsToUpload);
             clearPendingDonations();
             localStorage.clear();
+            if (currentUser?.email && currentUser?.displayName) {
+                const emailMsg = adminDonationAdded(currentUser.email, currentUser.displayName, donationsToUpload);
+                await sendMail(emailMsg);
+            }
+            setSubmittedDonations(donationsToUpload);
             setIsOpen(true);
         } catch (error) {
             addErrorEvent('Error submiting admin donation', error);
@@ -125,7 +134,57 @@ export default function AdminDonate() {
                     )}
                 </Stack>
             )}
-            <CustomDialog isOpen={isOpen} onClose={handleClose} title="Donation Submitted" content="Your donation has been successfully submitted." />
+            <CustomDialog
+                isOpen={isOpen}
+                onClose={handleClose}
+                title="Items Added to Inventory"
+                content={
+                    submittedDonations.length > 0 ? (
+                        <Box>
+                            <Typography variant="body1" sx={{ mb: 1 }}>
+                                {submittedDonations.length} {submittedDonations.length === 1 ? 'item has' : 'items have'} been added to inventory:
+                            </Typography>
+                            {submittedDonations.map((donation, index) => (
+                                <Box
+                                    key={index}
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        py: 1,
+                                        borderBottom: index < submittedDonations.length - 1 ? '1px solid #e0e0e0' : 'none'
+                                    }}
+                                >
+                                    <Box
+                                        component="img"
+                                        src={donation.images?.[0] || ''}
+                                        alt={`${donation.brand} ${donation.model}`}
+                                        sx={{
+                                            width: 56,
+                                            height: 56,
+                                            objectFit: 'cover',
+                                            borderRadius: 1,
+                                            bgcolor: '#f1f1f1',
+                                            flexShrink: 0,
+                                            display: donation.images?.[0] ? 'block' : 'none'
+                                        }}
+                                    />
+                                    <Box sx={{ minWidth: 0 }}>
+                                        <Typography variant="body1">
+                                            {donation.brand} {donation.model} — <b>{donation.tagNumber}</b>
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {donation.category}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            ))}
+                        </Box>
+                    ) : (
+                        'Your donation has been successfully submitted.'
+                    )
+                }
+            />
         </ProtectedAdminRoute>
     );
 }
