@@ -41,10 +41,11 @@ function LoginForm({ loginState, setLoginState, email, setEmail, password, setPa
     const [isInvalidLogin, setIsInvalidLogin] = useState<boolean>(false);
 
     useEffect(() => {
-        onAuthStateChangedListener((user) => {
+        const unsubscribe = onAuthStateChangedListener((user) => {
             if (user) router.push('/');
             else setLoginState('loggedOut');
         });
+        return () => unsubscribe();
     }, [router]);
 
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
