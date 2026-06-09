@@ -14,11 +14,13 @@ const styles = {
 };
 
 const CustomTabPanel = (props: TabPanelProps) => {
-    const { children, index, value, ...other } = props;
+    const { children, index, value } = props;
+
+    if (value !== index) return null;
 
     return (
-        <div style={styles} role="tabpanel" hidden={value !== index} id={`tab-panel-${index}`} aria-labelledby={`tab-index-${index}`}>
-            {value === index && <>{children}</>}
+        <div style={styles} role="tabpanel" id={`tab-panel-${index}`} aria-labelledby={`tab-index-${index}`}>
+            {children}
         </div>
     );
 };
