@@ -46,7 +46,6 @@ const SchedulePickup = (props: SchedulePickupProps) => {
     const handleClose = () => {
         setIsDialogOpen(false);
         router.push('/');
-        window.location.reload();
     };
 
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
