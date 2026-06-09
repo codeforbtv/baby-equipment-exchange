@@ -1,8 +1,8 @@
 'use client';
 
-import { Box, Card, CardContent, CardActionArea, CardActions, Typography, Stack, Chip, IconButton, Tooltip } from '@mui/material';
-import Image from 'next/image';
+import { Card, CardMedia, CardContent, CardActionArea, CardActions, Typography, Stack, Chip, IconButton, Tooltip } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import { getStatusChipProps } from '@/utils/statusChipProps';
 import { InventoryItem } from '@/models/inventoryItem';
 
 type InventoryItemCardProps = {
@@ -15,6 +15,7 @@ export default function InventoryItemCard({ inventoryItem, onSelect, handleReque
     const images = inventoryItem.images as string[];
     const image = images?.[0] || '';
     const canRequest = inventoryItem.status === 'available';
+    const statusChip = getStatusChipProps(inventoryItem.status);
 
     return (
         <Card
@@ -30,17 +31,12 @@ export default function InventoryItemCard({ inventoryItem, onSelect, handleReque
             }}
         >
             <CardActionArea onClick={() => onSelect(inventoryItem)}>
-                <Box sx={{ position: 'relative', aspectRatio: '4/3', bgcolor: '#f5f5f5' }}>
-                    {image && (
-                        <Image
-                            src={image}
-                            alt={`${inventoryItem.brand} ${inventoryItem.model}`}
-                            fill
-                            sizes="(max-width: 599px) 100vw, (max-width: 899px) 50vw, (max-width: 1199px) 33vw, 25vw"
-                            style={{ objectFit: 'cover' }}
-                        />
-                    )}
-                </Box>
+                <CardMedia
+                    component="img"
+                    image={image}
+                    alt={`${inventoryItem.brand} ${inventoryItem.model}`}
+                    sx={{ aspectRatio: '4/3', objectFit: 'cover', bgcolor: '#f5f5f5' }}
+                />
                 <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                     <Typography variant="body2" fontWeight={600} noWrap>
                         {inventoryItem.brand} {inventoryItem.model}
@@ -52,6 +48,14 @@ export default function InventoryItemCard({ inventoryItem, onSelect, handleReque
                         <Typography variant="caption" color="text.secondary" noWrap>
                             {inventoryItem.category}
                         </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.75 }}>
+                        <Chip
+                            size="small"
+                            color={statusChip.color}
+                            label={statusChip.label}
+                            sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }}
+                        />
                     </Stack>
                 </CardContent>
             </CardActionArea>

@@ -1,7 +1,6 @@
 'use client';
 
-import { Dispatch, SetStateAction, useEffect, useMemo, useState, forwardRef } from 'react';
-import { GridComponents, VirtuosoGrid } from 'react-virtuoso';
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { useUserContext } from '@/contexts/UserContext';
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useRouter } from 'next/navigation';
@@ -30,49 +29,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import { getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
+import { donationStatuses } from '@/models/donation';
 import '../styles/globalStyles.css';
 import { InventoryItem } from '@/models/inventoryItem';
 type InventoryProps = {
     inventory?: InventoryItem[];
     setInventoryUpdated?: Dispatch<SetStateAction<boolean>>;
-};
-
-const gridComponents: GridComponents = {
-    List: forwardRef(function GridList({ style, children, ...props }, ref) {
-        return (
-            <Box
-                ref={ref}
-                {...props}
-                style={style}
-                sx={{
-                    display: 'grid',
-                    gridTemplateColumns: {
-                        xs: '1fr',
-                        sm: 'repeat(2, 1fr)',
-                        md: 'repeat(3, 1fr)',
-                        lg: 'repeat(4, 1fr)'
-                    },
-                    gap: 2,
-                    // VirtuosoGrid repositions rows by changing this element's padding;
-                    // browser scroll anchoring fights that in useWindowScroll mode and
-                    // the page oscillates. Virtuoso disables anchoring for its list/table
-                    // scrollers but not for the grid, so opt out here.
-                    overflowAnchor: 'none'
-                }}
-            >
-                {children}
-            </Box>
-        );
-    }),
-    // minWidth: 0 keeps a card's noWrap text from inflating the grid item's
-    // automatic minimum size and blowing out the 1fr column widths.
-    Item: forwardRef(function GridItem({ style, children, ...props }, ref) {
-        return (
-            <div ref={ref} {...props} style={{ ...style, minWidth: 0 }}>
-                {children}
-            </div>
-        );
-    })
 };
 
 const Inventory = (props: InventoryProps) => {
@@ -81,6 +43,7 @@ const Inventory = (props: InventoryProps) => {
     const [currentInventory, setCurrentInventory] = useState<InventoryItem[]>(inventory ?? []);
     const [searchInput, setSearchInput] = useState<string>('');
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
+    const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
     const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
 
@@ -131,6 +94,13 @@ const Inventory = (props: InventoryProps) => {
         [currentInventory]
     );
 
+    const availableStatuses = useMemo(() => {
+        const statusValues = new Set(currentInventory.map((item) => item.status).filter(Boolean));
+        return Object.entries(donationStatuses)
+            .filter(([, value]) => statusValues.has(value))
+            .map(([key]) => key);
+    }, [currentInventory]);
+
     const inventoryToDisplay = useMemo(() => {
         const requestedInventoryIds = requestedInventory.map((i) => i.id);
         let filteredInventory = currentInventory.filter((item) => !requestedInventoryIds.includes(item.id));
@@ -145,8 +115,13 @@ const Inventory = (props: InventoryProps) => {
         if (categoryFilter && categoryFilter.length > 0) {
             filteredInventory = filteredInventory.filter((item) => categoryFilter.includes(item.category));
         }
+        if (statusFilter && statusFilter.length > 0) {
+            filteredInventory = filteredInventory.filter((item) =>
+                statusFilter.some((status) => donationStatuses[status as keyof typeof donationStatuses] === item.status)
+            );
+        }
         return filteredInventory;
-    }, [requestedInventory, currentInventory, categoryFilter, searchInput]);
+    }, [requestedInventory, currentInventory, categoryFilter, statusFilter, searchInput]);
 
     useEffect(() => {
         if (!inventory) fetchInventory();
@@ -217,23 +192,48 @@ const Inventory = (props: InventoryProps) => {
                                 })
                             }
                         />
+                        {isAdmin && (
+                            <Autocomplete
+                                sx={{ maxWidth: '80vw' }}
+                                multiple
+                                id="status-filter"
+                                options={availableStatuses}
+                                value={statusFilter}
+                                onChange={(_event, newValue) => setStatusFilter(newValue)}
+                                renderInput={(params) => (
+                                    <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" />
+                                )}
+                                renderTags={(value, getTagProps) =>
+                                    value.map((option, index) => {
+                                        const { key, ...tagProps } = getTagProps({ index });
+                                        return <Chip key={key} label={option} {...tagProps} />;
+                                    })
+                                }
+                            />
+                        )}
                     </Stack>
                     {inventoryToDisplay == null || inventoryToDisplay.length === 0 ? (
                         <p>No products found.</p>
                     ) : (
-                        <VirtuosoGrid
-                            useWindowScroll
-                            totalCount={inventoryToDisplay.length}
-                            computeItemKey={(index) => inventoryToDisplay[index].id}
-                            components={gridComponents}
-                            itemContent={(index) => (
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                                xs: '1fr',
+                                sm: 'repeat(2, 1fr)',
+                                md: 'repeat(3, 1fr)',
+                                lg: 'repeat(4, 1fr)'
+                            },
+                            gap: 2
+                        }}>
+                            {inventoryToDisplay.map((inventoryItem: InventoryItem) => (
                                 <InventoryItemCard
-                                    inventoryItem={inventoryToDisplay[index]}
+                                    key={inventoryItem.id}
+                                    inventoryItem={inventoryItem}
                                     onSelect={(item) => setSelectedItem(item)}
                                     handleRequestInventoryItem={handleRequestInventoryItem}
                                 />
-                            )}
-                        />
+                            ))}
+                        </Box>
                     )}
                     {requestedInventory.length > 0 && (
                         <Button variant="contained" onClick={handleOpenCart} sx={{ mt: 2 }}>
