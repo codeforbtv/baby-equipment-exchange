@@ -100,7 +100,7 @@ export default function UserDetails(props: UserDetailsProps) {
                                 </Typography>
                                 <ul>
                                     {userDetails.distributedItems.map((item) => (
-                                        <li>{item.tagNumber}</li>
+                                        <li key={item.tagNumber}>{item.tagNumber}</li>
                                     ))}
                                 </ul>
                             </>

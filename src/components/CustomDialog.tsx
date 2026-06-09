@@ -1,12 +1,13 @@
 'use client';
 
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { ReactNode } from 'react';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box } from '@mui/material';
 
 type CustomDialogProps = {
     isOpen: boolean;
     onClose: () => void;
     title: string;
-    content: string;
+    content: ReactNode;
 };
 
 const CustomDialog = (props: CustomDialogProps) => {
@@ -16,9 +17,13 @@ const CustomDialog = (props: CustomDialogProps) => {
         <Dialog open={isOpen} aria-labelledby="dialog-title" aria-describedby="dialog-description">
             <DialogTitle id="dialog-title">{title}</DialogTitle>
             <DialogContent>
-                <DialogContentText id="dialog-description" variant="body1">
-                    {content}
-                </DialogContentText>
+                {typeof content === 'string' ? (
+                    <DialogContentText id="dialog-description" variant="body1">
+                        {content}
+                    </DialogContentText>
+                ) : (
+                    <Box id="dialog-description">{content}</Box>
+                )}
                 <DialogActions>
                     <Button onClick={onClose}>Ok</Button>
                 </DialogActions>

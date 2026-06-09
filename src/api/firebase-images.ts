@@ -130,7 +130,7 @@ export async function imageReferenceConverter(...documentReferences: DocumentRef
             const imageSnapshot = await getDoc(documentReference.withConverter(imageConverter));
             if (imageSnapshot.exists()) {
                 const imageDocument = imageSnapshot.data();
-                let url = imageDocument?.getDownloadURL();
+                const url = imageDocument?.getDownloadURL();
                 await getDownloadURL(ref(storage, url))
                     .then((url) => {
                         if (url) images.push(url);

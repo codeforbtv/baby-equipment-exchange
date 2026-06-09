@@ -5,7 +5,6 @@ import { UserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
 import { getSchedulingPageLink } from '@/api/calendly';
 import { getDonationById } from '@/api/firebase-donations';
-import accept from '@/email-templates/accept';
 import { addErrorEvent } from '@/api/firebase';
 
 import { EventType } from '@/types/CalendlyTypes';
@@ -17,33 +16,24 @@ import { Box, Button, NativeSelect, TextField } from '@mui/material';
 export default function ScheduleDropoff({ params }: { params: { id: string } }) {
     const { isAdmin } = useContext(UserContext);
     const router = useRouter();
-
-    //prevents useEffect from firing
-    if (!isAdmin) {
-        router.push('/');
-        return null;
-    }
-
     const [events, setEvents] = useState<EventType[]>([]);
+    const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(true);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [donorEmail, setDonorEmail] = useState<string>('');
     const [notes, sentNotes] = useState<string>('');
 
-    const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
-        setInviteUrl(event.target.value);
-    };
-
-    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
-
-    const handleSubmit = async () => {};
-
     useEffect(() => {
+        if (!isAdmin) return;
         const fetchEvents = async () => {
+            setIsLoadingEvents(true);
             try {
                 const eventResult = await getSchedulingPageLink();
-                setEvents(eventResult);
+                setEvents(eventResult ?? []);
             } catch (error) {
                 addErrorEvent('Fetch Calendly Scheduling Links', error);
+                setEvents([]);
+            } finally {
+                setIsLoadingEvents(false);
             }
         };
         const fetchDonorEmail = async () => {
@@ -56,29 +46,36 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
         };
         fetchEvents();
         fetchDonorEmail();
-    }, []);
+    }, [isAdmin, params.id]);
+
+    if (!isAdmin) {
+        router.push('/');
+        return null;
+    }
+
+    const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {
+        setInviteUrl(event.target.value);
+    };
+
+    const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => sentNotes(event.target.value);
+
+    const handleSubmit = async () => {};
 
     return (
         <ProtectedAdminRoute>
             <div className="page--header">
                 <h1>Accept Donation</h1>
-                <h4>Select a calendar to send a scheduling link</h4>
+                <h4>Select an optional calendar for this email</h4>
             </div>
             <div className="content--container">
                 <Box display={'flex'} flexDirection={'column'} gap={4}>
-                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                        <option value="" disabled>
-                            Select an Drop Off Location
-                        </option>
-                        {events.map((event, index) => {
-                            if (event.active === true) {
-                                return (
-                                    <option key={index} value={event.scheduling_url}>
-                                        {event.name}
-                                    </option>
-                                );
-                            }
-                        })}
+                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl} disabled={isLoadingEvents}>
+                        <option value="">{isLoadingEvents ? 'Loading calendars...' : 'Send without calendar invite'}</option>
+                        {events.map((event, index) => (
+                            <option key={index} value={event.scheduling_url}>
+                                {event.name}
+                            </option>
+                        ))}
                     </NativeSelect>
                     <TextField
                         type="text"
@@ -92,9 +89,7 @@ export default function ScheduleDropoff({ params }: { params: { id: string } }) 
                         placeholder="Add notes here"
                         onChange={handleInputChange}
                     ></TextField>
-                    <Button onClick={handleSubmit} disabled={!inviteUrl}>
-                        Send scheduling Link
-                    </Button>
+                    <Button onClick={handleSubmit}>Send Email</Button>
                 </Box>
             </div>
         </ProtectedAdminRoute>

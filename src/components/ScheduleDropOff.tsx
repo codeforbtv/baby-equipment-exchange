@@ -34,14 +34,13 @@ type ScheduleDropOffProps = {
 const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const { acceptedDonations, rejectedDonations, setOpenScheduler } = props;
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(true);
     const [events, setEvents] = useState<EventType[] | null>(null);
     const [inviteUrl, setInviteUrl] = useState<string>('');
     const [notes, setNotes] = useState<string>('');
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
     const router = useRouter();
-
-    const isDisabled = acceptedDonations && acceptedDonations.length > 0 ? !inviteUrl : false;
 
     let donorEmail = '';
     let donorName = '';
@@ -65,11 +64,15 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
 
     const fetchEvents = async () => {
+        setIsLoadingEvents(true);
         try {
             const eventResult = await getSchedulingPageLink();
-            setEvents(eventResult);
+            setEvents(eventResult ?? []);
         } catch (error) {
             addErrorEvent('Fetch Calendly Scheduling Links', error);
+            setEvents([]);
+        } finally {
+            setIsLoadingEvents(false);
         }
     };
 
@@ -150,8 +153,12 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
     };
 
     useEffect(() => {
-        fetchEvents();
-    }, []);
+        if (acceptedDonations && acceptedDonations.length > 0) {
+            fetchEvents();
+        } else {
+            setIsLoadingEvents(false);
+        }
+    }, [rejectedDonations, acceptedDonations]);
 
     return (
         <ProtectedAdminRoute>
@@ -183,10 +190,15 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                     <InputLabel variant="standard" htmlFor="location" shrink={true}>
                                         Select calendar for accepted donations
                                     </InputLabel>
-                                    <NativeSelect variant="outlined" name="location" id="location" onChange={handleSelect} value={inviteUrl}>
-                                        <option value="" disabled>
-                                            Select Calendar
-                                        </option>
+                                    <NativeSelect
+                                        variant="outlined"
+                                        name="location"
+                                        id="location"
+                                        onChange={handleSelect}
+                                        value={inviteUrl}
+                                        disabled={isLoadingEvents}
+                                    >
+                                        <option value="">{isLoadingEvents ? 'Loading calendars...' : 'Send without calendar invite'}</option>
                                         {events &&
                                             events.map((event, index) => {
                                                 if (event.active === true) {
@@ -201,7 +213,7 @@ const ScheduleDropOff = (props: ScheduleDropOffProps) => {
                                 </FormControl>
                             )}
                             <Box sx={{ marginTop: '2em' }} display={'flex'} gap={2}>
-                                <Button onClick={handleSubmit} disabled={isDisabled} variant="contained">
+                                <Button onClick={handleSubmit} variant="contained">
                                     Send Email
                                 </Button>
                                 <Button variant="outlined" type="button" onClick={() => setOpenScheduler(false)}>

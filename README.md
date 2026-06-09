@@ -37,3 +37,43 @@ Navigate to [http://localhost:3000/join](http://localhost:3000/join) and create 
 The landing page should display upon successful account creation.
 
 ![Landing Page as standard user](https://raw.githubusercontent.com/codeforbtv/baby-equipment-exchange/main/docs/images/account_creation_1_5.png)
+
+## Environment Configuration
+
+When working locally, update the variable and its value to your local `.env.local` file so it is available during local development. Production Environment variables are managed through Google Cloud Secret Manager and referenced in `apphosting.yaml`. When adding or updating a configuration value, follow these steps:
+
+### 1. Add the variable to `apphosting.yaml`
+
+```yaml
+- variable: MY_VAR
+  secret: MY_VAR
+  availability:
+      - BUILD
+      - RUNTIME
+```
+
+### 2. Create the secret using Firebase CLI
+
+```
+firebase apphosting:secrets:set MY_VAR
+```
+
+This creates the secret in Google Cloud Secret Manager and grants your Firebase App Hosting backend access to it. You will be prompted to enter the secret value.
+
+If access was not granted automatically, run:
+
+```
+firebase apphosting:secrets:grantaccess -b <backend-name> MY_VAR
+```
+
+### 3. Redeploy
+
+Secrets are pinned to the version available at build time. A redeploy is required for changes to take effect.
+
+### Notes
+
+- Both `BUILD` and `RUNTIME` availability are required. `BUILD` ensures the Next.js build can resolve the variable at compile time. `RUNTIME` makes it available to the running application.
+- Secret names are case-sensitive.
+- Values set in the Firebase console override values in `apphosting.yaml`.
+- To verify a secret value: `firebase apphosting:secrets:access MY_VAR`
+- Do not use the `NEXT_PUBLIC_` prefix for sensitive credentials, as these are exposed to the browser.

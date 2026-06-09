@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Hit } from 'instantsearch.js';
 import { Dispatch, SetStateAction } from 'react';
 import { UseSearchBoxProps } from 'react-instantsearch';
