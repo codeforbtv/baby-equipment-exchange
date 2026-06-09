@@ -20,10 +20,10 @@ import '@/styles/globalStyles.css';
 //Types
 import { Order } from '@/types/OrdersTypes';
 import { Donation } from '@/models/donation';
+import type { OrderItemRejectionResolution } from '@/api/firebase-donations';
 
 type ReviewOrderProps = {
     id: string;
-    order?: Order;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
@@ -34,7 +34,9 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
+    const [showCancelOrder, setShowCancelOrder] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [dialogContent, setDialogContent] = useState<string>('Donation successfully removed from order');
 
     const fetchOrder = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -48,22 +50,29 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         }
     };
 
-    const handleRemoveFromOrder = async (orderId: string, donation: Donation): Promise<void> => {
+    const handleRemoveFromOrder = async (orderId: string, donation: Donation, resolution: OrderItemRejectionResolution): Promise<void> => {
         setIsLoading(true);
         try {
-            await removeDonationFromOrder(orderId, donation);
-            if (currentOrder) {
-                const rejectedDonation: Donation = { ...donation, status: 'unavailable' } as Donation;
-                const updatedOrder: Order = {
-                    ...currentOrder,
-                    items: currentOrder.items.filter((item) => item.id !== donation.id),
-                    rejectedItems: !currentOrder.rejectedItems ? [rejectedDonation] : [...currentOrder.rejectedItems, rejectedDonation]
-                };
-                setCurrentOrder(updatedOrder);
+            await removeDonationFromOrder(orderId, donation, resolution);
+            const updatedOrder = await getOrderById(orderId);
+            setCurrentOrder(updatedOrder);
+            setNotificationsUpdated?.(true);
+            if (updatedOrder.items.length === 0) {
+                setShowCancelOrder(true);
+            } else {
+                setDialogContent(
+                    resolution.action === 'available'
+                        ? 'Donation returned to available inventory.'
+                        : resolution.action === 'requested'
+                          ? `Donation reassigned to ${resolution.requestor.name}.`
+                          : 'Donation marked as unavailable.'
+                );
                 setIsDialogOpen(true);
             }
         } catch (error) {
             addErrorEvent('Error removing donation from order', error);
+            setDialogContent('Something went wrong. Please try again.');
+            setIsDialogOpen(true);
         } finally {
             setIsLoading(false);
         }
@@ -75,6 +84,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
 
     useEffect(() => {
         fetchOrder(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const donationToDisplay =
@@ -152,7 +162,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     )}
                 </>
             )}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content="Donation successfully removed from order" />
+            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content={dialogContent} />
         </ProtectedAdminRoute>
     );
 };
