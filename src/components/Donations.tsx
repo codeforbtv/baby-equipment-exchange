@@ -4,9 +4,9 @@
 import { SetStateAction, useState, Dispatch, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
-import { Button, ImageList, Chip, Autocomplete, TextField, Stack, Typography, InputAdornment, useMediaQuery } from '@mui/material';
+import { Box, Button, Chip, Autocomplete, TextField, Stack, Typography, InputAdornment } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
-import DonationDetails from '@/components/DonationDetails';
+import DonationDetailsDialog from '@/components/DonationDetailsDialog';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 //Api
 import { getAllCategories } from '@/api/firebase-categories';
@@ -16,7 +16,6 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 //Styles
 import '@/styles/globalStyles.css';
-import styles from '@/components/Browse.module.css';
 //Types
 import { Donation, DonationStatuses, donationStatuses } from '@/models/donation';
 import { Category } from '@/models/category';
@@ -31,16 +30,13 @@ const statusSelectOptions = Object.keys(donationStatuses);
 
 const Donations = (props: DonationsProps) => {
     const { donations, setDonationsUpdated } = props;
-    const [idToDisplay, setIdToDisplay] = useState<string | null>(null);
+    const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
     const [searchInput, setSearchInput] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [categories, setCategories] = useState<Category[] | null>(null);
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
     const [statusFilter, setStatusFilter] = useState<string[] | undefined>([]);
     const router = useRouter();
-
-    //Media query for imagelist grid
-    const isMobile = useMediaQuery('(max-width:600px)');
 
     const fetchCategories = async (): Promise<void> => {
         try {
@@ -59,14 +55,24 @@ const Donations = (props: DonationsProps) => {
     const donationsToDisplay = useMemo(() => {
         let currentDonations = donations;
         if (searchInput.length > 0) {
-            currentDonations = currentDonations.filter(
-                (donation) =>
-                    Object.values(donation).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase())) ||
-                    (donation.requestor &&
-                        Object.values(donation.requestor).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))) ||
-                    (donation.distributor &&
-                        Object.values(donation.distributor).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase())))
-            );
+            const search = searchInput.toLowerCase();
+            currentDonations = currentDonations.filter((donation) => {
+                const searchableValues = [
+                    donation.tagNumber,
+                    donation.status,
+                    donation.category,
+                    donation.brand,
+                    donation.model,
+                    donation.description,
+                    donation.donorName,
+                    donation.donorEmail,
+                    donation.requestor?.name,
+                    donation.requestor?.email,
+                    donation.distributor?.name,
+                    donation.distributor?.email
+                ];
+                return searchableValues.some((value) => String(value ?? '').toLowerCase().includes(search));
+            });
         }
         if (categoryFilter && categoryFilter.length > 0) {
             currentDonations = currentDonations.filter((donation) => categoryFilter.includes(donation.category));
@@ -77,7 +83,7 @@ const Donations = (props: DonationsProps) => {
             );
         }
         return currentDonations;
-    }, [categoryFilter, statusFilter, searchInput]);
+    }, [donations, categoryFilter, statusFilter, searchInput]);
 
     useEffect(() => {
         if (!categories) fetchCategories();
@@ -85,75 +91,87 @@ const Donations = (props: DonationsProps) => {
 
     return (
         <ProtectedAdminRoute>
-            {idToDisplay && <DonationDetails id={idToDisplay} setIdToDisplay={setIdToDisplay} setDonationsUpdated={setDonationsUpdated} />}
+            <div className="page--header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="h5">Donations</Typography>
+                <Button startIcon={<AddIcon />} variant="contained" type="button" onClick={() => router.push('/admin-donate')}>
+                    Add New
+                </Button>
+            </div>
+            <Stack spacing={2} sx={{ mb: 3 }}>
+                <TextField
+                    label="Search"
+                    id="search-field"
+                    placeholder="Search by tag, donor, brand, model, or category"
+                    value={searchInput}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon />
+                            </InputAdornment>
+                        )
+                    }}
+                />
+                {categories && (
+                    <Autocomplete
+                        sx={{ maxWidth: '83vw' }}
+                        multiple
+                        id="category-filter"
+                        options={categories.map((category) => category.name)}
+                        value={categoryFilter}
+                        onChange={(event, newValue) => setCategoryFilter(newValue)}
+                        renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
+                        renderTags={(value, getTagProps) =>
+                            value.map((option, index) => {
+                                const { key, ...tagProps } = getTagProps({ index });
+                                return <Chip key={key} label={option} {...tagProps} />;
+                            })
+                        }
+                    />
+                )}
 
-            {!idToDisplay && (
-                <>
-                    <div className="page--header" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="h5">Donations</Typography>
-                        <Button startIcon={<AddIcon />} variant="contained" type="button" onClick={() => router.push('/admin-donate')}>
-                            Add New
-                        </Button>
-                    </div>
-                    <Stack spacing={2} sx={{ paddingLeft: '1em' }}>
-                        <TextField
-                            label="Search"
-                            id="search-field"
-                            value={searchInput}
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon />
-                                    </InputAdornment>
-                                )
-                            }}
-                        />
-                        {categories && (
-                            <Autocomplete
-                                sx={{ maxWidth: '83vw' }}
-                                multiple
-                                id="category-filter"
-                                options={categories.map((category) => category.name)}
-                                value={categoryFilter}
-                                onChange={(event, newValue) => setCategoryFilter(newValue)}
-                                renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
-                                renderTags={(value, getTagProps) =>
-                                    value.map((option, index) => {
-                                        const { key, ...tagProps } = getTagProps({ index });
-                                        return <Chip key={key} label={option} {...tagProps} />;
-                                    })
-                                }
-                            />
-                        )}
-
-                        <Autocomplete
-                            sx={{ maxWidth: '83vw' }}
-                            multiple
-                            id="status-filter"
-                            options={statusSelectOptions}
-                            value={statusFilter}
-                            onChange={(event, newValues) => setStatusFilter(newValues)}
-                            renderInput={(params) => <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" />}
-                            renderTags={(value, getTagProps) =>
-                                value.map((option, index) => {
-                                    const { key, ...tagProps } = getTagProps({ index });
-                                    return <Chip key={key} label={option} {...tagProps} />;
-                                })
-                            }
-                        />
-                    </Stack>
-                    {donationsToDisplay.length === 0 ? (
-                        <Typography variant="body1">No donations found.</Typography>
-                    ) : (
-                        <ImageList className={styles['browse__grid']} rowHeight={300} gap={4} cols={isMobile ? 1 : 2}>
-                            {donationsToDisplay.map((donation) => (
-                                <DonationCard key={donation.id} donation={donation} setIdToDisplay={setIdToDisplay} />
-                            ))}
-                        </ImageList>
-                    )}
-                </>
+                <Autocomplete
+                    sx={{ maxWidth: '83vw' }}
+                    multiple
+                    id="status-filter"
+                    options={statusSelectOptions}
+                    value={statusFilter}
+                    onChange={(event, newValues) => setStatusFilter(newValues)}
+                    renderInput={(params) => <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" />}
+                    renderTags={(value, getTagProps) =>
+                        value.map((option, index) => {
+                            const { key, ...tagProps } = getTagProps({ index });
+                            return <Chip key={key} label={option} {...tagProps} />;
+                        })
+                    }
+                />
+            </Stack>
+            {donationsToDisplay.length === 0 ? (
+                <Typography variant="body1">No donations found.</Typography>
+            ) : (
+                <Box
+                    sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                            xs: '1fr',
+                            sm: 'repeat(2, 1fr)',
+                            md: 'repeat(3, 1fr)',
+                            lg: 'repeat(4, 1fr)'
+                        },
+                        gap: 2
+                    }}
+                >
+                    {donationsToDisplay.map((donation) => (
+                        <DonationCard key={donation.id} donation={donation} onSelect={(d) => setSelectedDonation(d)} />
+                    ))}
+                </Box>
             )}
+            <DonationDetailsDialog
+                open={selectedDonation !== null}
+                donation={selectedDonation}
+                onClose={() => setSelectedDonation(null)}
+                onUpdated={() => setDonationsUpdated?.(true)}
+            />
         </ProtectedAdminRoute>
     );
 };

@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import UserDetails from '@/components/UserDetails';
-import DonationDetails from '@/components/DonationDetails';
+import DonationDetailsDialog from '@/components/DonationDetailsDialog';
 import ReviewOrder from './ReviewOrder';
 import NotificationCard from '@/components/NotificationCard';
-import { Box, Button, Chip, Divider, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { Box, Button, Chip, Divider, InputAdornment, Paper, Tab, Tabs, TextField, Typography } from '@mui/material';
 import CustomTabPanel from './CustomTabPanel';
+//Icons
+import SearchIcon from '@mui/icons-material/Search';
 //Styles
 import '@/styles/globalStyles.css';
 import styles from '@/components/NotificationCard.module.css';
@@ -17,6 +19,7 @@ import styles from '@/components/NotificationCard.module.css';
 import { Notification } from '@/types/NotificationTypes';
 import { Donation } from '@/models/donation';
 import { Order } from '@/types/OrdersTypes';
+import { IUser } from '@/models/user';
 
 type NotificationsProps = {
     notifications: Notification;
@@ -44,6 +47,15 @@ type RequestorGroup = {
 
 const toTitleCase = (s: string) =>
     s.trim().toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+
+const donationMatches = (d: Donation, q: string) =>
+    [d.tagNumber, d.brand, d.model, d.category, d.donorName, d.donorEmail].some((v) => String(v ?? '').toLowerCase().includes(q));
+
+const orderMatches = (o: Order, q: string) =>
+    [o.requestor.name, o.requestor.email].some((v) => String(v ?? '').toLowerCase().includes(q)) || o.items.some((item) => donationMatches(item, q));
+
+const userMatches = (u: IUser, q: string) =>
+    [u.displayName, u.email, u.organization?.name].some((v) => String(v ?? '').toLowerCase().includes(q));
 
 const groupByDonor = (donations: Donation[]): DonorGroup[] => {
     const emailMap = new Map<string, {
@@ -122,16 +134,23 @@ const Notifications = (props: NotificationsProps) => {
     const [userIdToDisplay, setUserIdToDisplay] = useState<string | null>(null);
     const [orderIdToDisplay, setOrderIdToDisplay] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<number>(0);
+    const [searchInput, setSearchInput] = useState<string>('');
 
-    const donationsAwaitingApproval = notifications.donations.filter((d) => d.status === 'in processing');
+    const q = searchInput.trim().toLowerCase();
+
+    const donationsAwaitingApproval = notifications.donations.filter((d) => d.status === 'in processing').filter((d) => !q || donationMatches(d, q));
     const donorGroupsApproval = groupByDonor(donationsAwaitingApproval);
-    const donationsAwaitingDropoff = notifications.donations.filter((d) => d.status === 'pending delivery');
+    const donationsAwaitingDropoff = notifications.donations.filter((d) => d.status === 'pending delivery').filter((d) => !q || donationMatches(d, q));
     const donorGroupsDelivery = groupByDonor(donationsAwaitingDropoff);
-    const donationsAwaitingPickup = notifications.donations.filter((d) => d.status === 'reserved');
+    const donationsAwaitingPickup = notifications.donations.filter((d) => d.status === 'reserved').filter((d) => !q || donationMatches(d, q));
     const donorGroupsPickup = groupByDonor(donationsAwaitingPickup);
-    const orders = notifications.orders;
+    const orders = notifications.orders.filter((o) => !q || orderMatches(o, q));
     const requestorGroups = groupByRequestor(orders);
-    const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted);
+    const usersAwaitingApproval = notifications.users.filter((user) => !user.isDeleted).filter((u) => !q || userMatches(u, q));
+
+    const donationToDisplay = donationIdToDisplay
+        ? ([...notifications.donations, ...notifications.orders.flatMap((o) => o.items)].find((d) => d.id === donationIdToDisplay) ?? null)
+        : null;
 
     const router = useRouter();
 
@@ -184,8 +203,8 @@ const Notifications = (props: NotificationsProps) => {
                 label={count}
                 size="small"
                 sx={{
-                    bgcolor: count > 0 ? '#d32f2f' : '#bdbdbd',
-                    color: 'white',
+                    bgcolor: q ? (count > 0 ? '#00695c' : '#cfd8d6') : count > 0 ? '#d32f2f' : '#bdbdbd',
+                    color: q && count === 0 ? '#7d8a86' : 'white',
                     fontWeight: 600,
                     height: 20,
                     minWidth: 20,
@@ -195,9 +214,20 @@ const Notifications = (props: NotificationsProps) => {
         </span>
     );
 
+    const emptyTabMessage = (defaultMessage: string) => (
+        <Typography sx={{ marginTop: '1rem' }} variant="body1">
+            {q ? `No matches for “${searchInput}” in this tab — check the badges above.` : defaultMessage}
+        </Typography>
+    );
+
     return (
         <ProtectedAdminRoute>
-            {donationIdToDisplay && <DonationDetails id={donationIdToDisplay} setIdToDisplay={setDonationIdToDisplay} />}
+            <DonationDetailsDialog
+                open={donationToDisplay !== null}
+                donation={donationToDisplay}
+                onClose={() => setDonationIdToDisplay(null)}
+                onUpdated={() => setNotificationsUpdated?.(true)}
+            />
             {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
             {orderIdToDisplay && (
                 <ReviewOrder
@@ -206,7 +236,7 @@ const Notifications = (props: NotificationsProps) => {
                     setNotificationsUpdated={setNotificationsUpdated}
                 />
             )}
-            {!donationIdToDisplay && !userIdToDisplay && !orderIdToDisplay && (
+            {!userIdToDisplay && !orderIdToDisplay && (
                 <>
                     {notifications.donations.length === 0 && notifications.orders.length === 0 && notifications.users.length === 0 ? (
                         <Typography sx={{ marginTop: '1rem' }} variant="body1">
@@ -214,6 +244,22 @@ const Notifications = (props: NotificationsProps) => {
                         </Typography>
                     ) : (
                         <>
+                            <TextField
+                                fullWidth
+                                id="notifications-search"
+                                label="Search"
+                                placeholder="Search all notifications — tag, brand, donor, requestor"
+                                value={searchInput}
+                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void => setSearchInput(event.target.value)}
+                                sx={{ marginTop: '1rem' }}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon />
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
                             <Tabs
                                 value={activeTab}
                                 onChange={(_, newValue) => setActiveTab(newValue)}
@@ -298,9 +344,7 @@ const Notifications = (props: NotificationsProps) => {
                                         </Paper>
                                     ))
                                 ) : (
-                                    <Typography sx={{ marginTop: '1rem' }} variant="body1">
-                                        No donations pending approval.
-                                    </Typography>
+                                    emptyTabMessage('No donations pending approval.')
                                 )}
                             </CustomTabPanel>
 
@@ -337,9 +381,7 @@ const Notifications = (props: NotificationsProps) => {
                                         </Paper>
                                     ))
                                 ) : (
-                                    <Typography sx={{ marginTop: '1rem' }} variant="body1">
-                                        No donations pending delivery.
-                                    </Typography>
+                                    emptyTabMessage('No donations pending delivery.')
                                 )}
                             </CustomTabPanel>
 
@@ -408,9 +450,7 @@ const Notifications = (props: NotificationsProps) => {
                                         </Paper>
                                     ))
                                 ) : (
-                                    <Typography sx={{ marginTop: '1rem' }} variant="body1">
-                                        No requested equipment.
-                                    </Typography>
+                                    emptyTabMessage('No requested equipment.')
                                 )}
                             </CustomTabPanel>
 
@@ -447,9 +487,7 @@ const Notifications = (props: NotificationsProps) => {
                                         </Paper>
                                     ))
                                 ) : (
-                                    <Typography sx={{ marginTop: '1rem' }} variant="body1">
-                                        No donations pending pickup.
-                                    </Typography>
+                                    emptyTabMessage('No donations pending pickup.')
                                 )}
                             </CustomTabPanel>
 
@@ -465,9 +503,7 @@ const Notifications = (props: NotificationsProps) => {
                                         />
                                     ))
                                 ) : (
-                                    <Typography sx={{ marginTop: '1rem' }} variant="body1">
-                                        No users pending approval.
-                                    </Typography>
+                                    emptyTabMessage('No users pending approval.')
                                 )}
                             </CustomTabPanel>
                         </>
