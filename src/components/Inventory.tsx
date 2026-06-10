@@ -29,7 +29,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import { getInventory } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
-import { donationStatuses } from '@/models/donation';
 import '../styles/globalStyles.css';
 import { InventoryItem } from '@/models/inventoryItem';
 type InventoryProps = {
@@ -43,7 +42,6 @@ const Inventory = (props: InventoryProps) => {
     const [currentInventory, setCurrentInventory] = useState<InventoryItem[]>(inventory ?? []);
     const [searchInput, setSearchInput] = useState<string>('');
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
-    const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
     const [isSnackBarOpen, setIsSnackBarOpen] = useState<boolean>(false);
 
@@ -94,13 +92,6 @@ const Inventory = (props: InventoryProps) => {
         [currentInventory]
     );
 
-    const availableStatuses = useMemo(() => {
-        const statusValues = new Set(currentInventory.map((item) => item.status).filter(Boolean));
-        return Object.entries(donationStatuses)
-            .filter(([, value]) => statusValues.has(value))
-            .map(([key]) => key);
-    }, [currentInventory]);
-
     const inventoryToDisplay = useMemo(() => {
         const requestedInventoryIds = requestedInventory.map((i) => i.id);
         let filteredInventory = currentInventory.filter((item) => !requestedInventoryIds.includes(item.id));
@@ -115,13 +106,8 @@ const Inventory = (props: InventoryProps) => {
         if (categoryFilter && categoryFilter.length > 0) {
             filteredInventory = filteredInventory.filter((item) => categoryFilter.includes(item.category));
         }
-        if (statusFilter && statusFilter.length > 0) {
-            filteredInventory = filteredInventory.filter((item) =>
-                statusFilter.some((status) => donationStatuses[status as keyof typeof donationStatuses] === item.status)
-            );
-        }
         return filteredInventory;
-    }, [requestedInventory, currentInventory, categoryFilter, statusFilter, searchInput]);
+    }, [requestedInventory, currentInventory, categoryFilter, searchInput]);
 
     useEffect(() => {
         if (!inventory) fetchInventory();
@@ -192,25 +178,6 @@ const Inventory = (props: InventoryProps) => {
                                 })
                             }
                         />
-                        {isAdmin && (
-                            <Autocomplete
-                                sx={{ maxWidth: '80vw' }}
-                                multiple
-                                id="status-filter"
-                                options={availableStatuses}
-                                value={statusFilter}
-                                onChange={(_event, newValue) => setStatusFilter(newValue)}
-                                renderInput={(params) => (
-                                    <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" />
-                                )}
-                                renderTags={(value, getTagProps) =>
-                                    value.map((option, index) => {
-                                        const { key, ...tagProps } = getTagProps({ index });
-                                        return <Chip key={key} label={option} {...tagProps} />;
-                                    })
-                                }
-                            />
-                        )}
                     </Stack>
                     {inventoryToDisplay == null || inventoryToDisplay.length === 0 ? (
                         <p>No products found.</p>
