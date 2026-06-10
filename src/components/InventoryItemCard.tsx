@@ -2,7 +2,6 @@
 
 import { Card, CardMedia, CardContent, CardActionArea, CardActions, Typography, Stack, Chip, IconButton, Tooltip } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import { getStatusChipProps } from '@/utils/statusChipProps';
 import { InventoryItem } from '@/models/inventoryItem';
 
 type InventoryItemCardProps = {
@@ -15,7 +14,6 @@ export default function InventoryItemCard({ inventoryItem, onSelect, handleReque
     const images = inventoryItem.images as string[];
     const image = images?.[0] || '';
     const canRequest = inventoryItem.status === 'available';
-    const statusChip = getStatusChipProps(inventoryItem.status);
 
     return (
         <Card
@@ -48,14 +46,6 @@ export default function InventoryItemCard({ inventoryItem, onSelect, handleReque
                         <Typography variant="caption" color="text.secondary" noWrap>
                             {inventoryItem.category}
                         </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.75 }}>
-                        <Chip
-                            size="small"
-                            color={statusChip.color}
-                            label={statusChip.label}
-                            sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }}
-                        />
                     </Stack>
                 </CardContent>
             </CardActionArea>
