@@ -86,7 +86,8 @@
 
 .page--wrapper {
     box-sizing: border-box;
-    padding: 1em;
+    /* top padding clears the fixed Header (4.5rem tall) */
+    padding: 5rem 1em 1em;
     display: flex;
     flex-direction: column;
 }
@@ -197,13 +198,13 @@
 /* Tablets */
 @media screen and (min-width: 480px) {
     .page--wrapper {
-        padding: 8px 5%;
+        padding: 5rem 5% 8px;
     }
 }
 
 /* Laptops and above */
 @media screen and (min-width: 800px) {
     .page--wrapper {
-        padding: 10px 5%;
+        padding: 5rem 5% 10px;
     }
 }
