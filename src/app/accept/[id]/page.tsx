@@ -66,7 +66,7 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
 
     return (
         <ProtectedAdminRoute>
-            <div style={{ marginTop: '4em' }}>
+            <div>
                 {openSecheduler ? (
                     <ScheduleDropOff
                         acceptedDonations={donations?.filter((d) => accepted.includes(d.id))}

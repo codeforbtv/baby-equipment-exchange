@@ -180,9 +180,7 @@ export default function Donate() {
     return (
         <>
             <div className="page--header">
-                <Typography variant="h4" sx={{ marginTop: '1em' }}>
-                    Donate
-                </Typography>
+                <Typography variant="h4">Donate</Typography>
             </div>
             {isLoading ? (
                 <Loader />
