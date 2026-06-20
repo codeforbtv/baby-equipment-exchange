@@ -27,10 +27,11 @@ type SchedulePickupProps = {
     order: Order;
     setShowScheduler: Dispatch<SetStateAction<boolean>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
+    onComplete?: () => void;
 };
 
 const SchedulePickup = (props: SchedulePickupProps) => {
-    const { order, setShowScheduler, setNotificationsUpdated } = props;
+    const { order, setShowScheduler, setNotificationsUpdated, onComplete } = props;
     const { requestor, id, items, rejectedItems } = order;
     const router = useRouter();
 
@@ -45,7 +46,8 @@ const SchedulePickup = (props: SchedulePickupProps) => {
 
     const handleClose = () => {
         setIsDialogOpen(false);
-        router.push('/');
+        if (onComplete) onComplete();
+        else router.push('/');
     };
 
     const handleSelect = (event: ChangeEvent<HTMLSelectElement>) => {

@@ -106,6 +106,11 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     order={currentOrder}
                     setShowScheduler={setShowScheduler}
                     setNotificationsUpdated={setNotificationsUpdated}
+                    onComplete={() => {
+                        setNotificationsUpdated?.(true);
+                        if (setIdToDisplay) setIdToDisplay(null);
+                        else setShowScheduler(false);
+                    }}
                 />
             )}
 
