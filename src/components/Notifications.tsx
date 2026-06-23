@@ -266,7 +266,14 @@ const Notifications = (props: NotificationsProps) => {
                                 aria-label="notifications"
                                 variant="scrollable"
                                 scrollButtons="auto"
-                                sx={{ marginTop: '1rem' }}
+                                sx={{
+                                    marginTop: '1rem',
+                                    position: 'sticky',
+                                    top: '4.5rem',
+                                    zIndex: 2,
+                                    backgroundColor: '#fff',
+                                    borderBottom: '1px solid #e0e0e0'
+                                }}
                             >
                                 {tabConfig.map((tab, i) => (
                                     <Tab key={i} label={tabLabel(tab.label, tab.count)} sx={{ color: 'black' }} />
