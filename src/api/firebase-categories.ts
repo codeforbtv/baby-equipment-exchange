@@ -135,6 +135,9 @@ export async function getTagNumber(category: string): Promise<string> {
         docRefs.push(docRef);
     });
     //Use first (and only) query to obtain doc ref for transaction
+    if (docRefs.length === 0) {
+        throw new Error(`Category not found: "${category}"`);
+    }
     const categoryRef = docRefs[0];
     let tagNumber = '';
     try {
