@@ -236,10 +236,10 @@ const NotificationCard = (props: NotificationCardProps) => {
                                             <Typography variant="body1">{donation.dateRequested.toDate().toDateString()}</Typography>
                                         </>
                                     )}
-                                    <Typography variant="caption">Requested by:</Typography>
+                                    <Typography variant="caption">Donated by:</Typography>
                                     <Typography variant="subtitle1">
-                                        <Link href={`/users/${donation.requestor?.id}`}>
-                                            {donation.requestor?.name} ({donation.requestor?.email})
+                                        <Link href={`/users/${donation.donorId}`}>
+                                            {donation.donorName} ({donation.donorEmail})
                                         </Link>
                                     </Typography>
                                 </CardContent>
