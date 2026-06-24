@@ -4,7 +4,7 @@
 import { SetStateAction, useState, Dispatch, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
-import { Box, Button, Chip, Autocomplete, TextField, Stack, Typography, InputAdornment } from '@mui/material';
+import { Box, Button, Chip, Autocomplete, TextField, Stack, Typography, InputAdornment, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
 import DonationDetailsDialog from '@/components/DonationDetailsDialog';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
@@ -19,6 +19,7 @@ import '@/styles/globalStyles.css';
 //Types
 import { Donation, DonationStatuses, donationStatuses } from '@/models/donation';
 import { Category } from '@/models/category';
+import { compareDonations, SortKey } from '@/utils/storageTime';
 import { addErrorEvent } from '@/api/firebase';
 
 type DonationsProps = {
@@ -28,6 +29,13 @@ type DonationsProps = {
 
 const statusSelectOptions = Object.keys(donationStatuses);
 
+const sortOptions: { value: SortKey; label: string }[] = [
+    { value: 'storage-desc', label: 'Longest in storage' },
+    { value: 'storage-asc', label: 'Shortest in storage' },
+    { value: 'accepted-desc', label: 'Newest accepted' },
+    { value: 'accepted-asc', label: 'Oldest accepted' }
+];
+
 const Donations = (props: DonationsProps) => {
     const { donations, setDonationsUpdated } = props;
     const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
@@ -36,6 +44,7 @@ const Donations = (props: DonationsProps) => {
     const [categories, setCategories] = useState<Category[] | null>(null);
     const [categoryFilter, setCategoryFilter] = useState<string[] | undefined>([]);
     const [statusFilter, setStatusFilter] = useState<string[] | undefined>([]);
+    const [sortBy, setSortBy] = useState<SortKey>('accepted-desc');
     const router = useRouter();
 
     const fetchCategories = async (): Promise<void> => {
@@ -82,8 +91,8 @@ const Donations = (props: DonationsProps) => {
                 statusFilter.some((filter) => donationStatuses[filter as keyof DonationStatuses] === donation.status)
             );
         }
-        return currentDonations;
-    }, [donations, categoryFilter, statusFilter, searchInput]);
+        return [...currentDonations].sort(compareDonations(sortBy));
+    }, [donations, categoryFilter, statusFilter, searchInput, sortBy]);
 
     useEffect(() => {
         if (!categories) fetchCategories();
@@ -112,15 +121,37 @@ const Donations = (props: DonationsProps) => {
                         )
                     }}
                 />
-                {categories && (
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 2, md: 3 }} alignItems={{ md: 'flex-end' }} sx={{ width: '100%' }}>
+                    {categories && (
+                        <Autocomplete
+                            sx={{ flex: '1 1 0', minWidth: 0, maxWidth: { xs: '83vw', md: 'none' } }}
+                            multiple
+                            id="category-filter"
+                            options={categories.map((category) => category.name)}
+                            value={categoryFilter}
+                            onChange={(event, newValue) => setCategoryFilter(newValue)}
+                            renderInput={(params) => (
+                                <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" InputLabelProps={{ shrink: true }} />
+                            )}
+                            renderTags={(value, getTagProps) =>
+                                value.map((option, index) => {
+                                    const { key, ...tagProps } = getTagProps({ index });
+                                    return <Chip key={key} label={option} {...tagProps} />;
+                                })
+                            }
+                        />
+                    )}
+
                     <Autocomplete
-                        sx={{ maxWidth: '83vw' }}
+                        sx={{ flex: '1 1 0', minWidth: 0, maxWidth: { xs: '83vw', md: 'none' } }}
                         multiple
-                        id="category-filter"
-                        options={categories.map((category) => category.name)}
-                        value={categoryFilter}
-                        onChange={(event, newValue) => setCategoryFilter(newValue)}
-                        renderInput={(params) => <TextField {...params} variant="standard" label="Filter by category" placeholder="Category" />}
+                        id="status-filter"
+                        options={statusSelectOptions}
+                        value={statusFilter}
+                        onChange={(event, newValues) => setStatusFilter(newValues)}
+                        renderInput={(params) => (
+                            <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" InputLabelProps={{ shrink: true }} />
+                        )}
                         renderTags={(value, getTagProps) =>
                             value.map((option, index) => {
                                 const { key, ...tagProps } = getTagProps({ index });
@@ -128,23 +159,24 @@ const Donations = (props: DonationsProps) => {
                             })
                         }
                     />
-                )}
 
-                <Autocomplete
-                    sx={{ maxWidth: '83vw' }}
-                    multiple
-                    id="status-filter"
-                    options={statusSelectOptions}
-                    value={statusFilter}
-                    onChange={(event, newValues) => setStatusFilter(newValues)}
-                    renderInput={(params) => <TextField {...params} variant="standard" label="Filter by status" placeholder="Status" />}
-                    renderTags={(value, getTagProps) =>
-                        value.map((option, index) => {
-                            const { key, ...tagProps } = getTagProps({ index });
-                            return <Chip key={key} label={option} {...tagProps} />;
-                        })
-                    }
-                />
+                    <FormControl variant="standard" sx={{ flexShrink: 0, width: { xs: '100%', md: 220 }, maxWidth: '83vw', ml: { md: 'auto' } }}>
+                        <InputLabel id="sort-label">Sort</InputLabel>
+                        <Select
+                            labelId="sort-label"
+                            id="sort-select"
+                            value={sortBy}
+                            label="Sort"
+                            onChange={(event) => setSortBy(event.target.value as SortKey)}
+                        >
+                            {sortOptions.map((option) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Stack>
             </Stack>
             {donationsToDisplay.length === 0 ? (
                 <Typography variant="body1">No donations found.</Typography>

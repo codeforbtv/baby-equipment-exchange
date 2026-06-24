@@ -3,6 +3,7 @@
 import { Card, CardMedia, CardContent, CardActionArea, Typography, Stack, Chip, IconButton, Divider, Box } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { getStatusChipProps } from '@/utils/statusChipProps';
+import { daysInStorage, agingTier, formatStorageLabel, isFrozen, TIER_COLOR } from '@/utils/storageTime';
 import { Donation } from '@/models/donation';
 
 type DonationCardProps = {
@@ -13,7 +14,10 @@ type DonationCardProps = {
 export default function DonationCard({ donation, onSelect }: DonationCardProps) {
     const image = donation.images?.[0] || '';
     const statusChip = getStatusChipProps(donation.status);
-    const dateLabel = (donation.dateAccepted ?? donation.createdAt)?.toDate().toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const days = daysInStorage(donation);
+    const tier = agingTier(days);
+    const storageLabel = formatStorageLabel(days);
+    const frozen = isFrozen(donation);
 
     return (
         <Card
@@ -66,11 +70,23 @@ export default function DonationCard({ donation, onSelect }: DonationCardProps) 
                         <Typography variant="caption" color="text.secondary" noWrap sx={{ minWidth: 0 }}>
                             {donation.donorEmail}
                         </Typography>
-                        {dateLabel && (
-                            <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
-                                {dateLabel}
+                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexShrink: 0, opacity: frozen ? 0.5 : 1 }}>
+                            <Box
+                                sx={{
+                                    width: 8,
+                                    height: 8,
+                                    borderRadius: '50%',
+                                    flexShrink: 0,
+                                    bgcolor: tier ? TIER_COLOR[tier] : 'transparent'
+                                }}
+                            />
+                            <Typography
+                                variant="caption"
+                                sx={{ flexShrink: 0, fontWeight: 600, color: frozen || !tier ? 'text.secondary' : TIER_COLOR[tier] }}
+                            >
+                                {storageLabel}
                             </Typography>
-                        )}
+                        </Stack>
                     </Box>
                 </CardContent>
             </CardActionArea>

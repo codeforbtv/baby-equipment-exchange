@@ -69,6 +69,7 @@ const donationConverter = {
             modifiedAt: donation.getModifiedAt(),
             dateAccepted: donation.getDateAccepted(),
             dateReceived: donation.getDateReceived(),
+            firstReceivedAt: donation.getFirstReceivedAt(),
             dateRequested: donation.getDateRequested(),
             dateDistributed: donation.getDateDistributed(),
             requestor: donation.getRequestor(),
@@ -101,6 +102,7 @@ const donationConverter = {
             modifiedAt: data.modifiedAt,
             dateAccepted: data.dateAccepted,
             dateReceived: data.dateReceived,
+            firstReceivedAt: data.firstReceivedAt,
             dateRequested: data.dateRequested,
             dateDistributed: data.dateDistributed,
             requestor: data.requestor,
@@ -340,6 +342,7 @@ export async function addDonation(newDonations: DonationBody[], termsAccepted: s
                 modifiedAt: serverTimestamp() as Timestamp,
                 dateAccepted: null,
                 dateReceived: null,
+                firstReceivedAt: null,
                 dateRequested: null,
                 dateDistributed: null,
                 requestor: null,
@@ -389,6 +392,7 @@ export async function addAdminDonation(newDonations: AdminDonationBody[]): Promi
                 modifiedAt: serverTimestamp() as Timestamp,
                 dateAccepted: serverTimestamp() as Timestamp,
                 dateReceived: serverTimestamp() as Timestamp,
+                firstReceivedAt: serverTimestamp() as Timestamp,
                 dateRequested: null,
                 dateDistributed: null,
                 requestor: null,
@@ -425,11 +429,15 @@ export async function updateDonationStatus(id: string, status: DonationStatusVal
         let statusUpdate;
 
         if (status === 'available') {
-            statusUpdate = {
-                status: status,
-                modfiedAt: serverTimestamp(),
-                dateReceived: serverTimestamp()
-            };
+            //Stamp the immutable firstReceivedAt storage-clock only on the first receive; keep dateReceived re-stamp for backward compatibility.
+            await runTransaction(db, async (tx) => {
+                const snap = await tx.get(donationRef);
+                const data = snap.data();
+                const update: any = { status, modfiedAt: serverTimestamp(), dateReceived: serverTimestamp() };
+                if (!data?.firstReceivedAt) update.firstReceivedAt = serverTimestamp();
+                tx.update(donationRef, update);
+            });
+            return status;
         } else if (status === 'distributed') {
             statusUpdate = {
                 status: status,
