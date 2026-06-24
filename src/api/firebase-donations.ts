@@ -28,6 +28,7 @@ import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
 import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
 import { Order } from '@/types/OrdersTypes';
+import { ReservedOrderLink } from '@/types/NotificationTypes';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
@@ -161,6 +162,31 @@ async function batchGetDonationsByRefs(refs: DocumentReference[]): Promise<Donat
     }
 
     return donations;
+}
+
+export async function getOrderLinksForDonations(donationRefs: DocumentReference[]): Promise<ReservedOrderLink[]> {
+    if (donationRefs.length === 0) return [];
+
+    const CHUNK_SIZE = 30; // Firestore array-contains-any limit
+    const links: ReservedOrderLink[] = [];
+    const targetIds = new Set(donationRefs.map((r) => r.id));
+
+    for (let i = 0; i < donationRefs.length; i += CHUNK_SIZE) {
+        const chunk = donationRefs.slice(i, i + CHUNK_SIZE);
+        const q = query(collection(db, ORDERS_COLLECTION), where('items', 'array-contains-any', chunk));
+        const snapshot = await getDocs(q);
+        snapshot.forEach((orderDoc) => {
+            const data = orderDoc.data();
+            const itemRefs: DocumentReference[] = data.items ?? [];
+            for (const ref of itemRefs) {
+                if (targetIds.has(ref.id)) {
+                    links.push({ donationId: ref.id, orderId: orderDoc.id, orderCreatedAt: data.createdAt ?? null });
+                }
+            }
+        });
+    }
+
+    return links;
 }
 
 export async function getAllDonations(): Promise<Donation[]> {
