@@ -11,10 +11,11 @@ type InventoryDetailsDialogProps = {
     open: boolean;
     item: InventoryItem | null;
     onClose: () => void;
-    handleRequestInventoryItem: (item: InventoryItem) => void;
+    handleRequestInventoryItem?: (item: InventoryItem) => void;
+    readOnly?: boolean;
 };
 
-export default function InventoryDetailsDialog({ open, item, onClose, handleRequestInventoryItem }: InventoryDetailsDialogProps) {
+export default function InventoryDetailsDialog({ open, item, onClose, handleRequestInventoryItem, readOnly = false }: InventoryDetailsDialogProps) {
     if (!item) return null;
 
     const images = item.images as string[];
@@ -22,6 +23,7 @@ export default function InventoryDetailsDialog({ open, item, onClose, handleRequ
     const statusChip = getStatusChipProps(item.status);
 
     const handleAdd = () => {
+        if (!handleRequestInventoryItem) return;
         handleRequestInventoryItem(item);
         onClose();
     };
@@ -58,14 +60,16 @@ export default function InventoryDetailsDialog({ open, item, onClose, handleRequ
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2 }}>
                 <Button onClick={onClose}>Close</Button>
-                <Button
-                    variant="contained"
-                    startIcon={<AddShoppingCartIcon />}
-                    onClick={handleAdd}
-                    disabled={!canRequest}
-                >
-                    Add to order
-                </Button>
+                {!readOnly && handleRequestInventoryItem && (
+                    <Button
+                        variant="contained"
+                        startIcon={<AddShoppingCartIcon />}
+                        onClick={handleAdd}
+                        disabled={!canRequest}
+                    >
+                        Add to order
+                    </Button>
+                )}
             </DialogActions>
         </Dialog>
     );

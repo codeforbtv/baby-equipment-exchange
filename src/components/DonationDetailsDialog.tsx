@@ -39,6 +39,7 @@ type DonationDetailsDialogProps = {
     donation: Donation | null;
     onClose: () => void;
     onUpdated?: () => void;
+    readOnly?: boolean;
 };
 
 const detailRow = (label: string, value: string) => (
@@ -48,7 +49,7 @@ const detailRow = (label: string, value: string) => (
     </Typography>
 );
 
-export default function DonationDetailsDialog({ open, donation, onClose, onUpdated }: DonationDetailsDialogProps) {
+export default function DonationDetailsDialog({ open, donation, onClose, onUpdated, readOnly = false }: DonationDetailsDialogProps) {
     const [details, setDetails] = useState<Donation | null>(donation);
     const [isEditMode, setIsEditMode] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -303,7 +304,20 @@ export default function DonationDetailsDialog({ open, donation, onClose, onUpdat
                     <Typography variant="body1">Could not load edit donation form. Please try again later.</Typography>
                 )}
             </DialogContent>
-            {!isEditMode ? (
+            {isEditMode ? (
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={() => setIsEditMode(false)} disabled={isLoading}>
+                        Cancel
+                    </Button>
+                    <Button variant="contained" onClick={handleSaveChanges} disabled={isLoading || !canSave}>
+                        Save changes
+                    </Button>
+                </DialogActions>
+            ) : readOnly ? (
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={onClose}>Close</Button>
+                </DialogActions>
+            ) : (
                 <DialogActions sx={{ px: 3, pb: 2, flexWrap: 'wrap', gap: 1 }}>
                     <Button startIcon={<DownloadIcon />} onClick={() => productLifeCycleReport(details)}>
                         Lifecycle Report
@@ -322,15 +336,6 @@ export default function DonationDetailsDialog({ open, donation, onClose, onUpdat
                         Edit
                     </Button>
                     <Button onClick={onClose}>Close</Button>
-                </DialogActions>
-            ) : (
-                <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button onClick={() => setIsEditMode(false)} disabled={isLoading}>
-                        Cancel
-                    </Button>
-                    <Button variant="contained" onClick={handleSaveChanges} disabled={isLoading || !canSave}>
-                        Save changes
-                    </Button>
                 </DialogActions>
             )}
         </Dialog>

@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import Loader from '@/components/Loader';
-import { Button, Dialog, DialogActions, DialogContent } from '@mui/material';
+import { Button } from '@mui/material';
 import AcceptRejectCard from '@/components/AcceptRejectCard';
-import DonationDetails from '@/components/DonationDetails';
+import DonationDetailsDialog from '@/components/DonationDetailsDialog';
 import ScheduleDropOff from '@/components/ScheduleDropOff';
 //API
 import { addErrorEvent } from '@/api/firebase';
@@ -82,20 +82,12 @@ const AcceptDonation = ({ params }: { params: { id: string } }) => {
                         {!isLoading && !idToDisplay && !donations && <p>Donation collection not found.</p>}
                         {!isLoading && donations && (
                             <div>
-                                <Dialog open={idToDisplay !== null} onClose={() => setIdToDisplay(null)} fullWidth maxWidth="xl">
-                                    <DialogContent>
-                                        <DonationDetails
-                                            id={idToDisplay}
-                                            donation={donations.find((donation) => donation.id === idToDisplay)}
-                                            setIdToDisplay={setIdToDisplay}
-                                        />
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <Button variant="contained" onClick={() => setIdToDisplay(null)}>
-                                            Close
-                                        </Button>
-                                    </DialogActions>
-                                </Dialog>
+                                <DonationDetailsDialog
+                                    open={idToDisplay !== null}
+                                    donation={donations.find((donation) => donation.id === idToDisplay) ?? null}
+                                    onClose={() => setIdToDisplay(null)}
+                                    readOnly
+                                />
                                 {donations.length > 1 && <p>Several items are included in this donation.</p>}
                                 {donations.map((donation) => (
                                     <AcceptRejectCard

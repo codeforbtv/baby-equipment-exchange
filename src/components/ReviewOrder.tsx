@@ -8,7 +8,7 @@ import Loader from './Loader';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import DonationCardMed from './DonationCardMed';
 import DonationCardSmall from './DonationCardSmall';
-import DonationDetails from './DonationDetails';
+import DonationDetailsDialog from './DonationDetailsDialog';
 import { Button, IconButton } from '@mui/material';
 import SchedulePickup from './SchedulePickup';
 import CustomDialog from './CustomDialog';
@@ -108,13 +108,12 @@ const ReviewOrder = (props: ReviewOrderProps) => {
 
     return (
         <ProtectedAdminRoute>
-            {donationIdToDisplay && currentOrder && (
-                <DonationDetails
-                    id={donationIdToDisplay}
-                    donation={donationToDisplay}
-                    setIdToDisplay={setDonationIdToDisplay}
-                />
-            )}
+            <DonationDetailsDialog
+                open={donationToDisplay != null}
+                donation={donationToDisplay ?? null}
+                onClose={() => setDonationIdToDisplay(null)}
+                readOnly
+            />
             {showScheduler && currentOrder && (
                 <SchedulePickup
                     order={currentOrder}
@@ -128,7 +127,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                 />
             )}
 
-            {!showScheduler && !donationIdToDisplay && (
+            {!showScheduler && (
                 <>
                     <div className="page--header">
                         <h2>Review Order</h2>
