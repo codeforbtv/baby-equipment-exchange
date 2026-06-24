@@ -2,10 +2,12 @@
 
 //Hooks
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { renderToString } from 'react-dom/server';
 //Components
 import Loader from './Loader';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import DonationCardMed from './DonationCardMed';
+import DonationCardSmall from './DonationCardSmall';
 import DonationDetails from './DonationDetails';
 import { Button, IconButton } from '@mui/material';
 import SchedulePickup from './SchedulePickup';
@@ -15,6 +17,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
 import { getOrderById, removeDonationFromOrder } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
+import sendMail from '@/api/nodemailer';
+import reservedForUser from '@/email-templates/reservedForUser';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
@@ -54,6 +58,14 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         setIsLoading(true);
         try {
             await removeDonationFromOrder(orderId, donation, resolution);
+
+            let reservedEmailFailed = false;
+            if (resolution.action === 'requested') {
+                const itemHtml = renderToString(<DonationCardSmall donation={donation} />);
+                const sent = await sendMail(reservedForUser(resolution.requestor.email, resolution.requestor.name, itemHtml));
+                reservedEmailFailed = !sent;
+            }
+
             const updatedOrder = await getOrderById(orderId);
             setCurrentOrder(updatedOrder);
             setNotificationsUpdated?.(true);
@@ -64,7 +76,9 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     resolution.action === 'available'
                         ? 'Donation returned to available inventory.'
                         : resolution.action === 'requested'
-                          ? `Donation reassigned to ${resolution.requestor.name}.`
+                          ? reservedEmailFailed
+                              ? `Reserved for ${resolution.requestor.name}, but the email failed to send — notify them manually.`
+                              : `Reserved for ${resolution.requestor.name} — they've been emailed.`
                           : 'Donation marked as unavailable.'
                 );
                 setIsDialogOpen(true);
@@ -156,6 +170,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                             setIdToDisplay={setDonationIdToDisplay}
                                             handleRemoveFromOrder={handleRemoveFromOrder}
                                             showRemoveButton={false}
+                                            rejection={currentOrder.rejections?.[item.id]}
                                         />
                                     ))}
                                 </>

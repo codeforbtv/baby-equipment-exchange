@@ -27,7 +27,7 @@ import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
 import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
-import { Order } from '@/types/OrdersTypes';
+import { Order, RejectionRecord } from '@/types/OrdersTypes';
 import { ReservedOrderLink } from '@/types/NotificationTypes';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
@@ -568,8 +568,14 @@ export async function getOrdersNotifications() {
 
         const allItemRefs: DocumentReference[] = [];
         const allRejectedRefs: DocumentReference[] = [];
-        const orderShells: { id: string; status: string; requestor: { email: string; id: string; name: string }; itemIds: string[]; rejectedIds: string[] }[] =
-            [];
+        const orderShells: {
+            id: string;
+            status: string;
+            requestor: { email: string; id: string; name: string };
+            itemIds: string[];
+            rejectedIds: string[];
+            rejections: Record<string, RejectionRecord>;
+        }[] = [];
 
         for (const doc of ordersSnapshot.docs) {
             const orderInfo = doc.data();
@@ -581,7 +587,8 @@ export async function getOrdersNotifications() {
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
                 itemIds: itemRefs.map((ref) => ref.id),
-                rejectedIds: rejectedRefs.map((ref) => ref.id)
+                rejectedIds: rejectedRefs.map((ref) => ref.id),
+                rejections: orderInfo.rejections ?? {}
             });
 
             allItemRefs.push(...itemRefs);
@@ -599,7 +606,8 @@ export async function getOrdersNotifications() {
                 status: shell.status,
                 requestor: shell.requestor,
                 items: shell.itemIds.map((id) => itemsById.get(id)).filter(Boolean) as Donation[],
-                rejectedItems: shell.rejectedIds.map((id) => rejectedById.get(id)).filter(Boolean) as Donation[]
+                rejectedItems: shell.rejectedIds.map((id) => rejectedById.get(id)).filter(Boolean) as Donation[],
+                rejections: shell.rejections
             });
         }
 
@@ -621,7 +629,8 @@ export async function getOrderById(id: string): Promise<Order> {
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
                 items: [],
-                rejectedItems: []
+                rejectedItems: [],
+                rejections: orderInfo.rejections ?? {}
             };
             order.items = await batchGetDonationsByRefs(orderInfo.items ?? []);
 
@@ -694,7 +703,10 @@ export async function removeDonationFromOrder(
                 items: arrayRemove(donationRef),
                 rejectedItems: arrayUnion(donationRef),
                 status: remainingItemCount === 0 ? 'closed' : orderData.status,
-                modifiedAt: serverTimestamp()
+                modifiedAt: serverTimestamp(),
+                [`rejections.${donation.id}.action`]: resolution.action,
+                [`rejections.${donation.id}.rejectedAt`]: serverTimestamp(),
+                ...(resolution.action === 'requested' ? { [`rejections.${donation.id}.reservedFor`]: resolution.requestor } : {})
             });
 
             if (resolution.action === 'available') {

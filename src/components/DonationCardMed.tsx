@@ -10,6 +10,7 @@ import {
     CardActions,
     CardContent,
     CardMedia,
+    Chip,
     Dialog,
     DialogActions,
     DialogContent,
@@ -36,6 +37,7 @@ import '@/styles/globalStyles.css';
 import { Donation } from '@/models/donation';
 import { IUser } from '@/models/user';
 import type { OrderItemRejectionResolution } from '@/api/firebase-donations';
+import type { RejectionRecord } from '@/types/OrdersTypes';
 
 type DonationCardMedProps = {
     orderId: string;
@@ -43,9 +45,17 @@ type DonationCardMedProps = {
     setIdToDisplay: Dispatch<SetStateAction<string | null>>;
     handleRemoveFromOrder?: (orderId: string, donation: Donation, resolution: OrderItemRejectionResolution) => Promise<void>;
     showRemoveButton?: boolean;
+    rejection?: RejectionRecord;
 };
 
 type RejectionAction = OrderItemRejectionResolution['action'];
+
+const rejectionChip = (r?: RejectionRecord): { label: string; color: 'success' | 'info' | 'default' } => {
+    if (!r) return { label: 'Rejected', color: 'default' };
+    if (r.action === 'available') return { label: 'Returned to inventory', color: 'success' };
+    if (r.action === 'unavailable') return { label: 'Marked unavailable', color: 'default' };
+    return { label: `Reserved for ${r.reservedFor?.name ?? 'another user'}`, color: 'info' };
+};
 
 const rejectionOptions: {
     action: RejectionAction;
@@ -74,7 +84,7 @@ const rejectionOptions: {
 ];
 
 const DonationCardMed = (props: DonationCardMedProps) => {
-    const { orderId, donation, setIdToDisplay, handleRemoveFromOrder, showRemoveButton = true } = props;
+    const { orderId, donation, setIdToDisplay, handleRemoveFromOrder, showRemoveButton = true, rejection } = props;
     const [showRemoveDialog, setShowRemoveDialog] = useState<boolean>(false);
     const [rejectionAction, setRejectionAction] = useState<RejectionAction>('available');
     const [activeUsers, setActiveUsers] = useState<IUser[]>([]);
@@ -137,11 +147,14 @@ const DonationCardMed = (props: DonationCardMedProps) => {
                 <CardActions className="card--container-image" onClick={() => setIdToDisplay(donation.id)}>
                     {donation.images && donation.images.length > 0 && <CardMedia component="img" alt={donation.model} image={donation.images[0]} />}
                 </CardActions>
-                <CardContent>
+                <CardContent sx={{ flexGrow: 1, textAlign: 'left' }}>
                     <Typography variant="h5">
                         {donation.brand} - {donation.model}
                     </Typography>
                     <Typography variant="h6">{donation.tagNumber}</Typography>
+                    {!showRemoveButton && (
+                        <Chip size="small" variant="outlined" {...rejectionChip(rejection)} sx={{ mt: 1 }} />
+                    )}
                 </CardContent>
 
                 {showRemoveButton && handleRemoveFromOrder && orderId && (

@@ -38,8 +38,10 @@ export default async function sendMail(msg) {
     try {
         const info = await transporter.sendMail(msg);
         console.log('Message sent: %s', info.messageId);
+        return true;
     } catch (error) {
         console.log('Error sending nodemailer email', error);
+        return false;
     }
 }
 
