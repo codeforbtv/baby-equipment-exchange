@@ -1,10 +1,7 @@
-//Components
 import { Chip } from '@mui/material';
-//Types
 import { GridColDef, GridColumnVisibilityModel, GridSortModel } from '@mui/x-data-grid';
 import { Timestamp } from 'firebase/firestore';
 import { Donation } from '@/models/donation';
-//Utils
 import { getStatusChipProps } from '@/utils/statusChipProps';
 
 export interface ReportRow {
@@ -49,9 +46,6 @@ function toDate(ts: Timestamp | null | undefined): Date | null {
     }
 }
 
-/**
- * Flattens donations into grid rows. Org county/phone/tags resolved via lookup keyed by org name.
- */
 export function buildRows(donations: Donation[], orgLookup: OrgLookup = {}): ReportRow[] {
     return donations.map((donation) => {
         const orgName = donation.distributor?.organization ?? '';
@@ -89,9 +83,6 @@ export function buildRows(donations: Donation[], orgLookup: OrgLookup = {}): Rep
     });
 }
 
-/**
- * Extracts unique requestors from donation data for Autocomplete filters.
- */
 export function extractUniqueRequestors(donations: Donation[]): { id: string; name: string; email: string }[] {
     const map = new Map<string, { id: string; name: string; email: string }>();
     for (const d of donations) {
@@ -151,9 +142,6 @@ export const reportGridColumns: GridColDef<ReportRow>[] = [
     { field: 'orgTags', headerName: 'Tags', width: 160 }
 ];
 
-/**
- * Date fields selectable in the report date-range filter.
- */
 export const dateFilterFields: { field: keyof ReportRow; label: string }[] = [
     { field: 'createdAt', label: 'Donation Date' },
     { field: 'dateAccepted', label: 'Date Accepted' },
@@ -162,14 +150,8 @@ export const dateFilterFields: { field: keyof ReportRow; label: string }[] = [
     { field: 'dateDistributed', label: 'Date Distributed' }
 ];
 
-/**
- * Lifecycle status values considered "active".
- */
 export const activeStatuses = ['in processing', 'pending delivery', 'available', 'reserved', 'requested'];
 
-/**
- * All lifecycle status values.
- */
 export const allStatuses = [
     'in processing',
     'pending delivery',
@@ -230,9 +212,6 @@ export const REPORT_PRESETS: Record<ReportType, ReportPreset> = {
     }
 };
 
-/**
- * Builds the grid columnVisibilityModel from a preset's visible column list.
- */
 export function buildColumnVisibilityModel(visibleColumns: string[]): GridColumnVisibilityModel {
     const model: GridColumnVisibilityModel = {};
     for (const col of reportGridColumns) {

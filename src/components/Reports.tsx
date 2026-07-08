@@ -1,19 +1,14 @@
 'use client';
 
-//Components
 import { Tab, Tabs, Button, Menu, MenuItem, useMediaQuery } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CustomTabPanel from './CustomTabPanel';
 import ReportGrid from './reports/ReportGrid';
-//Hooks
 import { useEffect, useState } from 'react';
-//Types
 import { buildRows, extractUniqueRequestors, OrgLookup, ReportRow, ReportType, REPORT_PRESETS } from './reports/reportGridColumns';
-//API
 import { getAllDonations } from '@/api/firebase-donations';
 import { getOrganizations } from '@/api/firebase-organizations';
 import { addErrorEvent } from '@/api/firebase';
-//Styles
 import styles from './reports/Reports.module.css';
 
 const reportTabs: { label: string; type: ReportType }[] = [

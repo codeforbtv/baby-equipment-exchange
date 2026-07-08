@@ -6,10 +6,6 @@ type StatusChipProps = {
     sx: Record<string, string | number>;
 };
 
-/**
- * One distinct hue per status (tinted background, dark text) so no two
- * statuses share a color. Lifecycle-ordered warm → cool; terminal states muted.
- */
 const statusMap: Record<string, StatusChipProps> = {
     'in processing': { color: 'default', label: 'In Processing', sx: { backgroundColor: '#FEF3C7', color: '#92400E' } },
     'pending delivery': { color: 'default', label: 'Pending Delivery', sx: { backgroundColor: '#FFEDD5', color: '#9A3412' } },

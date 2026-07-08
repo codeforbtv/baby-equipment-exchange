@@ -1,4 +1,3 @@
-//Types
 import { GridColumnVisibilityModel, GridSortModel } from '@mui/x-data-grid';
 import { ReportType } from './reportGridColumns';
 
@@ -14,17 +13,12 @@ export interface ReportViewState {
     pageSize: number;
 }
 
-// Version segment bumped on shape change; unknown/old shapes are discarded by loadViewState.
 const KEY_PREFIX = 'bee:reports:view:v1:';
 
 function storageKey(type: ReportType): string {
     return `${KEY_PREFIX}${type}`;
 }
 
-/**
- * Loads the saved view config for a report type. Returns null on SSR, missing key,
- * or corrupt/unrecognized data — callers fall back to preset defaults.
- */
 export function loadViewState(type: ReportType): ReportViewState | null {
     if (typeof window === 'undefined') return null;
     try {
@@ -47,10 +41,6 @@ export function loadViewState(type: ReportType): ReportViewState | null {
     }
 }
 
-/**
- * Persists the view config for a report type. Best-effort: failures
- * (private mode, quota) are silent — persistence is a convenience, not a requirement.
- */
 export function saveViewState(type: ReportType, state: ReportViewState): void {
     if (typeof window === 'undefined') return;
     try {

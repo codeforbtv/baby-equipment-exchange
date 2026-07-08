@@ -1,6 +1,5 @@
 'use client';
 
-//Components
 import { Autocomplete, Box, Button, Checkbox, Chip, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
@@ -20,14 +19,11 @@ import {
 } from '@mui/x-data-grid';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-//Hooks
 import { useEffect, useMemo, useRef, useState } from 'react';
-//Types
 import dayjs, { Dayjs } from 'dayjs';
 import { allStatuses, buildColumnVisibilityModel, dateFilterFields, ReportPreset, ReportRow, ReportType, reportGridColumns } from './reportGridColumns';
 import { exportGridXlsx, reportFileName } from './reportExport';
 import { clearViewState, loadViewState, saveViewState } from './reportViewState';
-//Utils
 import { getStatusChipProps } from '@/utils/statusChipProps';
 
 declare module '@mui/x-data-grid' {
@@ -98,12 +94,8 @@ const ReportGrid = (props: ReportGridProps) => {
     const { preset, reportType, rows, organizations, requestors, isLoading } = props;
     const apiRef = useGridApiRef();
     const cardRef = useRef<HTMLDivElement | null>(null);
-    // Anchor for the grid's columns panel: attaches it under the COLUMNS button
-    // (the default anchor is a hidden element at the grid's top-left).
     const [panelAnchorEl, setPanelAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-    // ReportGrid remounts on every sub-tab switch (CustomTabPanel unmounts inactive
-    // panels), so restoring the saved view once at mount is sufficient.
     const [savedView] = useState(() => loadViewState(reportType));
 
     const [statusFilter, setStatusFilter] = useState<string[]>(savedView?.statusFilter ?? preset.defaultStatuses);
@@ -149,8 +141,6 @@ const ReportGrid = (props: ReportGridProps) => {
         setPaginationModel({ page: 0, pageSize: 100 });
     };
 
-    // Card fills the viewport below whatever chrome sits above it, so the grid
-    // virtualizes internally instead of growing the page.
     const [cardHeight, setCardHeight] = useState<string>('calc(100vh - 320px)');
     useEffect(() => {
         const update = () => {
