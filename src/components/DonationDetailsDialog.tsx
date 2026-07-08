@@ -182,7 +182,7 @@ export default function DonationDetailsDialog({ open, donation, onClose, onUpdat
                                 {details.brand} {details.model}
                             </Typography>
                             <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1, mb: 1.5 }}>
-                                <Chip size="small" color={statusChip.color} label={statusChip.label} sx={{ fontWeight: 600 }} />
+                                <Chip size="small" color={statusChip.color} label={statusChip.label} sx={{ fontWeight: 600, ...statusChip.sx }} />
                                 {details.status !== 'rejected' && <Chip size="small" label={details.tagNumber ?? 'No tag number'} />}
                             </Stack>
                             <Stack spacing={0.75}>
