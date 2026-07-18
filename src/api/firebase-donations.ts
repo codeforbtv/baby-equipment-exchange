@@ -501,12 +501,16 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
 
 export async function requestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
     try {
+        // Snapshot the requestor's org at request time; callers only have Auth data.
+        const requestorUserSnap = await getDoc(doc(db, USERS_COLLECTION, user.id));
+        const organization = requestorUserSnap.exists() ? (requestorUserSnap.data().organization ?? null) : null;
+        const requestor = { ...user, organization };
         const orderRef = doc(collection(db, ORDERS_COLLECTION));
         const batch = writeBatch(db);
         //Create a new order collection doc
         batch.set(orderRef, {
             status: 'open',
-            requestor: user,
+            requestor: requestor,
             items: [],
             createdAt: serverTimestamp()
         });
@@ -515,7 +519,7 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
             //Update state of each requested item to 'requested'
             batch.update(inventoryItemRef, {
                 status: 'requested',
-                requestor: user,
+                requestor: requestor,
                 dateRequested: serverTimestamp(),
                 modifiedAt: serverTimestamp()
             });
@@ -533,12 +537,16 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
 
 export async function adminRequestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<Order> {
     try {
+        // Snapshot the requestor's org at request time; callers only have Auth data.
+        const requestorUserSnap = await getDoc(doc(db, USERS_COLLECTION, user.id));
+        const organization = requestorUserSnap.exists() ? (requestorUserSnap.data().organization ?? null) : null;
+        const requestor = { ...user, organization };
         const orderRef = doc(collection(db, ORDERS_COLLECTION));
         const batch = writeBatch(db);
         //Create and close order
         batch.set(orderRef, {
             status: 'open',
-            requestor: user,
+            requestor: requestor,
             items: [],
             createdAt: serverTimestamp()
         });
@@ -547,7 +555,7 @@ export async function adminRequestInventoryItems(inventoryItemIds: string[], use
             //Update state of each requested item to 'requested'
             batch.update(inventoryItemRef, {
                 status: 'requested',
-                requestor: user,
+                requestor: requestor,
                 dateRequested: serverTimestamp(),
                 modifiedAt: serverTimestamp()
             });

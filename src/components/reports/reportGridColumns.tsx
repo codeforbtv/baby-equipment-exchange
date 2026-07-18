@@ -13,7 +13,10 @@ export interface ReportRow {
     status: string;
     donorName: string;
     donorEmail: string;
+    donorId: string;
     createdAt: Date | null;
+    modifiedAt: Date | null;
+    firstReceivedAt: Date | null;
     dateAccepted: Date | null;
     dateReceived: Date | null;
     dateRequested: Date | null;
@@ -26,6 +29,7 @@ export interface ReportRow {
     requestorId: string;
     requestorName: string;
     requestorEmail: string;
+    requestorOrg: string;
     distributorName: string;
     distributorEmail: string;
     distributorOrg: string;
@@ -37,6 +41,10 @@ export interface ReportRow {
 
 export type OrgLookup = Record<string, { county?: string; phone?: string; tags?: string[] }>;
 
+export type UserOrgLookup = Record<string, { id: string; name: string }>;
+
+export type OrgNameById = Record<string, string>;
+
 function toDate(ts: Timestamp | null | undefined): Date | null {
     if (!ts) return null;
     try {
@@ -46,9 +54,25 @@ function toDate(ts: Timestamp | null | undefined): Date | null {
     }
 }
 
-export function buildRows(donations: Donation[], orgLookup: OrgLookup = {}): ReportRow[] {
+export function buildRows(
+    donations: Donation[],
+    orgLookup: OrgLookup = {},
+    userOrgLookup: UserOrgLookup = {},
+    orgNameById: OrgNameById = {}
+): ReportRow[] {
     return donations.map((donation) => {
-        const orgName = donation.distributor?.organization ?? '';
+        const requestorId = donation.requestor?.id ?? '';
+        // organization === null is a real snapshot ("had no org at request time") and must not
+        // fall through to the live join; only a missing field (legacy row) uses the join.
+        const requestorOrgRef =
+            donation.requestor && donation.requestor.organization !== undefined
+                ? donation.requestor.organization
+                : requestorId
+                  ? userOrgLookup[requestorId]
+                  : undefined;
+        const requestorOrg = requestorOrgRef ? (orgNameById[requestorOrgRef.id] ?? requestorOrgRef.name) : '';
+        const distributorOrg = donation.distributor?.organization ?? '';
+        const orgName = requestorOrg || distributorOrg;
         const orgData = orgName ? orgLookup[orgName] : undefined;
         return {
             id: donation.id,
@@ -59,7 +83,10 @@ export function buildRows(donations: Donation[], orgLookup: OrgLookup = {}): Rep
             status: donation.status,
             donorName: donation.donorName,
             donorEmail: donation.donorEmail,
+            donorId: donation.donorId ?? '',
             createdAt: toDate(donation.createdAt),
+            modifiedAt: toDate(donation.modifiedAt),
+            firstReceivedAt: toDate(donation.firstReceivedAt),
             dateAccepted: toDate(donation.dateAccepted),
             dateReceived: toDate(donation.dateReceived),
             dateRequested: toDate(donation.dateRequested),
@@ -69,12 +96,13 @@ export function buildRows(donations: Donation[], orgLookup: OrgLookup = {}): Rep
             notes: donation.notes?.join('; ') ?? '',
             bulkCollection: donation.bulkCollection,
             images: donation.images?.join(', ') ?? '',
-            requestorId: donation.requestor?.id ?? '',
+            requestorId: requestorId,
             requestorName: donation.requestor?.name ?? '',
             requestorEmail: donation.requestor?.email ?? '',
+            requestorOrg: requestorOrg,
             distributorName: donation.distributor?.name ?? '',
             distributorEmail: donation.distributor?.email ?? '',
-            distributorOrg: orgName,
+            distributorOrg: distributorOrg,
             orgName: orgName,
             orgCounty: orgData?.county ?? '',
             orgPhone: orgData?.phone ?? '',
@@ -97,10 +125,11 @@ function formatDate(value: Date | null): string {
     return value ? value.toISOString().split('T')[0] : '';
 }
 
-function dateColumn(field: string, headerName: string): GridColDef<ReportRow> {
+function dateColumn(field: string, headerName: string, description?: string): GridColDef<ReportRow> {
     return {
         field,
         headerName,
+        description,
         type: 'date',
         width: 130,
         valueFormatter: formatDate
@@ -121,21 +150,30 @@ export const reportGridColumns: GridColDef<ReportRow>[] = [
     },
     { field: 'donorName', headerName: 'Donor', width: 150 },
     { field: 'donorEmail', headerName: 'Donor Email', width: 200 },
-    dateColumn('createdAt', 'Donation Date'),
-    dateColumn('dateAccepted', 'Date Accepted'),
-    dateColumn('dateReceived', 'Date Received'),
-    dateColumn('dateRequested', 'Date Requested'),
-    dateColumn('dateDistributed', 'Date Distributed'),
+    { field: 'donorId', headerName: 'Donor ID', width: 200 },
+    dateColumn('createdAt', 'Donation Date', 'When the donation was created in the system'),
+    dateColumn('dateAccepted', 'Date Accepted', 'When staff accepted the donation'),
+    dateColumn('dateReceived', 'Date Received', 'When the item most recently arrived in storage'),
+    dateColumn('firstReceivedAt', 'First Received', 'When the item first arrived in storage'),
+    dateColumn('dateRequested', 'Date Requested', 'When the current request for this item was placed'),
+    dateColumn('dateDistributed', 'Date Distributed', 'When the item was physically handed off'),
+    dateColumn('modifiedAt', 'Last Modified', 'Last time any field on this record changed'),
     { field: 'daysInStorage', headerName: 'Days in Storage', type: 'number', width: 130 },
     { field: 'description', headerName: 'Description', width: 200 },
     { field: 'notes', headerName: 'Notes', width: 200 },
     { field: 'bulkCollection', headerName: 'Collection Group', width: 150 },
     { field: 'images', headerName: 'Images', width: 200 },
-    { field: 'requestorName', headerName: 'Requestor', width: 150 },
+    { field: 'requestorName', headerName: 'Requestor', width: 150, description: 'User who placed the request for this item' },
     { field: 'requestorEmail', headerName: 'Requestor Email', width: 200 },
-    { field: 'distributorName', headerName: 'Distributor', width: 150 },
-    { field: 'distributorEmail', headerName: 'Distributor Email', width: 200 },
-    { field: 'distributorOrg', headerName: 'Distributor Org', width: 170 },
+    { field: 'requestorOrg', headerName: 'Requestor Org', width: 180, description: 'Organization the requestor belongs to' },
+    {
+        field: 'distributorName',
+        headerName: 'Distributed To',
+        width: 150,
+        description: 'User the item was handed off to at distribution (copied from requestor at handoff)'
+    },
+    { field: 'distributorEmail', headerName: 'Distributed To (Email)', width: 200 },
+    { field: 'distributorOrg', headerName: 'Distributed To (Org)', width: 170 },
     { field: 'orgName', headerName: 'Organization', width: 180 },
     { field: 'orgCounty', headerName: 'County', width: 120 },
     { field: 'orgPhone', headerName: 'Phone', width: 130 },
@@ -164,7 +202,9 @@ export const allStatuses = [
     'not-received'
 ];
 
-export type ReportType = 'lifecycle' | 'organization' | 'requestor' | 'raw';
+export type DonationReportType = 'lifecycle' | 'organization' | 'requestor' | 'raw';
+
+export type ReportType = DonationReportType | 'users';
 
 export interface ReportPreset {
     visibleColumns: string[];
@@ -177,7 +217,7 @@ export interface ReportPreset {
 
 const lifecycleVisibleColumns = ['tagNumber', 'brand', 'model', 'category', 'status', 'donorName', 'createdAt', 'dateRequested', 'requestorName'];
 
-export const REPORT_PRESETS: Record<ReportType, ReportPreset> = {
+export const REPORT_PRESETS: Record<DonationReportType, ReportPreset> = {
     lifecycle: {
         visibleColumns: lifecycleVisibleColumns,
         sortModel: [{ field: 'status', sort: 'asc' }],
@@ -187,9 +227,9 @@ export const REPORT_PRESETS: Record<ReportType, ReportPreset> = {
         fileName: 'product_lifecycle'
     },
     organization: {
-        visibleColumns: [...lifecycleVisibleColumns, 'orgName'],
+        visibleColumns: [...lifecycleVisibleColumns, 'requestorOrg', 'orgName'],
         sortModel: [{ field: 'orgName', sort: 'asc' }],
-        defaultStatuses: activeStatuses,
+        defaultStatuses: allStatuses,
         filterWidget: 'organization',
         requireRequestor: false,
         fileName: 'donations_by_organization'

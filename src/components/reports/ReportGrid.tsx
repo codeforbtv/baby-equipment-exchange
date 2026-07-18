@@ -23,6 +23,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { allStatuses, buildColumnVisibilityModel, dateFilterFields, ReportPreset, ReportRow, ReportType, reportGridColumns } from './reportGridColumns';
 import { exportGridXlsx, reportFileName } from './reportExport';
+import { columnsPanelSx, filterListboxProps } from './reportGridStyles';
 import { clearViewState, loadViewState, saveViewState } from './reportViewState';
 import { getStatusChipProps } from '@/utils/statusChipProps';
 
@@ -105,9 +106,12 @@ const ReportGrid = (props: ReportGridProps) => {
     const [dateFrom, setDateFrom] = useState<Dayjs | null>(savedView?.dateFrom ? dayjs(savedView.dateFrom) : null);
     const [dateTo, setDateTo] = useState<Dayjs | null>(savedView?.dateTo ? dayjs(savedView.dateTo) : null);
 
-    const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(
-        savedView?.columnVisibilityModel ?? buildColumnVisibilityModel(preset.visibleColumns)
-    );
+    const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(() => {
+        // Merge over preset defaults so columns added after a view was saved keep their
+        // preset visibility instead of DataGrid's absent-means-visible default.
+        const base = buildColumnVisibilityModel(preset.visibleColumns);
+        return savedView?.columnVisibilityModel ? { ...base, ...savedView.columnVisibilityModel } : base;
+    });
     const [sortModel, setSortModel] = useState<GridSortModel>(savedView?.sortModel ?? preset.sortModel);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: savedView?.pageSize ?? 100 });
 
@@ -153,6 +157,10 @@ const ReportGrid = (props: ReportGridProps) => {
         window.addEventListener('resize', update);
         return () => window.removeEventListener('resize', update);
     }, []);
+
+    // Several orgs exist as duplicate docs under the same name; filtering is by name, so
+    // the dropdown would otherwise show the same option twice.
+    const orgOptions = useMemo(() => [...new Set(organizations.map((org) => org.name))], [organizations]);
 
     const filteredRows = useMemo(() => {
         const fromDate = dateFrom ? dateFrom.startOf('day').toDate() : null;
@@ -215,6 +223,7 @@ const ReportGrid = (props: ReportGridProps) => {
                             limitTags={5}
                             disableCloseOnSelect
                             id="report-status-filter"
+                            ListboxProps={filterListboxProps}
                             options={allStatuses}
                             getOptionLabel={(option) => getStatusChipProps(option).label}
                             value={statusFilter}
@@ -307,7 +316,8 @@ const ReportGrid = (props: ReportGridProps) => {
                             limitTags={2}
                             disableCloseOnSelect
                             id="report-org-filter"
-                            options={organizations.map((org) => org.name)}
+                            ListboxProps={filterListboxProps}
+                            options={orgOptions}
                             value={orgFilter}
                             onChange={(event, newValue) => setOrgFilter(newValue)}
                             renderInput={(params) => (
@@ -344,6 +354,7 @@ const ReportGrid = (props: ReportGridProps) => {
                             limitTags={2}
                             disableCloseOnSelect
                             id="report-requestor-filter"
+                            ListboxProps={filterListboxProps}
                             options={requestors}
                             getOptionLabel={(option) => option.name}
                             isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -404,15 +415,7 @@ const ReportGrid = (props: ReportGridProps) => {
                             panel: {
                                 anchorEl: panelAnchorEl ?? undefined,
                                 placement: 'bottom-end',
-                                sx: {
-                                    '& .MuiDataGrid-paper': {
-                                        maxHeight: 'min(440px, calc(100vh - 240px))',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        overflow: 'hidden'
-                                    },
-                                    '& .MuiDataGrid-columnsManagement': { flex: 1, overflowY: 'auto' }
-                                }
+                                sx: columnsPanelSx
                             }
                         }}
                     />
