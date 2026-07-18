@@ -222,6 +222,7 @@ const Donations = (props: DonationsProps) => {
             ) : (
                 <VirtuosoGrid
                     useWindowScroll
+                    increaseViewportBy={{ top: 600, bottom: 1200 }}
                     totalCount={donationsToDisplay.length}
                     computeItemKey={(index) => donationsToDisplay[index].id}
                     components={gridComponents}

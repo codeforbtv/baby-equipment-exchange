@@ -223,6 +223,7 @@ const Inventory = (props: InventoryProps) => {
                     ) : (
                         <VirtuosoGrid
                             useWindowScroll
+                            increaseViewportBy={{ top: 600, bottom: 1200 }}
                             totalCount={inventoryToDisplay.length}
                             computeItemKey={(index) => inventoryToDisplay[index].id}
                             components={gridComponents}

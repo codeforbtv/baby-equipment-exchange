@@ -40,6 +40,7 @@ export default function DonationCard({ donation, onSelect }: DonationCardProps) 
                             src={image}
                             alt={`${donation.brand} ${donation.model}`}
                             fill
+                            loading="eager"
                             sizes="(max-width: 599px) 100vw, (max-width: 899px) 50vw, (max-width: 1199px) 33vw, 25vw"
                             style={{ objectFit: 'cover' }}
                         />
