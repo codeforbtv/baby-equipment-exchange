@@ -1,17 +1,12 @@
 'use client';
 
-import { Card, CardActions, CardMedia, CardContent, Typography, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Box, Card, CardActions, CardContent, Typography, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import Image from 'next/image';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import { Donation } from '@/models/donation';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 import '@/styles/globalStyles.css';
-
-const thumbnailStyles = {
-    width: '15%',
-    objectFit: 'cover',
-    aspectRatio: '1 / 1'
-};
 
 type AcceptRejectCardProps = {
     donation: Donation;
@@ -37,7 +32,11 @@ const AcceptRejectCard = (props: AcceptRejectCardProps) => {
         <ProtectedAdminRoute>
             <Card className="card--container" elevation={3}>
                 <CardActions onClick={() => setIdToDisplay(donation.id)} sx={{ cursor: 'pointer' }}>
-                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} sx={thumbnailStyles} />
+                    <Box sx={{ position: 'relative', width: '15%', aspectRatio: '1 / 1', flexShrink: 0 }}>
+                        {donation.images?.[0] && (
+                            <Image src={donation.images[0]} alt={donation.model} fill sizes="15vw" style={{ objectFit: 'cover' }} />
+                        )}
+                    </Box>
                     <CardContent>
                         <Typography variant="h4">{donation.model}</Typography>
                         <Typography variant="h4">{donation.brand}</Typography>

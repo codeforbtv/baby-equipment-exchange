@@ -1,8 +1,9 @@
 'use client';
 
 //Hooks
-import { SetStateAction, useState, Dispatch, useMemo, useEffect } from 'react';
+import { SetStateAction, useState, Dispatch, useMemo, useEffect, forwardRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { GridComponents, VirtuosoGrid } from 'react-virtuoso';
 //Components
 import { Box, Button, Chip, Autocomplete, TextField, Stack, Typography, InputAdornment, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import DonationCard from '@/components/DonationCard';
@@ -28,6 +29,44 @@ type DonationsProps = {
 };
 
 const statusSelectOptions = Object.keys(donationStatuses);
+
+const gridComponents: GridComponents = {
+    List: forwardRef(function GridList({ style, children, ...props }, ref) {
+        return (
+            <Box
+                ref={ref}
+                {...props}
+                style={style}
+                sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                        xs: '1fr',
+                        sm: 'repeat(2, 1fr)',
+                        md: 'repeat(3, 1fr)',
+                        lg: 'repeat(4, 1fr)'
+                    },
+                    gap: 2,
+                    // VirtuosoGrid repositions rows by changing this element's padding;
+                    // browser scroll anchoring fights that in useWindowScroll mode and
+                    // the page oscillates. Virtuoso disables anchoring for its list/table
+                    // scrollers but not for the grid, so opt out here.
+                    overflowAnchor: 'none'
+                }}
+            >
+                {children}
+            </Box>
+        );
+    }),
+    // minWidth: 0 keeps a card's noWrap text from inflating the grid item's
+    // automatic minimum size and blowing out the 1fr column widths.
+    Item: forwardRef(function GridItem({ style, children, ...props }, ref) {
+        return (
+            <div ref={ref} {...props} style={{ ...style, minWidth: 0 }}>
+                {children}
+            </div>
+        );
+    })
+};
 
 const sortOptions: { value: SortKey; label: string }[] = [
     { value: 'storage-desc', label: 'Longest in storage' },
@@ -181,22 +220,15 @@ const Donations = (props: DonationsProps) => {
             {donationsToDisplay.length === 0 ? (
                 <Typography variant="body1">No donations found.</Typography>
             ) : (
-                <Box
-                    sx={{
-                        display: 'grid',
-                        gridTemplateColumns: {
-                            xs: '1fr',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)',
-                            lg: 'repeat(4, 1fr)'
-                        },
-                        gap: 2
-                    }}
-                >
-                    {donationsToDisplay.map((donation) => (
-                        <DonationCard key={donation.id} donation={donation} onSelect={(d) => setSelectedDonation(d)} />
-                    ))}
-                </Box>
+                <VirtuosoGrid
+                    useWindowScroll
+                    totalCount={donationsToDisplay.length}
+                    computeItemKey={(index) => donationsToDisplay[index].id}
+                    components={gridComponents}
+                    itemContent={(index) => (
+                        <DonationCard donation={donationsToDisplay[index]} onSelect={(d) => setSelectedDonation(d)} />
+                    )}
+                />
             )}
             <DonationDetailsDialog
                 open={selectedDonation !== null}

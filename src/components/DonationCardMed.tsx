@@ -9,7 +9,6 @@ import {
     Card,
     CardActions,
     CardContent,
-    CardMedia,
     Chip,
     Dialog,
     DialogActions,
@@ -22,6 +21,7 @@ import {
     Select,
     Typography
 } from '@mui/material';
+import Image from 'next/image';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 //Icons
 import Inventory2Icon from '@mui/icons-material/Inventory2';
@@ -145,7 +145,11 @@ const DonationCardMed = (props: DonationCardMedProps) => {
         <ProtectedAdminRoute>
             <Card className="card--container" raised>
                 <CardActions className="card--container-image" onClick={() => setIdToDisplay(donation.id)}>
-                    {donation.images && donation.images.length > 0 && <CardMedia component="img" alt={donation.model} image={donation.images[0]} />}
+                    {donation.images && donation.images.length > 0 && (
+                        <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1' }}>
+                            <Image src={donation.images[0]} alt={donation.model} fill sizes="160px" style={{ objectFit: 'cover' }} />
+                        </Box>
+                    )}
                 </CardActions>
                 <CardContent sx={{ flexGrow: 1, textAlign: 'left' }}>
                     <Typography variant="h5">

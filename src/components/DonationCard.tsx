@@ -1,6 +1,7 @@
 'use client';
 
-import { Card, CardMedia, CardContent, CardActionArea, Typography, Stack, Chip, IconButton, Divider, Box } from '@mui/material';
+import { Card, CardContent, CardActionArea, Typography, Stack, Chip, IconButton, Divider, Box } from '@mui/material';
+import Image from 'next/image';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { getStatusChipProps } from '@/utils/statusChipProps';
 import { daysInStorage, agingTier, formatStorageLabel, isFrozen, TIER_COLOR } from '@/utils/storageTime';
@@ -33,12 +34,17 @@ export default function DonationCard({ donation, onSelect }: DonationCardProps) 
             }}
         >
             <CardActionArea onClick={() => onSelect(donation)}>
-                <CardMedia
-                    component="img"
-                    image={image}
-                    alt={`${donation.brand} ${donation.model}`}
-                    sx={{ aspectRatio: '4/3', objectFit: 'cover', bgcolor: '#f5f5f5' }}
-                />
+                <Box sx={{ position: 'relative', aspectRatio: '4/3', bgcolor: '#f5f5f5' }}>
+                    {image && (
+                        <Image
+                            src={image}
+                            alt={`${donation.brand} ${donation.model}`}
+                            fill
+                            sizes="(max-width: 599px) 100vw, (max-width: 899px) 50vw, (max-width: 1199px) 33vw, 25vw"
+                            style={{ objectFit: 'cover' }}
+                        />
+                    )}
+                </Box>
                 <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                     <Typography variant="body2" fontWeight={600} noWrap>
                         {donation.brand} {donation.model}
