@@ -14,20 +14,21 @@ import {
     getDocs,
     query,
     or,
-    runTransaction,
     serverTimestamp,
     updateDoc,
     where,
     writeBatch,
     documentId,
-    arrayRemove
+    arrayRemove,
+    runTransaction
 } from 'firebase/firestore';
 // Models
 import { Donation, IDonation } from '@/models/donation';
 import { InventoryItem, IInventoryItem } from '@/models/inventoryItem';
 import { DonationStatusValues } from '@/models/donation';
 import { DonationBody } from '@/types/post-data';
-import { Order } from '@/types/OrdersTypes';
+import { Order, RejectionRecord } from '@/types/OrdersTypes';
+import { ReservedOrderLink } from '@/types/NotificationTypes';
 // Libs
 import { db, addErrorEvent, storage } from './firebase';
 import { deleteObject, ref } from 'firebase/storage';
@@ -42,6 +43,11 @@ import { ORGANIZATIONS_COLLECTION } from './firebase-organizations';
 export const DONATIONS_COLLECTION = 'Donations';
 export const BULK_DONATIONS_COLLECTION = 'BulkDonations';
 export const ORDERS_COLLECTION = 'Orders';
+
+export type OrderItemRejectionResolution =
+    | { action: 'available' }
+    | { action: 'unavailable' }
+    | { action: 'requested'; requestor: { id: string; name: string; email: string } };
 
 const donationConverter = {
     toFirestore(donation: Donation): DocumentData {
@@ -63,6 +69,7 @@ const donationConverter = {
             modifiedAt: donation.getModifiedAt(),
             dateAccepted: donation.getDateAccepted(),
             dateReceived: donation.getDateReceived(),
+            firstReceivedAt: donation.getFirstReceivedAt(),
             dateRequested: donation.getDateRequested(),
             dateDistributed: donation.getDateDistributed(),
             requestor: donation.getRequestor(),
@@ -95,6 +102,7 @@ const donationConverter = {
             modifiedAt: data.modifiedAt,
             dateAccepted: data.dateAccepted,
             dateReceived: data.dateReceived,
+            firstReceivedAt: data.firstReceivedAt,
             dateRequested: data.dateRequested,
             dateDistributed: data.dateDistributed,
             requestor: data.requestor,
@@ -156,6 +164,31 @@ async function batchGetDonationsByRefs(refs: DocumentReference[]): Promise<Donat
     }
 
     return donations;
+}
+
+export async function getOrderLinksForDonations(donationRefs: DocumentReference[]): Promise<ReservedOrderLink[]> {
+    if (donationRefs.length === 0) return [];
+
+    const CHUNK_SIZE = 30; // Firestore array-contains-any limit
+    const links: ReservedOrderLink[] = [];
+    const targetIds = new Set(donationRefs.map((r) => r.id));
+
+    for (let i = 0; i < donationRefs.length; i += CHUNK_SIZE) {
+        const chunk = donationRefs.slice(i, i + CHUNK_SIZE);
+        const q = query(collection(db, ORDERS_COLLECTION), where('items', 'array-contains-any', chunk));
+        const snapshot = await getDocs(q);
+        snapshot.forEach((orderDoc) => {
+            const data = orderDoc.data();
+            const itemRefs: DocumentReference[] = data.items ?? [];
+            for (const ref of itemRefs) {
+                if (targetIds.has(ref.id)) {
+                    links.push({ donationId: ref.id, orderId: orderDoc.id, orderCreatedAt: data.createdAt ?? null });
+                }
+            }
+        });
+    }
+
+    return links;
 }
 
 export async function getAllDonations(): Promise<Donation[]> {
@@ -309,6 +342,7 @@ export async function addDonation(newDonations: DonationBody[], termsAccepted: s
                 modifiedAt: serverTimestamp() as Timestamp,
                 dateAccepted: null,
                 dateReceived: null,
+                firstReceivedAt: null,
                 dateRequested: null,
                 dateDistributed: null,
                 requestor: null,
@@ -358,6 +392,7 @@ export async function addAdminDonation(newDonations: AdminDonationBody[]): Promi
                 modifiedAt: serverTimestamp() as Timestamp,
                 dateAccepted: serverTimestamp() as Timestamp,
                 dateReceived: serverTimestamp() as Timestamp,
+                firstReceivedAt: serverTimestamp() as Timestamp,
                 dateRequested: null,
                 dateDistributed: null,
                 requestor: null,
@@ -394,11 +429,15 @@ export async function updateDonationStatus(id: string, status: DonationStatusVal
         let statusUpdate;
 
         if (status === 'available') {
-            statusUpdate = {
-                status: status,
-                modfiedAt: serverTimestamp(),
-                dateReceived: serverTimestamp()
-            };
+            //Stamp the immutable firstReceivedAt storage-clock only on the first receive; keep dateReceived re-stamp for backward compatibility.
+            await runTransaction(db, async (tx) => {
+                const snap = await tx.get(donationRef);
+                const data = snap.data();
+                const update: any = { status, modfiedAt: serverTimestamp(), dateReceived: serverTimestamp() };
+                if (!data?.firstReceivedAt) update.firstReceivedAt = serverTimestamp();
+                tx.update(donationRef, update);
+            });
+            return status;
         } else if (status === 'distributed') {
             statusUpdate = {
                 status: status,
@@ -451,12 +490,13 @@ export async function adminAreDonationsAvailable(ids: string[]): Promise<string[
             if (donation && donation.status !== 'available') {
                 unavailableDonations.push(donation.id);
             }
-            return unavailableDonations;
         }
+        return unavailableDonations;
     } catch (error) {
         addErrorEvent('Admin are donations available', error);
+        throw error;
     }
-    return Promise.reject();
+    return [];
 }
 
 export async function requestInventoryItems(inventoryItemIds: string[], user: { id: string; name: string; email: string }): Promise<void> {
@@ -536,8 +576,14 @@ export async function getOrdersNotifications() {
 
         const allItemRefs: DocumentReference[] = [];
         const allRejectedRefs: DocumentReference[] = [];
-        const orderShells: { id: string; status: string; requestor: { email: string; id: string; name: string }; itemIds: string[]; rejectedIds: string[] }[] =
-            [];
+        const orderShells: {
+            id: string;
+            status: string;
+            requestor: { email: string; id: string; name: string };
+            itemIds: string[];
+            rejectedIds: string[];
+            rejections: Record<string, RejectionRecord>;
+        }[] = [];
 
         for (const doc of ordersSnapshot.docs) {
             const orderInfo = doc.data();
@@ -549,7 +595,8 @@ export async function getOrdersNotifications() {
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
                 itemIds: itemRefs.map((ref) => ref.id),
-                rejectedIds: rejectedRefs.map((ref) => ref.id)
+                rejectedIds: rejectedRefs.map((ref) => ref.id),
+                rejections: orderInfo.rejections ?? {}
             });
 
             allItemRefs.push(...itemRefs);
@@ -567,7 +614,8 @@ export async function getOrdersNotifications() {
                 status: shell.status,
                 requestor: shell.requestor,
                 items: shell.itemIds.map((id) => itemsById.get(id)).filter(Boolean) as Donation[],
-                rejectedItems: shell.rejectedIds.map((id) => rejectedById.get(id)).filter(Boolean) as Donation[]
+                rejectedItems: shell.rejectedIds.map((id) => rejectedById.get(id)).filter(Boolean) as Donation[],
+                rejections: shell.rejections
             });
         }
 
@@ -589,7 +637,8 @@ export async function getOrderById(id: string): Promise<Order> {
                 status: orderInfo.status,
                 requestor: orderInfo.requestor,
                 items: [],
-                rejectedItems: []
+                rejectedItems: [],
+                rejections: orderInfo.rejections ?? {}
             };
             order.items = await batchGetDonationsByRefs(orderInfo.items ?? []);
 
@@ -615,28 +664,92 @@ export async function closeOrder(id: string): Promise<void> {
     }
 }
 
-//Removes rejected donation from order, add to rejectedItems array, and changes status to 'unavailable'.
-export async function removeDonationFromOrder(orderId: string, donation: Donation): Promise<void> {
+//Removes rejected donation from order, adds it to rejectedItems, and applies the selected next step.
+export async function removeDonationFromOrder(
+    orderId: string,
+    donation: Donation,
+    resolution: OrderItemRejectionResolution = { action: 'unavailable' }
+): Promise<void> {
     try {
         const orderRef = doc(db, `${ORDERS_COLLECTION}/${orderId}`);
         const donationRef = doc(db, `${DONATIONS_COLLECTION}/${donation.id}`).withConverter(donationConverter);
+        const reassignedOrderRef = resolution.action === 'requested' ? doc(collection(db, ORDERS_COLLECTION)) : null;
 
         await runTransaction(db, async (transaction) => {
-            const orderSnap = await transaction.get(orderRef);
-            if (!orderSnap.exists()) {
-                throw new Error(`Order ${orderId} does not exist`);
+            const orderSnapshot = await transaction.get(orderRef);
+            if (!orderSnapshot.exists()) {
+                throw new Error('Order not found');
             }
 
+            const donationSnapshot = await transaction.get(donationRef);
+            if (!donationSnapshot.exists()) {
+                throw new Error('Donation not found');
+            }
+
+            const orderData = orderSnapshot.data();
+            if (orderData.status !== 'open') {
+                throw new Error('Order is no longer open');
+            }
+
+            const donationData = donationSnapshot.data();
+            if (donationData.status !== 'requested') {
+                throw new Error('Donation is no longer requested');
+            }
+
+            if (resolution.action === 'requested' && resolution.requestor.id === orderData.requestor?.id) {
+                throw new Error('Donation is already requested by this user');
+            }
+
+            const orderItems = (orderData.items ?? []) as { id: string; path?: string }[];
+            const matchingOrderItem = orderItems.find((itemRef) => itemRef.id === donation.id || itemRef.path === donationRef.path);
+            if (!matchingOrderItem) {
+                throw new Error('Donation is no longer in this order');
+            }
+
+            const remainingItemCount = orderItems.filter((itemRef) => itemRef.id !== donation.id && itemRef.path !== donationRef.path).length;
             transaction.update(orderRef, {
                 items: arrayRemove(donationRef),
                 rejectedItems: arrayUnion(donationRef),
-                modifiedAt: serverTimestamp()
+                status: remainingItemCount === 0 ? 'closed' : orderData.status,
+                modifiedAt: serverTimestamp(),
+                [`rejections.${donation.id}.action`]: resolution.action,
+                [`rejections.${donation.id}.rejectedAt`]: serverTimestamp(),
+                ...(resolution.action === 'requested' ? { [`rejections.${donation.id}.reservedFor`]: resolution.requestor } : {})
             });
-            transaction.update(donationRef, {
-                status: 'unavailable',
-                requestor: null,
-                modifiedAt: serverTimestamp()
-            });
+
+            if (resolution.action === 'available') {
+                transaction.update(donationRef, {
+                    status: 'available',
+                    requestor: null,
+                    dateRequested: null,
+                    modifiedAt: serverTimestamp()
+                });
+            } else if (resolution.action === 'requested') {
+                if (!reassignedOrderRef) {
+                    throw new Error('Unable to create reassigned order');
+                }
+
+                transaction.set(reassignedOrderRef, {
+                    status: 'open',
+                    requestor: resolution.requestor,
+                    items: [donationRef],
+                    rejectedItems: [],
+                    createdAt: serverTimestamp(),
+                    modifiedAt: serverTimestamp()
+                });
+                transaction.update(donationRef, {
+                    status: 'requested',
+                    requestor: resolution.requestor,
+                    dateRequested: serverTimestamp(),
+                    modifiedAt: serverTimestamp()
+                });
+            } else {
+                transaction.update(donationRef, {
+                    status: 'unavailable',
+                    requestor: null,
+                    modifiedAt: serverTimestamp()
+                });
+            }
         });
     } catch (error) {
         addErrorEvent('Error removing donation from order', error);

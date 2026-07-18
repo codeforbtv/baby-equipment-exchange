@@ -1,5 +1,5 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { doc, getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { User, getAuth } from 'firebase/auth';
 
@@ -11,7 +11,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AccountInformation, NewUserAccountInfo, AuthUserRecord } from '@/types/UserTypes';
 import { convertToString } from '@/utils/utils';
 import { UserRecord } from 'firebase-admin/auth';
-import { getDonationNotifications, getOrdersNotifications } from './firebase-donations';
+import { DONATIONS_COLLECTION, getDonationNotifications, getOrderLinksForDonations, getOrdersNotifications } from './firebase-donations';
 import { getUsersNotifications } from './firebase-users';
 import { Notification } from '@/types/NotificationTypes';
 
@@ -150,10 +150,16 @@ export async function getNotifications(): Promise<Notification> {
             getOrdersNotifications()
         ]);
 
+        const reservedRefs = donationNotifications
+            .filter((d) => d.status === 'reserved')
+            .map((d) => doc(db, `${DONATIONS_COLLECTION}/${d.id}`));
+        const reservedOrderLinks = await getOrderLinksForDonations(reservedRefs);
+
         return {
             donations: donationNotifications,
             users: userNotifications,
-            orders: orderNotifications
+            orders: orderNotifications,
+            reservedOrderLinks
         };
     } catch (error) {
         addErrorEvent('Error getting notifications', error);

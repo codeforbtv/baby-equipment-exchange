@@ -11,6 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Loader from '@/components/Loader';
 import Image from 'next/image';
 import CustomDialog from '@/components/CustomDialog';
+import InventoryDetailsDialog from '@/components/InventoryDetailsDialog';
 //Libs
 import { requestInventoryItems } from '@/api/firebase-donations';
 import { addErrorEvent, callAreDonationsAvailable } from '@/api/firebase';
@@ -26,6 +27,7 @@ const InventoryCart = () => {
     const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState<boolean>(false);
     const [isUnavailableDialogOpen, setIsUnavailableDialogOpen] = useState<boolean>(false);
     const [unavailableDialogContent, setUnavailableDialogContent] = useState<string>('');
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
     const router = useRouter();
     const { currentUser } = useUserContext();
@@ -106,7 +108,11 @@ const InventoryCart = () => {
                                     if (inventoryItem.images)
                                         return (
                                             <Card key={i} elevation={5} className={styles['inventoryItem--card']}>
-                                                <div className={styles['inventoryItem--card-content']}>
+                                                <div
+                                                    className={styles['inventoryItem--card-content']}
+                                                    onClick={() => setSelectedItem(inventoryItem)}
+                                                    style={{ cursor: 'pointer' }}
+                                                >
                                                     <Image
                                                         src={inventoryItem.images[0] as string}
                                                         alt={`${inventoryItem.brand} ${inventoryItem.model}`}
@@ -141,6 +147,7 @@ const InventoryCart = () => {
                 </div>
             )}
 
+            <InventoryDetailsDialog open={selectedItem !== null} item={selectedItem} onClose={() => setSelectedItem(null)} readOnly />
             <CustomDialog
                 isOpen={isUnavailableDialogOpen}
                 onClose={handleUnavailableDialogClose}

@@ -2,11 +2,13 @@
 
 //Hooks
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { renderToString } from 'react-dom/server';
 //Components
 import Loader from './Loader';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
 import DonationCardMed from './DonationCardMed';
-import DonationDetails from './DonationDetails';
+import DonationCardSmall from './DonationCardSmall';
+import DonationDetailsDialog from './DonationDetailsDialog';
 import { Button, IconButton } from '@mui/material';
 import SchedulePickup from './SchedulePickup';
 import CustomDialog from './CustomDialog';
@@ -15,15 +17,17 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 //Api
 import { getOrderById, removeDonationFromOrder } from '@/api/firebase-donations';
 import { addErrorEvent } from '@/api/firebase';
+import sendMail from '@/api/nodemailer';
+import reservedForUser from '@/email-templates/reservedForUser';
 //Styles
 import '@/styles/globalStyles.css';
 //Types
 import { Order } from '@/types/OrdersTypes';
 import { Donation } from '@/models/donation';
+import type { OrderItemRejectionResolution } from '@/api/firebase-donations';
 
 type ReviewOrderProps = {
     id: string;
-    order?: Order;
     setIdToDisplay?: Dispatch<SetStateAction<string | null>>;
     setNotificationsUpdated?: Dispatch<SetStateAction<boolean>>;
 };
@@ -34,7 +38,9 @@ const ReviewOrder = (props: ReviewOrderProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [donationIdToDisplay, setDonationIdToDisplay] = useState<string | null>(null);
     const [showScheduler, setShowScheduler] = useState<boolean>(false);
+    const [showCancelOrder, setShowCancelOrder] = useState<boolean>(false);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [dialogContent, setDialogContent] = useState<string>('Donation successfully removed from order');
 
     const fetchOrder = async (id: string): Promise<void> => {
         setIsLoading(true);
@@ -48,22 +54,39 @@ const ReviewOrder = (props: ReviewOrderProps) => {
         }
     };
 
-    const handleRemoveFromOrder = async (orderId: string, donation: Donation): Promise<void> => {
+    const handleRemoveFromOrder = async (orderId: string, donation: Donation, resolution: OrderItemRejectionResolution): Promise<void> => {
         setIsLoading(true);
         try {
-            await removeDonationFromOrder(orderId, donation);
-            if (currentOrder) {
-                const rejectedDonation: Donation = { ...donation, status: 'unavailable' } as Donation;
-                const updatedOrder: Order = {
-                    ...currentOrder,
-                    items: currentOrder.items.filter((item) => item.id !== donation.id),
-                    rejectedItems: !currentOrder.rejectedItems ? [rejectedDonation] : [...currentOrder.rejectedItems, rejectedDonation]
-                };
-                setCurrentOrder(updatedOrder);
+            await removeDonationFromOrder(orderId, donation, resolution);
+
+            let reservedEmailFailed = false;
+            if (resolution.action === 'requested') {
+                const itemHtml = renderToString(<DonationCardSmall donation={donation} />);
+                const sent = await sendMail(reservedForUser(resolution.requestor.email, resolution.requestor.name, itemHtml));
+                reservedEmailFailed = !sent;
+            }
+
+            const updatedOrder = await getOrderById(orderId);
+            setCurrentOrder(updatedOrder);
+            setNotificationsUpdated?.(true);
+            if (updatedOrder.items.length === 0) {
+                setShowCancelOrder(true);
+            } else {
+                setDialogContent(
+                    resolution.action === 'available'
+                        ? 'Donation returned to available inventory.'
+                        : resolution.action === 'requested'
+                          ? reservedEmailFailed
+                              ? `Reserved for ${resolution.requestor.name}, but the email failed to send — notify them manually.`
+                              : `Reserved for ${resolution.requestor.name} — they've been emailed.`
+                          : 'Donation marked as unavailable.'
+                );
                 setIsDialogOpen(true);
             }
         } catch (error) {
             addErrorEvent('Error removing donation from order', error);
+            setDialogContent('Something went wrong. Please try again.');
+            setIsDialogOpen(true);
         } finally {
             setIsLoading(false);
         }
@@ -75,6 +98,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
 
     useEffect(() => {
         fetchOrder(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const donationToDisplay =
@@ -84,22 +108,26 @@ const ReviewOrder = (props: ReviewOrderProps) => {
 
     return (
         <ProtectedAdminRoute>
-            {donationIdToDisplay && currentOrder && (
-                <DonationDetails
-                    id={donationIdToDisplay}
-                    donation={donationToDisplay}
-                    setIdToDisplay={setDonationIdToDisplay}
-                />
-            )}
+            <DonationDetailsDialog
+                open={donationToDisplay != null}
+                donation={donationToDisplay ?? null}
+                onClose={() => setDonationIdToDisplay(null)}
+                readOnly
+            />
             {showScheduler && currentOrder && (
                 <SchedulePickup
                     order={currentOrder}
                     setShowScheduler={setShowScheduler}
                     setNotificationsUpdated={setNotificationsUpdated}
+                    onComplete={() => {
+                        setNotificationsUpdated?.(true);
+                        if (setIdToDisplay) setIdToDisplay(null);
+                        else setShowScheduler(false);
+                    }}
                 />
             )}
 
-            {!showScheduler && !donationIdToDisplay && (
+            {!showScheduler && (
                 <>
                     <div className="page--header">
                         <h2>Review Order</h2>
@@ -141,6 +169,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                                             setIdToDisplay={setDonationIdToDisplay}
                                             handleRemoveFromOrder={handleRemoveFromOrder}
                                             showRemoveButton={false}
+                                            rejection={currentOrder.rejections?.[item.id]}
                                         />
                                     ))}
                                 </>
@@ -152,7 +181,7 @@ const ReviewOrder = (props: ReviewOrderProps) => {
                     )}
                 </>
             )}
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content="Donation successfully removed from order" />
+            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="Order Updated" content={dialogContent} />
         </ProtectedAdminRoute>
     );
 };
