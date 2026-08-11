@@ -8,6 +8,15 @@ const theme = createTheme({
             main: '#3d9991'
         }
     },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    textTransform: 'none'
+                }
+            }
+        }
+    },
     typography: {
         fontFamily: montserrat.style.fontFamily,
         h1: {
