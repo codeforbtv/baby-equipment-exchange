@@ -6,7 +6,17 @@ import CustomTabPanel from './CustomTabPanel';
 import ReportGrid from './reports/ReportGrid';
 import UserReportGrid from './reports/UserReportGrid';
 import { useEffect, useState } from 'react';
-import { buildRows, extractUniqueRequestors, OrgLookup, OrgNameById, ReportRow, ReportType, REPORT_PRESETS, UserOrgLookup } from './reports/reportGridColumns';
+import {
+    buildRows,
+    extractUniqueDonors,
+    extractUniqueRequestors,
+    OrgLookup,
+    OrgNameById,
+    ReportRow,
+    ReportType,
+    REPORT_PRESETS,
+    UserOrgLookup
+} from './reports/reportGridColumns';
 import { getAllDonations } from '@/api/firebase-donations';
 import { getOrganizations } from '@/api/firebase-organizations';
 import { getAllDbUsers } from '@/api/firebase-users';
@@ -18,6 +28,7 @@ const reportTabs: { label: string; type: ReportType }[] = [
     { label: 'Product Lifecycle', type: 'lifecycle' },
     { label: 'By Organization', type: 'organization' },
     { label: 'By Requestor', type: 'requestor' },
+    { label: 'By Donor', type: 'donor' },
     { label: 'Raw Export', type: 'raw' },
     { label: 'Users', type: 'users' }
 ];
@@ -32,6 +43,7 @@ export default function Reports() {
     const [userRows, setUserRows] = useState<UserReportRow[]>([]);
     const [organizations, setOrganizations] = useState<{ id: string; name: string }[]>([]);
     const [requestors, setRequestors] = useState<{ id: string; name: string; email: string }[]>([]);
+    const [donors, setDonors] = useState<{ name: string; email: string }[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -49,6 +61,7 @@ export default function Reports() {
                 setUserRows(buildUserRows(users, orgNameById, donations));
                 setOrganizations(orgs.map((o) => ({ id: o.id, name: o.name })));
                 setRequestors(extractUniqueRequestors(donations));
+                setDonors(extractUniqueDonors(donations));
             } catch (error) {
                 addErrorEvent('Error fetching report data', error);
             } finally {
@@ -82,12 +95,12 @@ export default function Reports() {
                                 fontSize: '0.8125rem',
                                 minHeight: 44,
                                 padding: '8px 14px',
-                                '&.Mui-selected': { color: '#333', fontWeight: 600 }
+                                '&.Mui-selected': { color: 'primary.main', fontWeight: 600 }
                             },
                             '& .MuiTabs-indicator': {
                                 height: 2,
                                 borderRadius: '2px 2px 0 0',
-                                backgroundColor: '#333'
+                                backgroundColor: 'primary.main'
                             }
                         }}
                     >
@@ -100,7 +113,7 @@ export default function Reports() {
                         <Button
                             endIcon={<ArrowDropDownIcon />}
                             onClick={(e) => setAnchorEl(e.currentTarget)}
-                            sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8125rem', color: '#333' }}
+                            sx={{ fontWeight: 600, fontSize: '0.8125rem', color: '#333' }}
                         >
                             {reportTabs[currentTab].label}
                         </Button>
@@ -133,6 +146,7 @@ export default function Reports() {
                             rows={rows}
                             organizations={organizations}
                             requestors={requestors}
+                            donors={donors}
                             isLoading={isLoading}
                         />
                     )}

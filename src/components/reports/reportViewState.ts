@@ -11,18 +11,27 @@ export interface ReportViewState {
     columnVisibilityModel: GridColumnVisibilityModel;
     sortModel: GridSortModel;
     pageSize: number;
+    columnOrder?: string[];
+    donorFilter?: { name: string; email: string }[];
 }
 
-const KEY_PREFIX = 'bee:reports:view:v1:';
+// The live view tracks whatever the tab currently looks like; the default is the snapshot
+// the user deliberately saved and can return to.
+const KEY_PREFIX = 'bee:reports:view:v2:';
+const DEFAULT_KEY_PREFIX = 'bee:reports:default:v1:';
 
 function storageKey(type: ReportType): string {
     return `${KEY_PREFIX}${type}`;
 }
 
-export function loadViewState(type: ReportType): ReportViewState | null {
+function defaultStorageKey(type: ReportType): string {
+    return `${DEFAULT_KEY_PREFIX}${type}`;
+}
+
+function read(key: string): ReportViewState | null {
     if (typeof window === 'undefined') return null;
     try {
-        const raw = window.localStorage.getItem(storageKey(type));
+        const raw = window.localStorage.getItem(key);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
         if (
@@ -31,7 +40,9 @@ export function loadViewState(type: ReportType): ReportViewState | null {
             !Array.isArray(parsed.statusFilter) ||
             !Array.isArray(parsed.sortModel) ||
             typeof parsed.columnVisibilityModel !== 'object' ||
-            typeof parsed.pageSize !== 'number'
+            typeof parsed.pageSize !== 'number' ||
+            (parsed.columnOrder !== undefined && (!Array.isArray(parsed.columnOrder) || parsed.columnOrder.some((field: unknown) => typeof field !== 'string'))) ||
+            (parsed.donorFilter !== undefined && !Array.isArray(parsed.donorFilter))
         ) {
             return null;
         }
@@ -41,20 +52,44 @@ export function loadViewState(type: ReportType): ReportViewState | null {
     }
 }
 
-export function saveViewState(type: ReportType, state: ReportViewState): void {
+function write(key: string, state: ReportViewState): void {
     if (typeof window === 'undefined') return;
     try {
-        window.localStorage.setItem(storageKey(type), JSON.stringify(state));
+        window.localStorage.setItem(key, JSON.stringify(state));
     } catch {
         return;
     }
 }
 
-export function clearViewState(type: ReportType): void {
+function remove(key: string): void {
     if (typeof window === 'undefined') return;
     try {
-        window.localStorage.removeItem(storageKey(type));
+        window.localStorage.removeItem(key);
     } catch {
         return;
     }
+}
+
+export function loadViewState(type: ReportType): ReportViewState | null {
+    return read(storageKey(type));
+}
+
+export function saveViewState(type: ReportType, state: ReportViewState): void {
+    write(storageKey(type), state);
+}
+
+export function clearViewState(type: ReportType): void {
+    remove(storageKey(type));
+}
+
+export function loadDefaultViewState(type: ReportType): ReportViewState | null {
+    return read(defaultStorageKey(type));
+}
+
+export function saveDefaultViewState(type: ReportType, state: ReportViewState): void {
+    write(defaultStorageKey(type), state);
+}
+
+export function clearDefaultViewState(type: ReportType): void {
+    remove(defaultStorageKey(type));
 }

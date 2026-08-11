@@ -1,6 +1,8 @@
 'use client';
 
-import { Autocomplete, Box, Button, Checkbox, Chip, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Checkbox, Chip, IconButton, Menu, MenuItem, Paper, Snackbar, Stack, TextField, Typography } from '@mui/material';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import TableChartIcon from '@mui/icons-material/TableChart';
@@ -19,34 +21,54 @@ import {
 } from '@mui/x-data-grid';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { buildUserColumnVisibilityModel, UserReportRow, userReportColumns, userSortModel, userVisibleColumns } from './userReportColumns';
+import { pageSizeOptionsFor } from './reportGridColumns';
+import ReportColumnsPanel from './ReportColumnsPanel';
 import { exportGridXlsx, reportFileName } from './reportExport';
 import { columnsPanelSx, filterListboxProps } from './reportGridStyles';
-import { clearViewState, loadViewState, saveViewState } from './reportViewState';
+import { clearDefaultViewState, loadDefaultViewState, loadViewState, ReportViewState, saveDefaultViewState, saveViewState } from './reportViewState';
 
 interface UserReportToolbarProps {
     onExportCsv: () => void;
     onExportXlsx: () => void;
     onResetView: () => void;
+    onSaveDefault: () => void;
     columnsButtonRef: (el: HTMLButtonElement | null) => void;
 }
 
-function UserReportToolbar({ onExportCsv, onExportXlsx, onResetView, columnsButtonRef }: UserReportToolbarProps) {
+function UserReportToolbar({ onExportCsv, onExportXlsx, onResetView, onSaveDefault, columnsButtonRef }: UserReportToolbarProps) {
     const apiRef = useGridApiContext();
     const rowCount = useGridSelector(apiRef, gridFilteredTopLevelRowCountSelector);
+    const [exportAnchorEl, setExportAnchorEl] = useState<HTMLElement | null>(null);
+
+    const runExport = (exporter: () => void) => {
+        setExportAnchorEl(null);
+        exporter();
+    };
 
     return (
         <GridToolbarContainer sx={{ px: 1.5, py: 0.75, gap: 1, borderBottom: '1px solid #f0f0f0' }}>
             <GridToolbarQuickFilter debounceMs={300} />
             <Box sx={{ flexGrow: 1 }} />
             <GridToolbarColumnsButton ref={columnsButtonRef} />
-            <Button size="small" startIcon={<DownloadIcon />} onClick={onExportCsv} sx={{ textTransform: 'none' }}>
-                Export CSV
+            <Button size="small" startIcon={<DownloadIcon />} onClick={(event) => setExportAnchorEl(event.currentTarget)}>
+                Export
             </Button>
-            <Button size="small" startIcon={<DownloadIcon />} onClick={onExportXlsx} sx={{ textTransform: 'none' }}>
-                Export XLSX
+            <Menu
+                anchorEl={exportAnchorEl}
+                open={Boolean(exportAnchorEl)}
+                onClose={() => setExportAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                MenuListProps={{ dense: true }}
+            >
+                <MenuItem onClick={() => runExport(onExportCsv)}>CSV</MenuItem>
+                <MenuItem onClick={() => runExport(onExportXlsx)}>Excel (XLSX)</MenuItem>
+            </Menu>
+            <Button size="small" startIcon={<BookmarkBorderIcon />} onClick={onSaveDefault}>
+                Save as default
             </Button>
-            <Button size="small" startIcon={<RestartAltIcon />} onClick={onResetView} sx={{ textTransform: 'none' }}>
-                Reset view
+            <Button size="small" startIcon={<RestartAltIcon />} onClick={onResetView}>
+                Reset to default
             </Button>
             <Typography variant="caption" sx={{ ml: 1, color: '#999', whiteSpace: 'nowrap' }}>
                 {rowCount} user{rowCount !== 1 ? 's' : ''}
@@ -80,7 +102,10 @@ const UserReportGrid = ({ rows, organizations, isLoading }: UserReportGridProps)
     const cardRef = useRef<HTMLDivElement | null>(null);
     const [panelAnchorEl, setPanelAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-    const [savedView] = useState(() => loadViewState('users'));
+    // Live view wins, then the user's saved default, then the defaults below.
+    const [savedView] = useState(() => loadViewState('users') ?? loadDefaultViewState('users'));
+    const [defaultSavedOpen, setDefaultSavedOpen] = useState(false);
+    const [previousDefault, setPreviousDefault] = useState<ReportViewState | null>(null);
 
     const [orgFilter, setOrgFilter] = useState<string[]>(savedView?.orgFilter ?? []);
     const [columnVisibilityModel, setColumnVisibilityModel] = useState<GridColumnVisibilityModel>(() => {
@@ -92,25 +117,57 @@ const UserReportGrid = ({ rows, organizations, isLoading }: UserReportGridProps)
     const [sortModel, setSortModel] = useState<GridSortModel>(savedView?.sortModel ?? userSortModel);
     const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: savedView?.pageSize ?? 100 });
 
-    useEffect(() => {
-        const handle = setTimeout(() => {
-            saveViewState('users', {
-                statusFilter: [],
-                orgFilter,
-                requestorFilter: [],
-                dateField: 'createdAt',
-                dateFrom: null,
-                dateTo: null,
-                columnVisibilityModel,
-                sortModel,
-                pageSize: paginationModel.pageSize
-            });
-        }, 300);
-        return () => clearTimeout(handle);
-    }, [orgFilter, columnVisibilityModel, sortModel, paginationModel.pageSize]);
+    const viewState = useMemo<ReportViewState>(
+        () => ({
+            statusFilter: [],
+            orgFilter,
+            requestorFilter: [],
+            dateField: 'createdAt',
+            dateFrom: null,
+            dateTo: null,
+            columnVisibilityModel,
+            sortModel,
+            pageSize: paginationModel.pageSize
+        }),
+        [orgFilter, columnVisibilityModel, sortModel, paginationModel.pageSize]
+    );
 
+    useEffect(() => {
+        const handle = setTimeout(() => saveViewState('users', viewState), 300);
+        return () => clearTimeout(handle);
+    }, [viewState]);
+
+    const applyViewState = (state: ReportViewState) => {
+        setOrgFilter(state.orgFilter ?? []);
+        setColumnVisibilityModel({ ...buildUserColumnVisibilityModel(userVisibleColumns), ...state.columnVisibilityModel });
+        setSortModel(state.sortModel ?? userSortModel);
+        setPaginationModel({ page: 0, pageSize: state.pageSize ?? 100 });
+    };
+
+    const handleSaveDefault = () => {
+        setPreviousDefault(loadDefaultViewState('users'));
+        saveDefaultViewState('users', viewState);
+        setDefaultSavedOpen(true);
+    };
+
+    const handleUndoDefault = () => {
+        if (previousDefault) {
+            saveDefaultViewState('users', previousDefault);
+        } else {
+            clearDefaultViewState('users');
+        }
+        setDefaultSavedOpen(false);
+    };
+
+    // "The default" is the user's saved one when it exists, the preset otherwise —
+    // Reset to default always returns to whichever that is. The live view key is not cleared:
+    // the debounced save re-seeds it from the state set below anyway.
     const handleResetView = () => {
-        clearViewState('users');
+        const saved = loadDefaultViewState('users');
+        if (saved) {
+            applyViewState(saved);
+            return;
+        }
         setOrgFilter([]);
         setColumnVisibilityModel(buildUserColumnVisibilityModel(userVisibleColumns));
         setSortModel(userSortModel);
@@ -139,6 +196,11 @@ const UserReportGrid = ({ rows, organizations, isLoading }: UserReportGridProps)
         return rows.filter((row) => orgFilter.includes(row.orgName));
     }, [rows, orgFilter]);
 
+    const pageSizeOptions = useMemo(() => pageSizeOptionsFor(filteredRows.length), [filteredRows.length]);
+    // Kept out of state: a transient row count (empty during the fetch, or a narrow filter)
+    // must never rewrite — and persist — the page size the user actually chose.
+    const effectivePageSize = Math.min(paginationModel.pageSize, pageSizeOptions[pageSizeOptions.length - 1]);
+
     const handleExportCsv = () => {
         apiRef.current.exportDataAsCsv({ fileName: reportFileName('users_export') });
     };
@@ -148,7 +210,8 @@ const UserReportGrid = ({ rows, organizations, isLoading }: UserReportGridProps)
     };
 
     return (
-        <Box
+        <Paper
+            variant="outlined"
             ref={cardRef}
             sx={{
                 width: 0,
@@ -157,9 +220,7 @@ const UserReportGrid = ({ rows, organizations, isLoading }: UserReportGridProps)
                 minHeight: 480,
                 display: 'flex',
                 flexDirection: 'column',
-                border: '1px solid #eaeaea',
                 borderRadius: 2,
-                bgcolor: '#fff',
                 overflow: 'hidden'
             }}
         >
@@ -222,16 +283,17 @@ const UserReportGrid = ({ rows, organizations, isLoading }: UserReportGridProps)
                     onColumnVisibilityModelChange={setColumnVisibilityModel}
                     sortModel={sortModel}
                     onSortModelChange={setSortModel}
-                    paginationModel={paginationModel}
+                    paginationModel={{ page: paginationModel.page, pageSize: effectivePageSize }}
                     onPaginationModelChange={setPaginationModel}
-                    pageSizeOptions={[25, 50, 100]}
+                    pageSizeOptions={pageSizeOptions}
                     sx={{ border: 'none' }}
-                    slots={{ toolbar: UserReportToolbar, noRowsOverlay: NoRowsOverlay }}
+                    slots={{ toolbar: UserReportToolbar, noRowsOverlay: NoRowsOverlay, columnsManagement: ReportColumnsPanel }}
                     slotProps={{
                         toolbar: {
                             onExportCsv: handleExportCsv,
                             onExportXlsx: handleExportXlsx,
                             onResetView: handleResetView,
+                            onSaveDefault: handleSaveDefault,
                             columnsButtonRef: setPanelAnchorEl
                         },
                         loadingOverlay: { variant: 'skeleton', noRowsVariant: 'skeleton' },
@@ -243,7 +305,24 @@ const UserReportGrid = ({ rows, organizations, isLoading }: UserReportGridProps)
                     }}
                 />
             </Box>
-        </Box>
+
+            <Snackbar
+                open={defaultSavedOpen}
+                autoHideDuration={6000}
+                onClose={() => setDefaultSavedOpen(false)}
+                message="Saved as your default view — Reset to default returns here"
+                action={
+                    <>
+                        <Button color="inherit" size="small" onClick={handleUndoDefault}>
+                            Undo
+                        </Button>
+                        <IconButton size="small" aria-label="close" color="inherit" onClick={() => setDefaultSavedOpen(false)}>
+                            <CloseIcon fontSize="small" />
+                        </IconButton>
+                    </>
+                }
+            />
+        </Paper>
     );
 };
 

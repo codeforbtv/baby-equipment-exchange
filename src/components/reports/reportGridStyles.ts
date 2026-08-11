@@ -16,3 +16,17 @@ export const columnsPanelSx: SxProps<Theme> = {
 export const filterListboxProps = {
     style: { maxHeight: 'min(320px, calc(100vh - 220px))' }
 };
+
+const MENU_MAX_HEIGHT = 'min(360px, calc(100vh - 200px))';
+
+export const toolbarMenuPaperSx: SxProps<Theme> = {
+    maxHeight: MENU_MAX_HEIGHT,
+    overflowY: 'auto'
+};
+
+// Option captions wrap, so the menu needs more room than the 185px Select it hangs off.
+export const dateFieldMenuPaperSx: SxProps<Theme> = {
+    maxHeight: MENU_MAX_HEIGHT,
+    overflowY: 'auto',
+    maxWidth: 340
+};

@@ -1,7 +1,10 @@
 import { GridColDef, GridColumnVisibilityModel, GridSortModel } from '@mui/x-data-grid';
+import { Chip } from '@mui/material';
 import { FieldValue, Timestamp } from 'firebase/firestore';
 import { Donation } from '@/models/donation';
 import { IUser } from '@/models/user';
+import { formatReportDate } from '@/utils/formatReportDate';
+import { getStatusChipProps } from '@/utils/statusChipProps';
 import { OrgNameById } from './reportGridColumns';
 
 export interface UserReportRow {
@@ -64,10 +67,6 @@ export function buildUserRows(users: IUser[], orgNameById: OrgNameById = {}, don
     }));
 }
 
-function formatDate(value: Date | null): string {
-    return value ? value.toISOString().split('T')[0] : '';
-}
-
 const sinceGoLiveNote = 'Counted from donation records; only covers activity in this system since go-live (Nov 21 2025)';
 
 export const userReportColumns: GridColDef<UserReportRow>[] = [
@@ -85,12 +84,13 @@ export const userReportColumns: GridColDef<UserReportRow>[] = [
         field: 'isDisabled',
         headerName: 'Status',
         width: 110,
+        renderCell: (params) => <Chip size="small" {...getStatusChipProps(params.value ? 'disabled' : 'active')} />,
         valueFormatter: (value: boolean) => (value ? 'Disabled' : 'Active')
     },
     { field: 'requestedCount', headerName: 'Items Requested', type: 'number', width: 140, description: sinceGoLiveNote },
     { field: 'distributedCount', headerName: 'Items Distributed', type: 'number', width: 145, description: sinceGoLiveNote },
-    { field: 'createdAt', headerName: 'Account Created', type: 'date', width: 140, valueFormatter: formatDate },
-    { field: 'modifiedAt', headerName: 'Last Modified', type: 'date', width: 140, valueFormatter: formatDate }
+    { field: 'createdAt', headerName: 'Account Created', type: 'date', width: 140, valueFormatter: formatReportDate },
+    { field: 'modifiedAt', headerName: 'Last Modified', type: 'date', width: 140, valueFormatter: formatReportDate }
 ];
 
 export const userVisibleColumns = ['displayName', 'email', 'phoneNumber', 'orgName', 'isDisabled', 'requestedCount', 'distributedCount'];
