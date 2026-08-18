@@ -40,6 +40,7 @@ export default function DonationCard({ donation, onSelect }: DonationCardProps) 
                             src={image}
                             alt={`${donation.brand} ${donation.model}`}
                             fill
+                            loading="eager"
                             sizes="(max-width: 599px) 100vw, (max-width: 899px) 50vw, (max-width: 1199px) 33vw, 25vw"
                             style={{ objectFit: 'cover' }}
                         />
@@ -58,7 +59,7 @@ export default function DonationCard({ donation, onSelect }: DonationCardProps) 
                         </Typography>
                     </Stack>
                     <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="space-between" sx={{ mt: 0.75 }}>
-                        <Chip size="small" color={statusChip.color} label={statusChip.label} sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600 }} />
+                        <Chip size="small" color={statusChip.color} label={statusChip.label} sx={{ height: 22, fontSize: '0.7rem', fontWeight: 600, ...statusChip.sx }} />
                         <IconButton
                             component="span"
                             size="small"

@@ -40,6 +40,7 @@ export interface IDonation {
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
         | ({ id: string; name: string; email: string; organization: string } | null)
+        | ({ id: string; name: string; email: string; organization?: { id: string; name: string } | null } | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -65,7 +66,7 @@ export interface IDonation {
     firstReceivedAt: Timestamp | null | undefined;
     dateRequested: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
-    requestor: { id: string; name: string; email: string } | null;
+    requestor: { id: string; name: string; email: string; organization?: { id: string; name: string } | null } | null;
     distributor: { id: string; name: string; email: string; organization: string } | null;
 }
 
@@ -86,6 +87,7 @@ export class Donation implements IDonation {
         | (() => DocumentReference | null)
         | (() => { id: string; name: string } | null)
         | ({ id: string; name: string; email: string; organization: string } | null)
+        | ({ id: string; name: string; email: string; organization?: { id: string; name: string } | null } | null)
         | (() => boolean | null | undefined)
         | (() => string | null | undefined)
         | (() => Timestamp)
@@ -111,7 +113,7 @@ export class Donation implements IDonation {
     firstReceivedAt: Timestamp | null | undefined;
     dateRequested: Timestamp | null | undefined;
     dateDistributed: Timestamp | null | undefined;
-    requestor: { id: string; name: string; email: string } | null;
+    requestor: { id: string; name: string; email: string; organization?: { id: string; name: string } | null } | null;
     distributor: { id: string; name: string; email: string; organization: string } | null;
 
     constructor(args: IDonation) {
@@ -219,7 +221,7 @@ export class Donation implements IDonation {
         return this.dateDistributed;
     }
 
-    getRequestor(): { id: string; name: string; email: string } | null {
+    getRequestor(): { id: string; name: string; email: string; organization?: { id: string; name: string } | null } | null {
         return this.requestor;
     }
 

@@ -1,6 +1,7 @@
 //Apis
 import { json2csv } from 'json-2-csv';
 import { addErrorEvent } from './firebase';
+import { formatReportDate } from '@/utils/formatReportDate';
 import { stripNullUndefined } from '@/utils/utils';
 //Constants
 import { DONATIONS_COLLECTION } from './firebase-donations';
@@ -30,18 +31,18 @@ export function productLifeCycleReport(donation: Donation) {
         Model: donation.model,
         Description: donation.description,
         Images: donation.images,
-        'Date Accepted': donation.dateAccepted && donation.dateAccepted.toDate().toDateString(),
-        'Date Received': donation.dateReceived && donation.dateReceived.toDate().toDateString(),
-        'Date Requested': donation.dateRequested && donation.dateRequested.toDate().toDateString(),
+        'Date Accepted': donation.dateAccepted && formatReportDate(donation.dateAccepted.toDate()),
+        'Date Received': donation.dateReceived && formatReportDate(donation.dateReceived.toDate()),
+        'Date Requested': donation.dateRequested && formatReportDate(donation.dateRequested.toDate()),
         'Requester Name': donation.requestor?.name,
         'Requester Email': donation.requestor?.email,
-        'Date Distributed': donation.dateDistributed && donation.dateDistributed.toDate().toDateString(),
+        'Date Distributed': donation.dateDistributed && formatReportDate(donation.dateDistributed.toDate()),
         'Distributor Name': donation.distributor?.name,
         'Distributor Email': donation.distributor?.email,
         'Distributor Orginzation': donation.distributor?.organization,
         'Days In Storage': donation.getDaysInStorage(),
-        'Date Created': donation.createdAt && donation.createdAt.toDate().toDateString(),
-        'Last Modified': donation.modifiedAt && donation.modifiedAt.toDate().toDateString()
+        'Date Created': donation.createdAt && formatReportDate(donation.createdAt.toDate()),
+        'Last Modified': donation.modifiedAt && formatReportDate(donation.modifiedAt.toDate())
     };
     const data = [stripNullUndefined(reportObject)];
     let fileName = donation.tagNumber ? donation.tagNumber : donation.model;

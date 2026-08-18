@@ -1,0 +1,9 @@
+.sub-navbar {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 4px;
+    background-color: #fafafa;
+    border-bottom: 1px solid #eaeaea;
+}
