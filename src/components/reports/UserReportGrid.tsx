@@ -189,7 +189,7 @@ const UserReportGrid = ({ rows, organizations, isLoading }: UserReportGridProps)
 
     // Several orgs exist as duplicate docs under the same name; filtering is by name, so
     // the dropdown would otherwise show the same option twice.
-    const orgOptions = useMemo(() => [...new Set(organizations.map((org) => org.name))], [organizations]);
+    const orgOptions = useMemo(() => [...new Set(organizations.map((org) => org.name).filter(Boolean))], [organizations]);
 
     const filteredRows = useMemo(() => {
         if (orgFilter.length === 0) return rows;

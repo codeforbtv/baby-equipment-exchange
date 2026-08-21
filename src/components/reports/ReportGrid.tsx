@@ -351,7 +351,7 @@ const ReportGrid = (props: ReportGridProps) => {
 
     // Several orgs exist as duplicate docs under the same name; filtering is by name, so
     // the dropdown would otherwise show the same option twice.
-    const orgOptions = useMemo(() => [...new Set(organizations.map((org) => org.name))], [organizations]);
+    const orgOptions = useMemo(() => [...new Set(organizations.map((org) => org.name).filter(Boolean))], [organizations]);
 
     const filteredRows = useMemo(() => {
         const fromDate = dateFrom ? dateFrom.startOf('day').toDate() : null;

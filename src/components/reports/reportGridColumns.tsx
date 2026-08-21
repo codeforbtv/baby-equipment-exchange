@@ -117,7 +117,7 @@ export function extractUniqueRequestors(donations: Donation[]): { id: string; na
     const map = new Map<string, { id: string; name: string; email: string }>();
     for (const d of donations) {
         if (d.requestor && !map.has(d.requestor.id)) {
-            map.set(d.requestor.id, { id: d.requestor.id, name: d.requestor.name, email: d.requestor.email });
+            map.set(d.requestor.id, { id: d.requestor.id, name: d.requestor.name ?? '', email: d.requestor.email ?? '' });
         }
     }
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
@@ -129,7 +129,7 @@ export function extractUniqueDonors(donations: Donation[]): { name: string; emai
     for (const d of donations) {
         const key = d.donorEmail || d.donorName;
         if (key && !map.has(key)) {
-            map.set(key, { name: d.donorName, email: d.donorEmail });
+            map.set(key, { name: d.donorName ?? '', email: d.donorEmail ?? '' });
         }
     }
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));

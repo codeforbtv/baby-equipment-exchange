@@ -50,7 +50,9 @@ export default function Reports() {
         const fetchReportData = async () => {
             try {
                 const [donations, orgs, users] = await Promise.all([getAllDonations(), getOrganizations(), getAllDbUsers()]);
-                const orgLookup: OrgLookup = Object.fromEntries(orgs.map((o) => [o.name, { county: o.county, phone: o.phoneNumber, tags: o.tags }]));
+                const orgLookup: OrgLookup = Object.fromEntries(
+                    orgs.filter((o) => o.name).map((o) => [o.name, { county: o.county, phone: o.phoneNumber, tags: o.tags }])
+                );
                 // Canonicalize by org id: the org doc's current name wins over the (possibly stale)
                 // name snapshot on the user doc, so renamed orgs don't split into duplicate rows.
                 const orgNameById: OrgNameById = Object.fromEntries(orgs.map((o) => [o.id, o.name]));
@@ -59,7 +61,7 @@ export default function Reports() {
                 );
                 setRows(buildRows(donations, orgLookup, userOrgLookup, orgNameById));
                 setUserRows(buildUserRows(users, orgNameById, donations));
-                setOrganizations(orgs.map((o) => ({ id: o.id, name: o.name })));
+                setOrganizations(orgs.filter((o) => o.name).map((o) => ({ id: o.id, name: o.name })));
                 setRequestors(extractUniqueRequestors(donations));
                 setDonors(extractUniqueDonors(donations));
             } catch (error) {

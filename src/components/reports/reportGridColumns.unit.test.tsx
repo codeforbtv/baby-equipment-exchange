@@ -3,7 +3,7 @@
  */
 
 import { Donation } from '@/models/donation';
-import { buildRows, OrgNameById, UserOrgLookup } from './reportGridColumns';
+import { buildRows, extractUniqueDonors, extractUniqueRequestors, OrgNameById, UserOrgLookup } from './reportGridColumns';
 
 // Builds a minimal Donation-like object with only the fields buildRows reads.
 function makeDonation(fields: Partial<Donation>): Donation {
@@ -99,5 +99,36 @@ describe('buildRows org attribution precedence', () => {
         const [row] = buildRows([d], {}, lookup, orgNames);
         expect(row.requestorOrg).toBe('Deleted Org');
         expect(row.orgName).toBe('Deleted Org');
+    });
+});
+
+describe('extractUniqueRequestors / extractUniqueDonors', () => {
+    test('requestor with no name is returned with an empty name and does not break the sort', () => {
+        const nameless = makeDonation({ requestor: { id: 'uid-1', email: 'a@x.org' } as Donation['requestor'] });
+        const named = makeDonation({ requestor: { id: 'uid-2', name: 'Zoe', email: 'z@x.org' } });
+        const requestors = extractUniqueRequestors([nameless, named]);
+        expect(requestors).toEqual([
+            { id: 'uid-1', name: '', email: 'a@x.org' },
+            { id: 'uid-2', name: 'Zoe', email: 'z@x.org' }
+        ]);
+    });
+
+    test('requestor with no email is returned with an empty email', () => {
+        const d = makeDonation({ requestor: { id: 'uid-1', name: 'A' } as Donation['requestor'] });
+        expect(extractUniqueRequestors([d])).toEqual([{ id: 'uid-1', name: 'A', email: '' }]);
+    });
+
+    test('donor with an email but no name is returned with an empty name', () => {
+        const nameless = makeDonation({ donorName: undefined, donorEmail: 'd@x.org' });
+        const named = makeDonation({ donorName: 'Zoe', donorEmail: 'z@x.org' });
+        const donors = extractUniqueDonors([nameless, named]);
+        expect(donors).toEqual([
+            { name: '', email: 'd@x.org' },
+            { name: 'Zoe', email: 'z@x.org' }
+        ]);
+    });
+
+    test('donor with neither name nor email is skipped', () => {
+        expect(extractUniqueDonors([makeDonation({ donorName: undefined, donorEmail: undefined })])).toEqual([]);
     });
 });

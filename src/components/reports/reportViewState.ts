@@ -28,6 +28,18 @@ function defaultStorageKey(type: ReportType): string {
     return `${DEFAULT_KEY_PREFIX}${type}`;
 }
 
+function isString(value: unknown): value is string {
+    return typeof value === 'string';
+}
+
+function hasStringName(value: unknown): value is { name: string } {
+    return !!value && typeof value === 'object' && typeof (value as { name?: unknown }).name === 'string';
+}
+
+function isRequestorOption(value: unknown): value is { id: string; name: string; email: string } {
+    return hasStringName(value) && typeof (value as { id?: unknown }).id === 'string';
+}
+
 function read(key: string): ReportViewState | null {
     if (typeof window === 'undefined') return null;
     try {
@@ -38,6 +50,8 @@ function read(key: string): ReportViewState | null {
             !parsed ||
             typeof parsed !== 'object' ||
             !Array.isArray(parsed.statusFilter) ||
+            !Array.isArray(parsed.orgFilter) ||
+            !Array.isArray(parsed.requestorFilter) ||
             !Array.isArray(parsed.sortModel) ||
             typeof parsed.columnVisibilityModel !== 'object' ||
             typeof parsed.pageSize !== 'number' ||
@@ -46,7 +60,14 @@ function read(key: string): ReportViewState | null {
         ) {
             return null;
         }
-        return parsed as ReportViewState;
+        // A pre-fix session could have serialized an undefined option as null; drop
+        // anything that isn't a usable option rather than letting Autocomplete throw on it.
+        return {
+            ...parsed,
+            orgFilter: parsed.orgFilter.filter(isString),
+            requestorFilter: parsed.requestorFilter.filter(isRequestorOption),
+            donorFilter: parsed.donorFilter?.filter(hasStringName)
+        } as ReportViewState;
     } catch {
         return null;
     }
