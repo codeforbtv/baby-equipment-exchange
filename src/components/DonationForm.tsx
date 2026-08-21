@@ -56,7 +56,7 @@ export default function DonationForm(props: DonationFormProps) {
     };
 
     const isDisabled =
-        !images || !formData.category || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
+        !images?.length || !formData.category || formData.brand?.length === 0 || formData.model?.length === 0 || formData.description?.length === 0;
 
     const isCategoryActive = (category: string) => {
         if (categories) {
@@ -104,7 +104,7 @@ export default function DonationForm(props: DonationFormProps) {
 
     function handleAddPendingDonation(e: React.SyntheticEvent) {
         e.preventDefault();
-        if (!images) {
+        if (!images?.length) {
             setIsOpen(true);
             return;
         }

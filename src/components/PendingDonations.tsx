@@ -26,7 +26,7 @@ export default function PendingDonations() {
     return (
         <Box className={styles['pendingDonation--container']}>
             {pendingDonations.map((donation, i) => {
-                if (donation.images)
+                if (donation.images?.length)
                     return (
                         <Card key={i} elevation={5} className={styles['pendingDonation--card']}>
                             <ImageThumbnail file={donation.images[0]} width={'10%'} margin={'.66%'} />

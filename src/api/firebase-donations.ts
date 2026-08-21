@@ -97,7 +97,7 @@ const donationConverter = {
             notes: data.notes,
             status: data.status,
             bulkCollection: data.bulkCollection,
-            images: data.images,
+            images: data.images ?? [],
             createdAt: data.createdAt,
             modifiedAt: data.modifiedAt,
             dateAccepted: data.dateAccepted,
@@ -141,7 +141,7 @@ const inventoryConverter = {
             description: data.description,
             tagNumber: data.tagNumber,
             status: data.status,
-            images: data.images
+            images: data.images ?? []
         };
         return new InventoryItem(inventoryData);
     }

@@ -142,7 +142,7 @@ const AdminCart = () => {
                                     <Typography variant="h5">Items to be requested:</Typography>
                                     <Box className={styles['inventoryItem--container']}>
                                         {requestedInventory.map((inventoryItem, i) => {
-                                            if (inventoryItem.images)
+                                            if (inventoryItem.images?.length)
                                                 return (
                                                     <Card key={i} elevation={5} className={styles['inventoryItem--card']}>
                                                         <div
