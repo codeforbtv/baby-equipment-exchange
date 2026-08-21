@@ -1,13 +1,14 @@
 'use client';
 
 //Hooks
-import { MouseEventHandler, useEffect, useState, Dispatch, SetStateAction } from 'react';
+import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 //APi
 import { addErrorEvent } from '@/api/firebase';
 import { getDonationById, updateDonation, updateDonationStatus } from '@/api/firebase-donations';
 import { productLifeCycleReport } from '@/api/firebase-reports';
 //Components
-import { Dialog, DialogActions, ImageList, ImageListItem, Button, Divider, IconButton, Typography, Stack } from '@mui/material';
+import { Box, Dialog, DialogActions, ImageList, ImageListItem, Button, Divider, IconButton, Typography, Stack } from '@mui/material';
+import Image from 'next/image';
 import Loader from '@/components/Loader';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import CustomDialog from './CustomDialog';
@@ -99,8 +100,8 @@ const DonationDetails = (props: DonationDetailsProps) => {
         setIsDialogOpen(false);
     };
 
-    const handleImageClick: MouseEventHandler<HTMLImageElement> = (event) => {
-        setOpenImageURL(event.currentTarget.src);
+    const handleImageClick = (url: string) => {
+        setOpenImageURL(url);
         setIsImageOpen(true);
     };
 
@@ -129,9 +130,14 @@ const DonationDetails = (props: DonationDetailsProps) => {
                 {!isLoading && donationDetails !== null && !isEditMode && (
                     <div className="content--container">
                         <ImageList>
-                            {donationDetails.images.map((image) => (
+                            {donationDetails.images.filter(Boolean).map((image) => (
                                 <ImageListItem key={image as string}>
-                                    <img src={`${image}`} alt={donationDetails.model} loading="lazy" onClick={handleImageClick} />
+                                    <Box
+                                        sx={{ position: 'relative', width: '100%', aspectRatio: '4/3', cursor: 'pointer' }}
+                                        onClick={() => handleImageClick(`${image}`)}
+                                    >
+                                        <Image src={`${image}`} alt={donationDetails.model} fill loading="lazy" sizes="50vw" style={{ objectFit: 'cover' }} />
+                                    </Box>
                                 </ImageListItem>
                             ))}
                         </ImageList>
@@ -223,6 +229,7 @@ const DonationDetails = (props: DonationDetailsProps) => {
                             </Typography>
                         )}
                         <Dialog open={isImageOpen} onClose={handleImageClose} sx={{ width: '100%' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary-size lightbox image, same as ImageGallery */}
                             <img src={openImageURL} alt={openImageURL} style={{ maxWidth: '100%' }} />
                             <DialogActions>
                                 <Button type="button" onClick={handleImageClose}>

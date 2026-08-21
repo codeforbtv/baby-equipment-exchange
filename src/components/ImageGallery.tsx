@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Box, Chip, Dialog, DialogActions, Button, Stack } from '@mui/material';
+import Image from 'next/image';
 
 type ImageGalleryProps = {
     images: string[];
@@ -32,6 +33,7 @@ export default function ImageGallery({ images, alt }: ImageGalleryProps) {
                     cursor: 'pointer'
                 }}
             >
+                {/* eslint-disable-next-line @next/next/no-img-element -- full-view image, letterboxed at its natural aspect ratio */}
                 <img src={selectedImage} alt={alt} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                 <Chip
                     size="small"
@@ -44,26 +46,27 @@ export default function ImageGallery({ images, alt }: ImageGalleryProps) {
                     {images.map((image, index) => (
                         <Box
                             key={image}
-                            component="img"
-                            src={image}
-                            alt={`${alt} thumbnail ${index + 1}`}
                             onClick={() => setSelectedIndex(index)}
                             sx={{
+                                position: 'relative',
                                 width: 72,
                                 height: 72,
                                 flexShrink: 0,
-                                objectFit: 'cover',
                                 borderRadius: 1,
+                                overflow: 'hidden',
                                 cursor: 'pointer',
                                 border: index === selectedIndex ? '2.5px solid' : '2.5px solid transparent',
                                 borderColor: index === selectedIndex ? 'primary.main' : 'transparent'
                             }}
-                        />
+                        >
+                            <Image src={image} alt={`${alt} thumbnail ${index + 1}`} fill sizes="72px" style={{ objectFit: 'cover' }} />
+                        </Box>
                     ))}
                 </Stack>
             )}
 
             <Dialog open={isLightboxOpen} onClose={() => setIsLightboxOpen(false)}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary-size lightbox image */}
                 <img src={selectedImage} alt={alt} style={{ maxWidth: '100%' }} />
                 <DialogActions>
                     <Button onClick={() => setIsLightboxOpen(false)}>Close</Button>

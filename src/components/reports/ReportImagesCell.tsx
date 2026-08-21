@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Box, Button, Dialog, DialogActions } from '@mui/material';
+import Image from 'next/image';
 
 type ReportImagesCellProps = {
     value: string;
@@ -15,14 +16,15 @@ export default function ReportImagesCell({ value }: ReportImagesCellProps) {
     return (
         <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', height: '100%' }}>
             {urls.map((url, i) => (
-                <Box
+                <Image
                     key={i}
-                    component="img"
                     src={url}
                     alt={`Item photo ${i + 1}`}
+                    width={28}
+                    height={28}
                     loading="lazy"
                     onClick={() => setOpenUrl(url)}
-                    sx={{ height: 28, width: 28, objectFit: 'cover', borderRadius: 0.5, cursor: 'pointer' }}
+                    style={{ objectFit: 'cover', borderRadius: 2, cursor: 'pointer' }}
                 />
             ))}
             <Dialog open={openUrl !== null} onClose={() => setOpenUrl(null)}>

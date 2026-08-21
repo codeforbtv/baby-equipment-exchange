@@ -5,21 +5,9 @@ import { Dispatch, SetStateAction, useState } from 'react';
 import { useRouter } from 'next/navigation';
 //Components
 import Link from 'next/link';
+import Image from 'next/image';
 import ProtectedAdminRoute from './ProtectedAdminRoute';
-import {
-    Card,
-    CardActions,
-    CardContent,
-    CardMedia,
-    Typography,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogContentText,
-    DialogActions,
-    Box
-} from '@mui/material';
+import { Card, CardActions, CardContent, Typography, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Box } from '@mui/material';
 import Loader from './Loader';
 import CustomDialog from './CustomDialog';
 //Api
@@ -161,7 +149,11 @@ const NotificationCard = (props: NotificationCardProps) => {
                 <Card className={styles['notification-card']} variant="outlined">
                     <div className={styles['notification-card--group']}>
                         <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                            <CardMedia component="img" alt={donation.model} image={donation.images[0]} loading="lazy" />
+                            {donation.images?.[0] && (
+                                <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', cursor: 'pointer' }}>
+                                    <Image src={donation.images[0]} alt={donation.model} fill loading="lazy" sizes="100px" style={{ objectFit: 'cover' }} />
+                                </Box>
+                            )}
                         </CardActions>
                         <CardContent className={styles['notification-card--info']}>
                             <Typography variant="h5">
@@ -184,7 +176,18 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <Card className={styles['notification-card']} variant="outlined">
                             <div className={styles['notification-card--group']}>
                                 <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} loading="lazy" />
+                                    {donation.images?.[0] && (
+                                        <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', cursor: 'pointer' }}>
+                                            <Image
+                                                src={donation.images[0]}
+                                                alt={donation.model}
+                                                fill
+                                                loading="lazy"
+                                                sizes="100px"
+                                                style={{ objectFit: 'cover' }}
+                                            />
+                                        </Box>
+                                    )}
                                 </CardActions>
                                 <CardContent className={styles['notification-card--info']}>
                                     <Typography variant="h5">
@@ -223,7 +226,18 @@ const NotificationCard = (props: NotificationCardProps) => {
                         <Card className={styles['notification-card']} variant="outlined">
                             <div className={styles['notification-card--group']}>
                                 <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                                    <CardMedia component="img" alt={donation.model} image={donation.images[0]} loading="lazy" />
+                                    {donation.images?.[0] && (
+                                        <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', cursor: 'pointer' }}>
+                                            <Image
+                                                src={donation.images[0]}
+                                                alt={donation.model}
+                                                fill
+                                                loading="lazy"
+                                                sizes="100px"
+                                                style={{ objectFit: 'cover' }}
+                                            />
+                                        </Box>
+                                    )}
                                 </CardActions>
                                 <CardContent className={styles['notification-card--info']}>
                                     <Typography variant="h5">
@@ -260,7 +274,11 @@ const NotificationCard = (props: NotificationCardProps) => {
                 <Card className={styles['notification-card']} variant="outlined">
                     <div className={styles['notification-card--group']}>
                         <CardActions className={styles['notification-card--image']} onClick={() => setIdToDisplay(donation.id)}>
-                            <CardMedia component="img" alt={donation.model} image={donation.images[0]} loading="lazy" />
+                            {donation.images?.[0] && (
+                                <Box sx={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', cursor: 'pointer' }}>
+                                    <Image src={donation.images[0]} alt={donation.model} fill loading="lazy" sizes="100px" style={{ objectFit: 'cover' }} />
+                                </Box>
+                            )}
                         </CardActions>
                         <CardContent className={styles['notification-card--info']}>
                             <Typography variant="h5">

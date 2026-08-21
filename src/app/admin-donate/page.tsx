@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 //Components
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 import { Box, Button, IconButton, Stack, Typography } from '@mui/material';
+import Image from 'next/image';
 import Loader from '@/components/Loader';
 import AdminDonationForm from '@/components/AdminDonationForm';
 import PendingDonations from '@/components/PendingDonations';
@@ -155,20 +156,15 @@ export default function AdminDonate() {
                                         borderBottom: index < submittedDonations.length - 1 ? '1px solid #e0e0e0' : 'none'
                                     }}
                                 >
-                                    <Box
-                                        component="img"
-                                        src={donation.images?.[0] || ''}
-                                        alt={`${donation.brand} ${donation.model}`}
-                                        sx={{
-                                            width: 56,
-                                            height: 56,
-                                            objectFit: 'cover',
-                                            borderRadius: 1,
-                                            bgcolor: '#f1f1f1',
-                                            flexShrink: 0,
-                                            display: donation.images?.[0] ? 'block' : 'none'
-                                        }}
-                                    />
+                                    {donation.images?.[0] && (
+                                        <Image
+                                            src={donation.images[0]}
+                                            alt={`${donation.brand} ${donation.model}`}
+                                            width={56}
+                                            height={56}
+                                            style={{ objectFit: 'cover', borderRadius: 4, backgroundColor: '#f1f1f1', flexShrink: 0 }}
+                                        />
+                                    )}
                                     <Box sx={{ minWidth: 0 }}>
                                         <Typography variant="body1">
                                             {donation.brand} {donation.model} — <b>{donation.tagNumber}</b>

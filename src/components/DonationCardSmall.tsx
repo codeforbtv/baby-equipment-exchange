@@ -29,6 +29,7 @@ export default function DonationCardSmall(props: DonationCardSmallProps) {
                 border: '0.5px solid black'
             }}
         >
+            {/* eslint-disable-next-line @next/next/no-img-element -- rendered to static HTML for email; next/image emits a relative src and srcset that mail clients cannot resolve */}
             <img src={image} alt={donation.model} style={thumbnailStyles} />
             <div>
                 <p>
