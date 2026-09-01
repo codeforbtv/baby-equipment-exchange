@@ -7,10 +7,17 @@ export type RejectionRecord = {
     rejectedAt?: Timestamp;
 };
 
+export type OrderRequestor = {
+    email: string;
+    id: string;
+    name: string;
+    organization?: { id: string; name: string } | null;
+};
+
 export type Order = {
     id: string;
     status: string;
-    requestor: { email: string; id: string; name: string };
+    requestor: OrderRequestor;
     items: Donation[];
     rejectedItems?: Donation[];
     rejections?: Record<string, RejectionRecord>;

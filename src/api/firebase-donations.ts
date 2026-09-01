@@ -531,7 +531,12 @@ export async function requestInventoryItems(inventoryItemIds: string[], user: { 
         }
         await batch.commit();
     } catch (error) {
-        addErrorEvent('Request inventory items', error);
+        try {
+            await addErrorEvent('Request inventory items', error);
+        } catch (telemetryError) {
+            console.error('Unable to record request inventory failure', telemetryError);
+        }
+        throw error;
     }
 }
 

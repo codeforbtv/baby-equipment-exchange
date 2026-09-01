@@ -36,7 +36,7 @@ type Event = {
     modifiedAt: string;
 };
 
-export async function initAdmin() {
+function initializeAdminApp() {
     if (admin.apps.length > 0) {
         return admin.app();
     }
@@ -54,7 +54,11 @@ export async function initAdmin() {
     }
 }
 
-const app = await initAdmin();
+export async function initAdmin() {
+    return initializeAdminApp();
+}
+
+const app = initializeAdminApp();
 const auth = getAuth(app);
 const storage = getStorage(app);
 const db = getFirestore(app);
@@ -73,9 +77,9 @@ function findPaths(fileNames: string[]): string[] {
 
 export const addEvent = async (request: any) => {
     try {
-        _addEvent(request);
+        await _addEvent(request);
     } catch (error) {
-        logger.error(error);
+        logger.error({ location: 'addEvent', collection: EVENTS_COLLECTION, error: convertToString(error) });
     }
 };
 
@@ -634,12 +638,12 @@ async function _addEvent(object: any) {
 
         logger.warn(`Got event! ${JSON.stringify(object)}`);
     } catch (error) {
-        logger.error(error);
+        logger.error({ location: '_addEvent', collection: EVENTS_COLLECTION, error: convertToString(error) });
     }
 }
 
 async function addErrorEvent(location: string, error: any): Promise<void> {
-    _addEvent({ location: location, error: convertToString(error) });
+    await _addEvent({ location: location, error: convertToString(error) });
 }
 
 async function _checkClaim(userId: string, claimName: string) {

@@ -6,6 +6,7 @@
         "dev": "node ./src/utils/setup.cjs --cmd=0",
         "test:cypress": "npx cypress run --headless --component",
         "test:unit": "node ./src/utils/setup.cjs --cmd=1",
+        "test:emulator:aid-worker-request": "firebase emulators:exec --project demo-baby-equipment-exchange --only auth,firestore \"node tests/emulator/aid-worker-request.mjs\"",
         "alt-dev": "next dev",
         "alt-test": "jest .*/.*.unit.test.ts",
         "build": "next build",

@@ -8,7 +8,7 @@ service cloud.firestore {
 
 
       // Allow admin to read events (errors)
-      match /Events/{document=**} {
+      match /Event/{document=**} {
         allow read: if request.auth != null && request.auth.token.admin == true;
       }
 
@@ -25,6 +25,13 @@ service cloud.firestore {
       // Admin can create, edit or delete users   
       match /Users/{document=**} {
         allow read, write: if request.auth != null && request.auth.token.admin == true;
+      }
+
+      // Aid workers can fetch only their own top-level user document.
+      match /Users/{userId} {
+        allow get: if request.auth != null
+          && request.auth.token['aid-worker'] == true
+          && request.auth.uid == userId;
       }
 
       // Admin can create, edit or delete organizations   
@@ -52,7 +59,7 @@ service cloud.firestore {
 
       // aid worker can only update 'requestor', 'modifiedAt', 'status' fields of avilable donations
       match /Donations/{document=**} {
-        allow update: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available' && (resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt', 'status', 'dateRequested']))
+        allow update: if request.auth != null && request.auth.token['aid-worker'] == true && resource.data.status == 'available' && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['requestor', 'modifiedAt', 'status', 'dateRequested']))
       }
 
      //aid worker can create & update new orders (requested items)

@@ -4,7 +4,7 @@
 import { useRequestedInventoryContext } from '@/contexts/RequestedInventoryContext';
 import { useUserContext } from '@/contexts/UserContext';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 //Components
 import { Card, Button, Box, Typography, Stack } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -26,8 +26,10 @@ const InventoryCart = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState<boolean>(false);
     const [isUnavailableDialogOpen, setIsUnavailableDialogOpen] = useState<boolean>(false);
+    const [isRequestFailureDialogOpen, setIsRequestFailureDialogOpen] = useState<boolean>(false);
     const [unavailableDialogContent, setUnavailableDialogContent] = useState<string>('');
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const submissionInFlight = useRef(false);
 
     const router = useRouter();
     const { currentUser } = useUserContext();
@@ -42,8 +44,9 @@ const InventoryCart = () => {
         setIsUnavailableDialogOpen(false);
     };
 
-    const handleRequestItems = async (event: React.MouseEvent<HTMLElement>): Promise<void> => {
-        if (!requestedInventory || requestedInventory.length == 0 || !currentUser) return;
+    const handleRequestItems = async (): Promise<void> => {
+        if (submissionInFlight.current || !requestedInventory || requestedInventory.length == 0 || !currentUser) return;
+        submissionInFlight.current = true;
         setLoading(true);
         try {
             const requestedItemIds = requestedInventory.map((item) => item.id);
@@ -70,12 +73,21 @@ const InventoryCart = () => {
             };
 
             await requestInventoryItems(requestedItemIds, user);
-            clearRequestedInventory();
-            localStorage.removeItem('requestedInventory');
+            try {
+                clearRequestedInventory();
+                localStorage.removeItem('requestedInventory');
+            } catch (cleanupError) {
+                try {
+                    await addErrorEvent('Clear requested inventory after commit', cleanupError);
+                } catch (telemetryError) {
+                    console.error('Unable to record post-request cleanup failure', telemetryError);
+                }
+            }
             setIsSuccessDialogOpen(true);
         } catch (error) {
-            addErrorEvent('Handle request items', error);
+            setIsRequestFailureDialogOpen(true);
         } finally {
+            submissionInFlight.current = false;
             setLoading(false);
         }
     };
@@ -160,6 +172,12 @@ const InventoryCart = () => {
                 onClose={handleSuccessDialogClose}
                 title="Your request has been submitted."
                 content="Your requested items have been submitted. You will receive an email with next steps once your order has been processed."
+            />
+            <CustomDialog
+                isOpen={isRequestFailureDialogOpen}
+                onClose={() => setIsRequestFailureDialogOpen(false)}
+                title="We couldn’t submit your request."
+                content="Your cart has been saved. Please try again. If the problem continues, contact the Exchange."
             />
         </>
     );

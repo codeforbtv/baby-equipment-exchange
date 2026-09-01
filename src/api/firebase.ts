@@ -136,7 +136,8 @@ export async function callAreDonationsAvailable(ids: string[]): Promise<string[]
         const unavailableDonations = await areDonationsAvailable(ids);
         return unavailableDonations.data as string[];
     } catch (error) {
-        addErrorEvent('Error calling are donations available', error);
+        // This request boundary owns preflight telemetry; callers should not log the same failure again.
+        await addErrorEvent('Error calling are donations available', error);
         throw error;
     }
 }
