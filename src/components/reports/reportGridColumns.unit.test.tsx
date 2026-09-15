@@ -3,7 +3,8 @@
  */
 
 import { Donation } from '@/models/donation';
-import { buildRows, extractUniqueDonors, extractUniqueRequestors, OrgNameById, UserOrgLookup } from './reportGridColumns';
+import { IUser } from '@/models/user';
+import { buildRequestorOptions, buildRows, extractUniqueDonors, extractUniqueRequestors, OrgNameById, UserOrgLookup } from './reportGridColumns';
 
 // Builds a minimal Donation-like object with only the fields buildRows reads.
 function makeDonation(fields: Partial<Donation>): Donation {
@@ -130,5 +131,29 @@ describe('extractUniqueRequestors / extractUniqueDonors', () => {
 
     test('donor with neither name nor email is skipped', () => {
         expect(extractUniqueDonors([makeDonation({ donorName: undefined, donorEmail: undefined })])).toEqual([]);
+    });
+});
+
+describe('buildRequestorOptions', () => {
+    const user = (fields: Partial<IUser>): IUser => fields as IUser;
+
+    test('includes accounts that have never requested anything, with a zero count', () => {
+        const users = [user({ uid: 'uid-1', displayName: 'Manisha', email: 'm@x.org' }), user({ uid: 'uid-2', displayName: 'Dayva', email: 'd@x.org' })];
+        const donations = [makeDonation({ requestor: { id: 'uid-2', name: 'Dayva', email: 'd@x.org' } })];
+        expect(buildRequestorOptions(users, donations)).toEqual([
+            { id: 'uid-2', name: 'Dayva', email: 'd@x.org', requestCount: 1 },
+            { id: 'uid-1', name: 'Manisha', email: 'm@x.org', requestCount: 0 }
+        ]);
+    });
+
+    test('keeps requestors whose account no longer exists and skips user docs without a uid', () => {
+        const users = [user({ displayName: 'Ghost', email: 'g@x.org' })];
+        const donations = [makeDonation({ requestor: { id: 'uid-gone', name: 'Former Staff', email: 'f@x.org' } })];
+        expect(buildRequestorOptions(users, donations)).toEqual([{ id: 'uid-gone', name: 'Former Staff', email: 'f@x.org', requestCount: 1 }]);
+    });
+
+    test('falls back to email when the account has no display name', () => {
+        const users = [user({ uid: 'uid-1', email: 'noname@x.org' })];
+        expect(buildRequestorOptions(users, [])[0].name).toBe('noname@x.org');
     });
 });

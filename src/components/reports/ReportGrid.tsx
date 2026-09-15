@@ -50,7 +50,8 @@ import {
     ReportPreset,
     ReportRow,
     ReportType,
-    reportGridColumns
+    reportGridColumns,
+    RequestorOption
 } from './reportGridColumns';
 import ColumnOrderDialog from './ColumnOrderDialog';
 import ReportColumnsPanel from './ReportColumnsPanel';
@@ -192,7 +193,7 @@ type ReportGridProps = {
     reportType: ReportType;
     rows: ReportRow[];
     organizations: { id: string; name: string }[];
-    requestors: { id: string; name: string; email: string }[];
+    requestors: RequestorOption[];
     donors: { name: string; email: string }[];
     isLoading: boolean;
 };
@@ -210,7 +211,7 @@ const ReportGrid = (props: ReportGridProps) => {
 
     const [statusFilter, setStatusFilter] = useState<string[]>(savedView?.statusFilter ?? preset.defaultStatuses);
     const [orgFilter, setOrgFilter] = useState<string[]>(savedView?.orgFilter ?? []);
-    const [requestorFilter, setRequestorFilter] = useState<{ id: string; name: string; email: string }[]>(savedView?.requestorFilter ?? []);
+    const [requestorFilter, setRequestorFilter] = useState<RequestorOption[]>(savedView?.requestorFilter ?? []);
     const [donorFilter, setDonorFilter] = useState<{ name: string; email: string }[]>(savedView?.donorFilter ?? []);
     const [dateField, setDateField] = useState<string>(savedView?.dateField ?? 'createdAt');
     const [dateFrom, setDateFrom] = useState<Dayjs | null>(savedView?.dateFrom ? dayjs(savedView.dateFrom) : null);
@@ -351,7 +352,10 @@ const ReportGrid = (props: ReportGridProps) => {
 
     // Several orgs exist as duplicate docs under the same name; filtering is by name, so
     // the dropdown would otherwise show the same option twice.
-    const orgOptions = useMemo(() => [...new Set(organizations.map((org) => org.name).filter(Boolean))], [organizations]);
+    const orgOptions = useMemo(
+        () => [...new Set(organizations.map((org) => org.name).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+        [organizations]
+    );
 
     const filteredRows = useMemo(() => {
         const fromDate = dateFrom ? dateFrom.startOf('day').toDate() : null;
@@ -531,7 +535,7 @@ const ReportGrid = (props: ReportGridProps) => {
                             id="report-requestor-filter"
                             ListboxProps={filterListboxProps}
                             options={requestors}
-                            getOptionLabel={(option) => option.name}
+                            getOptionLabel={(option) => (option.email ? `${option.name} (${option.email})` : option.name)}
                             isOptionEqualToValue={(option, value) => option.id === value.id}
                             value={requestorFilter}
                             onChange={(event, newValue) => setRequestorFilter(newValue)}
@@ -540,6 +544,7 @@ const ReportGrid = (props: ReportGridProps) => {
                                     {...params}
                                     label="Requestor"
                                     placeholder={requestorFilter.length === 0 ? 'All requestors' : ''}
+                                    helperText="Lists every account. Type a name or email to search; people who have not requested anything yet return no rows."
                                     InputLabelProps={{ ...params.InputLabelProps, shrink: true }}
                                 />
                             )}
@@ -548,7 +553,15 @@ const ReportGrid = (props: ReportGridProps) => {
                                 return (
                                     <li key={key} {...rest}>
                                         <Checkbox size="small" checked={selected} sx={{ mr: 1, py: 0 }} />
-                                        {option.name}
+                                        <Box component="span" sx={{ flexGrow: 1 }}>
+                                            {option.name}
+                                            {option.email && (
+                                                <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                                    {option.email}
+                                                </Typography>
+                                            )}
+                                        </Box>
+                                        {option.requestCount === 0 && <Chip size="small" variant="outlined" label="no requests yet" />}
                                     </li>
                                 );
                             }}

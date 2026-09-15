@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import {
     buildRows,
     extractUniqueDonors,
-    extractUniqueRequestors,
+    buildRequestorOptions,
     OrgLookup,
     OrgNameById,
     ReportRow,
@@ -62,7 +62,7 @@ export default function Reports() {
                 setRows(buildRows(donations, orgLookup, userOrgLookup, orgNameById));
                 setUserRows(buildUserRows(users, orgNameById, donations));
                 setOrganizations(orgs.filter((o) => o.name).map((o) => ({ id: o.id, name: o.name })));
-                setRequestors(extractUniqueRequestors(donations));
+                setRequestors(buildRequestorOptions(users, donations));
                 setDonors(extractUniqueDonors(donations));
             } catch (error) {
                 addErrorEvent('Error fetching report data', error);

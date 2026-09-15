@@ -2,6 +2,7 @@ import { Chip } from '@mui/material';
 import { GridColDef, GridColumnVisibilityModel, GridSortModel } from '@mui/x-data-grid';
 import { Timestamp } from 'firebase/firestore';
 import { Donation } from '@/models/donation';
+import { IUser } from '@/models/user';
 import { formatReportDate } from '@/utils/formatReportDate';
 import { getStatusChipProps } from '@/utils/statusChipProps';
 import ReportImagesCell from './ReportImagesCell';
@@ -119,6 +120,33 @@ export function extractUniqueRequestors(donations: Donation[]): { id: string; na
         if (d.requestor && !map.has(d.requestor.id)) {
             map.set(d.requestor.id, { id: d.requestor.id, name: d.requestor.name ?? '', email: d.requestor.email ?? '' });
         }
+    }
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export interface RequestorOption {
+    id: string;
+    name: string;
+    email: string;
+    requestCount?: number;
+}
+
+// Every account is offered as a requestor, not just people who already have a donation
+// against their name; otherwise staff who have never requested anything are missing from
+// the dropdown and look like a data gap. Requestors on donations whose account no longer
+// exists are kept so historical rows stay reachable.
+export function buildRequestorOptions(users: IUser[], donations: Donation[]): RequestorOption[] {
+    const counts = new Map<string, number>();
+    for (const d of donations) {
+        if (d.requestor?.id) counts.set(d.requestor.id, (counts.get(d.requestor.id) ?? 0) + 1);
+    }
+    const map = new Map<string, RequestorOption>();
+    for (const u of users) {
+        if (!u.uid) continue;
+        map.set(u.uid, { id: u.uid, name: u.displayName || u.email || '', email: u.email ?? '', requestCount: counts.get(u.uid) ?? 0 });
+    }
+    for (const r of extractUniqueRequestors(donations)) {
+        if (!map.has(r.id)) map.set(r.id, { ...r, requestCount: counts.get(r.id) ?? 0 });
     }
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
 }
