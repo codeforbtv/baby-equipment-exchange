@@ -76,14 +76,18 @@ export default function NewAccount() {
         let organization;
         let notes: string[] = [];
 
-        if (orgValue) {
+        // A typed name that matches an existing organization counts as picking it from the list.
+        const typedOrg = orgInputValue.trim();
+        const matchedOrg = orgValue ?? orgNames.find((name) => name.toLowerCase() === typedOrg.toLowerCase()) ?? null;
+
+        if (matchedOrg) {
             organization = {
-                id: orgNamesAndIds[orgValue],
-                name: orgValue
+                id: orgNamesAndIds[matchedOrg],
+                name: matchedOrg
             };
         } else {
             organization = null;
-            notes = [`User provided organization: ${orgInputValue}`];
+            notes = [`User provided organization: ${typedOrg}`];
         }
 
         const accountInfo: NewUserAccountInfo = {
