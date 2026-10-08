@@ -157,6 +157,7 @@ export async function enableDbUser(uid: string): Promise<void> {
         await updateDoc(docRef, { isDisabled: false, customClaims: { 'aid-worker': true } });
     } catch (error) {
         addErrorEvent('Error enabling db User', error);
+        throw error;
     }
 }
 

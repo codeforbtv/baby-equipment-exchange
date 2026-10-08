@@ -120,6 +120,9 @@ const NotificationCard = (props: NotificationCardProps) => {
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Call enable user', error);
+            setDialogTitle('Could not enable user');
+            setDialogContent(`${userName} was not enabled and no email was sent. Please try again.`);
+            setIsDialogOpen(true);
         } finally {
             setIsLoading(false);
         }

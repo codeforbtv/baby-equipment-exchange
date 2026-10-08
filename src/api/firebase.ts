@@ -98,6 +98,7 @@ export async function callEnableUser(userId: string): Promise<void> {
         await enableUser({ userId: userId });
     } catch (error) {
         addErrorEvent('Could not enable user', error);
+        throw error;
     }
 }
 
