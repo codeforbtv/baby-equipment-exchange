@@ -16,7 +16,6 @@ import styles from '@/components/Browse.module.css';
 import '@/styles/globalStyles.css';
 // Types
 import { IUser } from '@/models/user';
-import { user } from 'firebase-functions/v1/auth';
 
 type UserListProps = {
     users: IUser[];
@@ -31,7 +30,7 @@ export default function Users(props: UserListProps) {
 
     useEffect(() => {
         setFilteredUsers(users.filter((user) => Object.values(user).some((value) => String(value).toLowerCase().includes(searchInput.toLowerCase()))));
-    }, [searchInput]);
+    }, [users, searchInput]);
 
     return (
         <ProtectedAdminRoute>

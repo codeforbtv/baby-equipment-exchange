@@ -82,12 +82,18 @@ export const userConverter = {
     }
 };
 
+// Firestore returns the collection in document-id order, which reads as random in the admin list.
+export function sortUsersByName(users: IUser[]): IUser[] {
+    const label = (user: IUser) => user.displayName || user.email || '';
+    return [...users].sort((a, b) => label(a).localeCompare(label(b), undefined, { sensitivity: 'base' }));
+}
+
 export async function getAllDbUsers(): Promise<IUser[]> {
     try {
         const users: IUser[] = [];
         const usersSnapshot = await getDocs(collection(db, USERS_COLLECTION).withConverter(userConverter));
         usersSnapshot.forEach((doc) => users.push(doc.data()));
-        return users;
+        return sortUsersByName(users);
     } catch (error) {
         addErrorEvent('Error fetching all db users', error);
         throw error;
@@ -151,6 +157,7 @@ export async function enableDbUser(uid: string): Promise<void> {
         await updateDoc(docRef, { isDisabled: false, customClaims: { 'aid-worker': true } });
     } catch (error) {
         addErrorEvent('Error enabling db User', error);
+        throw error;
     }
 }
 

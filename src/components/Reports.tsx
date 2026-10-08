@@ -15,6 +15,7 @@ import {
     ReportRow,
     ReportType,
     REPORT_PRESETS,
+    UserLookup,
     UserOrgLookup
 } from './reports/reportGridColumns';
 import { getAllDonations } from '@/api/firebase-donations';
@@ -22,12 +23,12 @@ import { getOrganizations } from '@/api/firebase-organizations';
 import { getAllDbUsers } from '@/api/firebase-users';
 import { buildUserRows, UserReportRow } from './reports/userReportColumns';
 import { addErrorEvent } from '@/api/firebase';
+import { clearRetiredViewState } from './reports/reportViewState';
 import styles from './reports/Reports.module.css';
 
 const reportTabs: { label: string; type: ReportType }[] = [
     { label: 'Product Lifecycle', type: 'lifecycle' },
     { label: 'By Organization', type: 'organization' },
-    { label: 'By Requestor', type: 'requestor' },
     { label: 'By Donor', type: 'donor' },
     { label: 'Raw Export', type: 'raw' },
     { label: 'Users', type: 'users' }
@@ -47,6 +48,7 @@ export default function Reports() {
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        clearRetiredViewState();
         const fetchReportData = async () => {
             try {
                 const [donations, orgs, users] = await Promise.all([getAllDonations(), getOrganizations(), getAllDbUsers()]);
@@ -59,7 +61,10 @@ export default function Reports() {
                 const userOrgLookup: UserOrgLookup = Object.fromEntries(
                     users.filter((u) => u.organization).map((u) => [u.uid, { id: u.organization!.id, name: orgNameById[u.organization!.id] ?? u.organization!.name }])
                 );
-                setRows(buildRows(donations, orgLookup, userOrgLookup, orgNameById));
+                const userLookup: UserLookup = Object.fromEntries(
+                    users.filter((u) => u.uid).map((u) => [u.uid, { name: u.displayName || u.email || '', email: u.email ?? '' }])
+                );
+                setRows(buildRows(donations, orgLookup, userOrgLookup, orgNameById, userLookup));
                 setUserRows(buildUserRows(users, orgNameById, donations));
                 setOrganizations(orgs.filter((o) => o.name).map((o) => ({ id: o.id, name: o.name })));
                 setRequestors(buildRequestorOptions(users, donations));

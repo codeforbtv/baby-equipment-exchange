@@ -48,10 +48,14 @@ const EditUser = (props: EditUserProps) => {
     const [newTitle, setNewTitle] = useState<string>(title ?? '');
     const [role, setRole] = useState<string>(initialRole);
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [dialogTitle, setDialogTitle] = useState<string>('');
+    const [dialogContent, setDialogContent] = useState<string>('');
+    const [actionFailed, setActionFailed] = useState<boolean>(false);
 
     const handleClose = () => {
-        if (setUserDetailsUpdated) setUserDetailsUpdated(true);
         setIsDialogOpen(false);
+        if (actionFailed) return;
+        if (setUserDetailsUpdated) setUserDetailsUpdated(true);
         setIsEditMode(false);
     };
 
@@ -108,66 +112,80 @@ const EditUser = (props: EditUserProps) => {
         setRole((event.target as HTMLInputElement).value);
     };
 
+    const saveProfile = async (): Promise<void> => {
+        if (email !== newEmail || displayName !== newDisplayName) {
+            try {
+                await callUpdateAuthUser(uid, {
+                    email: newEmail,
+                    displayName: newDisplayName
+                });
+            } catch (error) {
+                addErrorEvent('Error updating email or display name', error);
+            }
+        }
+        if (role !== initialRole) {
+            try {
+                const claims = { [`${role}`]: true };
+                await Promise.all([callSetClaims(uid, claims), updateDbUser(uid, { customClaims: claims })]);
+            } catch (error) {
+                addErrorEvent('Error updated custom claims', error);
+            }
+        }
+        if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || email !== newEmail || displayName !== newDisplayName || title !== newTitle) {
+            const updatedOrganization = selectedOrg
+                ? {
+                      id: orgNamesAndIds[selectedOrg],
+                      name: selectedOrg
+                  }
+                : null;
+            await updateDbUser(uid, {
+                phoneNumber: newPhoneNumber,
+                organization: updatedOrganization,
+                title: newTitle,
+                email: newEmail,
+                displayName: newDisplayName
+            });
+        }
+    };
+
+    // Saving edits never changes whether the account is approved. Wendy fixes names and
+    // organizations on pending accounts without meaning to let them in yet.
     const handleSubmitUpdatedUser = async (event: React.FormEvent): Promise<void> => {
         event.preventDefault();
         setIsLoading(true);
         try {
-            //If account is inactive, activate and send confirmation email
-            if (isDisabled) {
-                try {
-                    await Promise.all([callEnableUser(uid), enableDbUser(uid)]);
-                    const emailMsg = userEnabled(email, displayName);
-                    await sendMail(emailMsg);
-                } catch (error) {
-                    addErrorEvent('Error enable user', error);
-                }
-            }
-            //if any fields stored in the firebase auth user have changed, update auth user.
-            if (email !== newEmail || displayName !== newDisplayName) {
-                try {
-                    const updatedAuthUser = await callUpdateAuthUser(uid, {
-                        email: newEmail,
-                        displayName: newDisplayName
-                    });
-                } catch (error) {
-                    addErrorEvent('Error updating email or display name', error);
-                }
-            }
-            //If user role has changed it requires a separate API call
-            if (role !== initialRole) {
-                try {
-                    const claims = { [`${role}`]: true };
-                    await Promise.all([callSetClaims(uid, claims), updateDbUser(uid, { customClaims: claims })]);
-                } catch (error) {
-                    addErrorEvent('Error updated custom claims', error);
-                }
-            }
-            //If any fields in User collection in DB, update db user
-            if (phoneNumber !== newPhoneNumber || initialOrg !== selectedOrg || email !== newEmail || displayName !== newDisplayName || title !== newTitle) {
-                try {
-                    const updatedOrganization = selectedOrg
-                        ? {
-                              id: orgNamesAndIds[selectedOrg],
-                              name: selectedOrg
-                          }
-                        : null;
-
-                    await updateDbUser(uid, {
-                        phoneNumber: newPhoneNumber,
-                        organization: updatedOrganization,
-                        title: newTitle,
-                        email: newEmail,
-                        displayName: newDisplayName
-                    });
-                } catch (error) {
-                    addErrorEvent('Error updating DB user', error);
-                    throw error;
-                }
-            }
+            await saveProfile();
+            setActionFailed(false);
+            setDialogTitle('User updated');
+            setDialogContent(`The user ${newDisplayName} has been updated.`);
             setIsDialogOpen(true);
         } catch (error) {
             addErrorEvent('Error updating user', error);
-            throw error;
+            setActionFailed(true);
+            setDialogTitle('Could not update user');
+            setDialogContent(`The changes to ${newDisplayName} were not saved. Please try again.`);
+            setIsDialogOpen(true);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleApproveUser = async (): Promise<void> => {
+        setIsLoading(true);
+        try {
+            await saveProfile();
+            await Promise.all([callEnableUser(uid), enableDbUser(uid)]);
+            await sendMail(userEnabled(newEmail, newDisplayName));
+            setActionFailed(false);
+            setDialogTitle('User approved');
+            setDialogContent(`${newDisplayName} has been approved and emailed that their account is active.`);
+            setIsDialogOpen(true);
+        } catch (error) {
+            addErrorEvent('Error approving user', error);
+            setActionFailed(true);
+            setDialogTitle('Could not approve user');
+            setDialogContent(`${newDisplayName} was not approved and no email was sent. Please try again.`);
+            setIsDialogOpen(true);
         } finally {
             setIsLoading(false);
         }
@@ -249,11 +267,16 @@ const EditUser = (props: EditUserProps) => {
                                 <FormControlLabel value="aid-worker" control={<Radio />} label="Aid Worker" />
                             </RadioGroup>
                         </FormControl>
-                        <Box display={'flex'} gap={2}>
-                            {!initialOrg ? (
-                                <Button variant="contained" type="submit" disabled={!selectedOrg}>
-                                    Enable User
-                                </Button>
+                        <Box display={'flex'} gap={2} flexWrap={'wrap'}>
+                            {isDisabled ? (
+                                <>
+                                    <Button variant="contained" type="button" onClick={handleApproveUser} disabled={!selectedOrg}>
+                                        Approve User
+                                    </Button>
+                                    <Button variant="outlined" type="submit">
+                                        Save Without Approving
+                                    </Button>
+                                </>
                             ) : (
                                 <Button variant="contained" type="submit">
                                     Update User
@@ -264,10 +287,15 @@ const EditUser = (props: EditUserProps) => {
                                 Cancel
                             </Button>
                         </Box>
+                        {isDisabled && !selectedOrg && (
+                            <Typography variant="body2" color="text.secondary">
+                                Assign an organization to approve this user.
+                            </Typography>
+                        )}
                     </Box>
                 )}
             </Paper>
-            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title="User updated" content={`The user ${newDisplayName} has been updated.`} />
+            <CustomDialog isOpen={isDialogOpen} onClose={handleClose} title={dialogTitle} content={dialogContent} />
         </ProtectedAdminRoute>
     );
 };

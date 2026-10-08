@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { ReportViewState, loadViewState, saveViewState } from './reportViewState';
+import { ReportViewState, clearRetiredViewState, loadViewState, saveViewState } from './reportViewState';
 
 const KEY = 'bee:reports:view:v2:organization';
 
@@ -78,5 +78,17 @@ describe('reportViewState', () => {
 
     test('missing key returns null', () => {
         expect(loadViewState('organization')).toBeNull();
+    });
+});
+
+describe('clearRetiredViewState', () => {
+    test('drops saved views for tabs that no longer exist and leaves live tabs alone', () => {
+        window.localStorage.setItem('bee:reports:view:v2:requestor', JSON.stringify(makeState()));
+        window.localStorage.setItem('bee:reports:default:v1:requestor', JSON.stringify(makeState()));
+        saveViewState('organization', makeState());
+        clearRetiredViewState();
+        expect(window.localStorage.getItem('bee:reports:view:v2:requestor')).toBeNull();
+        expect(window.localStorage.getItem('bee:reports:default:v1:requestor')).toBeNull();
+        expect(loadViewState('organization')).not.toBeNull();
     });
 });

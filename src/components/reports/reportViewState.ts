@@ -20,6 +20,9 @@ export interface ReportViewState {
 const KEY_PREFIX = 'bee:reports:view:v2:';
 const DEFAULT_KEY_PREFIX = 'bee:reports:default:v1:';
 
+// Tabs that no longer exist; their saved views are dead weight in localStorage.
+const RETIRED_TYPES = ['requestor'];
+
 function storageKey(type: ReportType): string {
     return `${KEY_PREFIX}${type}`;
 }
@@ -88,6 +91,13 @@ function remove(key: string): void {
         window.localStorage.removeItem(key);
     } catch {
         return;
+    }
+}
+
+export function clearRetiredViewState(): void {
+    for (const type of RETIRED_TYPES) {
+        remove(`${KEY_PREFIX}${type}`);
+        remove(`${DEFAULT_KEY_PREFIX}${type}`);
     }
 }
 
