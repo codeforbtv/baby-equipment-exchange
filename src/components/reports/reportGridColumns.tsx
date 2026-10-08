@@ -46,6 +46,8 @@ export type OrgLookup = Record<string, { county?: string; phone?: string; tags?:
 
 export type UserOrgLookup = Record<string, { id: string; name: string }>;
 
+export type UserLookup = Record<string, { name: string; email: string }>;
+
 export type OrgNameById = Record<string, string>;
 
 function toDate(ts: Timestamp | null | undefined): Date | null {
@@ -61,10 +63,15 @@ export function buildRows(
     donations: Donation[],
     orgLookup: OrgLookup = {},
     userOrgLookup: UserOrgLookup = {},
-    orgNameById: OrgNameById = {}
+    orgNameById: OrgNameById = {},
+    userLookup: UserLookup = {}
 ): ReportRow[] {
     return donations.map((donation) => {
         const requestorId = donation.requestor?.id ?? '';
+        // The donation carries the requestor's name and email as they were at request time.
+        // Admins correct display names after the fact (ws_rice -> Wendy Rice), so the live
+        // account wins and the snapshot only covers accounts that no longer exist.
+        const requestorAccount = requestorId ? userLookup[requestorId] : undefined;
         // organization === null is a real snapshot ("had no org at request time") and must not
         // fall through to the live join; only a missing field (legacy row) uses the join.
         const requestorOrgRef =
@@ -100,8 +107,8 @@ export function buildRows(
             bulkCollection: donation.bulkCollection,
             images: donation.images?.join(', ') ?? '',
             requestorId: requestorId,
-            requestorName: donation.requestor?.name ?? '',
-            requestorEmail: donation.requestor?.email ?? '',
+            requestorName: requestorAccount?.name || donation.requestor?.name || '',
+            requestorEmail: requestorAccount?.email || donation.requestor?.email || '',
             requestorOrg: requestorOrg,
             distributorName: donation.distributor?.name ?? '',
             distributorEmail: donation.distributor?.email ?? '',
@@ -262,7 +269,7 @@ export const dateFilterFields: { field: keyof ReportRow; label: string; descript
 // spoken list omitted it — hiding mid-pipeline items would read as data loss.
 export const lifecycleDefaultStatuses = ['available', 'requested', 'reserved', 'distributed', 'unavailable'];
 
-// Org/requestor tabs are about the request pipeline; earlier statuses have no requestor
+// The organization tab is about the request pipeline; earlier statuses have no requestor
 // and therefore blank org/requestor columns.
 export const requestDefaultStatuses = ['requested', 'reserved', 'distributed'];
 
@@ -278,7 +285,7 @@ export const allStatuses = [
     'not-received'
 ];
 
-export type DonationReportType = 'lifecycle' | 'organization' | 'requestor' | 'donor' | 'raw';
+export type DonationReportType = 'lifecycle' | 'organization' | 'donor' | 'raw';
 
 export type ReportType = DonationReportType | 'users';
 
@@ -310,7 +317,7 @@ export const REPORT_PRESETS: Record<DonationReportType, ReportPreset> = {
         visibleColumns: lifecycleVisibleColumns,
         sortModel: [{ field: 'status', sort: 'asc' }],
         defaultStatuses: lifecycleDefaultStatuses,
-        filterWidget: 'none',
+        filterWidget: 'requestor',
         requireRequestor: false,
         fileName: 'product_lifecycle'
     },
@@ -321,14 +328,6 @@ export const REPORT_PRESETS: Record<DonationReportType, ReportPreset> = {
         filterWidget: 'organization',
         requireRequestor: false,
         fileName: 'donations_by_organization'
-    },
-    requestor: {
-        visibleColumns: [...lifecycleVisibleColumns, 'requestorEmail', 'requestorOrg'],
-        sortModel: [{ field: 'requestorName', sort: 'asc' }],
-        defaultStatuses: requestDefaultStatuses,
-        filterWidget: 'requestor',
-        requireRequestor: true,
-        fileName: 'donations_by_requestor'
     },
     donor: {
         visibleColumns: ['donorName', 'donorEmail', 'tagNumber', 'brand', 'model', 'category', 'status', 'createdAt', 'dateAccepted'],

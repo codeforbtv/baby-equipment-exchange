@@ -4,7 +4,16 @@
 
 import { Donation } from '@/models/donation';
 import { IUser } from '@/models/user';
-import { buildRequestorOptions, buildRows, extractUniqueDonors, extractUniqueRequestors, OrgNameById, UserOrgLookup } from './reportGridColumns';
+import {
+    buildRequestorOptions,
+    buildRows,
+    extractUniqueDonors,
+    extractUniqueRequestors,
+    OrgNameById,
+    REPORT_PRESETS,
+    UserLookup,
+    UserOrgLookup
+} from './reportGridColumns';
 
 // Builds a minimal Donation-like object with only the fields buildRows reads.
 function makeDonation(fields: Partial<Donation>): Donation {
@@ -155,5 +164,38 @@ describe('buildRequestorOptions', () => {
     test('falls back to email when the account has no display name', () => {
         const users = [user({ uid: 'uid-1', email: 'noname@x.org' })];
         expect(buildRequestorOptions(users, [])[0].name).toBe('noname@x.org');
+    });
+});
+
+describe('buildRows requestor identity', () => {
+    const accounts: UserLookup = { 'uid-1': { name: 'Wendy Rice', email: 'wendy@x.org' } };
+
+    test('current account name and email win over the snapshot on the donation', () => {
+        const d = makeDonation({ requestor: { id: 'uid-1', name: 'ws_rice', email: 'old@x.org' } });
+        const [row] = buildRows([d], {}, {}, {}, accounts);
+        expect(row.requestorName).toBe('Wendy Rice');
+        expect(row.requestorEmail).toBe('wendy@x.org');
+    });
+
+    test('snapshot is kept when the account no longer exists', () => {
+        const d = makeDonation({ requestor: { id: 'uid-gone', name: 'Former Staff', email: 'f@x.org' } });
+        const [row] = buildRows([d], {}, {}, {}, accounts);
+        expect(row.requestorName).toBe('Former Staff');
+        expect(row.requestorEmail).toBe('f@x.org');
+    });
+
+    test('an account with a blank name falls back to the snapshot name', () => {
+        const d = makeDonation({ requestor: { id: 'uid-2', name: 'Snapshot', email: 's@x.org' } });
+        const [row] = buildRows([d], {}, {}, {}, { 'uid-2': { name: '', email: 'live@x.org' } });
+        expect(row.requestorName).toBe('Snapshot');
+        expect(row.requestorEmail).toBe('live@x.org');
+    });
+});
+
+describe('REPORT_PRESETS', () => {
+    test('By Requestor is gone and Product Lifecycle carries the requestor filter', () => {
+        expect(Object.keys(REPORT_PRESETS)).toEqual(['lifecycle', 'organization', 'donor', 'raw']);
+        expect(REPORT_PRESETS.lifecycle.filterWidget).toBe('requestor');
+        expect(REPORT_PRESETS.lifecycle.requireRequestor).toBe(false);
     });
 });
