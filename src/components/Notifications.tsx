@@ -301,7 +301,7 @@ const Notifications = (props: NotificationsProps) => {
                 onClose={() => setDonationIdToDisplay(null)}
                 onUpdated={() => setNotificationsUpdated?.(true)}
             />
-            {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} />}
+            {userIdToDisplay && <UserDetails id={userIdToDisplay} setIdToDisplay={setUserIdToDisplay} setUsersUpdated={setNotificationsUpdated} />}
             {orderIdToDisplay && (
                 <ReviewOrder
                     id={orderIdToDisplay}
